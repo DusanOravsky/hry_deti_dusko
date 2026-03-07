@@ -69,9 +69,15 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v25**
+Aktuálna verzia: **v26**
 
 ## Changelog
+
+### v26 (2026-03-07)
+- 🔧 **Online Multiplayer: UX vylepšenia**
+  - MP tlačidlo sa skrýva keď si zvolíš "vs Počítač" režim
+  - MP je dostupný iba pre 2-player hry (nie pre AI režim)
+  - Automaticky sa resetuje keď sa vrátiš na welcome screen
 
 ### v25 (2026-03-07)
 - 🎮 **Tetris: Solo režim** - iba 1 hráč (score/level tracking)

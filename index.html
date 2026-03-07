@@ -2823,7 +2823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 25;
+const APP_VERSION = 26;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3356,6 +3356,8 @@ const TTT = {
 
 function setTTTMode(m,btn) {
   TTT.mode=m;
+  anyGameInAIMode = (m==='ai');
+  updateMPButtonVisibility();
   document.querySelectorAll('#ticTacToe .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tttAISel').style.display = m==='ai'?'flex':'none';
@@ -3980,6 +3982,8 @@ const C4 = { mode:'pvp', diff:'easy', board:[], player:1, over:false, s1:0, s2:0
 
 function setC4Mode(m,btn) {
   C4.mode=m;
+  anyGameInAIMode = (m==='ai');
+  updateMPButtonVisibility();
   document.querySelectorAll('#connect4 .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('c4AISel').style.display=m==='ai'?'flex':'none';
@@ -7868,10 +7872,14 @@ function mobileGoTo(level, gameId) {
 
   if(level === 1) {
     _returnGameToParent();
+    anyGameInAIMode = false;
+    updateMPButtonVisibility();
     ws.style.display = '';
     ws.classList.remove('hide');
   } else if(level === 2) {
     _returnGameToParent();
+    anyGameInAIMode = false;
+    updateMPButtonVisibility();
     ws.classList.add('hide');
     ws.style.display = 'none';
     picker.classList.add('active');
@@ -8029,6 +8037,20 @@ const MP = {
   roomCode: null,
   onGameSync: null
 };
+
+// Track if any game is in AI mode (hide MP button when true)
+let anyGameInAIMode = false;
+
+function updateMPButtonVisibility() {
+  const mpBtn = document.querySelector('.welcome-mp-btn');
+  if (!mpBtn) return;
+
+  if (anyGameInAIMode) {
+    mpBtn.style.display = 'none';
+  } else {
+    mpBtn.style.display = '';
+  }
+}
 
 function mpOpen() {
   document.getElementById('multiplayerOverlay').classList.add('show');
