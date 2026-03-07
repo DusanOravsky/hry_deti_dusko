@@ -69,9 +69,15 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v29**
+Aktuálna verzia: **v30**
 
 ## Changelog
+
+### v30 (2026-03-07)
+- 🌐 **MP indikátory v hrách**
+  - 🌐 MP badge na game cards
+  - Hry s MP: Piškvorky, Connect4, Ghost, Hádaj Číslo, Obesenec, Vyššie Nižšie
+- 📱 **Verzia viditeľná na mobile** (v spodnej časti game grid)
 
 ### v29 (2026-03-07)
 - 📷 **QR Scanner pre Online Multiplayer**
