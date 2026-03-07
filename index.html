@@ -3016,7 +3016,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 49;
+const APP_VERSION = 50;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3656,8 +3656,8 @@ function clickTTT(i) {
     TTT.over=true;
     w.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));
     playSound('win');
-    if(w.w==='X'){TTT.s1++;document.getElementById('tttStatus').textContent='🎉 '+getP1Name('ttt')+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
-    else{TTT.s2++;document.getElementById('tttStatus').textContent='🎉 '+(TTT.mode==='ai'?'Počítač':getP2Name('ttt'))+' vyhral!';addWin(2);celebrate('tttCelebration');popScore('p2ScoreTTT');}
+    if(w.w==='X'){TTT.s1++;document.getElementById('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
+    else{TTT.s2++;document.getElementById('tttStatus').textContent='🎉 '+(TTT.mode==='ai'?'Počítač':getTTTPlayerName('O'))+' vyhral!';addWin(2);celebrate('tttCelebration');popScore('p2ScoreTTT');}
     document.getElementById('p1ScoreTTT').textContent=TTT.s1;
     document.getElementById('p2ScoreTTT').textContent=TTT.s2;
     renderTTT(); return;
@@ -3666,9 +3666,9 @@ function clickTTT(i) {
   if(TTT.mode==='pvp') {
     TTT.player=TTT.player==='X'?'O':'X';
     const p=TTT.player==='X'?1:2;
-    document.getElementById('tttStatus').textContent=(p===1?getP1Name('ttt'):getP2Name('ttt'))+' na rade!';
+    document.getElementById('tttStatus').textContent=getTTTPlayerName(TTT.player)+' na rade!';
     activeTurn('tttP1Card','tttP2Card',p);
-    startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+(p===1?getP2Name('ttt'):getP1Name('ttt'))+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
+    startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;const otherPlayer=TTT.player==='X'?'O':'X';document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+getTTTPlayerName(otherPlayer)+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
   } else {
     setTimeout(()=>{
       const ai=getTTTAIMove(); TTT.board[ai]='O'; renderTTT();
@@ -8234,8 +8234,23 @@ const MP = {
   connection: null,
   isHost: false,
   isConnected: false,
-  roomCode: null
+  roomCode: null,
+  myName: '',
+  opponentName: ''
 };
+
+// Helper: Get player name for TTT (MP-aware)
+function getTTTPlayerName(symbol) {
+  if(!MP.isConnected) {
+    return symbol === 'X' ? getP1Name('ttt') : getP2Name('ttt');
+  }
+  // MP mode: Host=X, Guest=O
+  if(MP.isHost) {
+    return symbol === 'X' ? MP.myName : MP.opponentName;
+  } else {
+    return symbol === 'O' ? MP.myName : MP.opponentName;
+  }
+}
 
 // ===== MP MODAL CONTROLS =====
 function openMPModal() {
@@ -8257,6 +8272,10 @@ function mpCreateRoom() {
   const roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
   MP.roomCode = roomCode;
   MP.isHost = true;
+
+  // Get player name from welcome screen (P1 = host)
+  const p1Input = document.getElementById('wP1Input');
+  MP.myName = p1Input ? (p1Input.value.trim() || 'Hráč 1') : 'Hráč 1';
 
   document.getElementById('mpRoomCode').textContent = roomCode;
   document.getElementById('mpHostRoom').classList.remove('mp-hidden');
@@ -8287,8 +8306,8 @@ function mpCreateRoom() {
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
-        // Send handshake
-        conn.send({ type: 'handshake', from: 'host' });
+        // Send handshake with name
+        conn.send({ type: 'handshake', from: 'host', name: MP.myName });
       });
 
       conn.on('data', (data) => {
@@ -8328,6 +8347,10 @@ function mpJoinRoom() {
   MP.roomCode = code;
   MP.isHost = false;
 
+  // Get player name from welcome screen (P2 = guest)
+  const p2Input = document.getElementById('wP2Input');
+  MP.myName = p2Input ? (p2Input.value.trim() || 'Hráč 2') : 'Hráč 2';
+
   const statusEl = document.getElementById('mpJoinStatus');
   statusEl.className = 'mp-status waiting';
   statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam sa...</div>';
@@ -8359,8 +8382,8 @@ function mpJoinRoom() {
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
-        // Send handshake
-        MP.connection.send({ type: 'handshake', from: 'guest' });
+        // Send handshake with name
+        MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
       });
 
       MP.connection.on('data', (data) => {
@@ -8422,7 +8445,8 @@ function mpDisconnect() {
 
 function mpHandleMessage(data) {
   if(data.type === 'handshake') {
-    console.log('Handshake from:', data.from);
+    console.log('Handshake from:', data.from, 'name:', data.name);
+    MP.opponentName = data.name || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
     return;
   }
 
@@ -8443,13 +8467,13 @@ function mpHandleMessage(data) {
       playSound('win');
       if(w.w==='X'){
         TTT.s1++;
-        document.getElementById('tttStatus').textContent='🎉 '+getP1Name('ttt')+' vyhral!';
+        document.getElementById('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';
         addWin(1);
         celebrate('tttCelebration');
         popScore('p1ScoreTTT');
       } else {
         TTT.s2++;
-        document.getElementById('tttStatus').textContent='🎉 '+getP2Name('ttt')+' vyhral!';
+        document.getElementById('tttStatus').textContent='🎉 '+getTTTPlayerName('O')+' vyhral!';
         addWin(2);
         celebrate('tttCelebration');
         popScore('p2ScoreTTT');
@@ -8470,12 +8494,13 @@ function mpHandleMessage(data) {
     // Switch turn
     TTT.player = TTT.player==='X'?'O':'X';
     const p = TTT.player==='X'?1:2;
-    document.getElementById('tttStatus').textContent=(p===1?getP1Name('ttt'):getP2Name('ttt'))+' na rade!';
+    document.getElementById('tttStatus').textContent=getTTTPlayerName(TTT.player)+' na rade!';
     activeTurn('tttP1Card','tttP2Card',p);
     startTurnTimer('ttt',()=>{
       if(!TTT.over){
         TTT.over=true;
-        document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+(p===1?getP2Name('ttt'):getP1Name('ttt'))+' vyhráva!';
+        const otherPlayer=TTT.player==='X'?'O':'X';
+        document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+getTTTPlayerName(otherPlayer)+' vyhráva!';
         addWin(p===1?2:1);
         celebrate('tttCelebration');
       }

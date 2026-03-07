@@ -69,9 +69,20 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v49**
+Aktuálna verzia: **v50**
 
 ## Changelog
+
+### v50 (2026-03-07)
+- 👥 **MP: Real player names in game (Lukáško & Natálka)**
+  - MP.myName and MP.opponentName added to state
+  - Host gets name from wP1Input (Lukáško)
+  - Guest gets name from wP2Input (Natálka)
+  - Handshake sends player name to opponent
+  - getTTTPlayerName() helper returns correct name (MP vs local)
+  - All status messages now show real names: "🎉 Lukáško vyhral!"
+  - User request: "vies tam potom dat skutocne mena ako su napisane v hra"
+  - **MP Step 4/5 complete!**
 
 ### v49 (2026-03-07)
 - 🎮 **MP Step 4/5: Piškvorky Online Multiplayer!**
