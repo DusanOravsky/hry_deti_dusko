@@ -730,6 +730,7 @@ body.light .player-card input.player-name-input {
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.1);
   width:fit-content;
+  touch-action:pan-y;
 }
 .board-3x3 { grid-template-columns:repeat(3,80px); grid-template-rows:repeat(3,80px); }
 .board-4x4 { grid-template-columns:repeat(4,68px); grid-template-rows:repeat(4,68px); }
@@ -766,7 +767,7 @@ body.light .player-card input.player-name-input {
 .board-15x15 .cell { font-size:1em; border-radius:5px; border-width:1px; }
 
 /* MEMORY */
-.memory-board { display:grid; gap:10px; margin:15px auto; max-width:420px; }
+.memory-board { display:grid; gap:10px; margin:15px auto; max-width:420px; touch-action:pan-y; }
 .memory-board.easy { grid-template-columns:repeat(4,1fr); }
 .memory-board.medium { grid-template-columns:repeat(4,1fr); }
 .memory-board.hard { grid-template-columns:repeat(6,1fr); }
@@ -786,7 +787,7 @@ body.light .player-card input.player-name-input {
 .memory-card.matched { opacity:0.4; cursor:not-allowed; border-color:#43e97b; }
 
 /* CONNECT 4 */
-.c4-wrapper { overflow-x:auto; }
+.c4-wrapper { overflow-x:auto; touch-action:pan-y; }
 .board-7x6 {
   display:grid;
   grid-template-columns:repeat(7,55px);
@@ -1006,7 +1007,7 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 .bs-grid {
   display:grid; grid-template-columns:repeat(10,36px); grid-template-rows:repeat(10,36px);
   gap:3px; background:rgba(255,255,255,0.05); padding:8px; border-radius:12px;
-  border:1px solid rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.1); touch-action:pan-y;
 }
 .bs-cell {
   width:36px; height:36px; border-radius:5px; cursor:pointer;
@@ -1069,7 +1070,7 @@ body.light .ghost-key { color:#333; border-color:rgba(0,0,0,0.2); background:rgb
   display:flex; align-items:center; justify-content:center; font-size:1.5em; font-weight:700;
   cursor:pointer; transition:all 0.15s; user-select:none; color:white;
   background:linear-gradient(135deg,#636e72,#2d3436);
-  border:3px solid rgba(255,255,255,0.1);
+  border:3px solid rgba(255,255,255,0.1); touch-action:pan-y;
 }
 .reaction-pad.waiting { background:linear-gradient(135deg,#e17055,#d63031); animation:pulse-slow 1.5s infinite; }
 .reaction-pad.go { background:linear-gradient(135deg,#00b894,#00cec9); }
