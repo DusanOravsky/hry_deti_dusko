@@ -218,8 +218,14 @@ body.light {
 #mobileGamePicker {
   display:none;
   flex-direction:column;
-  min-height:100vh;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:100;
   background:inherit;
+  overflow-y:auto;
 }
 #mobileGamePicker.active { display:flex; }
 
@@ -354,6 +360,14 @@ body.light .mobile-game-card-name { color:#333; }
   height:100dvh;
   max-height:100vh;
   max-height:100dvh;
+  overflow:hidden;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:100;
+  background:inherit;
 }
 #mobileGameView.active { display:flex; }
 #mobileGameContent {
