@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~8400+ 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets (Note: SW was disabled in v36, re-enabled later)
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v54 (2026-03-07)
+- **Current version**: v55 (2026-03-07)
 - **Game modes**: `welcomeGameMode` variable — `''` (default/all games), `'pvp'` (2 players), or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
@@ -198,6 +198,13 @@ Each sound also triggers vibration (15-100ms) if device supports it.
   - **Solution**: Use `grep "const MP = {" index.html` to find all occurrences before adding new one
 - **Duplicate modal structures**: Old MP modals from v27 can conflict with new implementations. Remove ALL old MP HTML/CSS/JS before implementing new version.
 - **Missing modal functions (v42)**: When cleaning up old code, check that you don't accidentally remove current functions. v42 removed `openMPModal()`, `closeMPModal()`, `closeMPModalOnOverlay()` along with old duplicate code.
+- **Game state desync (v55)**: Players must have SAME game settings (board size, rules, etc.)
+  - **Root cause**: Each player independently selects game settings, no sync
+  - **Solution**: Host sends game settings in handshake, guest applies them automatically
+  - **Example (Piškvorky)**: Host sends `{tttSize, tttGrid}` in handshake, guest calls `setTTTSize()` to match
+  - **Important**: Guest should call the UI update function (like `setTTTSize()`), not just set variables, to ensure all UI elements update correctly
+- **Multiple active buttons**: Using global selectors like `document.querySelectorAll('.difficulty-btn')` can affect buttons from other games
+  - **Solution**: Use `btn.parentElement.querySelectorAll('.difficulty-btn')` to scope to current control group
 - **GitHub Pages deploy delay**: Typically 1-3 minutes, but can take longer (4+ min, v49 took 7min). Check status: `gh run list --repo USER/REPO`
 - **PeerJS connection timeout**: If peers can't connect, check firewall/NAT. PeerJS uses STUN servers for NAT traversal.
 - **Service Worker cache**: Hard refresh (Ctrl+Shift+R) may be needed to see new MP code on mobile.
@@ -211,7 +218,7 @@ Each sound also triggers vibration (15-100ms) if device supports it.
 
 ## Recent Session Notes (2026-03-07)
 
-**MP Implementation Complete (v48-v54):**
+**MP Implementation Complete (v48-v55):**
 - v48: PeerJS WebRTC connections (debugged duplicate MP object issue)
 - v49: Piškvorky online multiplayer working
 - v50: Real player names sync (Lukáško & Natálka)
@@ -219,10 +226,14 @@ Each sound also triggers vibration (15-100ms) if device supports it.
 - v52: Info box in MP modal + Tetris ArrowUp rotation
 - v53: Tetris removed from 2-player mode grid
 - v54: On-screen mobile controls for Tetris
+- v55: **CRITICAL FIX** - Board size synchronization in MP + multiple active buttons fix
 
 **Key Learnings:**
 - Always grep for duplicate declarations before adding new state objects
 - Test MP on actual 2 devices/mobiles, not just 2 browser windows
+- **Game state MUST sync**: Host sends ALL game settings in handshake (board size, rules, etc.)
+- Guest must apply host's settings by calling UI update functions (e.g., `setTTTSize()`), not just setting variables
+- Use scoped selectors (`parent.querySelectorAll`) instead of global selectors to avoid affecting other game controls
 - GitHub Pages deploy can be slow, use `gh run list` to monitor
 - mode='always' games need special filter logic to hide in pvp/ai modes
 - Mobile games need on-screen controls, can't rely on keyboard
@@ -232,6 +243,31 @@ Each sound also triggers vibration (15-100ms) if device supports it.
 2. Device 1: Click globe → Create room → copy code
 3. Device 2: Click globe → paste code → Join
 4. Both see green ✅ with role indicator
-5. Open same game on both devices
-6. Take turns, moves sync in real-time
-7. Winner displays correctly with real player names
+5. **IMPORTANT**: Device 1 (host) selects game settings FIRST (e.g., board size)
+6. Open same game on both devices - guest should auto-match host's settings
+7. Take turns, moves sync in real-time
+8. Winner displays correctly with real player names
+9. **Verify**: Both players have SAME board size/rules
+
+**MP Handshake Protocol (v55):**
+```javascript
+// Host sends:
+conn.send({
+  type: 'handshake',
+  from: 'host',
+  name: MP.myName,
+  tttSize: TTT.size,    // Game-specific settings
+  tttGrid: TTT.grid
+});
+
+// Guest receives and applies:
+if(data.from === 'host' && data.tttSize) {
+  setTTTSize(data.tttSize, matchingButton); // Call UI function
+}
+```
+
+**Next Steps (Future Sessions):**
+- Extend MP to Connect4, Ghost, Hádaj Číslo, Obesenec, Vyššie Nižšie
+- Add "Waiting for opponent..." indicator when host is waiting
+- Consider adding "Rematch" button after game ends in MP mode
+- Test with poor network conditions (slow 3G, packet loss)
