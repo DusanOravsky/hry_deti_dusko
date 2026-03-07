@@ -7591,7 +7591,7 @@ function tetLockPiece(){
     document.getElementById('tetLevel').textContent=TET.level;
     document.getElementById('tetLines').textContent=TET.lines;
   }
-  TET.piece=TET.next;TET.next=tetNewPiece();TET.x=3;TET.y=0;
+  TET.piece=TET.next;TET.next=tetNewPiece();TET.x=3;TET.y=0;tetRenderNext();
   if(!tetCanMove(0,0,TET.piece.blocks)){
     TET.gameOver=true;TET.running=false;
     if(TET.dropTimer)clearInterval(TET.dropTimer);
