@@ -69,9 +69,18 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v36**
+Aktuálna verzia: **v37**
 
 ## Changelog
+
+### v37 (2026-03-07)
+- 🔄 **ROLLBACK to v26 (known working version)**
+  - REVERTED all changes from v27-v36 (online multiplayer + fixes)
+  - **ROOT CAUSE:** Online multiplayer changes broke welcome screen
+  - User symptom: "nič nefunguje, nejde klikať" (started with MP changes)
+  - This is KNOWN WORKING version from before MP implementation
+  - **Trade-off:** No online multiplayer, but app works
+  - Will re-implement MP carefully in future versions
 
 ### v36 (2026-03-07)
 - 💣 **RADICAL FIX: Service Worker DISABLED**

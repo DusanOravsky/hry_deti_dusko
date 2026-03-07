@@ -3,13 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>Hrajme si Lukáško a Natálka</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
 <meta name="theme-color" content="#667eea">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -188,18 +184,11 @@ body.light {
 /* 3-LEVEL NAV — vždy aktívny (mobile aj desktop) */
 .container { display:none !important; }
 .mobile-nav {
-  display:none;
+  display:flex;
   flex-direction:column;
   min-height:100vh;
   width:100%;
   overflow-x:hidden;
-  pointer-events:none;
-  z-index:-1;
-}
-.mobile-nav.active {
-  display:flex;
-  pointer-events:all;
-  z-index:1000;
 }
 
 /* Desktop vylepšenia pre 3-level nav */
@@ -214,18 +203,6 @@ body.light {
   .mobile-game-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
   .mobile-game-card-icon { font-size:2.8em; }
   .mobile-game-card-name { font-size:0.9em; }
-.mp-badge {
-  position:absolute;
-  top:8px;
-  right:8px;
-  background:rgba(102,126,234,0.25);
-  border:1px solid rgba(102,126,234,0.5);
-  border-radius:8px;
-  padding:3px 8px;
-  font-size:0.7em;
-  font-weight:700;
-  color:rgba(102,126,234,1);
-}
   #mobileGameContent {
     max-width:800px;
     margin:0 auto;
@@ -1308,53 +1285,6 @@ body.light .multiplayer-box input::placeholder { color:rgba(0,0,0,0.4); }
 .multiplayer-close:hover { color:rgba(255,255,255,0.9); }
 body.light .multiplayer-close { color:rgba(0,0,0,0.4); }
 body.light .multiplayer-close:hover { color:rgba(0,0,0,0.8); }
-
-/* QR Scanner */
-.qr-scanner-modal {
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  bottom:0;
-  background:rgba(0,0,0,0.95);
-  z-index:10001;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  padding:20px;
-}
-.qr-scanner-modal.active { display:flex; }
-.qr-scanner-header {
-  color:white;
-  text-align:center;
-  margin-bottom:20px;
-}
-.qr-scanner-header h2 {
-  margin:0 0 10px;
-  font-size:1.5em;
-}
-.qr-scanner-header p {
-  margin:0;
-  opacity:0.7;
-  font-size:0.9em;
-}
-#qrScannerReader {
-  width:100%;
-  max-width:500px;
-  border-radius:16px;
-  overflow:hidden;
-}
-#qrScannerReader video {
-  border-radius:16px;
-}
-.qr-scanner-actions {
-  margin-top:20px;
-  display:flex;
-  gap:12px;
-}
-body.light .qr-scanner-modal { background:rgba(255,255,255,0.98); }
-body.light .qr-scanner-header { color:#222; }
 #mpQrCode { display:flex; justify-content:center; align-items:center; }
 body.light .stats-tile { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.08); }
 body.light .stats-tile-val { color:#222; }
@@ -1486,13 +1416,12 @@ button, .cell, .memory-card, .bs-cell, .scramble-tile, .scramble-answer-tile, .f
 
 /* ===== WELCOME SCREEN ===== */
 #welcomeScreen {
-  position:fixed; top:0; left:0; right:0; bottom:0; z-index:99999;
+  position:fixed; top:0; left:0; right:0; bottom:0; z-index:9000;
   display:flex; align-items:center; justify-content:center;
   overflow-x:hidden; overflow-y:auto; padding:8px; box-sizing:border-box;
   width:100%; max-width:100vw;
   background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
   transition:opacity 0.5s, transform 0.5s;
-  pointer-events:all;
 }
 body.light #welcomeScreen {
   background:linear-gradient(135deg,#e8f4f8 0%,#d6eaf8 50%,#c8e6f5 100%);
@@ -1640,15 +1569,6 @@ body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
   background:rgba(102,126,234,0.1); transition:all 0.25s; margin-bottom:12px; box-sizing:border-box;
 }
 .welcome-mp-btn:hover { background:rgba(102,126,234,0.2); transform:translateY(-1px); }
-.welcome-mp-btn.connected {
-  background:rgba(0,255,0,0.15);
-  border-color:rgba(0,255,0,0.5);
-  color:rgba(0,255,0,0.95);
-  box-shadow:0 0 12px rgba(0,255,0,0.3);
-}
-.welcome-mp-btn.connected:hover {
-  background:rgba(0,255,0,0.2);
-}
 
 /* Welcome stats */
 .welcome-stats {
@@ -1747,10 +1667,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div id="welcomeHistory" class="welcome-history"></div>
     </div>
     <button class="welcome-skip" onclick="startFromWelcome()">Preskočiť →</button>
-    <div style="margin-top:8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
-      <div id="appVersion" style="font-size:0.75em;opacity:0.6;font-weight:600"></div>
-      <button onclick="clearAllCache()" style="font-size:0.65em;padding:4px 8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,0,0,0.15);color:rgba(255,100,100,0.9);border-radius:6px;cursor:pointer;font-weight:600">🗑️ Clear Cache</button>
-    </div>
+    <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
   </div>
 </div>
 <!-- ===== MOBILE 3-LEVEL NAVIGATION ===== -->
@@ -2906,7 +2823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 36;
+const APP_VERSION = 37;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3524,21 +3441,8 @@ function getTTTAIMove() {
 }
 function clickTTT(i) {
   if(TTT.over||TTT.board[i]) return;
-
-  // MP: Check if it's my turn
-  if(isMPActive() && TTT.mode === 'pvp') {
-    const myPlayer = getMyMPPlayer();
-    const mySymbol = myPlayer === 1 ? 'X' : 'O';
-    if(TTT.player !== mySymbol) return; // Not my turn
-  }
-
   stopTurnTimer('ttt'); playSound('click');
   TTT.board[i]=TTT.player; renderTTT();
-
-  // MP: Send move to opponent
-  if(isMPActive() && TTT.mode === 'pvp') {
-    mpSend({ type: 'ttt_move', index: i });
-  }
   const w=checkTTTWin();
   if(w) {
     TTT.over=true;
@@ -3552,19 +3456,11 @@ function clickTTT(i) {
   }
   if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
   if(TTT.mode==='pvp') {
-    // Don't switch turn in MP - opponent will make their move
-    if(!isMPActive()) {
-      TTT.player=TTT.player==='X'?'O':'X';
-      const p=TTT.player==='X'?1:2;
-      document.getElementById('tttStatus').textContent=(p===1?getP1Name('ttt'):getP2Name('ttt'))+' na rade!';
-      activeTurn('tttP1Card','tttP2Card',p);
-      startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+(p===1?getP2Name('ttt'):getP1Name('ttt'))+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
-    } else {
-      // MP: Wait for opponent's move
-      const opponentPlayer = getMyMPPlayer() === 1 ? 2 : 1;
-      document.getElementById('tttStatus').textContent = '⏳ Čaká sa na ' + getMPPlayerName(opponentPlayer, 'ttt') + '...';
-      activeTurn('tttP1Card', 'tttP2Card', opponentPlayer);
-    }
+    TTT.player=TTT.player==='X'?'O':'X';
+    const p=TTT.player==='X'?1:2;
+    document.getElementById('tttStatus').textContent=(p===1?getP1Name('ttt'):getP2Name('ttt'))+' na rade!';
+    activeTurn('tttP1Card','tttP2Card',p);
+    startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+(p===1?getP2Name('ttt'):getP1Name('ttt'))+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
   } else {
     setTimeout(()=>{
       const ai=getTTTAIMove(); TTT.board[ai]='O'; renderTTT();
@@ -3578,10 +3474,6 @@ function clickTTT(i) {
 }
 function resetTTT() {
   stopTurnTimer('ttt');
-  // Update names if MP is active
-  if(isMPActive()) {
-    updateMPPlayerCards('ttt');
-  }
   TTT.player='X'; TTT.over=false;
   document.getElementById('tttStatus').textContent='Hráč 1 na rade!';
   activeTurn('tttP1Card','tttP2Card',1);
@@ -4153,22 +4045,10 @@ function getC4AIMove() {
 function dropC4(col) {
   if(C4.over) return;
   if(C4.mode==='ai'&&C4.player!==1) return;
-
-  // MP: Check if it's my turn
-  if(isMPActive() && C4.mode === 'pvp') {
-    const myPlayer = getMyMPPlayer();
-    if(C4.player !== myPlayer) return; // Not my turn
-  }
-
   for(let r=5;r>=0;r--) {
     if(C4.board[col][r]===0) {
       stopTurnTimer('c4');
       C4.board[col][r]=C4.player; renderC4();
-
-      // MP: Send move to opponent
-      if(isMPActive() && C4.mode === 'pvp') {
-        mpSend({ type: 'c4_move', col: col });
-      }
       // Drop animation on the filled slot
       const slot=document.getElementById(`c4-${col}-${r}`);
       if(slot){ slot.classList.add('dropping'); setTimeout(()=>slot.classList.remove('dropping'),380); }
@@ -4182,18 +4062,10 @@ function dropC4(col) {
       }
       if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';addWin(0);return;}
       if(C4.mode==='pvp') {
-        // Don't switch turn in MP - opponent will make their move
-        if(!isMPActive()) {
-          C4.player=C4.player===1?2:1;
-          document.getElementById('c4Status').textContent=(C4.player===1?getP1Name('c4'):getP2Name('c4'))+' na rade!';
-          activeTurn('c4P1Card','c4P2Card',C4.player);
-          startTurnTimer('c4', ()=>c4TimerExpire());
-        } else {
-          // MP: Wait for opponent's move
-          const opponentPlayer = getMyMPPlayer() === 1 ? 2 : 1;
-          document.getElementById('c4Status').textContent = '⏳ Čaká sa na ' + getMPPlayerName(opponentPlayer, 'c4') + '...';
-          activeTurn('c4P1Card', 'c4P2Card', opponentPlayer);
-        }
+        C4.player=C4.player===1?2:1;
+        document.getElementById('c4Status').textContent=(C4.player===1?getP1Name('c4'):getP2Name('c4'))+' na rade!';
+        activeTurn('c4P1Card','c4P2Card',C4.player);
+        startTurnTimer('c4', ()=>c4TimerExpire());
       } else {
         C4.player=2;
         setTimeout(()=>{
@@ -4216,10 +4088,6 @@ function dropC4(col) {
 }
 function resetC4() {
   stopTurnTimer('c4');
-  // Update names if MP is active
-  if(isMPActive()) {
-    updateMPPlayerCards('c4');
-  }
   C4.player=1; C4.over=false;
   document.getElementById('c4Status').textContent='Hráč 1 na rade!';
   activeTurn('c4P1Card','c4P2Card',1);
@@ -7953,62 +7821,35 @@ document.getElementById('appVersion').textContent='v'+APP_VERSION;
 const svEl=document.getElementById('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
 
-// DEBUG: Force Service Worker update on version mismatch
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(registration => {
-      registration.update();
-    });
-  });
-}
-
-// CRITICAL: Force hide all overlays and ensure welcome screen is interactive
-document.getElementById('confirmOverlay')?.classList.remove('show');
-document.getElementById('multiplayerOverlay')?.classList.remove('show');
-document.getElementById('qrScannerModal')?.classList.remove('active');
-const mobileNav = document.querySelector('.mobile-nav');
-if(mobileNav) {
-  mobileNav.classList.remove('active');
-  mobileNav.style.pointerEvents = 'none';
-  mobileNav.style.zIndex = '-1';
-}
-const welcomeScreen = document.getElementById('welcomeScreen');
-if(welcomeScreen) {
-  welcomeScreen.style.display = '';
-  welcomeScreen.classList.remove('hide');
-  welcomeScreen.style.pointerEvents = 'all';
-  welcomeScreen.style.zIndex = '99999';
-}
-
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
 const MOBILE_GAMES = [
-  { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)', mode:'both', mp:true },
-  { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)', mode:'both', mp:false },
-  { id:'memory',        label:'Memory',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both', mp:false },
-  { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both', mp:true },
-  { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both', mp:true },
-  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both', mp:false },
-  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both', mp:false },
-  { id:'quiz',          label:'Kvíz',           icon:'❓', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp', mp:false },
-  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both', mp:false },
-  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp', mp:true },
-  { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', mp:false },
-  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp', mp:false },
-  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp', mp:false },
-  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp', mp:false },
-  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp', mp:true },
-  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp', mp:true },
-  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', mp:false },
-  { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', mp:false },
-  { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp', mp:false },
-  { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', mp:false },
-  { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp', mp:false },
-  { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both', mp:false },
-  { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both', mp:false },
-  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'always', mp:false },
-  { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always', mp:false },
+  { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)', mode:'both' },
+  { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)', mode:'both' },
+  { id:'memory',        label:'Memory',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both' },
+  { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both' },
+  { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both' },
+  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both' },
+  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both' },
+  { id:'quiz',          label:'Kvíz',           icon:'❓', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp' },
+  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both' },
+  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp' },
+  { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
+  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp' },
+  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp' },
+  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp' },
+  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp' },
+  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp' },
+  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
+  { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
+  { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp' },
+  { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
+  { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
+  { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
+  { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
+  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'always' },
+  { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
 // Original parent of each game-area (main-content) — for restoring on desktop
@@ -8029,15 +7870,12 @@ function mobileGoTo(level, gameId) {
   picker.classList.remove('active');
   view.classList.remove('active');
 
-  const mobileNav = document.querySelector('.mobile-nav');
-
   if(level === 1) {
     _returnGameToParent();
     anyGameInAIMode = false;
     updateMPButtonVisibility();
     ws.style.display = '';
     ws.classList.remove('hide');
-    if(mobileNav) mobileNav.classList.remove('active');
   } else if(level === 2) {
     _returnGameToParent();
     anyGameInAIMode = false;
@@ -8045,7 +7883,6 @@ function mobileGoTo(level, gameId) {
     ws.classList.add('hide');
     ws.style.display = 'none';
     picker.classList.add('active');
-    if(mobileNav) mobileNav.classList.add('active');
     renderMobileGrid();
     _updateMobileChips();
   } else if(level === 3 && gameId) {
@@ -8053,7 +7890,6 @@ function mobileGoTo(level, gameId) {
     ws.classList.add('hide');
     ws.style.display = 'none';
     view.classList.add('active');
-    if(mobileNav) mobileNav.classList.add('active');
     // Set title
     const gDef = MOBILE_GAMES.find(g => g.id === gameId);
     document.getElementById('mobileGameTitle').textContent =
@@ -8083,21 +7919,13 @@ function renderMobileGrid() {
     if(welcomeGameMode==='ai') return g.mode==='both';
     return true; // pvp shows all
   });
-
-  const cards = filtered.map(g => {
-    const mpBadge = g.mp ? '<div class="mp-badge">🌐 MP</div>' : '';
-    return `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
-          style="background:linear-gradient(135deg,${g.grad});position:relative">
-       ${mpBadge}
+  grid.innerHTML = filtered.map(g =>
+    `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
+          style="background:linear-gradient(135deg,${g.grad})">
        <div class="mobile-game-card-icon">${g.icon}</div>
        <div class="mobile-game-card-name">${g.label}</div>
-     </div>`;
-  }).join('');
-
-  // Add version footer
-  const versionFooter = `<div style="grid-column:1/-1;text-align:center;padding:20px 0 10px;opacity:0.4;font-size:0.8em">v${APP_VERSION}</div>`;
-
-  grid.innerHTML = cards + versionFooter;
+     </div>`
+  ).join('');
 }
 
 function _updateMobileChips() {
@@ -8207,10 +8035,7 @@ const MP = {
   isHost: false,
   isConnected: false,
   roomCode: null,
-  onGameSync: null,
-  role: null,  // 'host' or 'guest'
-  myName: null,
-  opponentName: null
+  onGameSync: null
 };
 
 // Track if any game is in AI mode (hide MP button when true)
@@ -8225,45 +8050,7 @@ function updateMPButtonVisibility() {
   } else {
     mpBtn.style.display = '';
   }
-
-  // Update connected state
-  if(MP.isConnected) {
-    mpBtn.classList.add('connected');
-  } else {
-    mpBtn.classList.remove('connected');
-  }
 }
-
-// ===== CACHE MANAGEMENT =====
-
-function clearAllCache() {
-  if(!confirm('Vymazať všetky cached dáta a reloadnúť stránku?')) return;
-
-  // Unregister all service workers
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(registration => {
-        registration.unregister();
-      });
-    });
-  }
-
-  // Clear all caches
-  if ('caches' in window) {
-    caches.keys().then(names => {
-      names.forEach(name => {
-        caches.delete(name);
-      });
-    });
-  }
-
-  // Force reload
-  setTimeout(() => {
-    window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
-  }, 500);
-}
-
-// ===== MULTIPLAYER =====
 
 function mpOpen() {
   document.getElementById('multiplayerOverlay').classList.add('show');
@@ -8274,7 +8061,6 @@ function mpClose() {
 function mpCreateRoom() {
   if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
   MP.isHost = true;
-  MP.role = 'host';
   // Generate random room code
   MP.roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
 
@@ -8319,12 +8105,7 @@ function mpCreateRoom() {
     mpSetupConnection();
     const icon = document.getElementById('mpStatusIcon');
     if(icon) icon.textContent = '✅';
-    updateMPButtonVisibility();
-
-    // Show connected state
-    document.getElementById('mpHost').style.display = 'none';
-    document.getElementById('mpConnected').style.display = 'block';
-    document.getElementById('mpRoleText').textContent = 'Host (Hráč 1)';
+    document.getElementById('mpHostStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
     playSound('correct');
     vibrate([50,30,50]);
   });
@@ -8345,7 +8126,6 @@ function mpJoinRoom() {
 
   if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
   MP.isHost = false;
-  MP.role = 'guest';
   MP.roomCode = code;
 
   document.getElementById('mpJoinStatus').innerHTML = '⏳ Pripájam sa...';
@@ -8386,38 +8166,20 @@ function mpSetupConnection() {
     MP.isConnected = true;
     const icon = document.getElementById('mpStatusIcon');
     if(icon) icon.textContent = '✅';
-    updateMPButtonVisibility();
-
-    // Show connected state
+    document.getElementById('mpJoinStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
     document.getElementById('mpHost').style.display = 'none';
     document.getElementById('mpJoin').style.display = 'none';
-    document.getElementById('mpDisconnectBtn').style.display = 'none';
-    document.getElementById('mpConnected').style.display = 'block';
-    document.getElementById('mpRoleText').textContent = MP.role === 'host' ? 'Host (Hráč 1)' : 'Guest (Hráč 2)';
+    document.getElementById('mpDisconnectBtn').style.display = 'block';
     playSound('correct');
     vibrate([50,30,50]);
 
-    // Send initial handshake with name
-    MP.myName = globalP1 || 'Hráč';
-    mpSend({ type: 'handshake', name: MP.myName });
+    // Send initial handshake
+    mpSend({ type: 'handshake', name: globalP1 || 'Hráč' });
   });
 
   MP.conn.on('data', (data) => {
     if(data.type === 'handshake') {
       console.log('Handshake from:', data.name);
-      MP.opponentName = data.name;
-      // Send my name back if I haven't sent handshake yet
-      if(!MP.myName) {
-        MP.myName = globalP1 || 'Hráč';
-        mpSend({ type: 'handshake', name: MP.myName });
-      }
-      // Update player cards in active game
-      updateMPPlayerCards('ttt');
-      updateMPPlayerCards('c4');
-    } else if(data.type === 'ttt_move') {
-      applyTTTMove(data.index);
-    } else if(data.type === 'c4_move') {
-      applyC4Move(data.col);
     } else if(data.type === 'game_state') {
       if(MP.onGameSync) MP.onGameSync(data.state);
     } else if(data.type === 'move') {
@@ -8484,19 +8246,11 @@ function mpCopyCode() {
 }
 
 // Helper: Check if multiplayer is active
-
+function isMPActive() { return MP.isConnected; }
 
 // ===== PWA SERVICE WORKER =====
 if('serviceWorker' in navigator) {
-  // DISABLED: Service Worker causing cache issues
-  // Unregister any existing service workers
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(registration => {
-      registration.unregister();
-      console.log('[APP] Unregistered SW:', registration.scope);
-    });
-  });
-  // navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
 <div class="confirm-overlay" id="confirmOverlay">
@@ -8525,61 +8279,19 @@ if('serviceWorker' in navigator) {
         <p style="font-size:0.85em;opacity:0.6">Alebo pošli kód:</p>
         <input type="text" id="mpRoomCode" readonly style="width:100%;padding:12px;font-size:1.2em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:10px;font-family:monospace">
         <button class="action-btn" onclick="mpCopyCode()" style="width:100%;background:rgba(255,255,255,0.1)">📋 Kopírovať kód</button>
-        <div id="mpHostStatus" style="margin-top:20px;padding:16px;background:rgba(255,210,0,0.1);border:2px solid rgba(255,210,0,0.3);border-radius:12px">
-          <div style="font-size:2em;margin-bottom:8px">⏳</div>
-          <div style="font-weight:700;color:#ffd200;font-size:1.1em">Čaká sa na pripojenie...</div>
-          <div style="opacity:0.7;font-size:0.85em;margin-top:8px">Kamarát musí naskenovať QR alebo zadať kód</div>
-        </div>
+        <p id="mpHostStatus" style="margin-top:20px;font-weight:700;color:#ffd200">⏳ Čaká sa na pripojenie...</p>
       </div>
     </div>
 
     <!-- Join -->
     <div id="mpJoin">
       <p style="opacity:0.8;margin-bottom:20px">Pripoj sa k miestnosti kamaráta:</p>
-
-      <!-- QR Scanner Button -->
-      <button class="action-btn" onclick="openQRScanner()" style="width:100%;margin-bottom:15px;background:linear-gradient(135deg,#667eea,#764ba2);font-size:1.05em">
-        📷 Naskenuj QR kód
-      </button>
-
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px">
-        <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
-        <span style="opacity:0.5;font-size:0.85em">alebo</span>
-        <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
-      </div>
-
-      <!-- Manual Input -->
       <input type="text" id="mpJoinCode" placeholder="Zadaj kód miestnosti" style="width:100%;padding:14px;font-size:1.1em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:15px;text-transform:uppercase">
       <button class="action-btn primary-btn" onclick="mpJoinRoom()" style="width:100%">🚪 Pripojiť sa</button>
       <p id="mpJoinStatus" style="margin-top:15px;opacity:0"></p>
     </div>
 
-    <!-- Connected State -->
-    <div id="mpConnected" style="display:none">
-      <div style="padding:24px;background:rgba(0,255,0,0.1);border:2px solid rgba(0,255,0,0.3);border-radius:16px;margin-bottom:20px">
-        <div style="font-size:3em;margin-bottom:10px">✅</div>
-        <h3 style="color:#00ff00;margin:0 0 10px">Pripojený!</h3>
-        <p style="opacity:0.8;margin:0">
-          Si <strong id="mpRoleText">Host</strong><br>
-          <span style="font-size:0.9em;opacity:0.7">Môžeš zavrieť toto okno a začať hrať</span>
-        </p>
-      </div>
-      <button class="action-btn danger-btn" onclick="mpDisconnect()" style="width:100%">🔌 Odpojiť</button>
-    </div>
-
     <button class="action-btn danger-btn" onclick="mpDisconnect()" id="mpDisconnectBtn" style="width:100%;margin-top:20px;display:none">🔌 Odpojiť</button>
-  </div>
-</div>
-
-<!-- QR Scanner Modal -->
-<div class="qr-scanner-modal" id="qrScannerModal">
-  <div class="qr-scanner-header">
-    <h2>📷 Naskenuj QR kód</h2>
-    <p>Nasmeruj kameru na QR kód od kamaráta</p>
-  </div>
-  <div id="qrScannerReader"></div>
-  <div class="qr-scanner-actions">
-    <button class="action-btn" onclick="closeQRScanner()" style="padding:12px 32px">Zrušiť</button>
   </div>
 </div>
 
