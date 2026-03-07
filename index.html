@@ -3104,6 +3104,31 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== REVERSI (Othello) ===== -->
+  <div class="game-area" id="reversi">
+    <div class="rules"><h3>📋 Reversi (Othello):</h3><ul>
+      <li>Polož kameň vedľa súperovho a otoč jeho kamene!</li>
+      <li>Hráč 1 ⚫ (čierny) začína, Hráč 2 ⚪ (biely)</li>
+      <li>Kto má na konci viac kameňov, vyhráva!</li>
+      <li>Platné ťahy svietia 💡</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="revP1Card"><div class="player-name-display" id="revP1Name">Hráč 1</div><div class="player-score" id="p1ScoreRev">2</div></div>
+      <div class="player-card player2" id="revP2Card"><div class="player-name-display" id="revP2Name">Hráč 2</div><div class="player-score" id="p2ScoreRev">2</div></div>
+    </div>
+    <div class="difficulty-selector" id="revAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setRevDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setRevDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setRevDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="status" id="revStatus">Hráč 1 ⚫ je na rade</div>
+    <div id="revBoard" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-width:340px;margin:10px auto;aspect-ratio:1;background:rgba(255,255,255,0.08);border-radius:10px;padding:3px"></div>
+    <div class="celebration" id="revCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn danger-btn" onclick="resetReversi()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   <!-- ===== TETRIS ===== -->
   <div class="game-area" id="tetris">
     <div class="rules"><h3>📋 Tetris - Solo:</h3><ul>
@@ -3280,7 +3305,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 21;
+const APP_VERSION = 22;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3292,7 +3317,7 @@ const gameKeys = {
   scramble:'scrambleBtn', langScramble:'langScrambleBtn', flashcard:'flashcardBtn',
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
-  chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn',
+  chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
   tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', stats:'statsBtn'
 };
 
@@ -3304,7 +3329,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', snake:'Snake', racing:'Preteky', ludo:'Človeče', dotsBoxes:'Bodky'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', ludo:'Človeče', dotsBoxes:'Bodky'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3513,7 +3538,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3524,7 +3549,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -8220,6 +8245,130 @@ function checkersAI() {
 }
 
 // =============================================================================
+// SEKCIA 29.4: REVERSI (Othello)
+// =============================================================================
+const REV={board:Array(64).fill(0),turn:1,over:false,diff:'easy'};
+// 0=empty, 1=black(P1), 2=white(P2)
+function setRevDiff(d,btn){REV.diff=d;btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function resetReversi(){
+  REV.board=Array(64).fill(0);
+  REV.board[27]=2;REV.board[28]=1;REV.board[35]=1;REV.board[36]=2;
+  REV.turn=1;REV.over=false;
+  renderReversi();
+  document.getElementById('revStatus').textContent='Hráč 1 ⚫ je na rade';
+  activeTurn('revP1Card','revP2Card',1);
+}
+function revRC(i){return[Math.floor(i/8),i%8];}
+function revIdx(r,c){return r*8+c;}
+function revFlips(board,idx,player){
+  const[r,c]=revRC(idx);
+  if(board[idx]!==0)return[];
+  const opp=player===1?2:1;
+  const dirs=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  let allFlips=[];
+  for(const[dr,dc]of dirs){
+    let flips=[];let nr=r+dr,nc=c+dc;
+    while(nr>=0&&nr<8&&nc>=0&&nc<8&&board[revIdx(nr,nc)]===opp){
+      flips.push(revIdx(nr,nc));nr+=dr;nc+=dc;
+    }
+    if(flips.length>0&&nr>=0&&nr<8&&nc>=0&&nc<8&&board[revIdx(nr,nc)]===player){
+      allFlips=allFlips.concat(flips);
+    }
+  }
+  return allFlips;
+}
+function revValidMoves(board,player){
+  const moves=[];
+  for(let i=0;i<64;i++){if(revFlips(board,i,player).length>0)moves.push(i);}
+  return moves;
+}
+function renderReversi(){
+  const el=document.getElementById('revBoard');if(!el)return;
+  const valid=REV.over?[]:revValidMoves(REV.board,REV.turn);
+  let html='';
+  for(let i=0;i<64;i++){
+    const v=REV.board[i];
+    const isValid=valid.includes(i);
+    const bg=isValid?'rgba(67,233,123,0.15)':'rgba(0,80,0,0.6)';
+    const cursor=isValid?'pointer':'default';
+    let piece='';
+    if(v===1)piece='<div style="width:80%;height:80%;border-radius:50%;background:#222;border:2px solid #444;margin:auto"></div>';
+    else if(v===2)piece='<div style="width:80%;height:80%;border-radius:50%;background:#eee;border:2px solid #ccc;margin:auto"></div>';
+    else if(isValid)piece='<div style="width:40%;height:40%;border-radius:50%;background:rgba(67,233,123,0.35);margin:auto"></div>';
+    html+=`<div onclick="revClick(${i})" style="aspect-ratio:1;background:${bg};border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:${cursor}">${piece}</div>`;
+  }
+  el.innerHTML=html;
+  const b1=REV.board.filter(x=>x===1).length;
+  const b2=REV.board.filter(x=>x===2).length;
+  document.getElementById('p1ScoreRev').textContent=b1;
+  document.getElementById('p2ScoreRev').textContent=b2;
+}
+function revClick(idx){
+  if(REV.over)return;
+  if(welcomeGameMode==='ai'&&REV.turn===2)return;
+  const flips=revFlips(REV.board,idx,REV.turn);
+  if(flips.length===0)return;
+  revPlace(idx,REV.turn,flips);
+}
+function revPlace(idx,player,flips){
+  REV.board[idx]=player;
+  flips.forEach(f=>REV.board[f]=player);
+  playSound('move');
+  REV.turn=REV.turn===1?2:1;
+  // check if next player has moves
+  let valid=revValidMoves(REV.board,REV.turn);
+  if(valid.length===0){
+    REV.turn=REV.turn===1?2:1;
+    valid=revValidMoves(REV.board,REV.turn);
+    if(valid.length===0){revGameOver();renderReversi();return;}
+  }
+  renderReversi();
+  activeTurn('revP1Card','revP2Card',REV.turn);
+  document.getElementById('revStatus').textContent=(REV.turn===1?getActiveP1Name('reversi')+' ⚫':getActiveP2Name('reversi')+' ⚪')+' je na rade';
+  if(welcomeGameMode==='ai'&&REV.turn===2&&!REV.over){
+    setTimeout(revAI,400);
+  }
+}
+function revGameOver(){
+  REV.over=true;
+  const b1=REV.board.filter(x=>x===1).length;
+  const b2=REV.board.filter(x=>x===2).length;
+  const st=document.getElementById('revStatus');
+  if(b1>b2){st.textContent=getActiveP1Name('reversi')+' vyhráva! '+b1+':'+b2;addWin(1,'reversi');celebrate('revCelebration');playSound('win');}
+  else if(b2>b1){st.textContent=getActiveP2Name('reversi')+' vyhráva! '+b2+':'+b1;addWin(2,'reversi');celebrate('revCelebration');playSound('win');}
+  else{st.textContent='Remíza! '+b1+':'+b2;addWin(0,'reversi');}
+}
+function revAI(){
+  if(REV.over||REV.turn!==2)return;
+  const valid=revValidMoves(REV.board,2);
+  if(valid.length===0)return;
+  let pick;
+  if(REV.diff==='easy'){
+    pick=valid[Math.floor(Math.random()*valid.length)];
+  } else if(REV.diff==='medium'){
+    // prefer corners > edges > most flips
+    const corners=[0,7,56,63];
+    const corner=valid.filter(m=>corners.includes(m));
+    if(corner.length>0){pick=corner[Math.floor(Math.random()*corner.length)];}
+    else{
+      let best=-1;
+      valid.forEach(m=>{const f=revFlips(REV.board,m,2).length;if(f>best){best=f;pick=m;}});
+    }
+  } else {
+    // hard: corners > edges, avoid giving corners, maximize flips + positional
+    const weights=[100,-20,10,5,5,10,-20,100,-20,-50,-5,-5,-5,-5,-50,-20,10,-5,5,1,1,5,-5,10,5,-5,1,0,0,1,-5,5,5,-5,1,0,0,1,-5,5,10,-5,5,1,1,5,-5,10,-20,-50,-5,-5,-5,-5,-50,-20,100,-20,10,5,5,10,-20,100];
+    let bestScore=-Infinity;
+    valid.forEach(m=>{
+      const f=revFlips(REV.board,m,2).length;
+      const score=weights[m]+f*2;
+      if(score>bestScore){bestScore=score;pick=m;}
+    });
+  }
+  const flips=revFlips(REV.board,pick,2);
+  revPlace(pick,2,flips);
+}
+
+// =============================================================================
 // SEKCIA 29.5: TETRIS — 2 hráči súťažia
 // =============================================================================
 const TET = {
@@ -9442,6 +9591,7 @@ function dbPlaceLine(type,i,j,player) {
 resetDB();
 resetChess();
 resetCheckers();
+resetReversi();
 resetTetris();
 resetPuzzle();
 resetMaze();
@@ -9508,6 +9658,7 @@ const MOBILE_GAMES = [
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
+  { id:'reversi',       label:'Reversi',        icon:'⚫', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
   { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
@@ -9708,14 +9859,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel'];
   aiSels.forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name'].forEach(id => {
       const el = document.getElementById(id);
       if(el) el.textContent = 'Počítač';
     });

@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~10100 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v20
+- **Current version**: v22
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
@@ -44,7 +44,7 @@ resetMem();    // MP.isConnected check works
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 
-## Games (29 total)
+## Games (30 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piškvorky (3×3, 4×4, 5×5, 10×10) 🌐
@@ -58,6 +58,7 @@ resetMem();    // MP.isConnected check works
 - Človeče nehnevaj sa 🌐 (AI: easy/medium/hard)
 - Puzzle Scramble
 - Mini Labyrint (AI: easy/medium/hard)
+- Reversi/Othello (AI: easy/medium/hard)
 
 ### 2 Players Only (mode:'pvp')
 - Kvíz (17 tém: vseobecne, jedlo, zvierata, psy, kone, superhrdinovia, zemepis, historia, biologia, veda, sport, filmy, hudba, slovensko, hlavne mesta)
@@ -74,7 +75,7 @@ resetMem();    // MP.isConnected check works
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v20)
+## Features (v13-v22)
 
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
