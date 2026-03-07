@@ -74,9 +74,18 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v52**
+Aktuálna verzia: **v53**
 
 ## Changelog
+
+### v53 (2026-03-07)
+- 🎮 **Tetris REMOVED from 2-player mode grid**
+  - Tetris now only shows in default game grid (no mode selected)
+  - Does NOT show when "2 Hráči" or "vs Počítač" selected
+  - Changed welcomeGameMode default from 'pvp' to '' (empty)
+  - Removed 'active' class from "2 Hráči" button on welcome screen
+  - Filter logic: 'always' games (Tetris, Stats) only show when mode=''
+  - User: "a tetris ako hra pri dvoch hracoch nema byt"
 
 ### v52 (2026-03-07)
 - 🎮 **Tetris: ArrowUp rotácia + info text v MP modal**

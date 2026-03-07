@@ -1823,7 +1823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="welcome-title">Hrajme si!</div>
     <div class="welcome-sub">Lukáško &amp; Natálka — Premium Vydanie</div>
     <div class="welcome-mode-pick">
-      <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
+      <button class="welcome-mode-btn" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
       <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
     </div>
     <div class="welcome-names">
@@ -3016,7 +3016,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 52;
+const APP_VERSION = 53;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8118,9 +8118,11 @@ function renderMobileGrid() {
   const grid = document.getElementById('mobileGameGrid');
   if(!grid) return;
   const filtered = MOBILE_GAMES.filter(g => {
-    if(g.mode==='always') return true;
+    // Solo-only games (Tetris, Stats) - skip if mode selected
+    if(g.mode==='always') return !welcomeGameMode || welcomeGameMode==='';
     if(welcomeGameMode==='ai') return g.mode==='both';
-    return true; // pvp shows all
+    if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp';
+    return true;
   });
   grid.innerHTML = filtered.map(g =>
     `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
@@ -8155,7 +8157,7 @@ const _origTS = toggleSound; toggleSound = function(){ _origTS(); _updateMobileT
 // Resize handler — no longer needed since 3-level nav is always active
 
 // ===== WELCOME SCREEN =====
-let welcomeGameMode = 'pvp';
+let welcomeGameMode = '';
 
 function setWelcomeMode(mode) {
   welcomeGameMode = mode;
