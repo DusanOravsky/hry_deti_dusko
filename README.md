@@ -69,9 +69,18 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v41**
+Aktuálna verzia: **v42**
 
 ## Changelog
+
+### v42 (2026-03-07)
+- 🔧 **HOTFIX: Removed duplicate MP functions**
+  - ROOT CAUSE: Old MP code from v27 survived rollback
+  - Removed 211 lines of old MP implementation
+  - Functions were defined twice: mpCreateRoom, mpJoinRoom, etc.
+  - Old code used non-existent variables (MP.peer, MP.isHost, etc.)
+  - Kept only new simple UI-only functions from v41
+  - "Vytvoriť miestnosť" button now works
 
 ### v41 (2026-03-07)
 - 🚀 **MP Krok 2/5: Modal UI**
