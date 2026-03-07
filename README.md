@@ -69,9 +69,12 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v23**
+Aktuálna verzia: **v24**
 
 ## Changelog
+
+### v24 (2026-03-07)
+- Fix: V štatistikách sa teraz zobrazujú správne mená hráčov (namiesto "Hráč 1/2")
 
 ### v23 (2026-03-07)
 - 🎮 **Tetris AI režim** - 1 hráč vs počítač
