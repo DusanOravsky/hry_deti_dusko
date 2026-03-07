@@ -124,10 +124,10 @@ body.light {
   .board-15x15 .cell { width:28px; height:28px; font-size:0.8em; }
 
   /* CONNECT 4 */
-  .board-7x6 { grid-template-columns:repeat(7,40px); grid-template-rows:repeat(6,40px); gap:4px; padding:8px; border-radius:12px; }
-  .slot { width:40px; height:40px; }
-  .c4-col-btns { grid-template-columns:repeat(7,40px); gap:4px; }
-  .c4-col-btn { width:40px; font-size:0.9em; padding:4px 0; }
+  .board-7x6 { grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(6,1fr); gap:3px; padding:6px; border-radius:10px; width:100%; max-width:320px; margin:10px auto; }
+  .slot { width:100%; aspect-ratio:1; height:auto; }
+  .c4-col-btns { grid-template-columns:repeat(7,1fr); gap:3px; width:100%; max-width:320px; margin:0 auto 4px; }
+  .c4-col-btn { width:100%; font-size:0.9em; padding:4px 0; }
 
   /* BATTLESHIP */
   .bs-grid { gap:2px; padding:6px; }
@@ -810,20 +810,19 @@ body.light .player-card input.player-name-input {
 .memory-card.matched { opacity:0.4; cursor:not-allowed; border-color:#43e97b; }
 
 /* CONNECT 4 */
-.c4-wrapper { overflow-x:auto; touch-action:pan-y; }
 .board-7x6 {
   display:grid;
-  grid-template-columns:repeat(7,55px);
-  grid-template-rows:repeat(6,55px);
-  gap:8px;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
   margin:15px auto;
   background:linear-gradient(135deg,#667eea,#764ba2);
-  padding:12px;
+  padding:10px;
   border-radius:15px;
-  width:fit-content;
+  width:100%;
+  max-width:420px;
 }
 .slot {
-  width:55px; height:55px;
+  aspect-ratio:1;
   border-radius:50%;
   background:rgba(255,255,255,0.15);
   cursor:pointer;
@@ -833,9 +832,9 @@ body.light .player-card input.player-name-input {
 .slot:hover { transform:scale(1.08); }
 .slot.player1 { background:radial-gradient(circle,#ff6b6b,#f5576c); border-color:#f5576c; box-shadow:0 0 10px rgba(245,87,108,0.5); }
 .slot.player2 { background:radial-gradient(circle,#74b9ff,#4facfe); border-color:#4facfe; box-shadow:0 0 10px rgba(79,172,254,0.5); }
-.c4-col-btns { display:grid; grid-template-columns:repeat(7,55px); gap:8px; margin:0 auto 5px; width:fit-content; }
+.c4-col-btns { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:0 auto 5px; width:100%; max-width:420px; }
 .c4-col-btn {
-  width:55px; padding:5px 0;
+  padding:5px 0;
   background:rgba(255,255,255,0.1);
   border:1px solid rgba(255,255,255,0.2);
   border-radius:8px;
@@ -1012,7 +1011,7 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 @keyframes c4drop { from{transform:translateY(-320px);opacity:0.3} to{transform:translateY(0);opacity:1} }
 
 /* BOARD CENTER */
-.board-center { display:flex; justify-content:center; overflow-x:auto; touch-action:pan-x pan-y; }
+.board-center { display:flex; justify-content:center; }
 
 /* WIN HIGHLIGHT */
 .cell.win-cell { background:rgba(255,215,0,0.35)!important; border-color:#ffd700!important; box-shadow:0 0 12px rgba(255,215,0,0.6); animation:pulse-win 0.6s infinite alternate; }
@@ -1961,11 +1960,9 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     </div>
     <div class="status" id="c4Status">Hráč 1 na rade!</div>
     <div class="celebration" id="c4Celebration">🎉</div>
-    <div class="board-center">
-      <div>
-        <div class="c4-col-btns" id="c4ColBtns"></div>
-        <div class="board-7x6" id="c4Board"></div>
-      </div>
+    <div style="padding:0 10px">
+      <div class="c4-col-btns" id="c4ColBtns"></div>
+      <div class="board-7x6" id="c4Board"></div>
     </div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="resetC4()">🔄 Nová hra</button>
