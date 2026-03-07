@@ -1276,16 +1276,6 @@ body.light .confirm-box { background:#fff; border-color:rgba(0,0,0,0.1); color:#
 .confirm-yes { background:linear-gradient(135deg,#f5576c,#c0392b)!important; }
 .confirm-no { background:rgba(255,255,255,0.1)!important; border:1px solid rgba(255,255,255,0.2)!important; }
 
-/* MULTIPLAYER OVERLAY */
-.multiplayer-box { background:#1a1a2e; border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:32px; text-align:center; max-width:420px; width:90%; position:relative; max-height:90vh; overflow-y:auto; }
-body.light .multiplayer-box { background:#fff; border-color:rgba(0,0,0,0.1); color:#222; }
-body.light .multiplayer-box input { background:rgba(0,0,0,0.05)!important; color:#222!important; border-color:rgba(0,0,0,0.15)!important; }
-body.light .multiplayer-box input::placeholder { color:rgba(0,0,0,0.4); }
-.multiplayer-close { position:absolute; top:12px; right:12px; background:none; border:none; font-size:1.8em; color:rgba(255,255,255,0.5); cursor:pointer; padding:4px 10px; line-height:1; }
-.multiplayer-close:hover { color:rgba(255,255,255,0.9); }
-body.light .multiplayer-close { color:rgba(0,0,0,0.4); }
-body.light .multiplayer-close:hover { color:rgba(0,0,0,0.8); }
-#mpQrCode { display:flex; justify-content:center; align-items:center; }
 body.light .stats-tile { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.08); }
 body.light .stats-tile-val { color:#222; }
 body.light .stats-bar-track { background:rgba(0,0,0,0.07); }
@@ -1773,12 +1763,6 @@ body.light .welcome-mode-btn { background:rgba(0,0,0,0.04); border-color:rgba(0,
 body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-color:transparent; }
 body.light .welcome-skip { color:rgba(0,0,0,0.3); }
 body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
-.welcome-mp-btn {
-  width:100%; padding:12px; border:2px solid rgba(102,126,234,0.4); border-radius:12px; cursor:pointer;
-  font-size:0.95em; font-weight:700; color:rgba(102,126,234,0.9);
-  background:rgba(102,126,234,0.1); transition:all 0.25s; margin-bottom:12px; box-sizing:border-box;
-}
-.welcome-mp-btn:hover { background:rgba(102,126,234,0.2); transform:translateY(-1px); }
 
 /* Welcome stats */
 .welcome-stats {
@@ -1853,7 +1837,6 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <button class="welcome-mp-btn" onclick="mpOpen()"><span id="mpStatusIcon">🌐</span> Online Multiplayer</button>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Memory</span>
@@ -3033,7 +3016,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 44;
+const APP_VERSION = 45;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3566,8 +3549,6 @@ const TTT = {
 
 function setTTTMode(m,btn) {
   TTT.mode=m;
-  anyGameInAIMode = (m==='ai');
-  updateMPButtonVisibility();
   document.querySelectorAll('#ticTacToe .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tttAISel').style.display = m==='ai'?'flex':'none';
@@ -4192,8 +4173,6 @@ const C4 = { mode:'pvp', diff:'easy', board:[], player:1, over:false, s1:0, s2:0
 
 function setC4Mode(m,btn) {
   C4.mode=m;
-  anyGameInAIMode = (m==='ai');
-  updateMPButtonVisibility();
   document.querySelectorAll('#connect4 .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('c4AISel').style.display=m==='ai'?'flex':'none';
@@ -8082,14 +8061,10 @@ function mobileGoTo(level, gameId) {
 
   if(level === 1) {
     _returnGameToParent();
-    anyGameInAIMode = false;
-    updateMPButtonVisibility();
     ws.style.display = '';
     ws.classList.remove('hide');
   } else if(level === 2) {
     _returnGameToParent();
-    anyGameInAIMode = false;
-    updateMPButtonVisibility();
     ws.classList.add('hide');
     ws.style.display = 'none';
     picker.classList.add('active');
@@ -8249,19 +8224,6 @@ const MP = {
 };
 
 // Track if any game is in AI mode (hide MP button when true)
-let anyGameInAIMode = false;
-
-function updateMPButtonVisibility() {
-  const mpBtn = document.querySelector('.welcome-mp-btn');
-  if (!mpBtn) return;
-
-  if (anyGameInAIMode) {
-    mpBtn.style.display = 'none';
-  } else {
-    mpBtn.style.display = '';
-  }
-}
-
 // ===== MP MODAL CONTROLS =====
 function openMPModal() {
   document.getElementById('mpOverlay').classList.add('active');

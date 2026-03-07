@@ -69,9 +69,18 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v44**
+Aktuálna verzia: **v45**
 
 ## Changelog
+
+### v45 (2026-03-07)
+- 🧹 **Complete cleanup of old v27 MP code**
+  - Removed old CSS: .multiplayer-box, .multiplayer-close, #mpQrCode
+  - Removed old HTML: welcome-mp-btn with mpOpen() call
+  - Removed old JS: updateMPButtonVisibility(), anyGameInAIMode variable
+  - All old v27 remnants now completely removed
+  - Only new floating button + modal system remains
+  - User: "tak to vsetko poriadne oprav"
 
 ### v44 (2026-03-07)
 - 🔧 **HOTFIX: Removed duplicate old modal structure**
