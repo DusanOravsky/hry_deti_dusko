@@ -120,8 +120,8 @@ body.light {
   .cell { font-size:1.6em; border-radius:10px; }
 
   /* PIŠKVORKY 15x15 */
-  .board-15x15 { gap:2px; max-width:100%; overflow-x:auto; }
-  .board-15x15 .cell { width:28px; height:28px; font-size:0.8em; }
+  .board-15x15 { grid-template-columns:repeat(15,1fr); grid-template-rows:repeat(15,1fr); gap:1px; max-width:100%; padding:4px; touch-action:pan-y; }
+  .board-15x15 .cell { width:auto; height:auto; aspect-ratio:1; font-size:0.65em; min-width:0; }
 
   /* CONNECT 4 */
   .board-7x6 { grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(6,1fr); gap:3px; padding:6px; border-radius:10px; width:100%; max-width:320px; margin:10px auto; }
@@ -601,7 +601,7 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 
 /* PUZZLE SCRAMBLE */
 .puzzle-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
-.puzzle-board { display:inline-grid; grid-template-columns:repeat(4,1fr); gap:3px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); padding:3px; max-width:320px; width:100%; }
+.puzzle-board { display:inline-grid; grid-template-columns:repeat(4,1fr); gap:3px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); padding:3px; max-width:320px; width:100%; touch-action:pan-y; }
 .puzzle-tile { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:1.8em; border-radius:8px; cursor:pointer; transition:transform 0.15s, background 0.15s; user-select:none; position:relative; }
 .puzzle-tile:active { transform:scale(0.93); }
 .puzzle-tile.empty { background:rgba(0,0,0,0.2)!important; cursor:default; }
@@ -759,11 +759,11 @@ body.light .player-card input.player-name-input {
 .board-4x4 { grid-template-columns:repeat(4,68px); grid-template-rows:repeat(4,68px); }
 .board-5x5 { grid-template-columns:repeat(5,58px); grid-template-rows:repeat(5,58px); }
 .board-15x15 {
-  grid-template-columns:repeat(15,38px);
-  grid-template-rows:repeat(15,38px);
-  overflow:auto;
-  max-width:100%;
-  padding:10px;
+  grid-template-columns:repeat(15,1fr);
+  max-width:580px;
+  width:100%;
+  padding:6px;
+  touch-action:pan-y;
 }
 
 .cell {
@@ -787,7 +787,7 @@ body.light .player-card input.player-name-input {
 .cell.disabled { cursor:not-allowed; }
 .board-4x4 .cell { font-size:1.5em; }
 .board-5x5 .cell { font-size:1.3em; }
-.board-15x15 .cell { font-size:1em; border-radius:5px; border-width:1px; }
+.board-15x15 .cell { font-size:1em; border-radius:5px; border-width:1px; aspect-ratio:1; width:auto; height:auto; min-width:0; }
 
 /* MEMORY */
 .memory-board { display:grid; gap:10px; margin:15px auto; max-width:420px; touch-action:pan-y; }
@@ -820,6 +820,7 @@ body.light .player-card input.player-name-input {
   border-radius:15px;
   width:100%;
   max-width:420px;
+  touch-action:pan-y;
 }
 .slot {
   aspect-ratio:1;
