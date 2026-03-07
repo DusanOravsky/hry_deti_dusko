@@ -230,8 +230,9 @@ body.light {
   border-bottom:1px solid rgba(255,255,255,0.08);
   position:sticky;
   top:0;
-  z-index:100;
+  z-index:1000;
   backdrop-filter:blur(12px);
+  flex-shrink:0;
 }
 body.light .mobile-topbar {
   background:rgba(255,255,255,0.7);
@@ -7501,21 +7502,25 @@ function _returnGameToParent() {
 function mobileGoTo(level, gameId) {
   const picker = document.getElementById('mobileGamePicker');
   const view   = document.getElementById('mobileGameView');
+  const ws = document.getElementById('welcomeScreen');
   picker.classList.remove('active');
   view.classList.remove('active');
 
   if(level === 1) {
     _returnGameToParent();
-    const ws = document.getElementById('welcomeScreen');
     ws.style.display = '';
     ws.classList.remove('hide');
   } else if(level === 2) {
     _returnGameToParent();
+    ws.classList.add('hide');
+    ws.style.display = 'none';
     picker.classList.add('active');
     renderMobileGrid();
     _updateMobileChips();
   } else if(level === 3 && gameId) {
     _returnGameToParent();
+    ws.classList.add('hide');
+    ws.style.display = 'none';
     view.classList.add('active');
     // Set title
     const gDef = MOBILE_GAMES.find(g => g.id === gameId);
