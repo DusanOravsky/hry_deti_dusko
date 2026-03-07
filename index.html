@@ -1835,7 +1835,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <div class="welcome-box">
     <div class="welcome-emoji">🎮</div>
     <div class="welcome-title">Hrajme si!</div>
-    <div class="welcome-sub">Lukáško &amp; Natálka — Premium Vydanie</div>
+    <div class="welcome-sub" id="welcomeSub">Lukáško &amp; Natálka — Premium Vydanie</div>
     <div class="welcome-mode-pick">
       <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
       <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
@@ -1843,11 +1843,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="welcome-names">
       <div class="welcome-name-group">
         <label>🔴 Hráč 1</label>
-        <input class="welcome-name-input" id="wP1Input" value="Lukáško" maxlength="12" placeholder="Meno hráča 1">
+        <input class="welcome-name-input" id="wP1Input" value="Lukáško" maxlength="12" placeholder="Meno hráča 1" oninput="updateWelcomeSub()">
       </div>
       <div class="welcome-name-group" id="wP2Group">
         <label>🔵 Hráč 2</label>
-        <input class="welcome-name-input" id="wP2Input" value="Natálka" maxlength="12" placeholder="Meno hráča 2">
+        <input class="welcome-name-input" id="wP2Input" value="Natálka" maxlength="12" placeholder="Meno hráča 2" oninput="updateWelcomeSub()">
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
@@ -8213,6 +8213,13 @@ const _origTS = toggleSound; toggleSound = function(){ _origTS(); _updateMobileT
 // ===== WELCOME SCREEN =====
 let welcomeGameMode = 'pvp';
 
+function updateWelcomeSub() {
+  const p1 = document.getElementById('wP1Input').value.trim() || 'Hráč 1';
+  const p2 = document.getElementById('wP2Input').value.trim() || 'Hráč 2';
+  const sub = document.getElementById('welcomeSub');
+  if(sub) sub.textContent = p1 + ' & ' + p2 + ' — Premium Vydanie';
+  document.title = 'Hrajme si ' + p1 + ' a ' + p2;
+}
 function setWelcomeMode(mode) {
   welcomeGameMode = mode;
   document.getElementById('wMode2p').classList.toggle('active', mode==='pvp');
