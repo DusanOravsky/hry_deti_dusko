@@ -1823,7 +1823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="welcome-title">Hrajme si!</div>
     <div class="welcome-sub">Lukáško &amp; Natálka — Premium Vydanie</div>
     <div class="welcome-mode-pick">
-      <button class="welcome-mode-btn" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
+      <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
       <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
     </div>
     <div class="welcome-names">
@@ -2869,7 +2869,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="rules"><h3>📋 Obesenec:</h3><ul>
       <li>Hráč 1 háda slovo — kliká na písmená</li>
       <li>Každé nesprávne písmeno = časť panáčika</li>
-      <li>6 chýb a prehrávaš! Uhádni slovo skôr!</li>
+      <li>8 chýb a prehrávaš! Uhádni slovo skôr!</li>
+      <li>Nápoveda: klikni 💡 pre odhalenie písmena</li>
       <li>Hráči sa striedajú</li>
     </ul></div>
     <div class="difficulty-selector">
@@ -2888,6 +2889,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <canvas id="hmCanvas" width="200" height="200" style="margin:10px auto;display:block;border-radius:12px;background:rgba(255,255,255,0.05)"></canvas>
       <div style="font-size:2em;letter-spacing:8px;font-weight:900;margin:16px 0;font-family:monospace" id="hmWord"></div>
       <div style="font-size:0.9em;opacity:0.6;margin:6px 0" id="hmHint"></div>
+      <div style="margin:8px 0"><button class="action-btn" onclick="hmUseHint()" id="hmHintBtn" style="font-size:0.9em;padding:8px 16px">💡 Nápoveda</button></div>
       <div class="ghost-keyboard" id="hmKeyboard"></div>
     </div>
     <div class="celebration" id="hmCelebration">🎉</div>
@@ -2900,7 +2902,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <!-- ===== VYŠŠIE NIŽŠIE ===== -->
   <div class="game-area" id="higherLower">
     <div class="rules"><h3>📋 Vyššie alebo Nižšie:</h3><ul>
-      <li>Vidíš kartu — bude ďalšia vyššia alebo nižšia?</li>
+      <li>Vidíš číslo — bude ďalšie vyššie alebo nižšie?</li>
       <li>Správny tip = 1 bod, zlý = koniec kola</li>
       <li>Hráči sa striedajú — kto získa viac bodov!</li>
     </ul></div>
@@ -3001,11 +3003,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div class="tetris-board" id="tetBoard" style="margin:0 auto"></div>
         <div class="tetris-next" id="tetNext"></div>
         <!-- Mobile Controls -->
-        <div style="display:flex;gap:8px;justify-content:center;margin-top:15px;flex-wrap:wrap">
-          <button class="action-btn" onclick="tetMove(-1)" style="width:60px;padding:12px;font-size:1.5em">←</button>
-          <button class="action-btn" onclick="tetRotate()" style="width:60px;padding:12px;font-size:1.5em">↑</button>
-          <button class="action-btn" onclick="tetMove(1)" style="width:60px;padding:12px;font-size:1.5em">→</button>
-          <button class="action-btn" onclick="tetDrop()" style="width:60px;padding:12px;font-size:1.5em">↓</button>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+          <button class="action-btn" onclick="tetMove(-1)" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">◀</button>
+          <button class="action-btn" onclick="tetRotate()" style="width:70px;padding:14px;font-size:1.8em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">🔄</button>
+          <button class="action-btn" onclick="tetMove(1)" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">▶</button>
+          <button class="action-btn" onclick="tetDrop()" style="width:70px;padding:14px;font-size:1.8em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.6);border-radius:12px">⬇</button>
         </div>
       </div>
     </div>
@@ -3023,7 +3025,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 55;
+const APP_VERSION = 56;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -6643,10 +6645,10 @@ function resetST(){
 // =============================================================================
 // SEKCIA 23: SPAM CLICK
 // =============================================================================
-const SC = { player:1, s1:0, s2:0, count:0, timer:null, running:false, p1Score:0, p2Score:0 };
+const SC = { player:1, s1:0, s2:0, count:0, timer:null, running:false, p1Score:0, p2Score:0, over:false };
 
 function startSC() {
-  SC.count=0; SC.player=1; SC.s1=0; SC.s2=0; SC.p1Score=0; SC.p2Score=0;
+  SC.count=0; SC.player=1; SC.s1=0; SC.s2=0; SC.p1Score=0; SC.p2Score=0; SC.over=false;
   document.getElementById('p1ScoreSC').textContent='0';
   document.getElementById('p2ScoreSC').textContent='0';
   document.getElementById('scGameBox').style.display='block';
@@ -6654,7 +6656,7 @@ function startSC() {
   startSCRound();
 }
 function startSCRound() {
-  SC.count=0; SC.running=false;
+  SC.count=0; SC.running=false; SC.waiting=false;
   document.getElementById('scCount').textContent='0';
   document.getElementById('scTimer').textContent='5';
   document.getElementById('scStatus').textContent=(SC.player===1?getP1Name('sc'):getP2Name('sc'))+' — klikaj čo najrýchlejšie!';
@@ -6662,6 +6664,7 @@ function startSCRound() {
   document.getElementById('scPad').style.background='linear-gradient(135deg,#636e72,#2d3436)';
 }
 function scTap() {
+  if(SC.over||SC.waiting) return;
   if(!SC.running) {
     SC.running=true; let t=5;
     document.getElementById('scPad').textContent='👆 KLIKAJ!';
@@ -6681,12 +6684,13 @@ function scRoundEnd() {
   if(SC.player===1) {
     SC.p1Score=SC.count;
     document.getElementById('p1ScoreSC').textContent=SC.p1Score;
-    SC.player=2; activeTurn('scP1Card','scP2Card',2);
+    SC.player=2; SC.waiting=true; activeTurn('scP1Card','scP2Card',2);
     document.getElementById('scStatus').textContent=getP1Name('sc')+': '+SC.p1Score+' klikov! Teraz '+getP2Name('sc')+'!';
     setTimeout(startSCRound,1500);
   } else {
     SC.p2Score=SC.count;
     document.getElementById('p2ScoreSC').textContent=SC.p2Score;
+    SC.over=true;
     const n1=getP1Name('sc'),n2=getP2Name('sc');
     if(SC.p1Score>SC.p2Score){document.getElementById('scStatus').textContent='🏆 '+n1+' vyhral! ('+SC.p1Score+' vs '+SC.p2Score+')';addWin(1,'spamClick');celebrate('scCelebration');}
     else if(SC.p2Score>SC.p1Score){document.getElementById('scStatus').textContent='🏆 '+n2+' vyhral! ('+SC.p2Score+' vs '+SC.p1Score+')';addWin(2,'spamClick');celebrate('scCelebration');}
@@ -6695,7 +6699,7 @@ function scRoundEnd() {
   }
 }
 function resetSC() {
-  clearInterval(SC.timer); SC.running=false; SC.player=1; SC.count=0;
+  clearInterval(SC.timer); SC.running=false; SC.over=false; SC.waiting=false; SC.player=1; SC.count=0;
   document.getElementById('p1ScoreSC').textContent='0';
   document.getElementById('p2ScoreSC').textContent='0';
   document.getElementById('scStatus').textContent='Klikni Štart!';
@@ -6973,7 +6977,7 @@ function renderHM() {
     else display+='_ ';
   }
   document.getElementById('hmWord').textContent=display.trim();
-  const lives='❤️'.repeat(6-HM.errors)+'🖤'.repeat(HM.errors);
+  const lives='❤️'.repeat(8-HM.errors)+'🖤'.repeat(HM.errors);
   document.getElementById('hmLives').textContent=lives;
 }
 function buildHMKeyboard() {
@@ -6997,7 +7001,9 @@ function drawHangman(errors) {
   if(errors>=3){ctx.beginPath();ctx.moveTo(130,80);ctx.lineTo(130,130);ctx.stroke();}
   if(errors>=4){ctx.beginPath();ctx.moveTo(130,90);ctx.lineTo(110,115);ctx.stroke();}
   if(errors>=5){ctx.beginPath();ctx.moveTo(130,90);ctx.lineTo(150,115);ctx.stroke();}
-  if(errors>=6){ctx.beginPath();ctx.moveTo(130,130);ctx.lineTo(110,160);ctx.stroke();ctx.beginPath();ctx.moveTo(130,130);ctx.lineTo(150,160);ctx.stroke();}
+  if(errors>=6){ctx.beginPath();ctx.moveTo(130,130);ctx.lineTo(110,160);ctx.stroke();}
+  if(errors>=7){ctx.beginPath();ctx.moveTo(130,130);ctx.lineTo(150,160);ctx.stroke();}
+  if(errors>=8){ctx.fillStyle='rgba(255,255,255,0.7)';ctx.beginPath();ctx.arc(125,62,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(135,62,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(130,72,4,0,Math.PI);ctx.stroke();}
 }
 function hmGuessLetter(ch,btn) {
   if(HM.roundOver) return;
@@ -7017,12 +7023,36 @@ function hmGuessLetter(ch,btn) {
     document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word;
     document.getElementById('hmHint').style.color='#43e97b';
     setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
-  } else if(HM.errors>=6) {
+  } else if(HM.errors>=8) {
     HM.roundOver=true; playSound('wrong');
     document.getElementById('hmHint').textContent='💀 Prehral! Slovo bolo: '+HM.word;
     document.getElementById('hmHint').style.color='#f5576c';
     document.getElementById('hmWord').textContent=HM.word.split('').join(' ');
     setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2500);
+  }
+}
+function hmUseHint() {
+  if(HM.roundOver) return;
+  const unrevealed=[...HM.word].filter(c=>!HM.guessed.has(c));
+  if(unrevealed.length===0) return;
+  const hint=unrevealed[Math.floor(Math.random()*unrevealed.length)];
+  HM.guessed.add(hint);
+  // Disable keyboard button for this letter
+  const keys=document.querySelectorAll('#hmKeyboard .ghost-key');
+  keys.forEach(k=>{if(k.textContent===hint){k.disabled=true;k.style.background='rgba(255,200,0,0.3)';k.style.borderColor='#ffd200';}});
+  playSound('correct');
+  renderHM();
+  document.getElementById('hmHint').textContent='💡 Nápoveda: písmeno '+hint;
+  document.getElementById('hmHint').style.color='#ffd200';
+  // Check if word complete after hint
+  const allRevealed=[...HM.word].every(c=>HM.guessed.has(c));
+  if(allRevealed) {
+    HM.roundOver=true; playSound('win');
+    if(HM.player===1){HM.s1++;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
+    else{HM.s2++;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
+    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word;
+    document.getElementById('hmHint').style.color='#43e97b';
+    setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
   }
 }
 function resetHM() {
@@ -7040,8 +7070,7 @@ function resetHM() {
 // =============================================================================
 const HL = { player:1, s1:0, s2:0, current:0, streak:0, over:false, p1Best:0, p2Best:0 };
 
-const HL_CARDS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-const HL_VALUES={A:1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,J:11,Q:12,K:13};
+const HL_CARDS=[1,2,3,4,5,6,7,8,9,10,11,12,13];
 
 function startHL() {
   HL.player=1; HL.s1=0; HL.s2=0; HL.p1Best=0; HL.p2Best=0;
@@ -7059,13 +7088,13 @@ function hlNewRound() {
   document.getElementById('hlNextCard').textContent='?';
   document.getElementById('hlStreak').textContent='Séria: 0';
   document.getElementById('hlRoundInfo').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' hrá!';
-  document.getElementById('hlStatus').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' — bude ďalšia karta vyššia alebo nižšia?';
+  document.getElementById('hlStatus').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' — bude ďalšie číslo vyššie alebo nižšie?';
   activeTurn('hlP1Card','hlP2Card',HL.player);
 }
 function hlGuess(dir) {
   if(HL.over) return;
   const next=HL_CARDS[Math.floor(Math.random()*HL_CARDS.length)];
-  const curVal=HL_VALUES[HL.current], nextVal=HL_VALUES[next];
+  const curVal=HL.current, nextVal=next;
   document.getElementById('hlNextCard').textContent=next;
   const correct=(dir==='higher'&&nextVal>=curVal)||(dir==='lower'&&nextVal<=curVal);
   if(correct) {
@@ -8064,7 +8093,7 @@ const MOBILE_GAMES = [
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
-  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'always' },
+  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
@@ -8127,8 +8156,10 @@ function renderMobileGrid() {
   const grid = document.getElementById('mobileGameGrid');
   if(!grid) return;
   const filtered = MOBILE_GAMES.filter(g => {
-    // Solo-only games (Tetris, Stats) - skip if mode selected
-    if(g.mode==='always') return !welcomeGameMode || welcomeGameMode==='';
+    // Stats - show always regardless of mode
+    if(g.mode==='always') return true;
+    // Solo games (Tetris) - show in default and AI modes
+    if(g.mode==='solo') return !welcomeGameMode || welcomeGameMode==='' || welcomeGameMode==='ai';
     if(welcomeGameMode==='ai') return g.mode==='both';
     if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp';
     return true;
@@ -8166,7 +8197,7 @@ const _origTS = toggleSound; toggleSound = function(){ _origTS(); _updateMobileT
 // Resize handler — no longer needed since 3-level nav is always active
 
 // ===== WELCOME SCREEN =====
-let welcomeGameMode = '';
+let welcomeGameMode = 'pvp';
 
 function setWelcomeMode(mode) {
   welcomeGameMode = mode;
