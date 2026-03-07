@@ -69,9 +69,15 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v34**
+Aktuálna verzia: **v35**
 
 ## Changelog
+
+### v35 (2026-03-07)
+- 🔥 **HOTFIX: JavaScript crash fixed**
+  - clearAllCache() function was missing (button existed but function didn't)
+  - Caused entire page to be non-interactive
+  - Fixed: function added before mpOpen()
 
 ### v34 (2026-03-07)
 - 🔧 **NUCLEAR FIX: Welcome screen z-index war**
