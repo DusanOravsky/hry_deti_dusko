@@ -69,9 +69,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v42**
+Aktuálna verzia: **v43**
 
 ## Changelog
+
+### v43 (2026-03-07)
+- 🔧 **HOTFIX: Restored missing modal control functions**
+  - ROOT CAUSE: v42 cleanup accidentally removed v41 modal functions
+  - Added back: openMPModal(), closeMPModal(), closeMPModalOnOverlay()
+  - Floating MP button now works again
+  - These control the MP modal overlay visibility
+  - User symptom: "na ten modry globus mi teraz nejde kliknut"
 
 ### v42 (2026-03-07)
 - 🔧 **HOTFIX: Removed duplicate MP functions**

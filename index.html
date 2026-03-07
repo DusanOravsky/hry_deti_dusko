@@ -3033,7 +3033,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 42;
+const APP_VERSION = 43;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8259,6 +8259,21 @@ function updateMPButtonVisibility() {
     mpBtn.style.display = 'none';
   } else {
     mpBtn.style.display = '';
+  }
+}
+
+// ===== MP MODAL CONTROLS =====
+function openMPModal() {
+  document.getElementById('mpOverlay').classList.add('active');
+}
+
+function closeMPModal() {
+  document.getElementById('mpOverlay').classList.remove('active');
+}
+
+function closeMPModalOnOverlay(event) {
+  if(event.target === document.getElementById('mpOverlay')) {
+    closeMPModal();
   }
 }
 
