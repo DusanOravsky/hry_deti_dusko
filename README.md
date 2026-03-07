@@ -69,9 +69,21 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v37**
+Aktuálna verzia: **v38**
 
 ## Changelog
+
+### v38 (2026-03-07)
+- 🌐 **Online Multiplayer re-implemented (carefully)**
+  - Based on v27 (working MP) + improvements
+  - ✅ MP Visual state: blue (disconnected) → green pulsing (connected)
+  - ✅ MP Name synchronization: obaja hráči vidia správne mená
+  - ✅ QR scanner + manual input
+  - ✅ Host/Guest role indicator
+  - ✅ Working in: Piškvorky & Connect4
+  - **NO changes to welcome screen** (learned from v28-v36 mistakes)
+  - Green pulsing animation when connected
+  - Icon changes: 🌐 → ✅
 
 ### v37 (2026-03-07)
 - 🔄 **ROLLBACK to v26 (known working version)**
