@@ -7311,13 +7311,13 @@ const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump
 
 function resetCheckers() {
   DK.board=Array(64).fill('');
-  for(let i=0;i<12;i++){
+  for(let i=0;i<8;i++){
     const r=Math.floor(i/4), c=(i%4)*2+(r%2===0?1:0);
-    DK.board[r*8+c]='b'; // black top (rows 0-2)
+    DK.board[r*8+c]='b'; // black top (rows 0-1)
   }
-  for(let i=0;i<12;i++){
-    const ri=5+Math.floor(i/4), c=(i%4)*2+(ri%2===0?1:0);
-    DK.board[ri*8+c]='r'; // red bottom (rows 5-7)
+  for(let i=0;i<8;i++){
+    const ri=6+Math.floor(i/4), c=(i%4)*2+(ri%2===0?1:0);
+    DK.board[ri*8+c]='r'; // red bottom (rows 6-7)
   }
   DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null;
   document.getElementById('dkStatus').textContent=getP1Name('dk')+' (🔴) na ťahu';
