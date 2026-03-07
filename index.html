@@ -4989,11 +4989,12 @@ function showQuizQ() {
       else{QUIZ.s2++;document.getElementById('p2ScoreQuiz').textContent=QUIZ.s2;}
       document.getElementById('quizStatus').textContent='✅ Správne!';
       playSound('click');
+      setTimeout(()=>{QUIZ.idx++;QUIZ.player=QUIZ.player===1?2:1;showQuizQ();},1500);
     } else {
-      document.getElementById('quizStatus').textContent='❌ '+(selectedBtn?'Nesprávne!':'Čas vypršal!');
+      document.getElementById('quizStatus').textContent='❌ '+(selectedBtn?'Nesprávne!':'Čas vypršal!')+' Správne: '+correctAnswer;
       playSound('wrong');
+      setTimeout(()=>{QUIZ.idx++;QUIZ.player=QUIZ.player===1?2:1;showQuizQ();},3000);
     }
-    setTimeout(()=>{QUIZ.idx++;QUIZ.player=QUIZ.player===1?2:1;showQuizQ();},1600);
   };
   shuffled.forEach(ans=>{
     const b=document.createElement('button');
