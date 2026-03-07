@@ -1085,6 +1085,7 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 @keyframes bs-miss { 0%{opacity:1} 50%{opacity:0.3} 100%{opacity:1} }
 .bs-cell.hit-anim { animation:bs-hit 0.4s ease; }
 .bs-cell.miss-anim { animation:bs-miss 0.5s ease; }
+@keyframes ludoPulse { from{transform:scale(1);opacity:0.85} to{transform:scale(1.15);opacity:1} }
 .bs-ships-panel { margin:10px 0; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
 .bs-ship-btn {
   padding:8px 14px; border:2px solid rgba(255,255,255,0.3); border-radius:10px;
@@ -3047,6 +3048,29 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== ČLOVEČE NEHNEVAJ SA ===== -->
+  <div class="game-area" id="ludo">
+    <div class="rules"><h3>📋 Človeče nehnevaj sa:</h3><ul>
+      <li>Hoď 6️⃣ na vytiahnutie figúrky z domčeka</li>
+      <li>Klikni na svietiacu figúrku pre ťah</li>
+      <li>Pristátie na súperovu figúrku ju vyhodí!</li>
+      <li>6 = bonus hod! Kto dostane všetky 4 domov vyhráva!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="ludoP1Card"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div class="player-score" id="p1ScoreLudo">0</div></div>
+      <div class="player-card player2" id="ludoP2Card"><div class="player-name-display" id="ludoP2Name">Hráč 2</div><div class="player-score" id="p2ScoreLudo">0</div></div>
+    </div>
+    <div class="status" id="ludoStatus">Hráč 1 hádže kockou!</div>
+    <div style="text-align:center;margin:15px 0">
+      <button onclick="ludoRoll()" id="ludoDiceBtn" style="font-size:3em;padding:10px 25px;border:3px solid rgba(255,255,255,0.3);border-radius:15px;background:rgba(255,255,255,0.1);cursor:pointer;transition:all 0.2s;color:white"><span id="ludoDiceVal">🎲</span></button>
+    </div>
+    <div style="display:flex;justify-content:center;margin:10px 0">
+      <div id="ludoBoard" style="display:grid;grid-template-columns:repeat(11,1fr);gap:2px;width:100%;max-width:min(400px,92vw);aspect-ratio:1;box-sizing:border-box"></div>
+    </div>
+    <div class="celebration" id="ludoCelebration">🎉</div>
+    <div class="buttons-group"><button class="action-btn primary-btn" onclick="resetLudo()">🔄 Nová hra</button></div>
+  </div>
+
   <!-- ===== RACING ===== -->
   <div class="game-area" id="racing">
     <div class="rules"><h3>📋 Preteky:</h3><ul>
@@ -3087,7 +3111,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 7;
+const APP_VERSION = 8;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3100,7 +3124,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn',
-  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3111,7 +3135,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', racing:'Preteky'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', racing:'Preteky', ludo:'Človeče'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3319,7 +3343,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3330,7 +3354,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4124,7 +4148,16 @@ const MEM = {
   cards:[], flipped:[], matched:[],
   player:1, s1:0, s2:0, locked:false, aiMemory:{}
 };
-const memEmojis=['🍎','🍌','🍊','🍓','🍇','🍉','🍑','🥝','🍒','🥭','🍍','🫐','🍋','🍈','🥥','🍆','🥑','🌽'];
+const memThemes = {
+  ovocie:['🍎','🍌','🍊','🍓','🍇','🍉','🍑','🥝','🍒','🥭','🍍','🫐','🍋','🍈','🥥','🍆','🥑','🌽'],
+  zvierata:['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🦄'],
+  auta:['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🚲','🛺'],
+  nastroje:['🎸','🎹','🥁','🎺','🎷','🎻','🪗','🎵','🪕','🪘','🎤','🔔','🪈','📯','🎶','🎼','🪇','🥢'],
+  sport:['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🥋','⛷️','🏂','🤿','🛹','🥅','🏹'],
+  jedlo:['🍕','🍔','🌭','🌮','🍟','🍿','🧁','🍩','🍪','🎂','🍰','🧇','🥞','🍗','🌯','🥨','🧀','🥐']
+};
+const memThemeKeys=Object.keys(memThemes);
+let memEmojis=memThemes[memThemeKeys[Math.floor(Math.random()*memThemeKeys.length)]];
 
 // ===== MEMORY =====
 
@@ -4152,6 +4185,7 @@ function initMem() {
   const sizes={easy:12,medium:16,hard:24,expert:36};
   const n=sizes[MEM.diff];
   MEM.cards=[]; MEM.flipped=[]; MEM.matched=[]; MEM.aiMemory={};
+  memEmojis=memThemes[memThemeKeys[Math.floor(Math.random()*memThemeKeys.length)]];
   const pairs=Math.floor(n/2);
   for(let i=0;i<pairs;i++){MEM.cards.push(memEmojis[i%memEmojis.length]);MEM.cards.push(memEmojis[i%memEmojis.length]);}
   MEM.cards.sort(()=>Math.random()-0.5);
@@ -7950,6 +7984,215 @@ document.addEventListener('keydown',e=>{
 });
 
 // =============================================================================
+// SEKCIA 32: ČLOVEČE NEHNEVAJ SA (Ludo)
+// =============================================================================
+const LUDO = {
+  dice:0, turn:0, rolled:false, over:false, s1:0, s2:0,
+  pieces:[[-1,-1,-1,-1],[-1,-1,-1,-1]]
+};
+const LUDO_PATH = [
+  [10,4],[9,4],[8,4],[7,4],[6,4],
+  [6,3],[6,2],[6,1],[6,0],
+  [5,0],
+  [4,0],[4,1],[4,2],[4,3],[4,4],
+  [3,4],[2,4],[1,4],[0,4],
+  [0,5],
+  [0,6],[1,6],[2,6],[3,6],[4,6],
+  [4,7],[4,8],[4,9],[4,10],
+  [5,10],
+  [6,10],[6,9],[6,8],[6,7],[6,6],
+  [7,6],[8,6],[9,6],[10,6],
+  [10,5]
+];
+const LUDO_HOME = [[[9,5],[8,5],[7,5],[6,5]],[[1,5],[2,5],[3,5],[4,5]]];
+const LUDO_BASE = [[[9,0],[9,1],[10,0],[10,1]],[[0,9],[0,10],[1,9],[1,10]]];
+const LUDO_START = [0,20];
+
+function ludoRel2Coord(p,rel) {
+  if(rel===-1) return null;
+  if(rel>=40) return LUDO_HOME[p][rel-40];
+  return LUDO_PATH[(LUDO_START[p]+rel)%40];
+}
+
+function resetLudo() {
+  LUDO.dice=0; LUDO.turn=0; LUDO.rolled=false; LUDO.over=false;
+  LUDO.pieces=[[-1,-1,-1,-1],[-1,-1,-1,-1]];
+  document.getElementById('ludoStatus').textContent=getP1Name('lu')+' hádže kockou!';
+  document.getElementById('ludoDiceVal').textContent='🎲';
+  activeTurn('ludoP1Card','ludoP2Card',1);
+  renderLudo();
+}
+
+function renderLudo() {
+  const board=document.getElementById('ludoBoard');
+  if(!board) return;
+  const pathSet=new Set(); LUDO_PATH.forEach(([r,c])=>pathSet.add(r+','+c));
+  const baseMap={}; LUDO_BASE.forEach((bases,p)=>bases.forEach(([r,c])=>baseMap[r+','+c]=p));
+  const homeMap={}; LUDO_HOME.forEach((homes,p)=>homes.forEach(([r,c])=>homeMap[r+','+c]=p));
+  const startMap={}; startMap[LUDO_PATH[LUDO_START[0]][0]+','+LUDO_PATH[LUDO_START[0]][1]]=0;
+  startMap[LUDO_PATH[LUDO_START[1]][0]+','+LUDO_PATH[LUDO_START[1]][1]]=1;
+  const pieceMap={};
+  LUDO.pieces.forEach((pcs,p)=>pcs.forEach((pos,i)=>{
+    let coord=pos===-1?LUDO_BASE[p][i]:ludoRel2Coord(p,pos);
+    if(coord){const k=coord[0]+','+coord[1];if(!pieceMap[k])pieceMap[k]=[];pieceMap[k].push({p,i});}
+  }));
+  const movable=ludoGetMovable();
+  const movSet=new Set(movable.map(m=>m.piece));
+  const pCol=['#ef5350','#42a5f5'];
+  const pBg=['rgba(239,83,80,','rgba(66,165,245,'];
+  let html='';
+  for(let r=0;r<11;r++){for(let c=0;c<11;c++){
+    const k=r+','+c;
+    let bg='transparent',bd='none';
+    if(r===5&&c===5){bg='rgba(255,215,0,0.3)';bd='1px solid rgba(255,215,0,0.5)';}
+    else if(k in baseMap){const p=baseMap[k];bg=pBg[p]+'0.25)';bd='1px solid '+pBg[p]+'0.4)';}
+    else if(k in homeMap){const p=homeMap[k];bg=pBg[p]+'0.2)';bd='1px solid '+pBg[p]+'0.35)';}
+    else if(pathSet.has(k)){bg='rgba(255,255,255,0.12)';bd='1px solid rgba(255,255,255,0.08)';
+      if(k in startMap){const p=startMap[k];bg=pBg[p]+'0.35)';bd='1px solid '+pBg[p]+'0.5)';}}
+    let content='';
+    if(r===5&&c===5) content='<div style="font-size:0.7em">⭐</div>';
+    const pcs=pieceMap[k]||[];
+    if(pcs.length>0){
+      const sz=pcs.length>1?'55%':'70%';
+      content=pcs.map(({p,i})=>{
+        const canMove=p===LUDO.turn&&movSet.has(i)&&LUDO.rolled&&!LUDO.over;
+        const glow=canMove?'box-shadow:0 0 6px '+pCol[p]+';cursor:pointer;animation:ludoPulse 0.7s infinite alternate':'';
+        const oc=canMove?'onclick="ludoMove('+i+')"':'';
+        return '<div '+oc+' style="width:'+sz+';height:'+sz+';border-radius:50%;background:'+pCol[p]+';border:2px solid white;'+glow+';display:flex;align-items:center;justify-content:center;font-size:0.5em;color:white;font-weight:700">'+(i+1)+'</div>';
+      }).join('');
+    }
+    html+='<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:1px;background:'+bg+';border:'+bd+';border-radius:3px;font-size:1em;overflow:hidden">'+content+'</div>';
+  }}
+  board.innerHTML=html;
+}
+
+function ludoGetMovable() {
+  const p=LUDO.turn,d=LUDO.dice;
+  if(!d||LUDO.over) return [];
+  const moves=[];
+  LUDO.pieces[p].forEach((pos,i)=>{
+    if(pos===-1){
+      if(d===6){const blocked=LUDO.pieces[p].some((pp,j)=>j!==i&&pp===0);if(!blocked)moves.push({piece:i,from:-1,to:0});}
+    } else if(pos>=40){
+      if(pos+d<=43) moves.push({piece:i,from:pos,to:pos+d});
+    } else {
+      const np=pos+d;
+      if(np>43) return;
+      if(np>=40){moves.push({piece:i,from:pos,to:np});return;}
+      const blocked=LUDO.pieces[p].some((pp,j)=>j!==i&&pp===np);
+      if(!blocked) moves.push({piece:i,from:pos,to:np});
+    }
+  });
+  return moves;
+}
+
+function ludoRoll() {
+  if(LUDO.rolled||LUDO.over) return;
+  if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
+  LUDO.dice=1+Math.floor(Math.random()*6);
+  LUDO.rolled=true;
+  const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  document.getElementById('ludoDiceVal').textContent=diceE[LUDO.dice-1];
+  playSound('click');
+  const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+  const movable=ludoGetMovable();
+  if(movable.length===0){
+    document.getElementById('ludoStatus').textContent=pName+' hodil '+LUDO.dice+' — nemôže ťahať!';
+    renderLudo();
+    setTimeout(()=>ludoEndTurn(false),1200);
+    return;
+  }
+  document.getElementById('ludoStatus').textContent=pName+' hodil '+LUDO.dice+' — vyber figúrku!';
+  renderLudo();
+}
+
+function ludoDoRollAI() {
+  if(LUDO.rolled||LUDO.over||LUDO.turn!==1) return;
+  LUDO.dice=1+Math.floor(Math.random()*6);
+  LUDO.rolled=true;
+  const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  document.getElementById('ludoDiceVal').textContent=diceE[LUDO.dice-1];
+  playSound('click');
+  const pName=getP2Name('lu');
+  const movable=ludoGetMovable();
+  if(movable.length===0){
+    document.getElementById('ludoStatus').textContent=pName+' hodil '+LUDO.dice+' — nemôže ťahať!';
+    renderLudo();
+    setTimeout(()=>ludoEndTurn(false),1200);
+    return;
+  }
+  document.getElementById('ludoStatus').textContent=pName+' hodil '+LUDO.dice+'...';
+  renderLudo();
+  setTimeout(()=>{
+    if(LUDO.over||LUDO.turn!==1) return;
+    const moves=ludoGetMovable();
+    if(moves.length===0) return;
+    let best=moves[0];
+    for(const m of moves){
+      if(m.to<40){const abs=(LUDO_START[1]+m.to)%40;const canCap=LUDO.pieces[0].some(op=>op>=0&&op<40&&(LUDO_START[0]+op)%40===abs);if(canCap){best=m;break;}}
+    }
+    const homeM=moves.find(m=>m.to>=40);if(homeM) best=homeM;
+    const baseM=moves.find(m=>m.from===-1);if(baseM&&!homeM) best=baseM;
+    ludoDoMove(best.piece);
+  },800);
+}
+
+function ludoDoMove(pieceIdx) {
+  const moves=ludoGetMovable();
+  const move=moves.find(m=>m.piece===pieceIdx);
+  if(!move) return;
+  const p=LUDO.turn;
+  LUDO.pieces[p][pieceIdx]=move.to;
+  playSound('move');
+  if(move.to<40){
+    const absPos=(LUDO_START[p]+move.to)%40;
+    const opp=1-p;
+    LUDO.pieces[opp].forEach((op,oi)=>{
+      if(op>=0&&op<40){
+        if((LUDO_START[opp]+op)%40===absPos){LUDO.pieces[opp][oi]=-1;playSound('hit');}
+      }
+    });
+  }
+  if(LUDO.pieces[p].every(pos=>pos>=40)){
+    LUDO.over=true;
+    const pName=p===0?getP1Name('lu'):getP2Name('lu');
+    document.getElementById('ludoStatus').textContent='🎉 '+pName+' vyhral!';
+    if(p===0){LUDO.s1++;addWin(1,'ludo');}else{LUDO.s2++;addWin(2,'ludo');}
+    document.getElementById('p1ScoreLudo').textContent=LUDO.s1;
+    document.getElementById('p2ScoreLudo').textContent=LUDO.s2;
+    playSound('win');celebrate('ludoCelebration');
+    renderLudo(); return;
+  }
+  ludoEndTurn(LUDO.dice===6);
+}
+
+function ludoMove(pieceIdx) {
+  if(!LUDO.rolled||LUDO.over) return;
+  if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
+  ludoDoMove(pieceIdx);
+}
+
+function ludoEndTurn(extra) {
+  if(extra){
+    LUDO.rolled=false;LUDO.dice=0;
+    document.getElementById('ludoDiceVal').textContent='🎲';
+    const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+    document.getElementById('ludoStatus').textContent=pName+' hodil 6 — hádže znova!';
+    renderLudo();
+    if(welcomeGameMode==='ai'&&LUDO.turn===1) setTimeout(ludoDoRollAI,800);
+    return;
+  }
+  LUDO.turn=1-LUDO.turn;
+  LUDO.rolled=false;LUDO.dice=0;
+  document.getElementById('ludoDiceVal').textContent='🎲';
+  const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+  document.getElementById('ludoStatus').textContent=pName+' hádže kockou!';
+  activeTurn('ludoP1Card','ludoP2Card',LUDO.turn===0?1:2);
+  renderLudo();
+  if(welcomeGameMode==='ai'&&LUDO.turn===1) setTimeout(ludoDoRollAI,800);
+}
+
+// =============================================================================
 // SEKCIA 31: RACING GAME (Preteky)
 // =============================================================================
 const RACE = { grid:[], lane:2, score:0, speed:1, interval:null, running:false, over:false, tickMs:350 };
@@ -8526,6 +8769,7 @@ resetC4();
 resetBS();
 resetGhost();
 resetReaction();
+resetLudo();
 updateSidebarNames();
 // Load persisted data
 loadStats();
@@ -8563,6 +8807,7 @@ const MOBILE_GAMES = [
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
+  { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
