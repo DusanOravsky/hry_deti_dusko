@@ -3207,7 +3207,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 16;
+const APP_VERSION = 17;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -9283,6 +9283,13 @@ function toggleFavorite(gId, e) {
   renderMobileGrid();
 }
 
+function clearRecentGames() {
+  _recentGames = [];
+  localStorage.removeItem('hry_recent');
+  playSound('click');
+  renderMobileGrid();
+}
+
 function trackRecentGame(gId) {
   if(gId==='stats') return;
   _recentGames = _recentGames.filter(id=>id!==gId);
@@ -9324,7 +9331,7 @@ function renderMobileGrid() {
   let html = '';
   // Recent section
   if(recentGames.length>0) {
-    html += '<div class="mobile-grid-section">Nedavno hrane</div>';
+    html += '<div class="mobile-grid-section">Nedavno hrane <span onclick="clearRecentGames()" style="float:right;font-size:0.85em;cursor:pointer;opacity:0.6;text-transform:none;letter-spacing:0">✕ vymazat</span></div>';
     html += recentGames.map(g=>_renderGameCard(g)).join('');
     html += '<div class="mobile-grid-section">Vsetky hry</div>';
   }
