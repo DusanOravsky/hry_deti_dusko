@@ -69,9 +69,14 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v31**
+Aktuálna verzia: **v32**
 
 ## Changelog
+
+### v32 (2026-03-07)
+- 🔧 **Fix: Verzia viditeľná na mobile (znovu)**
+  - Version display obnovený v renderMobileGrid()
+  - MP badges zachované
 
 ### v31 (2026-03-07)
 - 🔧 **CRITICAL FIX: Welcome screen clickable na mobile**

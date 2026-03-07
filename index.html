@@ -2895,7 +2895,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 31;
+const APP_VERSION = 32;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8045,13 +8045,21 @@ function renderMobileGrid() {
     if(welcomeGameMode==='ai') return g.mode==='both';
     return true; // pvp shows all
   });
-  grid.innerHTML = filtered.map(g =>
-    `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
-          style="background:linear-gradient(135deg,${g.grad})">
+
+  const cards = filtered.map(g => {
+    const mpBadge = g.mp ? '<div class="mp-badge">🌐 MP</div>' : '';
+    return `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
+          style="background:linear-gradient(135deg,${g.grad});position:relative">
+       ${mpBadge}
        <div class="mobile-game-card-icon">${g.icon}</div>
        <div class="mobile-game-card-name">${g.label}</div>
-     </div>`
-  ).join('');
+     </div>`;
+  }).join('');
+
+  // Add version footer
+  const versionFooter = `<div style="grid-column:1/-1;text-align:center;padding:20px 0 10px;opacity:0.4;font-size:0.8em">v${APP_VERSION}</div>`;
+
+  grid.innerHTML = cards + versionFooter;
 }
 
 function _updateMobileChips() {
