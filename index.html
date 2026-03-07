@@ -1853,7 +1853,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
-      <span class="welcome-game-chip">🧠 Memory</span>
+      <span class="welcome-game-chip">🧠 Pexeso</span>
       <span class="welcome-game-chip">🚢 Lodičky</span>
       <span class="welcome-game-chip">❓ Quiz</span>
       <span class="welcome-game-chip">🧮 Matika</span>
@@ -1949,7 +1949,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn active" id="ticTacToeBtn" style="background:linear-gradient(135deg,rgba(240,147,251,0.25),rgba(245,87,108,0.25))"><span class="game-btn-icon">🔶</span><span class="game-btn-label">Piškvorky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="rockPaperBtn" style="background:linear-gradient(135deg,rgba(79,172,254,0.2),rgba(0,242,254,0.2))"><span class="game-btn-icon">🪨</span><span class="game-btn-label">Kameň Papier</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="guessNumBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.2),rgba(56,249,215,0.2))"><span class="game-btn-icon">🎲</span><span class="game-btn-label">Hádaj Číslo</span><span class="game-btn-dot"></span></button>
-      <button class="game-btn" id="memoryBtn" style="background:linear-gradient(135deg,rgba(250,112,154,0.2),rgba(254,225,64,0.2))"><span class="game-btn-icon">🧠</span><span class="game-btn-label">Memory</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="memoryBtn" style="background:linear-gradient(135deg,rgba(250,112,154,0.2),rgba(254,225,64,0.2))"><span class="game-btn-icon">🧠</span><span class="game-btn-label">Pexeso</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="connect4Btn" style="background:linear-gradient(135deg,rgba(48,207,208,0.2),rgba(51,8,103,0.2))"><span class="game-btn-icon">🔴</span><span class="game-btn-label">Connect 4</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="quizBtn" style="background:linear-gradient(135deg,rgba(161,140,209,0.2),rgba(251,194,235,0.2))"><span class="game-btn-icon">❓</span><span class="game-btn-label">Quiz</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="battleshipBtn" style="background:linear-gradient(135deg,rgba(0,92,151,0.25),rgba(54,55,149,0.25))"><span class="game-btn-icon">🚢</span><span class="game-btn-label">Lodičky</span><span class="game-btn-dot"></span></button>
@@ -3057,7 +3057,7 @@ const gameKeys = {
 
 const GAME_NAMES = {
   ticTacToe:'Piškvorky', psk15Game:'Piškvorky 10×10', rockPaper:'Kameň Papier Nožnice',
-  guessNum:'Hádaj Číslo', memory:'Pamäť', connect4:'Connect 4',
+  guessNum:'Hádaj Číslo', memory:'Pexeso', connect4:'Connect 4',
   quiz:'Kvíz', battleship:'Lodičky', ghost:'Ghost', reaction:'Reakčný Test',
   scramble:'Scramble', langScramble:'Jazykový Scramble', flashcard:'Flashcards',
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
@@ -6954,7 +6954,7 @@ function setEGCat(cat,btn) {
 // =============================================================================
 // SEKCIA 26: OBESENEC (HANGMAN)
 // =============================================================================
-const HM = { player:1, s1:0, s2:0, word:'', guessed:new Set(), errors:0, over:false, diff:'easy', roundOver:false };
+const HM = { player:1, s1:0, s2:0, word:'', guessed:new Set(), errors:0, over:false, diff:'easy', roundOver:false, hintUsed:false };
 
 const HM_WORDS = {
   easy:['pes','dom','les','mak','nos','oko','ucho','ryba','lopta','lampa','koláč','strom','vlak','kniha','žaba','kľúč','kruh','slon','hrad','most'],
@@ -6976,13 +6976,15 @@ function startHM() {
   nextHMRound();
 }
 function nextHMRound() {
-  HM.roundOver=false; HM.errors=0; HM.guessed=new Set();
+  HM.roundOver=false; HM.errors=0; HM.guessed=new Set(); HM.hintUsed=false;
   const pool=HM_WORDS[HM.diff];
   HM.word=pool[Math.floor(Math.random()*pool.length)].toUpperCase();
   document.getElementById('hmRoundInfo').textContent=(HM.player===1?getP1Name('hm'):getP2Name('hm'))+' háda!';
   document.getElementById('hmStatus').textContent=(HM.player===1?getP1Name('hm'):getP2Name('hm'))+' — uhádni slovo!';
   activeTurn('hmP1Card','hmP2Card',HM.player);
   renderHM(); drawHangman(0); buildHMKeyboard();
+  const hb=document.getElementById('hmHintBtn'); if(hb){hb.disabled=false;hb.style.opacity='1';}
+  document.getElementById('hmHint').textContent=''; document.getElementById('hmHint').style.color='';
 }
 function renderHM() {
   let display='';
@@ -7032,9 +7034,10 @@ function hmGuessLetter(ch,btn) {
   const allRevealed=[...HM.word].every(c=>HM.guessed.has(c));
   if(allRevealed) {
     HM.roundOver=true; playSound('win');
-    if(HM.player===1){HM.s1++;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
-    else{HM.s2++;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
-    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word;
+    const pts=HM.hintUsed?0.5:1;
+    if(HM.player===1){HM.s1+=pts;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
+    else{HM.s2+=pts;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
+    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word+(HM.hintUsed?' (0.5 bodu za nápovedu)':'');
     document.getElementById('hmHint').style.color='#43e97b';
     setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
   } else if(HM.errors>=8) {
@@ -7046,25 +7049,26 @@ function hmGuessLetter(ch,btn) {
   }
 }
 function hmUseHint() {
-  if(HM.roundOver) return;
+  if(HM.roundOver||HM.hintUsed) return;
   const unrevealed=[...HM.word].filter(c=>!HM.guessed.has(c));
   if(unrevealed.length===0) return;
+  HM.hintUsed=true;
   const hint=unrevealed[Math.floor(Math.random()*unrevealed.length)];
   HM.guessed.add(hint);
-  // Disable keyboard button for this letter
   const keys=document.querySelectorAll('#hmKeyboard .ghost-key');
   keys.forEach(k=>{if(k.textContent===hint){k.disabled=true;k.style.background='rgba(255,200,0,0.3)';k.style.borderColor='#ffd200';}});
+  document.getElementById('hmHintBtn').disabled=true;
+  document.getElementById('hmHintBtn').style.opacity='0.4';
   playSound('correct');
   renderHM();
-  document.getElementById('hmHint').textContent='💡 Nápoveda: písmeno '+hint;
+  document.getElementById('hmHint').textContent='💡 Nápoveda: písmeno '+hint+' (−0.5 bodu)';
   document.getElementById('hmHint').style.color='#ffd200';
-  // Check if word complete after hint
   const allRevealed=[...HM.word].every(c=>HM.guessed.has(c));
   if(allRevealed) {
     HM.roundOver=true; playSound('win');
-    if(HM.player===1){HM.s1++;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
-    else{HM.s2++;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
-    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word;
+    if(HM.player===1){HM.s1+=0.5;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
+    else{HM.s2+=0.5;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
+    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word+' (0.5 bodu za nápovedu)';
     document.getElementById('hmHint').style.color='#43e97b';
     setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
   }
@@ -8086,7 +8090,7 @@ const isMobile = () => window.innerWidth <= 640;
 const MOBILE_GAMES = [
   { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)', mode:'both' },
   { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)', mode:'both' },
-  { id:'memory',        label:'Memory',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both' },
+  { id:'memory',        label:'Pexeso',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both' },
   { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both' },
   { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both' },
   { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both' },
