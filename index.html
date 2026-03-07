@@ -3065,7 +3065,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button onclick="ludoRoll()" id="ludoDiceBtn" style="font-size:3em;padding:10px 25px;border:3px solid rgba(255,255,255,0.3);border-radius:15px;background:rgba(255,255,255,0.1);cursor:pointer;transition:all 0.2s;color:white"><span id="ludoDiceVal">🎲</span></button>
     </div>
     <div style="display:flex;justify-content:center;margin:10px 0">
-      <div id="ludoBoard" style="display:grid;grid-template-columns:repeat(11,1fr);gap:2px;width:100%;max-width:min(400px,92vw);aspect-ratio:1;box-sizing:border-box"></div>
+      <div id="ludoBoard" style="display:grid;grid-template-columns:repeat(11,1fr);gap:2px;width:100%;max-width:min(400px,92vw);aspect-ratio:1;box-sizing:border-box;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:4px"></div>
     </div>
     <div class="celebration" id="ludoCelebration">🎉</div>
     <div class="buttons-group"><button class="action-btn primary-btn" onclick="resetLudo()">🔄 Nová hra</button></div>
@@ -3111,7 +3111,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 8;
+const APP_VERSION = 9;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8044,11 +8044,11 @@ function renderLudo() {
   for(let r=0;r<11;r++){for(let c=0;c<11;c++){
     const k=r+','+c;
     let bg='transparent',bd='none';
-    if(r===5&&c===5){bg='rgba(255,215,0,0.3)';bd='1px solid rgba(255,215,0,0.5)';}
-    else if(k in baseMap){const p=baseMap[k];bg=pBg[p]+'0.25)';bd='1px solid '+pBg[p]+'0.4)';}
-    else if(k in homeMap){const p=homeMap[k];bg=pBg[p]+'0.2)';bd='1px solid '+pBg[p]+'0.35)';}
-    else if(pathSet.has(k)){bg='rgba(255,255,255,0.12)';bd='1px solid rgba(255,255,255,0.08)';
-      if(k in startMap){const p=startMap[k];bg=pBg[p]+'0.35)';bd='1px solid '+pBg[p]+'0.5)';}}
+    if(r===5&&c===5){bg='rgba(255,215,0,0.5)';bd='2px solid rgba(255,215,0,0.8)';}
+    else if(k in baseMap){const p=baseMap[k];bg=pBg[p]+'0.45)';bd='2px solid '+pBg[p]+'0.7)';}
+    else if(k in homeMap){const p=homeMap[k];bg=pBg[p]+'0.35)';bd='2px solid '+pBg[p]+'0.6)';}
+    else if(pathSet.has(k)){bg='rgba(255,255,255,0.22)';bd='1px solid rgba(255,255,255,0.3)';
+      if(k in startMap){const p=startMap[k];bg=pBg[p]+'0.5)';bd='2px solid '+pBg[p]+'0.7)';}}
     let content='';
     if(r===5&&c===5) content='<div style="font-size:0.7em">⭐</div>';
     const pcs=pieceMap[k]||[];
