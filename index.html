@@ -346,17 +346,20 @@ body.light .mobile-game-card-name { color:#333; }
 #mobileGameView {
   display:none;
   flex-direction:column;
-  min-height:100vh;
+  height:100vh;
+  height:100dvh;
+  max-height:100vh;
+  max-height:100dvh;
 }
 #mobileGameView.active { display:flex; }
 #mobileGameContent {
   flex:1;
+  min-height:0;
   overflow-x:hidden;
   overflow-y:auto;
   padding:14px;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
-  scroll-behavior:smooth;
 }
 
 /* .game-area inside mobileGameContent fills fully */
