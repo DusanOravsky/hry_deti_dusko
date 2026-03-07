@@ -6,6 +6,7 @@
 <title>Hrajme si Lukáško a Natálka</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
 <meta name="theme-color" content="#667eea">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1285,6 +1286,53 @@ body.light .multiplayer-box input::placeholder { color:rgba(0,0,0,0.4); }
 .multiplayer-close:hover { color:rgba(255,255,255,0.9); }
 body.light .multiplayer-close { color:rgba(0,0,0,0.4); }
 body.light .multiplayer-close:hover { color:rgba(0,0,0,0.8); }
+
+/* QR Scanner */
+.qr-scanner-modal {
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.95);
+  z-index:10001;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:20px;
+}
+.qr-scanner-modal.active { display:flex; }
+.qr-scanner-header {
+  color:white;
+  text-align:center;
+  margin-bottom:20px;
+}
+.qr-scanner-header h2 {
+  margin:0 0 10px;
+  font-size:1.5em;
+}
+.qr-scanner-header p {
+  margin:0;
+  opacity:0.7;
+  font-size:0.9em;
+}
+#qrScannerReader {
+  width:100%;
+  max-width:500px;
+  border-radius:16px;
+  overflow:hidden;
+}
+#qrScannerReader video {
+  border-radius:16px;
+}
+.qr-scanner-actions {
+  margin-top:20px;
+  display:flex;
+  gap:12px;
+}
+body.light .qr-scanner-modal { background:rgba(255,255,255,0.98); }
+body.light .qr-scanner-header { color:#222; }
 #mpQrCode { display:flex; justify-content:center; align-items:center; }
 body.light .stats-tile { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.08); }
 body.light .stats-tile-val { color:#222; }
@@ -1569,6 +1617,15 @@ body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
   background:rgba(102,126,234,0.1); transition:all 0.25s; margin-bottom:12px; box-sizing:border-box;
 }
 .welcome-mp-btn:hover { background:rgba(102,126,234,0.2); transform:translateY(-1px); }
+.welcome-mp-btn.connected {
+  background:rgba(0,255,0,0.15);
+  border-color:rgba(0,255,0,0.5);
+  color:rgba(0,255,0,0.95);
+  box-shadow:0 0 12px rgba(0,255,0,0.3);
+}
+.welcome-mp-btn.connected:hover {
+  background:rgba(0,255,0,0.2);
+}
 
 /* Welcome stats */
 .welcome-stats {
@@ -2823,7 +2880,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 28;
+const APP_VERSION = 29;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8102,6 +8159,13 @@ function updateMPButtonVisibility() {
   } else {
     mpBtn.style.display = '';
   }
+
+  // Update connected state
+  if(MP.isConnected) {
+    mpBtn.classList.add('connected');
+  } else {
+    mpBtn.classList.remove('connected');
+  }
 }
 
 function mpOpen() {
@@ -8158,6 +8222,7 @@ function mpCreateRoom() {
     mpSetupConnection();
     const icon = document.getElementById('mpStatusIcon');
     if(icon) icon.textContent = '✅';
+    updateMPButtonVisibility();
 
     // Show connected state
     document.getElementById('mpHost').style.display = 'none';
@@ -8224,6 +8289,7 @@ function mpSetupConnection() {
     MP.isConnected = true;
     const icon = document.getElementById('mpStatusIcon');
     if(icon) icon.textContent = '✅';
+    updateMPButtonVisibility();
 
     // Show connected state
     document.getElementById('mpHost').style.display = 'none';
@@ -8365,6 +8431,19 @@ if('serviceWorker' in navigator) {
     <!-- Join -->
     <div id="mpJoin">
       <p style="opacity:0.8;margin-bottom:20px">Pripoj sa k miestnosti kamaráta:</p>
+
+      <!-- QR Scanner Button -->
+      <button class="action-btn" onclick="openQRScanner()" style="width:100%;margin-bottom:15px;background:linear-gradient(135deg,#667eea,#764ba2);font-size:1.05em">
+        📷 Naskenuj QR kód
+      </button>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
+        <span style="opacity:0.5;font-size:0.85em">alebo</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
+      </div>
+
+      <!-- Manual Input -->
       <input type="text" id="mpJoinCode" placeholder="Zadaj kód miestnosti" style="width:100%;padding:14px;font-size:1.1em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:15px;text-transform:uppercase">
       <button class="action-btn primary-btn" onclick="mpJoinRoom()" style="width:100%">🚪 Pripojiť sa</button>
       <p id="mpJoinStatus" style="margin-top:15px;opacity:0"></p>
@@ -8384,6 +8463,18 @@ if('serviceWorker' in navigator) {
     </div>
 
     <button class="action-btn danger-btn" onclick="mpDisconnect()" id="mpDisconnectBtn" style="width:100%;margin-top:20px;display:none">🔌 Odpojiť</button>
+  </div>
+</div>
+
+<!-- QR Scanner Modal -->
+<div class="qr-scanner-modal" id="qrScannerModal">
+  <div class="qr-scanner-header">
+    <h2>📷 Naskenuj QR kód</h2>
+    <p>Nasmeruj kameru na QR kód od kamaráta</p>
+  </div>
+  <div id="qrScannerReader"></div>
+  <div class="qr-scanner-actions">
+    <button class="action-btn" onclick="closeQRScanner()" style="padding:12px 32px">Zrušiť</button>
   </div>
 </div>
 

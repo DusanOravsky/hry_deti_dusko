@@ -69,9 +69,15 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v28**
+Aktuálna verzia: **v29**
 
 ## Changelog
+
+### v29 (2026-03-07)
+- 📷 **QR Scanner pre Online Multiplayer**
+  - Button "📷 Naskenuj QR kód" v Join sekcii
+  - Kameru scanner modal (zadná kamera na mobile / webcam na desktop)
+  - Auto-pripojenie po naskenovaní QR kódu
 
 ### v28 (2026-03-07)
 - 🌐 **MP: Synchronizácia mien**
