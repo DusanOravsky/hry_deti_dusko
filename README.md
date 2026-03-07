@@ -69,9 +69,16 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v27**
+Aktuálna verzia: **v28**
 
 ## Changelog
+
+### v28 (2026-03-07)
+- 🌐 **MP: Synchronizácia mien**
+  - Obaja hráči vidia správne mená (Lukáško vs Natálka)
+  - Nie viac "Hráč 1/2" v MP režime
+  - Handshake výmena mien pri pripojení
+  - Player cards sa aktualizujú automaticky
 
 ### v27 (2026-03-07)
 - 🌐 **Online Multiplayer: Funguje! 🎮**

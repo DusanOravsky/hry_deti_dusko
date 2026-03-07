@@ -2823,7 +2823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 27;
+const APP_VERSION = 28;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3479,7 +3479,7 @@ function clickTTT(i) {
     } else {
       // MP: Wait for opponent's move
       const opponentPlayer = getMyMPPlayer() === 1 ? 2 : 1;
-      document.getElementById('tttStatus').textContent = '⏳ Čaká sa na ' + (opponentPlayer === 1 ? getP1Name('ttt') : getP2Name('ttt')) + '...';
+      document.getElementById('tttStatus').textContent = '⏳ Čaká sa na ' + getMPPlayerName(opponentPlayer, 'ttt') + '...';
       activeTurn('tttP1Card', 'tttP2Card', opponentPlayer);
     }
   } else {
@@ -3495,6 +3495,10 @@ function clickTTT(i) {
 }
 function resetTTT() {
   stopTurnTimer('ttt');
+  // Update names if MP is active
+  if(isMPActive()) {
+    updateMPPlayerCards('ttt');
+  }
   TTT.player='X'; TTT.over=false;
   document.getElementById('tttStatus').textContent='Hráč 1 na rade!';
   activeTurn('tttP1Card','tttP2Card',1);
@@ -4104,7 +4108,7 @@ function dropC4(col) {
         } else {
           // MP: Wait for opponent's move
           const opponentPlayer = getMyMPPlayer() === 1 ? 2 : 1;
-          document.getElementById('c4Status').textContent = '⏳ Čaká sa na ' + (opponentPlayer === 1 ? getP1Name('c4') : getP2Name('c4')) + '...';
+          document.getElementById('c4Status').textContent = '⏳ Čaká sa na ' + getMPPlayerName(opponentPlayer, 'c4') + '...';
           activeTurn('c4P1Card', 'c4P2Card', opponentPlayer);
         }
       } else {
@@ -4129,6 +4133,10 @@ function dropC4(col) {
 }
 function resetC4() {
   stopTurnTimer('c4');
+  // Update names if MP is active
+  if(isMPActive()) {
+    updateMPPlayerCards('c4');
+  }
   C4.player=1; C4.over=false;
   document.getElementById('c4Status').textContent='Hráč 1 na rade!';
   activeTurn('c4P1Card','c4P2Card',1);
@@ -8077,7 +8085,9 @@ const MP = {
   isConnected: false,
   roomCode: null,
   onGameSync: null,
-  role: null  // 'host' or 'guest'
+  role: null,  // 'host' or 'guest'
+  myName: null,
+  opponentName: null
 };
 
 // Track if any game is in AI mode (hide MP button when true)
@@ -8224,13 +8234,23 @@ function mpSetupConnection() {
     playSound('correct');
     vibrate([50,30,50]);
 
-    // Send initial handshake
-    mpSend({ type: 'handshake', name: globalP1 || 'Hráč' });
+    // Send initial handshake with name
+    MP.myName = globalP1 || 'Hráč';
+    mpSend({ type: 'handshake', name: MP.myName });
   });
 
   MP.conn.on('data', (data) => {
     if(data.type === 'handshake') {
       console.log('Handshake from:', data.name);
+      MP.opponentName = data.name;
+      // Send my name back if I haven't sent handshake yet
+      if(!MP.myName) {
+        MP.myName = globalP1 || 'Hráč';
+        mpSend({ type: 'handshake', name: MP.myName });
+      }
+      // Update player cards in active game
+      updateMPPlayerCards('ttt');
+      updateMPPlayerCards('c4');
     } else if(data.type === 'ttt_move') {
       applyTTTMove(data.index);
     } else if(data.type === 'c4_move') {
