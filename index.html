@@ -1006,6 +1006,13 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 .celebration.show { display:block; }
 @keyframes celebrateBounce { from{transform:scale(1) rotate(-3deg)} to{transform:scale(1.15) rotate(3deg)} }
 
+/* PLAY AGAIN OVERLAY */
+.play-again-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0); backdrop-filter:blur(0px); display:flex; align-items:center; justify-content:center; z-index:500; opacity:0; transition:all 0.3s; pointer-events:none; }
+.play-again-overlay.show { background:rgba(0,0,0,0.3); backdrop-filter:blur(4px); opacity:1; pointer-events:all; }
+.play-again-btn { padding:20px 48px; font-size:1.4em; font-weight:900; border:none; border-radius:20px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; cursor:pointer; box-shadow:0 8px 24px rgba(102,126,234,0.5); transition:all 0.3s; animation:playAgainPulse 1.5s ease-in-out infinite; }
+.play-again-btn:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(102,126,234,0.7); }
+@keyframes playAgainPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
 /* Score pop animation */
 @keyframes scorePop { 0%{transform:scale(1)} 50%{transform:scale(1.3);color:#ffd200} 100%{transform:scale(1)} }
 .score-pop { animation:scorePop 0.4s ease; }
@@ -1545,6 +1552,11 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
   .welcome-stats-val { font-size:1.6em; }
   .welcome-stats-sub { font-size:0.7em; }
 }
+.welcome-history { margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1); }
+body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
+.welcome-history-row { display:flex; justify-content:space-between; align-items:center; padding:4px 6px; font-size:0.65em; opacity:0.6; }
+.welcome-history-game { font-weight:600; }
+.welcome-history-winner { font-size:0.9em; }
 
 /* Scroll hint for sidebar nav */
 .sidebar-scroll-hint {
@@ -1612,6 +1624,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
         <div><div class="welcome-stats-val" style="color:#4facfe" id="wStP2">0</div><div class="welcome-stats-sub" id="wStP2Label">Natálka</div></div>
         <div><div class="welcome-stats-val" style="color:#ffd200" id="wStDraws">0</div><div class="welcome-stats-sub">Remízy</div></div>
       </div>
+      <div id="welcomeHistory" class="welcome-history"></div>
     </div>
     <button class="welcome-skip" onclick="startFromWelcome()">Preskočiť →</button>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
@@ -2732,7 +2745,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 19;
+const APP_VERSION = 20;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -2792,7 +2805,17 @@ function toggleTheme() {
 function loadTheme() {
   try {
     const saved = localStorage.getItem('hrajmesi_theme');
-    if(saved === 'dark') { document.body.classList.remove('light'); document.querySelectorAll('#themeToggle, #themeToggleDesktop').forEach(el => { if(el) el.textContent = '☀️ Svetlý'; }); }
+    if(saved) {
+      // User explicitly set theme - use it
+      if(saved === 'dark') { document.body.classList.remove('light'); document.querySelectorAll('#themeToggle, #themeToggleDesktop').forEach(el => { if(el) el.textContent = '☀️ Svetlý'; }); }
+    } else {
+      // Auto theme based on time (18:00-06:00 = dark)
+      const hour = new Date().getHours();
+      if(hour >= 18 || hour < 6) {
+        document.body.classList.remove('light');
+        document.querySelectorAll('#themeToggle, #themeToggleDesktop').forEach(el => { if(el) el.textContent = '☀️ Svetlý'; });
+      }
+    }
   } catch(e) {}
 }
 
@@ -2810,19 +2833,87 @@ function getAudioCtx() { if(!audioCtx) audioCtx = new AudioCtx(); return audioCt
 function vibrate(ms) { try { if(navigator.vibrate) navigator.vibrate(ms); } catch(e) {} }
 
 function playSound(type) {
-  if(type==='click') vibrate(15);
+  // Vibrations
+  if(type==='click' || type==='move') vibrate(15);
   else if(type==='win') vibrate([50,30,50,30,100]);
   else if(type==='wrong') vibrate([80,40,80]);
-  else if(type==='hit') vibrate(30);
+  else if(type==='hit' || type==='shot') vibrate(30);
+  else if(type==='correct') vibrate([40,20,40]);
+  else if(type==='flip') vibrate(20);
+  else if(type==='miss') vibrate(50);
+  else if(type==='timeout') vibrate([100,50,100,50,100]);
+
   if(!soundEnabled) return;
   try {
     const ctx = getAudioCtx();
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
-    if(type==='click'){o.frequency.value=440;g.gain.setValueAtTime(0.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.1);o.start();o.stop(ctx.currentTime+0.1);}
-    else if(type==='win'){o.type='sine';[523,659,784,1047].forEach((f,i)=>{const osc=ctx.createOscillator(),gg=ctx.createGain();osc.connect(gg);gg.connect(ctx.destination);osc.frequency.value=f;gg.gain.setValueAtTime(0.15,ctx.currentTime+i*0.12);gg.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.25);osc.start(ctx.currentTime+i*0.12);osc.stop(ctx.currentTime+i*0.12+0.25);});}
-    else if(type==='wrong'){o.type='sawtooth';o.frequency.value=180;g.gain.setValueAtTime(0.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.3);}
-    else if(type==='hit'){o.frequency.value=330;g.gain.setValueAtTime(0.2,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);o.start();o.stop(ctx.currentTime+0.15);}
+
+    if(type==='click' || type==='move'){
+      o.frequency.value=440;
+      g.gain.setValueAtTime(0.1,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.1);
+      o.start();o.stop(ctx.currentTime+0.1);
+    }
+    else if(type==='correct'){
+      o.type='sine';
+      o.frequency.value=660;
+      g.gain.setValueAtTime(0.12,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);
+      o.start();o.stop(ctx.currentTime+0.15);
+    }
+    else if(type==='flip'){
+      o.frequency.value=520;
+      g.gain.setValueAtTime(0.08,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);
+      o.start();o.stop(ctx.currentTime+0.08);
+    }
+    else if(type==='shot'){
+      o.type='square';
+      o.frequency.value=220;
+      g.gain.setValueAtTime(0.15,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.12);
+      o.start();o.stop(ctx.currentTime+0.12);
+    }
+    else if(type==='miss'){
+      o.type='sawtooth';
+      o.frequency.value=120;
+      g.gain.setValueAtTime(0.1,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2);
+      o.start();o.stop(ctx.currentTime+0.2);
+    }
+    else if(type==='timeout'){
+      o.type='triangle';
+      o.frequency.value=200;
+      g.gain.setValueAtTime(0.2,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+      o.start();o.stop(ctx.currentTime+0.4);
+    }
+    else if(type==='win'){
+      o.type='sine';
+      [523,659,784,1047].forEach((f,i)=>{
+        const osc=ctx.createOscillator(),gg=ctx.createGain();
+        osc.connect(gg);gg.connect(ctx.destination);
+        osc.frequency.value=f;
+        gg.gain.setValueAtTime(0.15,ctx.currentTime+i*0.12);
+        gg.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.25);
+        osc.start(ctx.currentTime+i*0.12);
+        osc.stop(ctx.currentTime+i*0.12+0.25);
+      });
+    }
+    else if(type==='wrong'){
+      o.type='sawtooth';
+      o.frequency.value=180;
+      g.gain.setValueAtTime(0.15,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+      o.start();o.stop(ctx.currentTime+0.3);
+    }
+    else if(type==='hit'){
+      o.frequency.value=330;
+      g.gain.setValueAtTime(0.2,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);
+      o.start();o.stop(ctx.currentTime+0.15);
+    }
   } catch(e) {}
 }
 
@@ -2950,6 +3041,18 @@ function updateWelcomeStats() {
   if(t)t.textContent=gStats.total; if(p1)p1.textContent=gStats.p1; if(p2)p2.textContent=gStats.p2; if(d)d.textContent=gStats.draws;
   const l1=document.getElementById('wStP1Label'),l2=document.getElementById('wStP2Label');
   if(l1)l1.textContent=globalP1; if(l2)l2.textContent=globalP2;
+
+  // Recent 3 games history
+  const histEl = document.getElementById('welcomeHistory');
+  if(histEl && gStats.history.length > 0) {
+    const recent = gStats.history.slice(0, 3);
+    histEl.innerHTML = recent.map(h => {
+      const winner = h.winner===1 ? '🥇 '+h.name1 : h.winner===2 ? '🥇 '+h.name2 : '🤝 Remíza';
+      return `<div class="welcome-history-row"><span class="welcome-history-game">${h.game}</span><span class="welcome-history-winner">${winner}</span></div>`;
+    }).join('');
+  } else if(histEl) {
+    histEl.innerHTML = '';
+  }
 }
 function addWin(w, gameId) {
   const gId = gameId || currentGameId;
@@ -3045,6 +3148,19 @@ function celebrate(id) {
   const el = document.getElementById(id);
   if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000); }
   launchConfetti();
+}
+function showPlayAgain(resetFn, gameId) {
+  // Show "Play Again" overlay button
+  const overlay = document.createElement('div');
+  overlay.className = 'play-again-overlay';
+  overlay.innerHTML = '<button class="play-again-btn" onclick="this.parentElement.remove()">▶️ Hraj znova</button>';
+  overlay.querySelector('.play-again-btn').addEventListener('click', () => { resetFn(); overlay.remove(); });
+  const gameArea = document.getElementById(gameId || currentGameId);
+  if(gameArea) {
+    gameArea.style.position = 'relative';
+    gameArea.appendChild(overlay);
+    setTimeout(() => overlay.classList.add('show'), 100);
+  }
 }
 function popScore(elId) {
   const el = document.getElementById(elId);
@@ -3380,6 +3496,7 @@ function getPsk15AIMove() {
 }
 function clickPsk15(i) {
   if(PSK15.over||PSK15.board[i]) return;
+  playSound('move');
   PSK15.board[i]=PSK15.player; renderPsk15();
   const w=checkPsk15Win();
   if(w){

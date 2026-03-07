@@ -69,9 +69,16 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v19**
+Aktuálna verzia: **v20**
 
 ## Changelog
+
+### v20 (2026-03-07)
+- Nové: Rozšírené zvuky (move, correct, flip, shot, miss, timeout) s vibráciami
+- Nové: Automatický tmavý/svetlý režim podľa času (18:00-06:00 = tmavý)
+- Nové: História posledných 3 hier na welcome screen
+- Nové: "Hraj znova" overlay button po skončení hry
+- Vylepšenie: Vibrácie pre všetky akcie (výhry, prehry, timeout)
 
 ### v19 (2026-03-07)
 - Oprava: Mobile topbar zmizol pri prezeraní štatistík (zvýšený z-index, explicitné skrývanie welcome screen)
