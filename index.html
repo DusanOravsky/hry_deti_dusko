@@ -1453,6 +1453,20 @@ body.light .welcome-game-chip { background:rgba(0,0,0,0.05); border-color:rgba(0
   margin-top:14px; display:block; background:none; border:none; transition:color 0.2s;
 }
 .welcome-skip:hover { color:rgba(255,255,255,0.6); }
+.welcome-mode-pick {
+  display:flex; gap:8px; justify-content:center; margin-bottom:16px;
+}
+.welcome-mode-btn {
+  flex:1; padding:10px 8px; border:2px solid rgba(255,255,255,0.2); border-radius:12px;
+  background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.6); font-size:0.9em;
+  font-weight:700; cursor:pointer; transition:all 0.25s;
+}
+.welcome-mode-btn.active {
+  background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+  border-color:transparent; box-shadow:0 4px 14px rgba(102,126,234,0.4);
+}
+body.light .welcome-mode-btn { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.15); color:rgba(0,0,0,0.5); }
+body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-color:transparent; }
 body.light .welcome-skip { color:rgba(0,0,0,0.3); }
 body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
 
@@ -1509,12 +1523,16 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     <div class="welcome-emoji">🎮</div>
     <div class="welcome-title">Hrajme si!</div>
     <div class="welcome-sub">Lukáško &amp; Natálka — Premium Vydanie</div>
+    <div class="welcome-mode-pick">
+      <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
+      <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
+    </div>
     <div class="welcome-names">
       <div class="welcome-name-group">
         <label>🔴 Hráč 1</label>
         <input class="welcome-name-input" id="wP1Input" value="Lukáško" maxlength="12" placeholder="Meno hráča 1">
       </div>
-      <div class="welcome-name-group">
+      <div class="welcome-name-group" id="wP2Group">
         <label>🔵 Hráč 2</label>
         <input class="welcome-name-input" id="wP2Input" value="Natálka" maxlength="12" placeholder="Meno hráča 2">
       </div>
@@ -6427,12 +6445,46 @@ const _origTS = toggleSound; toggleSound = function(){ _origTS(); _updateMobileT
 // Resize handler — no longer needed since 3-level nav is always active
 
 // ===== WELCOME SCREEN =====
+let welcomeGameMode = 'pvp';
+
+function setWelcomeMode(mode) {
+  welcomeGameMode = mode;
+  document.getElementById('wMode2p').classList.toggle('active', mode==='pvp');
+  document.getElementById('wMode1p').classList.toggle('active', mode==='ai');
+  const p2g = document.getElementById('wP2Group');
+  if(mode==='ai') {
+    p2g.style.opacity='0.3';
+    p2g.querySelector('input').disabled=true;
+  } else {
+    p2g.style.opacity='1';
+    p2g.querySelector('input').disabled=false;
+  }
+}
+
+function applyGameMode(mode) {
+  // Switch all games that support vs PC mode
+  const games = ['ticTacToe','rockPaper','guessNum','memory','connect4'];
+  games.forEach(gId => {
+    const area = document.getElementById(gId);
+    if(!area) return;
+    const btns = area.querySelectorAll('.mode-btn');
+    let targetBtn = null;
+    btns.forEach(b => {
+      b.classList.remove('active');
+      if(mode==='ai' && b.textContent.includes('Počítač')) { b.classList.add('active'); targetBtn=b; }
+      if(mode==='pvp' && b.textContent.includes('2 Hráči')) { b.classList.add('active'); targetBtn=b; }
+    });
+    if(targetBtn) targetBtn.click();
+  });
+}
+
 function startFromWelcome() {
   const p1 = document.getElementById('wP1Input').value.trim() || 'Hráč 1';
-  const p2 = document.getElementById('wP2Input').value.trim() || 'Hráč 2';
+  const p2 = welcomeGameMode==='ai' ? 'Počítač' : (document.getElementById('wP2Input').value.trim() || 'Hráč 2');
   document.getElementById('globalP1Input').value = p1;
   document.getElementById('globalP2Input').value = p2;
   onGlobalNameChange();
+  applyGameMode(welcomeGameMode);
   const ws = document.getElementById('welcomeScreen');
   ws.classList.add('hide');
   setTimeout(() => { ws.style.display = 'none'; }, 520);
