@@ -1,7 +1,5 @@
-const CACHE_NAME = 'hrajmesi-v12';
+const CACHE_NAME = 'hrajmesi-v13';
 const ASSETS = [
-  './',
-  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -24,6 +22,21 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  // HTML pages: network-first (always get latest)
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  // Other assets (icons, manifest): cache-first (fast offline)
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
