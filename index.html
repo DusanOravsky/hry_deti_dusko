@@ -7488,6 +7488,13 @@ const MOBILE_GAMES = [
 let _gameAreaParent = null;
 let _mobileCurrentGame = null;
 
+function _returnGameToParent() {
+  if(_mobileCurrentGame && _gameAreaParent) {
+    const prev = document.getElementById(_mobileCurrentGame);
+    if(prev) { prev.style.display='none'; _gameAreaParent.appendChild(prev); }
+  }
+  _mobileCurrentGame = null;
+}
 function mobileGoTo(level, gameId) {
   const picker = document.getElementById('mobileGamePicker');
   const view   = document.getElementById('mobileGameView');
@@ -7495,16 +7502,17 @@ function mobileGoTo(level, gameId) {
   view.classList.remove('active');
 
   if(level === 1) {
-    // Show welcome screen again
+    _returnGameToParent();
     const ws = document.getElementById('welcomeScreen');
     ws.style.display = '';
     ws.classList.remove('hide');
   } else if(level === 2) {
+    _returnGameToParent();
     picker.classList.add('active');
     renderMobileGrid();
     _updateMobileChips();
   } else if(level === 3 && gameId) {
-    _mobileCurrentGame = gameId;
+    _returnGameToParent();
     view.classList.add('active');
     // Set title
     const gDef = MOBILE_GAMES.find(g => g.id === gameId);
@@ -7512,21 +7520,16 @@ function mobileGoTo(level, gameId) {
       (gDef ? gDef.icon + ' ' : '') + (GAME_NAMES[gameId] || gameId);
     // Move game-area into mobile content
     const content = document.getElementById('mobileGameContent');
-    // Return previous game area to its original parent before replacing
-    if(_mobileCurrentGame && _gameAreaParent) {
-      const prev = document.getElementById(_mobileCurrentGame);
-      if(prev) { prev.style.display='none'; _gameAreaParent.appendChild(prev); }
-    }
     content.innerHTML = '';
     const area = document.getElementById(gameId);
     if(area) {
-      if(!_gameAreaParent) _gameAreaParent = area.parentElement;
+      _gameAreaParent = area.parentElement;
       content.appendChild(area);
       area.style.display = 'block';
     }
+    _mobileCurrentGame = gameId;
     currentGameId = gameId;
     if(gameId === 'stats') renderStats();
-    // Scroll to top when opening a game
     content.scrollTop = 0;
   }
   _updateMobileToggles();
