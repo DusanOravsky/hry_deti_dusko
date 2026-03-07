@@ -4232,7 +4232,7 @@ const BS = {
 function resetBS() {
   BS.boards=[Array(100).fill(0),Array(100).fill(0)];
   BS.hits=[Array(100).fill(0),Array(100).fill(0)];
-  BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false;
+  BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false; BS.aiHits=[]; BS.aiMode='hunt';
   document.getElementById('bsSetupArea').style.display='block';
   document.getElementById('bsGameArea').style.display='none';
   document.getElementById('bsCoverDiv').style.display='none';
@@ -4304,6 +4304,12 @@ function bsPlaceShip(idx) {
 }
 function bsPlayerReady() {
   if(BS.currSetup===0){
+    if(welcomeGameMode==='ai') {
+      // AI auto-places ships for player 2
+      bsAIPlaceShips();
+      bsStartGame();
+      return;
+    }
     document.getElementById('bsReadyBtn').style.display='none';
     document.getElementById('bsCoverDiv').style.display='block';
     document.getElementById('bsCoverText').textContent=getP2Name('bs')+': Umiestni lode!';
@@ -4323,8 +4329,10 @@ function bsStartGame() {
   BS.turn=1; bsRenderGame();
 }
 function bsRenderGame() {
-  const attacker=BS.turn===1?0:1, defender=BS.turn===1?1:0;
-  document.getElementById('bsEnemyLabel').textContent=(BS.turn===1?getP2Name('bs'):getP1Name('bs'))+'\'s doska 🎯';
+  // In AI mode always show from player 1 perspective
+  const viewAs = welcomeGameMode==='ai' ? 1 : BS.turn;
+  const attacker=viewAs===1?0:1, defender=viewAs===1?1:0;
+  document.getElementById('bsEnemyLabel').textContent=(viewAs===1?getP2Name('bs'):getP1Name('bs'))+'\'s doska 🎯';
   document.getElementById('bsMyLabel').textContent='Moja doska';
   // Enemy grid (clickable)
   const eg=document.getElementById('bsEnemyGrid'); eg.innerHTML='';
@@ -4358,6 +4366,7 @@ function bsRenderGame() {
 }
 function bsShoot(idx) {
   if(BS.over) return;
+  if(welcomeGameMode==='ai'&&BS.turn===2) return; // block clicks during AI turn
   const defender=BS.turn===1?1:0;
   if(BS.hits[defender][idx]) return;
 
@@ -4398,12 +4407,111 @@ function bsShoot(idx) {
     BS.turn=BS.turn===1?2:1;
     const nextName = BS.turn===1?getP1Name('bs'):getP2Name('bs');
     const prevName = BS.turn===1?getP2Name('bs'):getP1Name('bs');
-    document.getElementById('bsStatus').textContent=`🌊 Minul! Odovzdaj tablet → ${nextName} strieľa!`;
-    bsRenderGame();
+    if(welcomeGameMode==='ai'&&BS.turn===2) {
+      document.getElementById('bsStatus').textContent='🌊 Minul! Počítač strieľa...';
+      bsRenderGame();
+      setTimeout(bsAIShoot,1000);
+    } else {
+      document.getElementById('bsStatus').textContent=`🌊 Minul! Odovzdaj tablet → ${nextName} strieľa!`;
+      bsRenderGame();
+    }
   }
 }
 
 const bsShipDefs=[{name:'Lietadlová loď',size:5,emoji:'🛸'},{name:'Krížnik',size:4,emoji:'🚢'},{name:'Torpédoborec',size:3,emoji:'⛴️'},{name:'Ponorka',size:3,emoji:'🚤'},{name:'Hliadka',size:2,emoji:'🛥️'}];
+
+function bsAIPlaceShips() {
+  BS.boards[1]=Array(100).fill(0);
+  BS.placedShips[1]=[];
+  bsShipDefs.forEach((ship,si)=>{
+    let placed=false;
+    while(!placed){
+      const horiz=Math.random()<0.5;
+      const row=Math.floor(Math.random()*10), col=Math.floor(Math.random()*10);
+      const cells=[];
+      let ok=true;
+      for(let k=0;k<ship.size;k++){
+        const idx=horiz?row*10+col+k:(row+k)*10+col;
+        if(horiz&&col+ship.size>10){ok=false;break;}
+        if(!horiz&&row+ship.size>10){ok=false;break;}
+        if(BS.boards[1][idx]){ok=false;break;}
+        cells.push(idx);
+      }
+      if(ok){cells.forEach(c=>BS.boards[1][c]=si+1);BS.placedShips[1].push(si);placed=true;}
+    }
+  });
+}
+// AI hunt/target shooting
+BS.aiHits=[];
+BS.aiMode='hunt';
+function bsAIShoot() {
+  if(BS.over||BS.turn!==2) return;
+  let target=-1;
+  if(BS.aiMode==='target'&&BS.aiHits.length>0) {
+    // Try adjacent cells of unresolved hits
+    const dirs=[1,-1,10,-10];
+    for(const h of BS.aiHits){
+      for(const d of dirs){
+        const t=h+d;
+        if(t<0||t>=100) continue;
+        if(d===1&&h%10===9) continue;
+        if(d===-1&&h%10===0) continue;
+        if(!BS.hits[0][t]){target=t;break;}
+      }
+      if(target>=0) break;
+    }
+    if(target<0) { BS.aiMode='hunt'; BS.aiHits=[]; }
+  }
+  if(target<0) {
+    // Hunt mode: random unshot cell, prefer checkerboard pattern
+    const candidates=[];
+    for(let i=0;i<100;i++){
+      if(!BS.hits[0][i]){
+        if((Math.floor(i/10)+i%10)%2===0) candidates.unshift(i);
+        else candidates.push(i);
+      }
+    }
+    if(candidates.length===0) return;
+    target=candidates[Math.floor(Math.random()*Math.min(candidates.length,Math.max(5,candidates.length/3)))];
+  }
+  // Execute shot on player's board
+  const isHit=!!BS.boards[0][target];
+  BS.hits[0][target]=isHit?2:1;
+  bsRenderGame();
+  // Animate on "my board" grid (player's board shown from player's perspective)
+  const myGrid=document.querySelectorAll('#bsMyGrid .bs-cell');
+  if(myGrid[target]){
+    myGrid[target].classList.add(isHit?'hit-anim':'miss-anim');
+    setTimeout(()=>myGrid[target].classList.remove(isHit?'hit-anim':'miss-anim'),500);
+  }
+  if(isHit){
+    playSound('hit');
+    BS.aiHits.push(target);
+    BS.aiMode='target';
+    // Check if ship sunk - remove sunk ship hits from aiHits
+    const shipId=BS.boards[0][target];
+    const shipCells=BS.boards[0].map((v,i)=>v===shipId?i:null).filter(v=>v!==null);
+    if(shipCells.every(c=>BS.hits[0][c]===2)){
+      BS.aiHits=BS.aiHits.filter(h=>!shipCells.includes(h));
+      if(BS.aiHits.length===0) BS.aiMode='hunt';
+    }
+    // Check win
+    const allShipCells=BS.boards[0].map((v,i)=>v?i:null).filter(v=>v!==null);
+    if(allShipCells.every(c=>BS.hits[0][c]===2)){
+      BS.over=true;
+      BS.s2++;document.getElementById('p2ScoreBS').textContent=BS.s2;addWin(2);
+      document.getElementById('bsStatus').textContent='🎉 '+getP2Name('bs')+' vyhral! Všetky lode potopené!';
+      playSound('win');celebrate('bsCelebration');bsRenderGame();return;
+    }
+    document.getElementById('bsStatus').textContent='💥 Zásah! '+getP2Name('bs')+' strieľa znova!';
+    setTimeout(bsAIShoot,800);
+    return;
+  }
+  playSound('click');
+  BS.turn=1;
+  document.getElementById('bsStatus').textContent='🌊 Počítač minul! '+getP1Name('bs')+' strieľa!';
+  bsRenderGame();
+}
 
 // =============================================================================
 // SEKCIA 14: GHOST — stav v objekte GHOST + slovníky
@@ -6509,6 +6617,7 @@ function renderChessBoard() {
 }
 function chessClick(i) {
   if(CH.over) return;
+  if(welcomeGameMode==='ai'&&CH.turn==='b') return;
   const piece=CH.board[i];
   if(CH.selected===null) {
     if(piece && piece[0]===CH.turn) { CH.selected=i; renderChessBoard(); }
@@ -6538,6 +6647,30 @@ function chessMove(from,to) {
   document.getElementById('chStatus').textContent=(CH.turn==='w'?'⬜':'⬛')+' '+turnName+' na ťahu';
   activeTurn('chP1Card','chP2Card',CH.turn==='w'?1:2);
   renderChessBoard();
+  // AI move
+  if(welcomeGameMode==='ai'&&CH.turn==='b'&&!CH.over) {
+    setTimeout(chessAI,500);
+  }
+}
+function chessAI() {
+  if(CH.over) return;
+  const pieces=[];
+  for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]==='b') {
+    const mvs=getChessMoves(i);
+    mvs.forEach(m=>pieces.push({from:i,to:m}));
+  }
+  if(pieces.length===0) return;
+  // Prefer captures, especially high-value
+  const vals={P:1,N:3,B:3,R:5,Q:9,K:100};
+  const captures=pieces.filter(m=>CH.board[m.to]&&CH.board[m.to][0]==='w');
+  let pick;
+  if(captures.length>0) {
+    captures.sort((a,b)=>(vals[CH.board[b.to][1]]||0)-(vals[CH.board[a.to][1]]||0));
+    pick=captures[0];
+  } else {
+    pick=pieces[Math.floor(Math.random()*pieces.length)];
+  }
+  chessMove(pick.from,pick.to);
 }
 function chessWin(color) {
   CH.over=true;
@@ -6629,6 +6762,7 @@ function renderCheckersBoard() {
 }
 function dkClick(i) {
   if(DK.over) return;
+  if(welcomeGameMode==='ai'&&DK.turn==='b') return;
   const p=DK.board[i];
   const isOwn=p&&((DK.turn==='r'&&(p==='r'||p==='R'))||(DK.turn==='b'&&(p==='b'||p==='B')));
   if(DK.mustJump!==null) {
@@ -6664,7 +6798,10 @@ function dkDoMove(from,to,isJump) {
   if(isJump) {
     const moreJumps=getDKJumps(to);
     if(moreJumps.length>0) {
-      DK.selected=to; DK.mustJump=to; renderCheckersBoard(); return;
+      DK.selected=to; DK.mustJump=to; renderCheckersBoard();
+      // AI multi-jump
+      if(welcomeGameMode==='ai'&&DK.turn==='b'&&!DK.over) setTimeout(checkersAI,400);
+      return;
     }
   }
   DK.selected=null; DK.mustJump=null;
@@ -6678,6 +6815,8 @@ function dkDoMove(from,to,isJump) {
   document.getElementById('dkStatus').textContent=name+(DK.turn==='r'?' (🔴)':' (⚫)')+' na ťahu';
   activeTurn('dkP1Card','dkP2Card',DK.turn==='r'?1:2);
   renderCheckersBoard();
+  // AI move
+  if(welcomeGameMode==='ai'&&DK.turn==='b'&&!DK.over) setTimeout(checkersAI,500);
 }
 function dkWin(color) {
   DK.over=true;
@@ -6726,6 +6865,47 @@ function getDKJumps(idx) {
   });
   return jumps;
 }
+function checkersAI() {
+  if(DK.over||DK.turn!=='b') return;
+  // Multi-jump continuation
+  if(DK.mustJump!==null) {
+    const jumps=getDKJumps(DK.mustJump);
+    if(jumps.length>0) { dkDoMove(DK.mustJump,jumps[Math.floor(Math.random()*jumps.length)],true); }
+    return;
+  }
+  // Collect all moves for black pieces
+  const allMoves=[];
+  for(let i=0;i<64;i++){
+    const p=DK.board[i];
+    if(p==='b'||p==='B'){
+      const mvs=getDKMoves(i);
+      mvs.forEach(to=>allMoves.push({from:i,to:to}));
+    }
+  }
+  if(allMoves.length===0) return;
+  // Prefer jumps
+  const jumps=allMoves.filter(m=>Math.abs(Math.floor(m.to/8)-Math.floor(m.from/8))===2);
+  // Prefer king moves, center control
+  let pick;
+  if(jumps.length>0) {
+    // Prefer multi-jump potential and king jumps
+    pick=jumps[Math.floor(Math.random()*jumps.length)];
+  } else {
+    // Prefer advancing toward promotion (row 7) and center
+    allMoves.sort((a,b)=>{
+      const ar=Math.floor(a.to/8), br=Math.floor(b.to/8);
+      const ac=a.to%8, bc=b.to%8;
+      const aCenter=Math.abs(3.5-ac), bCenter=Math.abs(3.5-bc);
+      return (br-ar)||( aCenter-bCenter);
+    });
+    // Pick from top candidates with some randomness
+    const top=allMoves.slice(0,Math.min(3,allMoves.length));
+    pick=top[Math.floor(Math.random()*top.length)];
+  }
+  DK.selected=pick.from;
+  const isJump=Math.abs(Math.floor(pick.to/8)-Math.floor(pick.from/8))===2;
+  dkDoMove(pick.from,pick.to,isJump);
+}
 
 resetChess();
 resetCheckers();
@@ -6754,10 +6934,10 @@ const MOBILE_GAMES = [
   { id:'memory',        label:'Memory',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both' },
   { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both' },
   { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both' },
-  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'pvp' },
-  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'pvp' },
+  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both' },
+  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both' },
   { id:'quiz',          label:'Kvíz',           icon:'❓', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp' },
-  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'pvp' },
+  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both' },
   { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp' },
   { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
   { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp' },
