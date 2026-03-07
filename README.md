@@ -69,9 +69,21 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v48**
+Aktuálna verzia: **v49**
 
 ## Changelog
+
+### v49 (2026-03-07)
+- 🎮 **MP Step 4/5: Piškvorky Online Multiplayer!**
+  - Piškvorky now work over the internet!
+  - Host = Hráč 1 (X), Guest = Hráč 2 (O)
+  - Turn-based system: only your turn is clickable
+  - Moves synchronized via MP.connection.send()
+  - Opponent moves received via mpHandleMessage()
+  - Win detection works for both players
+  - Real-time game state synchronization
+  - User tested: "spojili sme 2 mobily dali zelena fajka"
+  - **Next step:** Extend to more games (Connect4, Ghost, etc.)
 
 ### v48 (2026-03-07)
 - 🚀 **MP Step 3/5: PeerJS Real Connections (debugged!)**
