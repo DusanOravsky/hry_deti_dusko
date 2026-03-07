@@ -69,9 +69,16 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v20**
+Aktuálna verzia: **v21**
 
 ## Changelog
+
+### v21 (2026-03-07)
+- 🎮 **Nová hra: Tetris** - 2 hráči súťažia (šípky vs WASD)
+  - Klasický Tetris s 7 tvarmi (I, O, T, S, Z, J, L)
+  - Každý hráč má vlastné pole 10×20
+  - Rýchlosť sa zvyšuje s levelom
+  - Body za cleared lines
 
 ### v20 (2026-03-07)
 - Nové: Rozšírené zvuky (move, correct, flip, shot, miss, timeout) s vibráciami
