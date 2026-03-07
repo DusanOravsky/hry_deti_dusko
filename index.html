@@ -1252,7 +1252,9 @@ body.light .stats-section h3 { border-bottom-color:rgba(0,0,0,0.08); }
 .stats-history-winner.draw { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); }
 .stats-history-time { opacity:0.4; font-size:0.8em; min-width:60px; text-align:right; }
 .stats-empty { text-align:center; opacity:0.4; padding:30px; font-size:0.9em; }
-.stats-reset-btn { background:transparent; border:1px solid rgba(255,87,108,0.3); color:rgba(255,87,108,0.7); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.8em; float:right; margin-top:-30px; }
+.stats-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.stats-header h3 { margin:0; }
+.stats-reset-btn { background:transparent; border:1px solid rgba(255,87,108,0.3); color:rgba(255,87,108,0.7); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.8em; white-space:nowrap; }
 .stats-reset-btn:hover { background:rgba(255,87,108,0.1); }
 .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:5000; align-items:center; justify-content:center; }
 .confirm-overlay.show { display:flex; }
@@ -2336,9 +2338,10 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     </div>
 
     <div class="stats-section">
-      <h3>📋 História posledných hier
+      <div class="stats-header">
+        <h3>📋 História posledných hier</h3>
         <button class="stats-reset-btn" onclick="resetAllStats()">🗑️ Vymazať všetko</button>
-      </h3>
+      </div>
       <div class="stats-game-history" id="stHistory">
         <div class="stats-empty">Zatiaľ žiadne hry 🎮</div>
       </div>
