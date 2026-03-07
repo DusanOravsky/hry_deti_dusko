@@ -2333,6 +2333,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="player-card player1 active-turn" id="bsP1Card"><div class="player-name-display" id="bsP1Name">Lukáško</div><div class="player-score" id="p1ScoreBS">0</div></div>
       <div class="player-card player2" id="bsP2Card"><div class="player-name-display" id="bsP2Name">Natálka</div><div class="player-score" id="p2ScoreBS">0</div></div>
     </div>
+    <div class="difficulty-selector" id="bsAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setBSDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setBSDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setBSDiff('hard',this)">Ťažká</button>
+    </div>
     <div class="status" id="bsStatus">Hráč 1: Umiestni lode!</div>
     <div class="celebration" id="bsCelebration">🎉</div>
     <div id="bsSetupArea">
@@ -2803,6 +2808,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="player-card player1 active-turn" id="mzP1Card"><div class="player-name-display" id="mzP1Name">Lukáško</div><div class="player-score" id="p1ScoreMZ">0</div></div>
       <div class="player-card player2" id="mzP2Card"><div class="player-name-display" id="mzP2Name">Natálka</div><div class="player-score" id="p2ScoreMZ">0</div></div>
     </div>
+    <div class="difficulty-selector" id="mzAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setMZDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setMZDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setMZDiff('hard',this)">Ťažká</button>
+    </div>
     <div class="status" id="mzStatus">Klikni Štart!</div>
     <div class="maze-timer" id="mzTimer">0.0s</div>
     <canvas class="maze-canvas" id="mzCanvas" width="300" height="300"></canvas>
@@ -2988,6 +2998,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="player-card player1 active-turn" id="chP1Card"><div class="player-name-display" id="chP1Name">Lukáško</div><div class="player-score" id="p1ScoreCH">0</div></div>
       <div class="player-card player2" id="chP2Card"><div class="player-name-display" id="chP2Name">Natálka</div><div class="player-score" id="p2ScoreCH">0</div></div>
     </div>
+    <div class="difficulty-selector" id="chAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setCHDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setCHDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setCHDiff('hard',this)">Ťažká</button>
+    </div>
     <div class="status" id="chStatus">Biely na ťahu</div>
     <div style="text-align:center;overflow-x:auto">
       <div id="chessBoard" class="chess-board" style="touch-action:pan-y"></div>
@@ -3009,6 +3024,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="player-info">
       <div class="player-card player1 active-turn" id="dkP1Card"><div class="player-name-display" id="dkP1Name">Lukáško</div><div class="player-score" id="p1ScoreDK">0</div></div>
       <div class="player-card player2" id="dkP2Card"><div class="player-name-display" id="dkP2Name">Natálka</div><div class="player-score" id="p2ScoreDK">0</div></div>
+    </div>
+    <div class="difficulty-selector" id="dkAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setDKDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setDKDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setDKDiff('hard',this)">Ťažká</button>
     </div>
     <div class="status" id="dkStatus">Červený na ťahu</div>
     <div style="text-align:center;overflow-x:auto">
@@ -3075,6 +3095,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="player-info">
       <div class="player-card player1 active-turn" id="ludoP1Card"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div class="player-score" id="p1ScoreLudo">0</div></div>
       <div class="player-card player2" id="ludoP2Card"><div class="player-name-display" id="ludoP2Name">Hráč 2</div><div class="player-score" id="p2ScoreLudo">0</div></div>
+    </div>
+    <div class="difficulty-selector" id="ludoAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setLudoDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setLudoDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setLudoDiff('hard',this)">Ťažká</button>
     </div>
     <div class="status" id="ludoStatus">Hráč 1 hádže kockou!</div>
     <div style="text-align:center;margin:15px 0">
@@ -3153,7 +3178,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 13;
+const APP_VERSION = 14;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -5171,8 +5196,9 @@ function resetQuiz() {
 const BS = {
   boards:[null,null], hits:[null,null],
   currSetup:0, selectedShip:null, orientH:true,
-  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0
+  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy'
 };
+function setBSDiff(d,btn) { BS.diff=d; document.querySelectorAll('#bsAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 // ===== LODIČKY (BATTLESHIP) =====
 
@@ -5412,7 +5438,7 @@ BS.aiMode='hunt';
 function bsAIShoot() {
   if(BS.over||BS.turn!==2) return;
   let target=-1;
-  if(BS.aiMode==='target'&&BS.aiHits.length>0) {
+  if(BS.diff!=='easy'&&BS.aiMode==='target'&&BS.aiHits.length>0) {
     // Try adjacent cells of unresolved hits
     const dirs=[1,-1,10,-10];
     for(const h of BS.aiHits){
@@ -5428,16 +5454,28 @@ function bsAIShoot() {
     if(target<0) { BS.aiMode='hunt'; BS.aiHits=[]; }
   }
   if(target<0) {
-    // Hunt mode: random unshot cell, prefer checkerboard pattern
     const candidates=[];
     for(let i=0;i<100;i++){
-      if(!BS.hits[0][i]){
-        if((Math.floor(i/10)+i%10)%2===0) candidates.unshift(i);
-        else candidates.push(i);
-      }
+      if(!BS.hits[0][i]) candidates.push(i);
     }
     if(candidates.length===0) return;
-    target=candidates[Math.floor(Math.random()*Math.min(candidates.length,Math.max(5,candidates.length/3)))];
+    if(BS.diff==='easy') {
+      // Easy: pure random
+      target=candidates[Math.floor(Math.random()*candidates.length)];
+    } else if(BS.diff==='medium') {
+      // Medium: checkerboard pattern preference
+      const checker=candidates.filter(i=>(Math.floor(i/10)+i%10)%2===0);
+      const pool=checker.length>0?checker:candidates;
+      target=pool[Math.floor(Math.random()*pool.length)];
+    } else {
+      // Hard: checkerboard + density preference (center/edges)
+      candidates.sort((a,b)=>{
+        const aCB=(Math.floor(a/10)+a%10)%2===0?-1:1;
+        const bCB=(Math.floor(b/10)+b%10)%2===0?-1:1;
+        return aCB-bCB;
+      });
+      target=candidates[Math.floor(Math.random()*Math.min(candidates.length,Math.max(5,candidates.length/4)))];
+    }
   }
   // Execute shot on player's board
   const isHit=!!BS.boards[0][target];
@@ -7581,7 +7619,8 @@ function randomBattle() {
 // =============================================================================
 // SEKCIA 28: ŠACH (CHESS)
 // =============================================================================
-const CH = { board:[], selected:null, turn:'w', s1:0, s2:0, over:false, lastFrom:-1, lastTo:-1 };
+const CH = { board:[], selected:null, turn:'w', s1:0, s2:0, over:false, lastFrom:-1, lastTo:-1, diff:'easy' };
+function setCHDiff(d,btn) { CH.diff=d; document.querySelectorAll('#chAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 const CH_START = [
   'bR','bN','bB','bQ','bK','bB','bN','bR',
   'bP','bP','bP','bP','bP','bP','bP','bP',
@@ -7673,15 +7712,32 @@ function chessAI() {
     mvs.forEach(m=>pieces.push({from:i,to:m}));
   }
   if(pieces.length===0) return;
-  // Prefer captures, especially high-value
   const vals={P:1,N:3,B:3,R:5,Q:9,K:100};
   const captures=pieces.filter(m=>CH.board[m.to]&&CH.board[m.to][0]==='w');
   let pick;
-  if(captures.length>0) {
-    captures.sort((a,b)=>(vals[CH.board[b.to][1]]||0)-(vals[CH.board[a.to][1]]||0));
-    pick=captures[0];
-  } else {
+  if(CH.diff==='easy') {
+    // Easy: pure random
     pick=pieces[Math.floor(Math.random()*pieces.length)];
+  } else if(CH.diff==='medium') {
+    // Medium: capture if available, else random
+    if(captures.length>0) { pick=captures[Math.floor(Math.random()*captures.length)]; }
+    else { pick=pieces[Math.floor(Math.random()*pieces.length)]; }
+  } else {
+    // Hard: prefer highest-value captures, center control, advance pawns
+    if(captures.length>0) {
+      captures.sort((a,b)=>(vals[CH.board[b.to][1]]||0)-(vals[CH.board[a.to][1]]||0));
+      pick=captures[0];
+    } else {
+      // Score moves: center preference + pawn advancement
+      pieces.forEach(m=>{
+        const r=Math.floor(m.to/8),c=m.to%8;
+        m.score=4-Math.abs(3.5-r)+4-Math.abs(3.5-c);
+        if(CH.board[m.from]&&CH.board[m.from][1]==='P') m.score+=r; // advance pawns
+      });
+      pieces.sort((a,b)=>b.score-a.score);
+      const top=pieces.slice(0,Math.min(3,pieces.length));
+      pick=top[Math.floor(Math.random()*top.length)];
+    }
   }
   chessMove(pick.from,pick.to);
 }
@@ -7735,7 +7791,8 @@ function getChessMoves(idx) {
 // =============================================================================
 // SEKCIA 29: DÁMA (CHECKERS)
 // =============================================================================
-const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null };
+const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null, diff:'easy' };
+function setDKDiff(d,btn) { DK.diff=d; document.querySelectorAll('#dkAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetCheckers() {
   DK.board=Array(64).fill('');
@@ -7908,24 +7965,32 @@ function checkersAI() {
     }
   }
   if(allMoves.length===0) return;
-  // Prefer jumps
   const jumps=allMoves.filter(m=>Math.abs(Math.floor(m.to/8)-Math.floor(m.from/8))===2);
-  // Prefer king moves, center control
   let pick;
-  if(jumps.length>0) {
-    // Prefer multi-jump potential and king jumps
-    pick=jumps[Math.floor(Math.random()*jumps.length)];
+  if(DK.diff==='easy') {
+    // Easy: random, but still forced jumps
+    if(jumps.length>0) pick=jumps[Math.floor(Math.random()*jumps.length)];
+    else pick=allMoves[Math.floor(Math.random()*allMoves.length)];
+  } else if(DK.diff==='medium') {
+    // Medium: prefer jumps, then random
+    if(jumps.length>0) { pick=jumps[Math.floor(Math.random()*jumps.length)]; }
+    else {
+      const top=allMoves.slice(0,Math.min(3,allMoves.length));
+      pick=top[Math.floor(Math.random()*top.length)];
+    }
   } else {
-    // Prefer advancing toward promotion (row 7) and center
-    allMoves.sort((a,b)=>{
-      const ar=Math.floor(a.to/8), br=Math.floor(b.to/8);
-      const ac=a.to%8, bc=b.to%8;
-      const aCenter=Math.abs(3.5-ac), bCenter=Math.abs(3.5-bc);
-      return (br-ar)||( aCenter-bCenter);
-    });
-    // Pick from top candidates with some randomness
-    const top=allMoves.slice(0,Math.min(3,allMoves.length));
-    pick=top[Math.floor(Math.random()*top.length)];
+    // Hard: jumps first, then advance + center control
+    if(jumps.length>0) { pick=jumps[Math.floor(Math.random()*jumps.length)]; }
+    else {
+      allMoves.sort((a,b)=>{
+        const ar=Math.floor(a.to/8), br=Math.floor(b.to/8);
+        const ac=a.to%8, bc=b.to%8;
+        const aCenter=Math.abs(3.5-ac), bCenter=Math.abs(3.5-bc);
+        return (br-ar)||(aCenter-bCenter);
+      });
+      const top=allMoves.slice(0,Math.min(3,allMoves.length));
+      pick=top[Math.floor(Math.random()*top.length)];
+    }
   }
   DK.selected=pick.from;
   const isJump=Math.abs(Math.floor(pick.to/8)-Math.floor(pick.from/8))===2;
@@ -8087,8 +8152,9 @@ document.addEventListener('keydown',e=>{
 // =============================================================================
 const LUDO = {
   dice:0, turn:0, rolled:false, over:false, s1:0, s2:0,
-  pieces:[[-1,-1,-1,-1],[-1,-1,-1,-1]]
+  pieces:[[-1,-1,-1,-1],[-1,-1,-1,-1]], diff:'easy'
 };
+function setLudoDiff(d,btn) { LUDO.diff=d; document.querySelectorAll('#ludoAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 const LUDO_PATH = [
   [10,4],[9,4],[8,4],[7,4],[6,4],
   [6,3],[6,2],[6,1],[6,0],
@@ -8235,12 +8301,27 @@ function ludoDoRollAI() {
     if(LUDO.over||LUDO.turn!==1) return;
     const moves=ludoGetMovable();
     if(moves.length===0) return;
-    let best=moves[0];
-    for(const m of moves){
-      if(m.to<40){const abs=(LUDO_START[1]+m.to)%40;const canCap=LUDO.pieces[0].some(op=>op>=0&&op<40&&(LUDO_START[0]+op)%40===abs);if(canCap){best=m;break;}}
+    let best;
+    if(LUDO.diff==='easy') {
+      // Easy: random move
+      best=moves[Math.floor(Math.random()*moves.length)];
+    } else if(LUDO.diff==='medium') {
+      // Medium: prefer captures and home, but some randomness
+      best=moves[0];
+      for(const m of moves){
+        if(m.to<40){const abs=(LUDO_START[1]+m.to)%40;const canCap=LUDO.pieces[0].some(op=>op>=0&&op<40&&(LUDO_START[0]+op)%40===abs);if(canCap){best=m;break;}}
+      }
+      const homeM=moves.find(m=>m.to>=40);if(homeM&&Math.random()>0.3) best=homeM;
+      if(Math.random()<0.25) best=moves[Math.floor(Math.random()*moves.length)];
+    } else {
+      // Hard: always optimal - capture > home > leave base > advance
+      best=moves[0];
+      for(const m of moves){
+        if(m.to<40){const abs=(LUDO_START[1]+m.to)%40;const canCap=LUDO.pieces[0].some(op=>op>=0&&op<40&&(LUDO_START[0]+op)%40===abs);if(canCap){best=m;break;}}
+      }
+      const homeM=moves.find(m=>m.to>=40);if(homeM) best=homeM;
+      const baseM=moves.find(m=>m.from===-1);if(baseM&&!homeM) best=baseM;
     }
-    const homeM=moves.find(m=>m.to>=40);if(homeM) best=homeM;
-    const baseM=moves.find(m=>m.from===-1);if(baseM&&!homeM) best=baseM;
     ludoDoMove(best.piece);
   },800);
 }
@@ -8692,7 +8773,8 @@ function puzzleAI() {
 // =============================================================================
 // SEKCIA 31: MINI LABYRINT (MAZE)
 // =============================================================================
-const MZ = { grid:null, cols:15, rows:15, px:0, py:0, ex:14, ey:14, player:1, times:[0,0], timer:null, startTime:0, done:false, s1:0, s2:0, mazeData:null, cellSize:20, aiSolving:false };
+const MZ = { grid:null, cols:15, rows:15, px:0, py:0, ex:14, ey:14, player:1, times:[0,0], timer:null, startTime:0, done:false, s1:0, s2:0, mazeData:null, cellSize:20, aiSolving:false, diff:'easy' };
+function setMZDiff(d,btn) { MZ.diff=d; document.querySelectorAll('#mzAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetMaze() {
   MZ.done=false; MZ.player=1; MZ.times=[0,0]; MZ.aiSolving=false;
@@ -8832,7 +8914,9 @@ function mazeAI() {
   }
   if(!solution){MZ.aiSolving=false;return;}
   let step=0;
-  const speed=Math.max(50,200-solution.length*2); // Faster for longer mazes
+  // Difficulty affects AI speed: easy=slow, medium=normal, hard=fast
+  const baseSpeed=MZ.diff==='hard'?60:MZ.diff==='medium'?140:250;
+  const speed=Math.max(baseSpeed/2,baseSpeed-solution.length);
   function aiStep(){
     if(step>=solution.length){MZ.aiSolving=false;mazeDone();return;}
     const{dx,dy}=solution[step++];
@@ -9225,6 +9309,19 @@ function applyGameMode(mode) {
     });
     if(targetBtn) targetBtn.click();
   });
+  // Show/hide AI difficulty for games that use global welcomeGameMode
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel'];
+  aiSels.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
+  });
+  // Update P2 names for AI mode
+  if(mode==='ai') {
+    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.textContent = 'Počítač';
+    });
+  }
 }
 
 function startFromWelcome() {
