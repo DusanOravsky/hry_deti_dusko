@@ -3166,6 +3166,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div id="snakeBest" style="font-size:2.5em;font-weight:900;color:#ffd200">0</div>
       </div>
     </div>
+    <div class="difficulty-selector" id="snakeDiffSel" style="display:flex">
+      <button class="difficulty-btn active" onclick="setSnakeDiff('easy',this)">Pomalý</button>
+      <button class="difficulty-btn" onclick="setSnakeDiff('medium',this)">Stredný</button>
+      <button class="difficulty-btn" onclick="setSnakeDiff('hard',this)">Rýchly</button>
+    </div>
     <div class="status" id="snakeStatus">Pripravení? Štart!</div>
     <canvas id="snakeCanvas" width="320" height="320" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:#1a1a2e;touch-action:none"></canvas>
     <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap">
@@ -3275,7 +3280,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 20;
+const APP_VERSION = 21;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8367,16 +8372,18 @@ document.addEventListener('keydown',e=>{
 // =============================================================================
 // SEKCIA 29.6: SNAKE — Solo had
 // =============================================================================
+const SNK_SPEEDS={easy:250,medium:180,hard:120};
 const SNK = {
   W:20, H:20,
   body:[{x:10,y:10}], dir:'right', nextDir:'right',
   food:{x:15,y:10}, score:0, best:parseInt(localStorage.getItem('hry_snakeBest')||'0'),
-  timer:null, running:false, over:false, speed:140
+  timer:null, running:false, over:false, speed:250, diff:'easy'
 };
+function setSnakeDiff(d,btn){SNK.diff=d;btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function resetSnake(){
   if(SNK.timer)clearInterval(SNK.timer);
-  SNK.running=false; SNK.over=false; SNK.speed=140; SNK.score=0;
-  SNK.body=[{x:10,y:10}]; SNK.dir='right'; SNK.nextDir='right';
+  SNK.running=false; SNK.over=false; SNK.speed=SNK_SPEEDS[SNK.diff]; SNK.score=0;
+  SNK.body=[{x:10,y:10}]; SNK.dir='none'; SNK.nextDir='none';
   snakePlaceFood();
   renderSnake();
   const el=document.getElementById('snakeScore');if(el)el.textContent='0';
@@ -8409,10 +8416,12 @@ function renderSnake(){
 function snakeSetDir(dir){
   if(!SNK.running||SNK.over)return;
   const opp={left:'right',right:'left',up:'down',down:'up'};
-  if(dir!==opp[SNK.dir])SNK.nextDir=dir;
+  // Allow any direction when snake is length 1 or hasn't started moving
+  if(SNK.body.length<=1||SNK.dir==='none'||dir!==opp[SNK.dir])SNK.nextDir=dir;
 }
 function snakeStep(){
   if(!SNK.running||SNK.over)return;
+  if(SNK.nextDir==='none')return; // waiting for first input
   SNK.dir=SNK.nextDir;
   const dx={left:-1,right:1,up:0,down:0};
   const dy={left:0,right:0,up:-1,down:1};
@@ -8436,7 +8445,7 @@ function snakeStep(){
     document.getElementById('snakeScore').textContent=SNK.score;
     snakePlaceFood();
     // speed up every 5 food
-    if(SNK.score%5===0&&SNK.speed>60){SNK.speed-=10;clearInterval(SNK.timer);SNK.timer=setInterval(snakeStep,SNK.speed);}
+    if(SNK.score%5===0&&SNK.speed>80){SNK.speed-=15;clearInterval(SNK.timer);SNK.timer=setInterval(snakeStep,SNK.speed);}
   } else SNK.body.pop();
   renderSnake();
 }
@@ -8444,7 +8453,7 @@ function startSnake(){
   if(SNK.running)return;
   resetSnake();
   SNK.running=true;
-  document.getElementById('snakeStatus').textContent='Hra beží!';
+  document.getElementById('snakeStatus').textContent='Zvol smer šípkou!';
   SNK.timer=setInterval(snakeStep,SNK.speed);
 }
 document.addEventListener('keydown',e=>{
