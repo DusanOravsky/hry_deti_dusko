@@ -932,15 +932,22 @@ input[type="number"]::placeholder { color:rgba(255,255,255,0.3); }
 }
 /* Quiz themes: horizontal scroll on mobile */
 .quiz-themes-wrap {
+  display:flex;
   flex-wrap:wrap;
+  gap:6px;
+  max-height:140px;
+  overflow-y:auto;
+  padding:4px 0;
+  scrollbar-width:thin;
 }
 @media(max-width:640px) {
   .quiz-themes-wrap {
     flex-wrap:nowrap;
     overflow-x:auto;
+    overflow-y:hidden;
+    max-height:none;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
-    padding-bottom:4px;
     justify-content:flex-start;
   }
   .quiz-themes-wrap::-webkit-scrollbar { display:none; }
@@ -2255,6 +2262,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="quiz-theme-btn" onclick="setQuizTheme('movies',this)">🎬 Filmy</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('music',this)">🎵 Hudba</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('slovakia',this)">🇸🇰 Slovensko</button>
+      <button class="quiz-theme-btn" onclick="setQuizTheme('capitals',this)">🏛️ Hlavné mestá</button>
     </div>
     <div class="timer-settings">
       <label>⏱️ Limit na odpoveď:</label>
@@ -4704,13 +4712,215 @@ quizDB.slovakia.push(
   {q:'Ako sa volá slovenský hokejista — legenda?',a:['Peter Bondra','Miroslav Šatan','Pavol Demitra','Žigmund Pálffy'],c:0}
 );
 
+// ===== CAPITALS QUIZ — 200 hlavné mestá =====
+quizDB.capitals=[
+{q:'Hlavné mesto Afganistanu?',a:['Kábul','Kandahár','Herát','Mazár-e Šaríf'],c:0},
+{q:'Hlavné mesto Albánska?',a:['Tirana','Durrës','Vlorë','Shkodër'],c:0},
+{q:'Hlavné mesto Alžírska?',a:['Alžír','Orán','Konštantína','Annaba'],c:0},
+{q:'Hlavné mesto Andorry?',a:['Andorra la Vella','Encamp','La Massana','Ordino'],c:0},
+{q:'Hlavné mesto Angoly?',a:['Luanda','Huambo','Lobito','Benguela'],c:0},
+{q:'Hlavné mesto Argentíny?',a:['Buenos Aires','Córdoba','Rosario','Mendoza'],c:0},
+{q:'Hlavné mesto Arménska?',a:['Jerevan','Gjumri','Vanadzor','Abovjan'],c:0},
+{q:'Hlavné mesto Austrálie?',a:['Canberra','Sydney','Melbourne','Brisbane'],c:0},
+{q:'Hlavné mesto Azerbajdžanu?',a:['Baku','Gandža','Sumgait','Šeki'],c:0},
+{q:'Hlavné mesto Bahám?',a:['Nassau','Freeport','Andros','Exuma'],c:0},
+{q:'Hlavné mesto Bahrajnu?',a:['Manáma','Muharraq','Riffa','Hamad'],c:0},
+{q:'Hlavné mesto Bangladéša?',a:['Dháka','Čittagong','Khulna','Rádžšáhí'],c:0},
+{q:'Hlavné mesto Barbadosu?',a:['Bridgetown','Speightstown','Holetown','Oistins'],c:0},
+{q:'Hlavné mesto Belgicka?',a:['Brusel','Antverpy','Gent','Bruggy'],c:0},
+{q:'Hlavné mesto Belize?',a:['Belmopan','Belize City','Orange Walk','San Ignacio'],c:0},
+{q:'Hlavné mesto Beninu?',a:['Porto-Novo','Cotonou','Parakou','Djougou'],c:0},
+{q:'Hlavné mesto Bieloruska?',a:['Minsk','Gomel','Vitebsk','Hrodna'],c:0},
+{q:'Hlavné mesto Bolívie?',a:['Sucre','La Paz','Santa Cruz','Cochabamba'],c:0},
+{q:'Hlavné mesto Bosny a Hercegoviny?',a:['Sarajevo','Banja Luka','Tuzla','Mostar'],c:0},
+{q:'Hlavné mesto Botswany?',a:['Gaborone','Francistown','Maun','Kasane'],c:0},
+{q:'Hlavné mesto Brazílie?',a:['Brasília','Rio de Janeiro','São Paulo','Salvador'],c:0},
+{q:'Hlavné mesto Bruneja?',a:['Bandar Seri Begawan','Tutong','Seria','Temburong'],c:0},
+{q:'Hlavné mesto Bulharska?',a:['Sofia','Plovdiv','Varna','Burgas'],c:0},
+{q:'Hlavné mesto Burkiny Faso?',a:['Ouagadougou','Bobo-Dioulasso','Koudougou','Banfora'],c:0},
+{q:'Hlavné mesto Burundi?',a:['Gitega','Bujumbura','Ngozi','Rumonge'],c:0},
+{q:'Hlavné mesto Čadu?',a:['N\'Djamena','Moundou','Sarh','Abéché'],c:0},
+{q:'Hlavné mesto Česka?',a:['Praha','Brno','Ostrava','Plzeň'],c:0},
+{q:'Hlavné mesto Čiernej Hory?',a:['Podgorica','Nikšić','Cetinje','Budva'],c:0},
+{q:'Hlavné mesto Čile?',a:['Santiago','Valparaíso','Concepción','Antofagasta'],c:0},
+{q:'Hlavné mesto Číny?',a:['Peking','Šanghaj','Kanton','Šen-čen'],c:0},
+{q:'Hlavné mesto Dánska?',a:['Kodaň','Aarhus','Odense','Aalborg'],c:0},
+{q:'Hlavné mesto Dominikánskej republiky?',a:['Santo Domingo','Santiago','La Romana','San Pedro'],c:0},
+{q:'Hlavné mesto Egypta?',a:['Káhira','Alexandria','Gíza','Luxor'],c:0},
+{q:'Hlavné mesto Ekvádoru?',a:['Quito','Guayaquil','Cuenca','Machala'],c:0},
+{q:'Hlavné mesto Eritrey?',a:['Asmara','Keren','Massawa','Assab'],c:0},
+{q:'Hlavné mesto Estónska?',a:['Tallinn','Tartu','Narva','Pärnu'],c:0},
+{q:'Hlavné mesto Etiópie?',a:['Addis Abeba','Dire Dawa','Mekele','Gondar'],c:0},
+{q:'Hlavné mesto Fidži?',a:['Suva','Nadi','Lautoka','Labasa'],c:0},
+{q:'Hlavné mesto Filipín?',a:['Manila','Cebu','Davao','Quezon'],c:0},
+{q:'Hlavné mesto Fínska?',a:['Helsinki','Espoo','Tampere','Turku'],c:0},
+{q:'Hlavné mesto Francúzska?',a:['Paríž','Marseille','Lyon','Toulouse'],c:0},
+{q:'Hlavné mesto Gabonu?',a:['Libreville','Port-Gentil','Franceville','Oyem'],c:0},
+{q:'Hlavné mesto Gambie?',a:['Banjul','Serekunda','Brikama','Bakau'],c:0},
+{q:'Hlavné mesto Ghany?',a:['Accra','Kumasi','Tamale','Takoradi'],c:0},
+{q:'Hlavné mesto Grécka?',a:['Atény','Solún','Patras','Heraklion'],c:0},
+{q:'Hlavné mesto Gruzínska?',a:['Tbilisi','Batumi','Kutaisi','Rustavi'],c:0},
+{q:'Hlavné mesto Guatemaly?',a:['Guatemala City','Quetzaltenango','Escuintla','Mixco'],c:0},
+{q:'Hlavné mesto Guiney?',a:['Conakry','Nzérékoré','Kankan','Kindia'],c:0},
+{q:'Hlavné mesto Haiti?',a:['Port-au-Prince','Cap-Haïtien','Gonaïves','Jacmel'],c:0},
+{q:'Hlavné mesto Hondurasu?',a:['Tegucigalpa','San Pedro Sula','Choloma','La Ceiba'],c:0},
+{q:'Hlavné mesto Chorvátska?',a:['Záhreb','Split','Rijeka','Osijek'],c:0},
+{q:'Hlavné mesto Indie?',a:['Naí Dillí','Bombaj','Kalkata','Bangalore'],c:0},
+{q:'Hlavné mesto Indonézie?',a:['Jakarta','Surabaya','Bandung','Medan'],c:0},
+{q:'Hlavné mesto Iráku?',a:['Bagdad','Basra','Mosul','Erbíl'],c:0},
+{q:'Hlavné mesto Iránu?',a:['Teherán','Isfahán','Mašhad','Tabríz'],c:0},
+{q:'Hlavné mesto Írska?',a:['Dublin','Cork','Galway','Limerick'],c:0},
+{q:'Hlavné mesto Islandu?',a:['Reykjavík','Akureyri','Kópavogur','Hafnarfjörður'],c:0},
+{q:'Hlavné mesto Izraela?',a:['Jeruzalem','Tel Aviv','Haifa','Ejlat'],c:0},
+{q:'Hlavné mesto Jamajky?',a:['Kingston','Montego Bay','Spanish Town','Portmore'],c:0},
+{q:'Hlavné mesto Japonska?',a:['Tokio','Osaka','Kjóto','Jokohama'],c:0},
+{q:'Hlavné mesto Jemenu?',a:['Saná','Aden','Taizz','Hudajda'],c:0},
+{q:'Hlavné mesto Jordánska?',a:['Ammán','Zarqa','Irbid','Aqaba'],c:0},
+{q:'Hlavné mesto Juhoafrickej republiky?',a:['Pretória','Kapské Mesto','Johannesburg','Durban'],c:0},
+{q:'Hlavné mesto Južnej Kórey?',a:['Soul','Busan','Inčchon','Tegu'],c:0},
+{q:'Hlavné mesto Kambodže?',a:['Phnom Penh','Siem Reap','Battambang','Sihanoukville'],c:0},
+{q:'Hlavné mesto Kamerunu?',a:['Yaoundé','Douala','Garoua','Bamenda'],c:0},
+{q:'Hlavné mesto Kanady?',a:['Ottawa','Toronto','Montreal','Vancouver'],c:0},
+{q:'Hlavné mesto Kataru?',a:['Dauha','Al Wakrah','Al Khor','Umm Salal'],c:0},
+{q:'Hlavné mesto Kazachstanu?',a:['Astana','Almaty','Šymkent','Karaganda'],c:0},
+{q:'Hlavné mesto Kene?',a:['Nairobi','Mombasa','Kisumu','Nakuru'],c:0},
+{q:'Hlavné mesto Kolumbie?',a:['Bogotá','Medellín','Cali','Barranquilla'],c:0},
+{q:'Hlavné mesto Konga?',a:['Brazzaville','Pointe-Noire','Dolisie','Nkayi'],c:0},
+{q:'Hlavné mesto Kostariky?',a:['San José','Limón','Alajuela','Heredia'],c:0},
+{q:'Hlavné mesto Kuby?',a:['Havana','Santiago','Camagüey','Holguín'],c:0},
+{q:'Hlavné mesto Kuvajtu?',a:['Kuvajt','Hawalli','Salmiya','Farwaniya'],c:0},
+{q:'Hlavné mesto Laosu?',a:['Vientiane','Luang Prabang','Savannakhet','Paksé'],c:0},
+{q:'Hlavné mesto Libanonu?',a:['Bejrút','Tripolis','Sidon','Byblos'],c:0},
+{q:'Hlavné mesto Libérie?',a:['Monrovia','Buchanan','Gbarnga','Kakata'],c:0},
+{q:'Hlavné mesto Líbye?',a:['Tripolis','Benghází','Misráta','Zlítan'],c:0},
+{q:'Hlavné mesto Lichtenštajnska?',a:['Vaduz','Schaan','Balzers','Triesen'],c:0},
+{q:'Hlavné mesto Litvy?',a:['Vilnius','Kaunas','Klaipeda','Šiauliai'],c:0},
+{q:'Hlavné mesto Lotyšska?',a:['Riga','Daugavpils','Liepāja','Jelgava'],c:0},
+{q:'Hlavné mesto Luxemburska?',a:['Luxemburg','Esch-sur-Alzette','Differdange','Dudelange'],c:0},
+{q:'Hlavné mesto Madagaskaru?',a:['Antananarivo','Toamasina','Antsirabe','Fianarantsoa'],c:0},
+{q:'Hlavné mesto Maďarska?',a:['Budapešť','Debrecín','Segedín','Miškolc'],c:0},
+{q:'Hlavné mesto Malajzie?',a:['Kuala Lumpur','Penang','Johor Bahru','Kota Kinabalu'],c:0},
+{q:'Hlavné mesto Mali?',a:['Bamako','Sikasso','Mopti','Ségou'],c:0},
+{q:'Hlavné mesto Malty?',a:['Valletta','Birkirkara','Mosta','Qormi'],c:0},
+{q:'Hlavné mesto Maroka?',a:['Rabat','Casablanca','Marrákeš','Fez'],c:0},
+{q:'Hlavné mesto Mauritánie?',a:['Nouakchott','Nouadhibou','Kaédi','Zouérat'],c:0},
+{q:'Hlavné mesto Mexika?',a:['Mexico City','Guadalajara','Monterrey','Puebla'],c:0},
+{q:'Hlavné mesto Moldavska?',a:['Kišiňov','Tiraspol','Bălți','Bender'],c:0},
+{q:'Hlavné mesto Monaka?',a:['Monaco','Monte Carlo','La Condamine','Fontvieille'],c:0},
+{q:'Hlavné mesto Mongolska?',a:['Ulánbátar','Erdenet','Darkhan','Čojbalsan'],c:0},
+{q:'Hlavné mesto Mozambiku?',a:['Maputo','Beira','Nampula','Quelimane'],c:0},
+{q:'Hlavné mesto Mjanmarska?',a:['Naypyidaw','Rangún','Mandalaj','Moulmein'],c:0},
+{q:'Hlavné mesto Namíbie?',a:['Windhoek','Walvis Bay','Swakopmund','Oshakati'],c:0},
+{q:'Hlavné mesto Nemecka?',a:['Berlín','Mníchov','Hamburg','Frankfurt'],c:0},
+{q:'Hlavné mesto Nepálu?',a:['Káthmandu','Pokhara','Lalitpur','Bharatpur'],c:0},
+{q:'Hlavné mesto Nigérie?',a:['Abuja','Lagos','Kano','Ibadan'],c:0},
+{q:'Hlavné mesto Nikaraguy?',a:['Managua','León','Granada','Masaya'],c:0},
+{q:'Hlavné mesto Nórska?',a:['Oslo','Bergen','Trondheim','Stavanger'],c:0},
+{q:'Hlavné mesto Nového Zélandu?',a:['Wellington','Auckland','Christchurch','Hamilton'],c:0},
+{q:'Hlavné mesto Ománu?',a:['Maskat','Salalah','Sohar','Nizwa'],c:0},
+{q:'Hlavné mesto Pakistanu?',a:['Islámábád','Karáčí','Láhaur','Faisalábád'],c:0},
+{q:'Hlavné mesto Panamy?',a:['Panama City','Colón','David','Santiago'],c:0},
+{q:'Hlavné mesto Paraguaja?',a:['Asunción','Ciudad del Este','Encarnación','San Lorenzo'],c:0},
+{q:'Hlavné mesto Peru?',a:['Lima','Arequipa','Cusco','Trujillo'],c:0},
+{q:'Hlavné mesto Poľska?',a:['Varšava','Krakov','Vroclav','Poznaň'],c:0},
+{q:'Hlavné mesto Portugalska?',a:['Lisabon','Porto','Braga','Coimbra'],c:0},
+{q:'Hlavné mesto Rakúska?',a:['Viedeň','Graz','Linz','Salzburg'],c:0},
+{q:'Hlavné mesto Rumunska?',a:['Bukurešť','Kluž','Temešvár','Iaši'],c:0},
+{q:'Hlavné mesto Ruska?',a:['Moskva','Petrohrad','Novosibirsk','Jekaterinburg'],c:0},
+{q:'Hlavné mesto Rwandy?',a:['Kigali','Butare','Gisenyi','Ruhengeri'],c:0},
+{q:'Hlavné mesto Salvádoru?',a:['San Salvador','Santa Ana','San Miguel','Soyapango'],c:0},
+{q:'Hlavné mesto Saudskej Arábie?',a:['Rijád','Džidda','Mekka','Medina'],c:0},
+{q:'Hlavné mesto Senegalu?',a:['Dakar','Thiès','Saint-Louis','Kaolack'],c:0},
+{q:'Hlavné mesto Severnej Kórey?',a:['Pchjongjang','Kaesong','Hamhung','Čchongjin'],c:0},
+{q:'Hlavné mesto Severného Macedónska?',a:['Skopje','Bitola','Kumanovo','Prilep'],c:0},
+{q:'Hlavné mesto Singapuru?',a:['Singapur','Marina Bay','Sentosa','Changi'],c:0},
+{q:'Hlavné mesto Slovenska?',a:['Bratislava','Košice','Prešov','Žilina'],c:0},
+{q:'Hlavné mesto Slovinska?',a:['Ľubľana','Maribor','Celje','Kranj'],c:0},
+{q:'Hlavné mesto Somálska?',a:['Mogadišo','Hargeisa','Berbera','Kismayo'],c:0},
+{q:'Hlavné mesto Spojeného kráľovstva?',a:['Londýn','Manchester','Birmingham','Liverpool'],c:0},
+{q:'Hlavné mesto Srbska?',a:['Belehrad','Novi Sad','Niš','Kragujevac'],c:0},
+{q:'Hlavné mesto Srí Lanky?',a:['Šrí Džajavárdanapura Kótte','Kolombo','Kandy','Galle'],c:0},
+{q:'Hlavné mesto Sudánu?',a:['Chartúm','Omdurman','Port Sudán','Kassala'],c:0},
+{q:'Hlavné mesto Surinamu?',a:['Paramaribo','Lelydorp','Nieuw Nickerie','Moengo'],c:0},
+{q:'Hlavné mesto Svazijska?',a:['Mbabane','Manzini','Lobamba','Siteki'],c:0},
+{q:'Hlavné mesto Sýrie?',a:['Damask','Aleppo','Homs','Latákie'],c:0},
+{q:'Hlavné mesto Španielska?',a:['Madrid','Barcelona','Valencia','Sevilla'],c:0},
+{q:'Hlavné mesto Švajčiarska?',a:['Bern','Zürich','Ženeva','Basel'],c:0},
+{q:'Hlavné mesto Švédska?',a:['Štokholm','Göteborg','Malmö','Uppsala'],c:0},
+{q:'Hlavné mesto Tadžikistanu?',a:['Dušanbe','Chudžand','Kuľob','Istaravšan'],c:0},
+{q:'Hlavné mesto Taiwanu?',a:['Tchaj-pej','Kaohsiung','Taichung','Tainan'],c:0},
+{q:'Hlavné mesto Tanzánie?',a:['Dodoma','Dar es Salaam','Mwanza','Arusha'],c:0},
+{q:'Hlavné mesto Thajska?',a:['Bangkok','Chiang Mai','Phuket','Pattaya'],c:0},
+{q:'Hlavné mesto Toga?',a:['Lomé','Sokodé','Kara','Kpalimé'],c:0},
+{q:'Hlavné mesto Trinidadu a Tobaga?',a:['Port of Spain','San Fernando','Chaguanas','Arima'],c:0},
+{q:'Hlavné mesto Tuniska?',a:['Tunis','Sfax','Sousse','Kairouan'],c:0},
+{q:'Hlavné mesto Turecka?',a:['Ankara','Istanbul','Izmir','Bursa'],c:0},
+{q:'Hlavné mesto Turkménska?',a:['Ašchabad','Turkmenabat','Daşoguz','Mary'],c:0},
+{q:'Hlavné mesto Ugandy?',a:['Kampala','Entebbe','Gulu','Lira'],c:0},
+{q:'Hlavné mesto Ukrajiny?',a:['Kyjev','Ľvov','Charkov','Odesa'],c:0},
+{q:'Hlavné mesto Uruguaja?',a:['Montevideo','Salto','Paysandú','Rivera'],c:0},
+{q:'Hlavné mesto USA?',a:['Washington D.C.','New York','Los Angeles','Chicago'],c:0},
+{q:'Hlavné mesto Uzbekistanu?',a:['Taškent','Samarkand','Buchara','Nukus'],c:0},
+{q:'Hlavné mesto Vatikánu?',a:['Vatikán','Rím','Laterán','Castel Gandolfo'],c:0},
+{q:'Hlavné mesto Venezuely?',a:['Caracas','Maracaibo','Valencia','Barquisimeto'],c:0},
+{q:'Hlavné mesto Vietnamu?',a:['Hanoj','Ho Či Minovo Mesto','Da Nang','Hai Phong'],c:0},
+{q:'Hlavné mesto Zambie?',a:['Lusaka','Kitwe','Ndola','Livingstone'],c:0},
+{q:'Hlavné mesto Zimbabwe?',a:['Harare','Bulawayo','Mutare','Gweru'],c:0},
+{q:'Hlavné mesto Kypru?',a:['Nikózia','Limassol','Larnaka','Paphos'],c:0},
+{q:'Hlavné mesto Etiópia?',a:['Addis Abeba','Dire Dawa','Mekele','Bahir Dar'],c:0},
+{q:'Hlavné mesto Konžskej dem. republiky?',a:['Kinshasa','Lubumbashi','Mbuji-Mayi','Kisangani'],c:0},
+{q:'Hlavné mesto Talianska?',a:['Rím','Miláno','Neapol','Turín'],c:0},
+{q:'Hlavné mesto Holandska?',a:['Amsterdam','Haag','Rotterdam','Utrecht'],c:0},
+{q:'Hlavné mesto Papuy-Novej Guiney?',a:['Port Moresby','Lae','Mount Hagen','Madang'],c:0},
+{q:'Hlavné mesto Libanonu?',a:['Bejrút','Tripolis','Sidon','Tyre'],c:0},
+{q:'Hlavné mesto Nepálu?',a:['Káthmandu','Pokhara','Lalitpur','Biratnagar'],c:0},
+{q:'Hlavné mesto Bhutánu?',a:['Thimphu','Paro','Punakha','Phuntsholing'],c:0},
+{q:'Hlavné mesto Maledivy?',a:['Malé','Addu','Fuvahmulah','Kulhudhuffushi'],c:0},
+{q:'Hlavné mesto Kapverdských ostrovov?',a:['Praia','Mindelo','Santa Maria','Espargos'],c:0},
+{q:'Hlavné mesto Seyšiel?',a:['Victoria','Anse Royal','Beau Vallon','Takamaka'],c:0},
+{q:'Hlavné mesto San Marína?',a:['San Maríno','Serravalle','Borgo Maggiore','Domagnano'],c:0},
+{q:'Hlavné mesto Východného Timoru?',a:['Dili','Baucau','Maliana','Suai'],c:0},
+{q:'Hlavné mesto Toga?',a:['Lomé','Sokodé','Kara','Atakpamé'],c:0},
+{q:'Hlavné mesto Komôr?',a:['Moroni','Mutsamudu','Fomboni','Domoni'],c:0},
+{q:'Hlavné mesto Džibutska?',a:['Džibuti','Ali Sabieh','Tadjoura','Obock'],c:0},
+{q:'Hlavné mesto Lesotho?',a:['Maseru','Teyateyaneng','Mafeteng','Hlotse'],c:0},
+{q:'Hlavné mesto Kirgizska?',a:['Biškek','Oš','Džalal-Abad','Karakol'],c:0},
+{q:'Hlavné mesto Guiney-Bissau?',a:['Bissau','Bafatá','Gabú','Bissorã'],c:0},
+{q:'Hlavné mesto Sierra Leone?',a:['Freetown','Bo','Kenema','Makeni'],c:0},
+{q:'Hlavné mesto Stredoafrickej republiky?',a:['Bangui','Bimbo','Berbérati','Carnot'],c:0},
+{q:'Hlavné mesto Rovníkovej Guiney?',a:['Malabo','Bata','Ebebiyín','Aconibe'],c:0},
+{q:'Hlavné mesto Cookových ostrovov?',a:['Avarua','Rarotonga','Aitutaki','Mangaia'],c:0},
+{q:'Hlavné mesto Mikronézie?',a:['Palikir','Weno','Kolonia','Tofol'],c:0},
+{q:'Hlavné mesto Marshallových ostrovov?',a:['Majuro','Ebeye','Jaluit','Wotje'],c:0},
+{q:'Hlavné mesto Nauru?',a:['Yaren','Aiwo','Buada','Meneng'],c:0},
+{q:'Hlavné mesto Tuvalu?',a:['Funafuti','Nanumea','Nui','Vaitupu'],c:0},
+{q:'Hlavné mesto Kiribati?',a:['Tarawa','Betio','Bikenibeu','Bairiki'],c:0},
+{q:'Hlavné mesto Palau?',a:['Ngerulmud','Koror','Airai','Melekeok'],c:0},
+{q:'Hlavné mesto Samoy?',a:['Apia','Salelologa','Faleasiu','Vaitele'],c:0},
+{q:'Hlavné mesto Tonga?',a:['Nuku\'alofa','Neiafu','Pangai','Ohonua'],c:0},
+{q:'Hlavné mesto Vanuatu?',a:['Port Vila','Luganville','Norsup','Isangel'],c:0},
+{q:'Hlavné mesto Šalamúnových ostrovov?',a:['Honiara','Auki','Gizo','Buala'],c:0},
+{q:'Hlavné mesto Grenady?',a:['St. George\'s','Gouyave','Grenville','Victoria'],c:0},
+{q:'Hlavné mesto Dominiky?',a:['Roseau','Portsmouth','Marigot','Berekua'],c:0},
+{q:'Hlavné mesto Svätej Lucie?',a:['Castries','Vieux Fort','Soufrière','Micoud'],c:0},
+{q:'Hlavné mesto Antiguy a Barbudy?',a:['St. John\'s','All Saints','Liberta','Potters Village'],c:0},
+{q:'Hlavné mesto Svätého Vincenta?',a:['Kingstown','Georgetown','Barrouallie','Layou'],c:0},
+{q:'Hlavné mesto Sv. Krištofa a Nevisa?',a:['Basseterre','Charlestown','Sandy Point','Dieppe Bay'],c:0},
+{q:'Hlavné mesto Guayany?',a:['Georgetown','Linden','New Amsterdam','Bartica'],c:0},
+{q:'Hlavné mesto Gabonu?',a:['Libreville','Port-Gentil','Franceville','Moanda'],c:0},
+{q:'Hlavné mesto Mauríciu?',a:['Port Louis','Beau Bassin','Vacoas','Curepipe'],c:0},
+{q:'Hlavné mesto São Tomé a Princípe?',a:['São Tomé','Santo Amaro','Neves','Trindade'],c:0},
+{q:'Hlavné mesto Nigeru?',a:['Niamey','Zinder','Maradi','Tahoua'],c:0},
+{q:'Hlavné mesto Pobrežia Slonoviny?',a:['Yamoussoukro','Abidjan','Bouaké','Daloa'],c:0}
+];
+
 function setQuizTheme(t,btn) {
   QUIZ.theme=t;
   document.querySelectorAll('.quiz-theme-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
 function startQuiz() {
-  const allThemes=['general','food','animals','dogs','horses','avengers','dc','geography','history','science','sport','movies','music','slovakia','extra_general','extra_science','extra_animals','extra_sport'];
+  const allThemes=['general','food','animals','dogs','horses','avengers','dc','geography','history','science','sport','movies','music','slovakia','capitals','extra_general','extra_science','extra_animals','extra_sport'];
   if(QUIZ.theme==='all') {
     QUIZ.questions=allThemes.flatMap(t=>quizDB[t]||[]).sort(()=>Math.random()-0.5);
   } else {
@@ -8237,7 +8447,7 @@ function renderMobileGrid() {
           style="background:linear-gradient(135deg,${g.grad})">
        <div class="mobile-game-card-icon">${g.icon}</div>
        <div class="mobile-game-card-name">${g.label}</div>
-       ${g.mp ? '<div style="position:absolute;top:6px;right:8px;font-size:0.6em;opacity:0.7">🌐</div>' : ''}
+       ${g.mp && welcomeGameMode!=='ai' ? '<div style="position:absolute;top:6px;right:8px;font-size:0.6em;opacity:0.7">🌐</div>' : ''}
      </div>`
   ).join('');
 }
