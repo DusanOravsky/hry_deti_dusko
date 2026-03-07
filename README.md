@@ -69,9 +69,16 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v32**
+Aktuálna verzia: **v33**
 
 ## Changelog
+
+### v33 (2026-03-07)
+- 🔧 **CRITICAL FIX: Welcome screen fully interactive**
+  - Verzia viditeľná (opacity:0.6, bold)
+  - Všetky buttony fungujú
+  - Force hide overlays on page load
+  - .mobile-nav správne skrytý s pointer-events:none
 
 ### v32 (2026-03-07)
 - 🔧 **Fix: Verzia viditeľná na mobile (znovu)**
