@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~10100 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v19
+- **Current version**: v20
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
@@ -44,7 +44,7 @@ resetMem();    // MP.isConnected check works
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 
-## Games (28 total)
+## Games (29 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piškvorky (3×3, 4×4, 5×5, 10×10) 🌐
@@ -71,9 +71,10 @@ resetMem();    // MP.isConnected check works
 
 ### Solo (mode:'solo'/'always')
 - Tetris
+- Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v19)
+## Features (v13-v20)
 
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal

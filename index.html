@@ -2689,6 +2689,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div class="stats-tile blue"><div class="stats-tile-val" id="recReacP2">—</div><div class="stats-tile-label" id="recReacP2Lbl">Najrýchlejšia reakcia (Hráč 2)</div></div>
         <div class="stats-tile purple"><div class="stats-tile-val" id="recFCStreak">0</div><div class="stats-tile-label">Najdlhšia séria Flashcards 🔥</div></div>
         <div class="stats-tile gold"><div class="stats-tile-val" id="recQuizBest">0</div><div class="stats-tile-label">Najlepší quiz výsledok</div></div>
+        <div class="stats-tile green"><div class="stats-tile-val" id="recSnakeBest">0</div><div class="stats-tile-label">Snake najlepšie skóre 🐍</div></div>
         <div class="stats-tile green"><div class="stats-tile-val" id="recScrambleBest">0</div><div class="stats-tile-label">Scramble max bodov</div></div>
         <div class="stats-tile blue"><div class="stats-tile-val" id="recGhostWins">0</div><div class="stats-tile-label">Ghost víťazstvá</div></div>
       </div>
@@ -3147,6 +3148,39 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== SNAKE ===== -->
+  <div class="game-area" id="snake">
+    <div class="rules"><h3>📋 Snake - Had:</h3><ul>
+      <li>Zbieraj jedlo 🍎 a rasti!</li>
+      <li>Ovládanie: <strong>šípky</strong> alebo tlačidlá dole</li>
+      <li>Nenaraz do steny ani do seba!</li>
+      <li>Čím dlhší had, tým viac bodov!</li>
+    </ul></div>
+    <div style="text-align:center;margin:15px 0">
+      <div style="display:inline-block;text-align:center">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Skóre</div>
+        <div id="snakeScore" style="font-size:2.5em;font-weight:900;color:#43e97b">0</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:40px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Najlepšie</div>
+        <div id="snakeBest" style="font-size:2.5em;font-weight:900;color:#ffd200">0</div>
+      </div>
+    </div>
+    <div class="status" id="snakeStatus">Pripravení? Štart!</div>
+    <canvas id="snakeCanvas" width="320" height="320" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:#1a1a2e;touch-action:none"></canvas>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+      <button class="action-btn" onclick="snakeSetDir('left')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">◀</button>
+      <button class="action-btn" onclick="snakeSetDir('up')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▲</button>
+      <button class="action-btn" onclick="snakeSetDir('down')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▼</button>
+      <button class="action-btn" onclick="snakeSetDir('right')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▶</button>
+    </div>
+    <div class="celebration" id="snakeCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startSnake()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetSnake()">🔄 Reset</button>
+    </div>
+  </div>
+
   <!-- ===== ČLOVEČE NEHNEVAJ SA ===== -->
   <div class="game-area" id="ludo">
     <div class="rules"><h3>📋 Človeče nehnevaj sa:</h3><ul>
@@ -3241,7 +3275,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 19;
+const APP_VERSION = 20;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3254,7 +3288,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn',
-  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3265,7 +3299,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', racing:'Preteky', ludo:'Človeče', dotsBoxes:'Bodky'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', snake:'Snake', racing:'Preteky', ludo:'Človeče', dotsBoxes:'Bodky'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3599,6 +3633,7 @@ function refreshRecordUI() {
   document.getElementById('recFCStreak').textContent  = r.fcStreak;
   document.getElementById('recQuizBest').textContent  = r.quizBest;
   document.getElementById('recScrambleBest').textContent = r.scrambleBest;
+  document.getElementById('recSnakeBest').textContent = r.snakeBest||parseInt(localStorage.getItem('hry_snakeBest')||'0');
   document.getElementById('recGhostWins').textContent = r.ghostWins;
   document.getElementById('recReacP1Lbl').textContent = 'Najrýchlejšia reakcia ('+getP1Name('reac')+')';
   document.getElementById('recReacP2Lbl').textContent = 'Najrýchlejšia reakcia ('+getP2Name('reac')+')';
@@ -8330,6 +8365,111 @@ document.addEventListener('keydown',e=>{
 });
 
 // =============================================================================
+// SEKCIA 29.6: SNAKE — Solo had
+// =============================================================================
+const SNK = {
+  W:20, H:20,
+  body:[{x:10,y:10}], dir:'right', nextDir:'right',
+  food:{x:15,y:10}, score:0, best:parseInt(localStorage.getItem('hry_snakeBest')||'0'),
+  timer:null, running:false, over:false, speed:140
+};
+function resetSnake(){
+  if(SNK.timer)clearInterval(SNK.timer);
+  SNK.running=false; SNK.over=false; SNK.speed=140; SNK.score=0;
+  SNK.body=[{x:10,y:10}]; SNK.dir='right'; SNK.nextDir='right';
+  snakePlaceFood();
+  renderSnake();
+  const el=document.getElementById('snakeScore');if(el)el.textContent='0';
+  const be=document.getElementById('snakeBest');if(be)be.textContent=SNK.best;
+  document.getElementById('snakeStatus').textContent='Pripravení? Štart!';
+}
+function snakePlaceFood(){
+  const occupied=new Set(SNK.body.map(b=>b.x+','+b.y));
+  let tries=0;
+  do{SNK.food={x:Math.floor(Math.random()*SNK.W),y:Math.floor(Math.random()*SNK.H)};tries++;}
+  while(occupied.has(SNK.food.x+','+SNK.food.y)&&tries<400);
+}
+function renderSnake(){
+  const c=document.getElementById('snakeCanvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  const cs=c.width/SNK.W;
+  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,c.width,c.height);
+  ctx.strokeStyle='rgba(255,255,255,0.04)';
+  for(let x=0;x<SNK.W;x++)for(let y=0;y<SNK.H;y++)ctx.strokeRect(x*cs,y*cs,cs,cs);
+  // food
+  ctx.fillStyle='#f5576c';ctx.beginPath();ctx.arc((SNK.food.x+0.5)*cs,(SNK.food.y+0.5)*cs,cs*0.4,0,Math.PI*2);ctx.fill();
+  // snake
+  SNK.body.forEach((b,j)=>{
+    ctx.fillStyle='#43e97b';ctx.globalAlpha=Math.max(1-j*0.02,0.3);
+    ctx.fillRect(b.x*cs+1,b.y*cs+1,cs-2,cs-2);
+    if(j===0){ctx.fillStyle='white';ctx.globalAlpha=1;ctx.beginPath();ctx.arc((b.x+0.5)*cs,(b.y+0.5)*cs,cs*0.2,0,Math.PI*2);ctx.fill();}
+  });
+  ctx.globalAlpha=1;
+}
+function snakeSetDir(dir){
+  if(!SNK.running||SNK.over)return;
+  const opp={left:'right',right:'left',up:'down',down:'up'};
+  if(dir!==opp[SNK.dir])SNK.nextDir=dir;
+}
+function snakeStep(){
+  if(!SNK.running||SNK.over)return;
+  SNK.dir=SNK.nextDir;
+  const dx={left:-1,right:1,up:0,down:0};
+  const dy={left:0,right:0,up:-1,down:1};
+  const head=SNK.body[0];
+  const nx=head.x+dx[SNK.dir], ny=head.y+dy[SNK.dir];
+  // wall or self collision
+  let dead=nx<0||nx>=SNK.W||ny<0||ny>=SNK.H;
+  if(!dead){for(let j=0;j<SNK.body.length;j++){if(SNK.body[j].x===nx&&SNK.body[j].y===ny){dead=true;break;}}}
+  if(dead){
+    SNK.over=true;SNK.running=false;clearInterval(SNK.timer);
+    playSound('wrong');
+    if(SNK.score>SNK.best){SNK.best=SNK.score;localStorage.setItem('hry_snakeBest',SNK.best);updateRecord('recSnakeBest',SNK.best);}
+    document.getElementById('snakeBest').textContent=SNK.best;
+    document.getElementById('snakeStatus').textContent='Game Over! Skóre: '+SNK.score;
+    if(SNK.score>=10){celebrate('snakeCelebration');playSound('win');}
+    return;
+  }
+  SNK.body.unshift({x:nx,y:ny});
+  if(nx===SNK.food.x&&ny===SNK.food.y){
+    SNK.score++;playSound('correct');
+    document.getElementById('snakeScore').textContent=SNK.score;
+    snakePlaceFood();
+    // speed up every 5 food
+    if(SNK.score%5===0&&SNK.speed>60){SNK.speed-=10;clearInterval(SNK.timer);SNK.timer=setInterval(snakeStep,SNK.speed);}
+  } else SNK.body.pop();
+  renderSnake();
+}
+function startSnake(){
+  if(SNK.running)return;
+  resetSnake();
+  SNK.running=true;
+  document.getElementById('snakeStatus').textContent='Hra beží!';
+  SNK.timer=setInterval(snakeStep,SNK.speed);
+}
+document.addEventListener('keydown',e=>{
+  if(!SNK.running)return;
+  if(e.key==='ArrowLeft'){snakeSetDir('left');e.preventDefault();}
+  if(e.key==='ArrowRight'){snakeSetDir('right');e.preventDefault();}
+  if(e.key==='ArrowUp'){snakeSetDir('up');e.preventDefault();}
+  if(e.key==='ArrowDown'){snakeSetDir('down');e.preventDefault();}
+});
+// Swipe support on snake canvas
+(function(){
+  let sx,sy;
+  const cv=()=>document.getElementById('snakeCanvas');
+  document.addEventListener('touchstart',e=>{if(cv()&&cv().contains(e.target)){sx=e.touches[0].clientX;sy=e.touches[0].clientY;}},{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!sx||!SNK.running)return;
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    sx=null;
+    if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+    if(Math.abs(dx)>Math.abs(dy))snakeSetDir(dx>0?'right':'left');
+    else snakeSetDir(dy>0?'down':'up');
+  },{passive:true});
+})();
+
+// =============================================================================
 // SEKCIA 32: ČLOVEČE NEHNEVAJ SA (Ludo)
 // =============================================================================
 const LUDO = {
@@ -9360,6 +9500,7 @@ const MOBILE_GAMES = [
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
+  { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
   { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },

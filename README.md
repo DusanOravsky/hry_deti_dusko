@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA s 28 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA s 29 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (28)
+## Hry (29)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -44,6 +44,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ### Solo (mode: always)
 - Tetris (s mobilnymi ovladacimi tlacidlami)
+- Snake (canvas, swipe + sipky + tlacidla)
 - Statistiky + Achievement system
 
 ## Online Multiplayer
@@ -112,7 +113,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v19**
+Aktualna verzia: **v20**
 
 ## Deploy
 
