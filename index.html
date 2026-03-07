@@ -3041,6 +3041,39 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== RACING ===== -->
+  <div class="game-area" id="racing">
+    <div class="rules"><h3>📋 Preteky:</h3><ul>
+      <li>Vyhýbaj sa prekážkam a zbieraj mince!</li>
+      <li>Ovládanie: ◀ ▶ šípky alebo tlačidlá</li>
+      <li>Rýchlosť sa postupne zvyšuje</li>
+      <li>Náraz = koniec! Kto dosiahne vyššie skóre?</li>
+    </ul></div>
+    <div style="text-align:center;margin:15px 0">
+      <div style="display:inline-block;text-align:center">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Skóre</div>
+        <div id="raceScore" style="font-size:2.5em;font-weight:900;color:#ffd200">0</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:40px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Rýchlosť</div>
+        <div id="raceSpeed" style="font-size:2.5em;font-weight:900;color:#4facfe">1</div>
+      </div>
+    </div>
+    <div class="status" id="raceStatus">Pripravení? Štart!</div>
+    <div style="display:flex;justify-content:center;margin:10px 0">
+      <div id="raceGrid" style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(12,1fr);gap:2px;width:220px;height:420px;background:rgba(0,0,0,0.4);border:3px solid rgba(255,255,255,0.2);border-radius:10px;padding:3px;position:relative;overflow:hidden"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:15px">
+      <button class="action-btn" onclick="raceMove(-1)" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">◀</button>
+      <button class="action-btn" onclick="raceMove(1)" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">▶</button>
+    </div>
+    <div class="celebration" id="raceCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startRace()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetRace()">🔄 Reset</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -3048,7 +3081,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 57;
+const APP_VERSION = 58;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3061,7 +3094,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn',
-  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3072,7 +3105,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', racing:'Preteky'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3280,7 +3313,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3291,7 +3324,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -7908,6 +7941,154 @@ document.addEventListener('keydown',e=>{
 });
 
 // =============================================================================
+// SEKCIA 31: RACING GAME (Preteky)
+// =============================================================================
+const RACE = { grid:[], lane:2, score:0, speed:1, interval:null, running:false, over:false, tickMs:350 };
+const RACE_ROWS = 12, RACE_COLS = 5;
+const RACE_OBS = ['🚧','🛢️','🪨','🌲'];
+const RACE_COIN = '⭐';
+
+function raceInit() {
+  RACE.grid = [];
+  for(let r=0;r<RACE_ROWS;r++) {
+    const row = [];
+    for(let c=0;c<RACE_COLS;c++) row.push('');
+    RACE.grid.push(row);
+  }
+  RACE.lane = 2; RACE.score = 0; RACE.speed = 1; RACE.over = false;
+  RACE.tickMs = 350;
+  document.getElementById('raceScore').textContent = '0';
+  document.getElementById('raceSpeed').textContent = '1';
+  document.getElementById('raceStatus').textContent = 'Pripravení? Štart!';
+  raceRender();
+}
+
+function raceRender() {
+  const el = document.getElementById('raceGrid');
+  if(!el) return;
+  let html = '';
+  for(let r=0;r<RACE_ROWS;r++) {
+    for(let c=0;c<RACE_COLS;c++) {
+      const isEdge = c===0 || c===RACE_COLS-1;
+      const isLane = c===2;
+      let bg = isEdge ? 'rgba(34,139,34,0.35)' : 'rgba(60,60,80,0.5)';
+      let content = '';
+      if(r===RACE_ROWS-2 && c===RACE.lane) {
+        content = '🏎️';
+        bg = 'rgba(255,210,0,0.2)';
+      } else if(RACE.grid[r][c]) {
+        content = RACE.grid[r][c];
+      } else if(!isEdge && isLane && r%3===0) {
+        content = '<span style="opacity:0.15">┃</span>';
+      }
+      html += '<div style="display:flex;align-items:center;justify-content:center;font-size:1.4em;background:'+bg+';border-radius:3px;min-height:0">'+content+'</div>';
+    }
+  }
+  el.innerHTML = html;
+}
+
+function raceSpawn() {
+  // Spawn obstacle or coin in top row (not edges)
+  const col = 1 + Math.floor(Math.random()*(RACE_COLS-2));
+  if(Math.random()<0.3) {
+    RACE.grid[0][col] = RACE_COIN;
+  } else {
+    RACE.grid[0][col] = RACE_OBS[Math.floor(Math.random()*RACE_OBS.length)];
+  }
+}
+
+function raceTick() {
+  if(!RACE.running || RACE.over) return;
+  // Shift rows down
+  for(let r=RACE_ROWS-1;r>0;r--) {
+    for(let c=0;c<RACE_COLS;c++) {
+      RACE.grid[r][c] = RACE.grid[r-1][c];
+    }
+  }
+  for(let c=0;c<RACE_COLS;c++) RACE.grid[0][c] = '';
+  // Random spawn
+  if(Math.random()<0.45) raceSpawn();
+  // Check collision on player row (RACE_ROWS-2)
+  const cell = RACE.grid[RACE_ROWS-2][RACE.lane];
+  if(cell && cell !== RACE_COIN && RACE_OBS.includes(cell)) {
+    // Crash!
+    RACE.over = true; RACE.running = false;
+    clearInterval(RACE.interval);
+    playSound('wrong');
+    document.getElementById('raceStatus').textContent = '💥 Náraz! Skóre: ' + RACE.score;
+    RACE.grid[RACE_ROWS-2][RACE.lane] = '💥';
+    updateRecord('rc', RACE.score);
+    raceRender();
+    return;
+  }
+  if(cell === RACE_COIN) {
+    RACE.score += 1;
+    playSound('correct');
+    if(typeof navigator.vibrate === 'function') navigator.vibrate(15);
+  }
+  RACE.grid[RACE_ROWS-2][RACE.lane] = '';
+  RACE.score += 1;
+  document.getElementById('raceScore').textContent = RACE.score;
+  // Speed up every 20 points
+  const newSpeed = 1 + Math.floor(RACE.score / 20);
+  if(newSpeed !== RACE.speed) {
+    RACE.speed = newSpeed;
+    RACE.tickMs = Math.max(100, 350 - (RACE.speed-1)*40);
+    document.getElementById('raceSpeed').textContent = RACE.speed;
+    clearInterval(RACE.interval);
+    RACE.interval = setInterval(raceTick, RACE.tickMs);
+  }
+  raceRender();
+}
+
+function startRace() {
+  if(RACE.running) return;
+  raceInit();
+  RACE.running = true;
+  document.getElementById('raceStatus').textContent = '🏁 Jazda!';
+  RACE.interval = setInterval(raceTick, RACE.tickMs);
+  raceRender();
+}
+
+function raceMove(dir) {
+  if(!RACE.running || RACE.over) return;
+  const newLane = RACE.lane + dir;
+  if(newLane < 1 || newLane > RACE_COLS-2) return;
+  RACE.lane = newLane;
+  playSound('move');
+  // Check collision immediately after move
+  const cell = RACE.grid[RACE_ROWS-2][RACE.lane];
+  if(cell && cell !== RACE_COIN && RACE_OBS.includes(cell)) {
+    RACE.over = true; RACE.running = false;
+    clearInterval(RACE.interval);
+    playSound('wrong');
+    document.getElementById('raceStatus').textContent = '💥 Náraz! Skóre: ' + RACE.score;
+    RACE.grid[RACE_ROWS-2][RACE.lane] = '💥';
+    updateRecord('rc', RACE.score);
+  } else if(cell === RACE_COIN) {
+    RACE.score += 2;
+    RACE.grid[RACE_ROWS-2][RACE.lane] = '';
+    document.getElementById('raceScore').textContent = RACE.score;
+    playSound('correct');
+  }
+  raceRender();
+}
+
+function resetRace() {
+  RACE.running = false; RACE.over = false;
+  clearInterval(RACE.interval);
+  raceInit();
+}
+
+document.addEventListener('keydown', function(e) {
+  if(!RACE.running || RACE.over) return;
+  const racingEl = document.getElementById('racing');
+  if(!racingEl || racingEl.offsetParent === null) return;
+  if(e.key==='ArrowLeft') { e.preventDefault(); raceMove(-1); }
+  if(e.key==='ArrowRight') { e.preventDefault(); raceMove(1); }
+});
+
+// =============================================================================
 // SEKCIA 30: PUZZLE SCRAMBLE (canvas-based image puzzle)
 // =============================================================================
 const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null };
@@ -8373,6 +8554,7 @@ const MOBILE_GAMES = [
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
+  { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
@@ -8527,6 +8709,9 @@ function startFromWelcome() {
   document.getElementById('globalP2Input').value = p2;
   onGlobalNameChange();
   applyGameMode(welcomeGameMode);
+  // Hide MP globe button in AI mode — only show for 2 players
+  const mpBtn = document.getElementById('floatingMpBtn');
+  if(mpBtn) mpBtn.style.display = welcomeGameMode==='ai' ? 'none' : '';
   const ws = document.getElementById('welcomeScreen');
   ws.classList.add('hide');
   setTimeout(() => { ws.style.display = 'none'; }, 520);
