@@ -1,5 +1,5 @@
 // Keep in sync with APP_VERSION in index.html
-const CACHE_NAME = 'hrajmesi-v33';
+const CACHE_NAME = 'hrajmesi-v34';
 const ASSETS = [
   './manifest.json',
   './icon-192.png',
@@ -7,19 +7,22 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', event => {
+  console.log('[SW] Installing v' + CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
+  self.skipWaiting(); // Force immediate activation
 });
 
 self.addEventListener('activate', event => {
+  console.log('[SW] Activating v' + CACHE_NAME);
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(keys => {
+      console.log('[SW] Deleting old caches:', keys.filter(k => k !== CACHE_NAME));
+      return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+    })
   );
-  self.clients.claim();
+  self.clients.claim(); // Take control immediately
 });
 
 self.addEventListener('fetch', event => {

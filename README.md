@@ -69,9 +69,16 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v33**
+Aktuálna verzia: **v34**
 
 ## Changelog
+
+### v34 (2026-03-07)
+- 🔧 **NUCLEAR FIX: Welcome screen z-index war**
+  - Z-index: 99999 (extreme priority)
+  - Force Service Worker update
+  - 🗑️ Clear Cache button (unregister SW, clear caches)
+  - No-cache meta tags
 
 ### v33 (2026-03-07)
 - 🔧 **CRITICAL FIX: Welcome screen fully interactive**
