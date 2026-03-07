@@ -2906,7 +2906,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 35;
+const APP_VERSION = 36;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8488,7 +8488,15 @@ function mpCopyCode() {
 
 // ===== PWA SERVICE WORKER =====
 if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  // DISABLED: Service Worker causing cache issues
+  // Unregister any existing service workers
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      registration.unregister();
+      console.log('[APP] Unregistered SW:', registration.scope);
+    });
+  });
+  // navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
 <div class="confirm-overlay" id="confirmOverlay">

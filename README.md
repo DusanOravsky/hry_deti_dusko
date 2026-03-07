@@ -38,7 +38,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 ## Technológie
 
 - Single HTML file (~7700 riadkov)
-- PWA s Service Worker (network-first pre HTML, cache-first pre assets)
+- ~~PWA s Service Worker~~ (DISABLED v36 - cache issues)
 - Plne offline funkčná
 - Responsívny dizajn (mobile + desktop)
 - Canvas-based Puzzle Scramble s 6 scénami
@@ -69,9 +69,15 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v35**
+Aktuálna verzia: **v36**
 
 ## Changelog
+
+### v36 (2026-03-07)
+- 💣 **RADICAL FIX: Service Worker DISABLED**
+  - SW causing persistent cache issues
+  - Auto-unregisters all existing SWs
+  - No longer PWA/offline (trade-off for reliability)
 
 ### v35 (2026-03-07)
 - 🔥 **HOTFIX: JavaScript crash fixed**
