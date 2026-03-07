@@ -119,9 +119,9 @@ body.light {
   .board { gap:6px; margin:12px auto; }
   .cell { font-size:1.6em; border-radius:10px; }
 
-  /* PIŠKVORKY 15x15 */
-  .board-15x15 { grid-template-columns:repeat(15,1fr); grid-template-rows:repeat(15,1fr); gap:1px; max-width:100%; padding:4px; touch-action:pan-y; }
-  .board-15x15 .cell { width:auto; height:auto; aspect-ratio:1; font-size:0.65em; min-width:0; }
+  /* PIŠKVORKY 15x15 (10x10 on mobile - JS sets grid-template-columns) */
+  .board-15x15 { gap:1px; max-width:100%; padding:4px; touch-action:pan-y; }
+  .board-15x15 .cell { width:auto; height:auto; aspect-ratio:1; font-size:0.7em; min-width:0; padding:0; }
 
   /* CONNECT 4 */
   .board-7x6 { grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(6,1fr); gap:3px; padding:6px; border-radius:10px; width:100%; max-width:320px; margin:10px auto; }
@@ -759,11 +759,11 @@ body.light .player-card input.player-name-input {
 .board-4x4 { grid-template-columns:repeat(4,68px); grid-template-rows:repeat(4,68px); }
 .board-5x5 { grid-template-columns:repeat(5,58px); grid-template-rows:repeat(5,58px); }
 .board-15x15 {
-  grid-template-columns:repeat(15,1fr);
   max-width:580px;
   width:100%;
   padding:6px;
   touch-action:pan-y;
+  gap:2px;
 }
 
 .cell {
@@ -1733,7 +1733,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
       <button class="difficulty-btn active" onclick="setTTTSize('3x3',this)">3×3</button>
       <button class="difficulty-btn" onclick="setTTTSize('4x4',this)">4×4</button>
       <button class="difficulty-btn" onclick="setTTTSize('5x5',this)">5×5</button>
-      <button class="difficulty-btn" onclick="setTTTSize('15x15',this)">15×15</button>
+      <button class="difficulty-btn" onclick="setTTTSize('15x15',this)">10×10</button>
     </div>
     <div class="rules" id="tttRules"><h3>📋 Pravidlá:</h3><ul>
       <li>Hráči sa striedajú — X a O</li>
@@ -2728,7 +2728,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 17;
+const APP_VERSION = 18;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -2745,7 +2745,7 @@ const gameKeys = {
 };
 
 const GAME_NAMES = {
-  ticTacToe:'Piškvorky', psk15Game:'Piškvorky 15×15', rockPaper:'Kameň Papier Nožnice',
+  ticTacToe:'Piškvorky', psk15Game:'Piškvorky 10×10', rockPaper:'Kameň Papier Nožnice',
   guessNum:'Hádaj Číslo', memory:'Pamäť', connect4:'Connect 4',
   quiz:'Kvíz', battleship:'Lodičky', ghost:'Ghost', reaction:'Reakčný Test',
   scramble:'Scramble', langScramble:'Jazykový Scramble', flashcard:'Flashcards',
@@ -3240,7 +3240,7 @@ function clickTTT(i) {
     document.getElementById('p2ScoreTTT').textContent=TTT.s2;
     renderTTT(); return;
   }
-  if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';return;}
+  if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
   if(TTT.mode==='pvp') {
     TTT.player=TTT.player==='X'?'O':'X';
     const p=TTT.player==='X'?1:2;
@@ -3252,7 +3252,7 @@ function clickTTT(i) {
       const ai=getTTTAIMove(); TTT.board[ai]='O'; renderTTT();
       const w2=checkTTTWin();
       if(w2){TTT.over=true;TTT.s2++;playSound('win');document.getElementById('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);document.getElementById('p2ScoreTTT').textContent=TTT.s2;w2.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));renderTTT();return;}
-      if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';return;}
+      if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
       document.getElementById('tttStatus').textContent=getP1Name('ttt')+' na rade!';
       startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! Počítač vyhráva!';addWin(2);celebrate('tttCelebration');} });
     },500);
@@ -3386,7 +3386,7 @@ function clickPsk15(i) {
     document.getElementById('p2ScorePsk15').textContent=PSK15.s2;
     renderPsk15(); return;
   }
-  if(PSK15.board.every(v=>v)){PSK15.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';return;}
+  if(PSK15.board.every(v=>v)){PSK15.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
   if(PSK15.mode==='pvp') {
     PSK15.player=PSK15.player==='X'?'O':'X';
     const p=PSK15.player==='X'?1:2;
@@ -3395,7 +3395,7 @@ function clickPsk15(i) {
   } else {
     setTimeout(()=>{
       const ai=getPsk15AIMove();
-      if(ai===null){PSK15.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';return;}
+      if(ai===null){PSK15.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
       PSK15.board[ai]='O'; renderPsk15();
       const w2=checkPsk15Win();
       if(w2){PSK15.over=true;PSK15.s2++;document.getElementById('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);document.getElementById('p2ScorePsk15').textContent=PSK15.s2;renderPsk15();return;}
@@ -3472,7 +3472,7 @@ function showRPSP2() {
 }
 function showRPSResult(n1,c1,n2,c2) {
   let resultText, winner=0;
-  if(c1===c2){resultText='<span class="result-draw">🤝 Remíza!</span>';}
+  if(c1===c2){resultText='<span class="result-draw">🤝 Remíza!</span>';addWin(0);}
   else if(rpsBeats[c1]===c2){RPS.s1++;winner=1;resultText='<span class="result-win">🎉 '+n1+' vyhral!</span>';addWin(1);celebrate('rpsCelebration');}
   else{RPS.s2++;winner=2;resultText='<span class="result-lose">🎉 '+n2+' vyhral!</span>';addWin(2);celebrate('rpsCelebration');}
   document.getElementById('rpsResult').innerHTML=`<strong>${n1}:</strong> ${rpsNames[c1]}<br><strong>${n2}:</strong> ${rpsNames[c2]}<br>${resultText}`;
@@ -3648,6 +3648,7 @@ function memCheckEnd() {
     const name2=MEM.mode==='ai'?'Počítač':'Hráč 2';
     document.getElementById('memStatus').textContent=winner===1?'🎉 Hráč 1 vyhral!':(winner===2?`🎉 ${name2} vyhral!`:'🤝 Remíza!');
     if(winner){addWin(winner);celebrate('memCelebration');}
+    else{addWin(0);}
     return true;
   }
   return false;
@@ -3842,7 +3843,7 @@ function dropC4(col) {
         else{C4.s2++;document.getElementById('p2ScoreC4').textContent=C4.s2;addWin(2);}
         celebrate('c4Celebration'); return;
       }
-      if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';return;}
+      if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';addWin(0);return;}
       if(C4.mode==='pvp') {
         C4.player=C4.player===1?2:1;
         document.getElementById('c4Status').textContent=(C4.player===1?getP1Name('c4'):getP2Name('c4'))+' na rade!';
@@ -3859,7 +3860,7 @@ function dropC4(col) {
             break;
           }
           if(checkC4Win(2)){C4.over=true;C4.s2++;document.getElementById('c4Status').textContent='😢 Počítač vyhral!';document.getElementById('p2ScoreC4').textContent=C4.s2;addWin(2);celebrate('c4Celebration');return;}
-          if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';return;}
+          if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';addWin(0);return;}
           C4.player=1; document.getElementById('c4Status').textContent=getP1Name('c4')+' na rade!';
           activeTurn('c4P1Card','c4P2Card',1);
         },600);
@@ -4275,6 +4276,7 @@ function showQuizQ() {
     document.getElementById('quizQuestion').textContent='Hra skončila!';
     document.getElementById('quizAnswers').innerHTML='';
     if(winner){addWin(winner);celebrate('quizCelebration');playSound('win');updateRecord('quizBest',Math.max(QUIZ.s1,QUIZ.s2));}
+    else{addWin(0);}
     return;
   }
   const n=QUIZ.player===1?getP1Name('q'):getP2Name('q');
@@ -4890,7 +4892,7 @@ function reacFinish(){
     playSound('win'); celebrate('reacCelebration');
     if(winner===1)REAC.s1++; else REAC.s2++;
     addWin(winner);
-  } else { pad.textContent='🤝 Remíza! ('+avg1+'ms = '+avg2+'ms)'; }
+  } else { pad.textContent='🤝 Remíza! ('+avg1+'ms = '+avg2+'ms)'; addWin(0); }
   document.getElementById('reacStatus').textContent='Hra skončila!';
 }
 
@@ -5323,6 +5325,7 @@ function scrFinish() {
   document.getElementById('scrHint').textContent='';
   if(SCR.s1>SCR.s2){addWin(1);celebrate('scrCelebration');playSound('win');updateRecord('scrambleBest',SCR.s1);}
   else if(SCR.s2>SCR.s1){addWin(2);celebrate('scrCelebration');playSound('win');updateRecord('scrambleBest',SCR.s2);}
+  else{addWin(0);}
 }
 
 function resetScramble() {
@@ -5665,6 +5668,7 @@ function lsFinish() {
   document.getElementById('lsStatus').textContent=msg;
   if(LS.s1>LS.s2){addWin(1);celebrate('lsCelebration');playSound('win');}
   else if(LS.s2>LS.s1){addWin(2);celebrate('lsCelebration');playSound('win');}
+  else{addWin(0);}
 }
 
 function resetLS() {
@@ -6047,7 +6051,7 @@ function mlFinish(){
   const n1=getP1Name('ml'),n2=getP2Name('ml');
   let msg=ML.s1>ML.s2?'🏆 '+n1+' vyhral! ('+ML.s1+':'+ML.s2+')':ML.s2>ML.s1?'🏆 '+n2+' vyhral! ('+ML.s2+':'+ML.s1+')':'🤝 Remíza! ('+ML.s1+':'+ML.s2+')';
   document.getElementById('mlStatus').textContent=msg;
-  if(ML.s1>ML.s2){addWin(1);celebrate('mlCelebration');} else if(ML.s2>ML.s1){addWin(2);celebrate('mlCelebration');}
+  if(ML.s1>ML.s2){addWin(1);celebrate('mlCelebration');} else if(ML.s2>ML.s1){addWin(2);celebrate('mlCelebration');} else{addWin(0);}
   playSound('win');
 }
 
@@ -6188,7 +6192,7 @@ function stFinish(){
   const n1=getP1Name('st'),n2=getP2Name('st');
   let msg=ST.s1>ST.s2?'🏆 '+n1+' vyhral! ('+ST.s1+':'+ST.s2+')':ST.s2>ST.s1?'🏆 '+n2+' vyhral! ('+ST.s2+':'+ST.s1+')':'🤝 Remíza! ('+ST.s1+':'+ST.s2+')';
   document.getElementById('stStatus').textContent=msg;
-  if(ST.s1>ST.s2){addWin(1);celebrate('stCelebration');} else if(ST.s2>ST.s1){addWin(2);celebrate('stCelebration');}
+  if(ST.s1>ST.s2){addWin(1);celebrate('stCelebration');} else if(ST.s2>ST.s1){addWin(2);celebrate('stCelebration');} else{addWin(0);}
   playSound('win');
 }
 
@@ -6331,6 +6335,7 @@ function mdFinish() {
   document.getElementById('mdStatus').textContent=msg;
   if(MD.s1>MD.s2){addWin(1,'mathDuel');celebrate('mdCelebration');}
   else if(MD.s2>MD.s1){addWin(2,'mathDuel');celebrate('mdCelebration');}
+  else{addWin(0,'mathDuel');}
   playSound('win');
 }
 function resetMD() {
@@ -6479,6 +6484,7 @@ function egFinish() {
   document.getElementById('egStatus').textContent=msg;
   if(EG.s1>EG.s2){addWin(1,'emojiGuess');celebrate('egCelebration');}
   else if(EG.s2>EG.s1){addWin(2,'emojiGuess');celebrate('egCelebration');}
+  else{addWin(0,'emojiGuess');}
   playSound('win');
 }
 function resetEG() {
@@ -7215,6 +7221,7 @@ function pzCompare() {
   let w=t1<t2?1:t2<t1?2:0;
   if(w===1) { PZ.s1++; document.getElementById('p1ScorePZ').textContent=PZ.s1; addWin(1,'puzzle'); }
   else if(w===2) { PZ.s2++; document.getElementById('p2ScorePZ').textContent=PZ.s2; addWin(2,'puzzle'); }
+  else { addWin(0,'puzzle'); }
   const n1=getP1Name('pz'), n2=getP2Name('pz');
   document.getElementById('pzStatus').textContent=w===0?'🤝 Remíza!':'🏆 '+(w===1?n1:n2)+' vyhral! ('+n1+': '+t1.toFixed(1)+'s / '+n2+': '+t2.toFixed(1)+'s)';
   celebrate('pzCelebration'); playSound('win');
@@ -7363,6 +7370,7 @@ function mzCompare() {
   let w=t1<t2?1:t2<t1?2:0;
   if(w===1){MZ.s1++;document.getElementById('p1ScoreMZ').textContent=MZ.s1;addWin(1,'maze');}
   else if(w===2){MZ.s2++;document.getElementById('p2ScoreMZ').textContent=MZ.s2;addWin(2,'maze');}
+  else{addWin(0,'maze');}
   const n1=getP1Name('mz'),n2=getP2Name('mz');
   document.getElementById('mzStatus').textContent=w===0?'🤝 Remíza!':'🏆 '+(w===1?n1:n2)+' vyhral! ('+n1+': '+t1.toFixed(1)+'s / '+n2+': '+t2.toFixed(1)+'s)';
   celebrate('mzCelebration'); playSound('win');
