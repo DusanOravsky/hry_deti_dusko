@@ -74,9 +74,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v53**
+Aktuálna verzia: **v54**
 
 ## Changelog
+
+### v54 (2026-03-07)
+- 📱 **Tetris: On-screen mobile controls**
+  - Added 4 arrow buttons below Tetris board
+  - ← Vľavo, ↑ Otočiť, → Vpravo, ↓ Spadni
+  - Large touch-friendly buttons (60px width)
+  - Works alongside keyboard arrows (desktop) and tap-to-rotate
+  - User: "ale tie sipky pri tetrise v hre s pocitacom, musia byt klikatelne na obrazovke, nie?"
 
 ### v53 (2026-03-07)
 - 🎮 **Tetris REMOVED from 2-player mode grid**

@@ -3000,6 +3000,13 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="tetris-player">
         <div class="tetris-board" id="tetBoard" style="margin:0 auto"></div>
         <div class="tetris-next" id="tetNext"></div>
+        <!-- Mobile Controls -->
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+          <button class="action-btn" onclick="tetMove(-1)" style="width:60px;padding:12px;font-size:1.5em">←</button>
+          <button class="action-btn" onclick="tetRotate()" style="width:60px;padding:12px;font-size:1.5em">↑</button>
+          <button class="action-btn" onclick="tetMove(1)" style="width:60px;padding:12px;font-size:1.5em">→</button>
+          <button class="action-btn" onclick="tetDrop()" style="width:60px;padding:12px;font-size:1.5em">↓</button>
+        </div>
       </div>
     </div>
     <div class="celebration" id="tetCelebration">🎉</div>
@@ -3016,7 +3023,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 53;
+const APP_VERSION = 54;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
