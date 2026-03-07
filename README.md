@@ -69,9 +69,22 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v45**
+Aktuálna verzia: **v47**
 
 ## Changelog
+
+### v47 (2026-03-07)
+- 🔄 **ROLLBACK to v45 (PeerJS broke welcome screen)**
+  - v46 PeerJS implementation broke welcome screen
+  - User symptom: "zase zmizla verzia a zase nejde na nic klikat"
+  - Same issue as v28-v38 - MP changes break welcome screen
+  - **ROOT CAUSE UNKNOWN** - need to debug v46 code carefully
+  - v45 is KNOWN WORKING - keeping until issue resolved
+  - Will NOT add PeerJS until we find root cause
+
+### v46 (2026-03-07) - REVERTED
+- ❌ PeerJS implementation broke welcome screen
+- ❌ ROLLED BACK
 
 ### v45 (2026-03-07)
 - 🧹 **Complete cleanup of old v27 MP code**
