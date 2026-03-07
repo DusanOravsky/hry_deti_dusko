@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Hrajme si Lukáško a Natálka</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
 <meta name="theme-color" content="#667eea">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1273,6 +1275,17 @@ body.light .confirm-box { background:#fff; border-color:rgba(0,0,0,0.1); color:#
 .confirm-box .buttons-group { margin:0; gap:10px; }
 .confirm-yes { background:linear-gradient(135deg,#f5576c,#c0392b)!important; }
 .confirm-no { background:rgba(255,255,255,0.1)!important; border:1px solid rgba(255,255,255,0.2)!important; }
+
+/* MULTIPLAYER OVERLAY */
+.multiplayer-box { background:#1a1a2e; border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:32px; text-align:center; max-width:420px; width:90%; position:relative; max-height:90vh; overflow-y:auto; }
+body.light .multiplayer-box { background:#fff; border-color:rgba(0,0,0,0.1); color:#222; }
+body.light .multiplayer-box input { background:rgba(0,0,0,0.05)!important; color:#222!important; border-color:rgba(0,0,0,0.15)!important; }
+body.light .multiplayer-box input::placeholder { color:rgba(0,0,0,0.4); }
+.multiplayer-close { position:absolute; top:12px; right:12px; background:none; border:none; font-size:1.8em; color:rgba(255,255,255,0.5); cursor:pointer; padding:4px 10px; line-height:1; }
+.multiplayer-close:hover { color:rgba(255,255,255,0.9); }
+body.light .multiplayer-close { color:rgba(0,0,0,0.4); }
+body.light .multiplayer-close:hover { color:rgba(0,0,0,0.8); }
+#mpQrCode { display:flex; justify-content:center; align-items:center; }
 body.light .stats-tile { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.08); }
 body.light .stats-tile-val { color:#222; }
 body.light .stats-bar-track { background:rgba(0,0,0,0.07); }
@@ -1548,6 +1561,12 @@ body.light .welcome-mode-btn { background:rgba(0,0,0,0.04); border-color:rgba(0,
 body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-color:transparent; }
 body.light .welcome-skip { color:rgba(0,0,0,0.3); }
 body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
+.welcome-mp-btn {
+  width:100%; padding:12px; border:2px solid rgba(102,126,234,0.4); border-radius:12px; cursor:pointer;
+  font-size:0.95em; font-weight:700; color:rgba(102,126,234,0.9);
+  background:rgba(102,126,234,0.1); transition:all 0.25s; margin-bottom:12px; box-sizing:border-box;
+}
+.welcome-mp-btn:hover { background:rgba(102,126,234,0.2); transform:translateY(-1px); }
 
 /* Welcome stats */
 .welcome-stats {
@@ -1622,6 +1641,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
+    <button class="welcome-mp-btn" onclick="mpOpen()">🌐 Online Multiplayer</button>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Memory</span>
@@ -2797,7 +2817,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 21;
+const APP_VERSION = 22;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -7996,6 +8016,214 @@ document.getElementById('wP2Input').addEventListener('keypress', e => { if(e.key
   window.addEventListener('resize', checkMobile);
 })();
 
+// =============================================================================
+// ONLINE MULTIPLAYER (WebRTC via PeerJS)
+// =============================================================================
+const MP = {
+  peer: null,
+  conn: null,
+  isHost: false,
+  isConnected: false,
+  roomCode: null,
+  onGameSync: null
+};
+
+function mpOpen() {
+  document.getElementById('multiplayerOverlay').classList.add('show');
+}
+function mpClose() {
+  document.getElementById('multiplayerOverlay').classList.remove('show');
+}
+function mpCreateRoom() {
+  if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
+  MP.isHost = true;
+  // Generate random room code
+  MP.roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+  try {
+    MP.peer = new Peer(MP.roomCode, {
+      host: 'peerjs-server.herokuapp.com',
+      port: 443,
+      path: '/',
+      secure: true,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
+    });
+  } catch(e) {
+    console.error('PeerJS error:', e);
+    document.getElementById('mpHostStatus').textContent = '❌ Chyba pripojenia';
+    return;
+  }
+
+  MP.peer.on('open', (id) => {
+    document.getElementById('mpHost').querySelector('.action-btn').style.display = 'none';
+    document.getElementById('mpJoin').style.display = 'none';
+    document.getElementById('mpHostRoom').style.display = 'block';
+    document.getElementById('mpRoomCode').value = MP.roomCode;
+    document.getElementById('mpDisconnectBtn').style.display = 'block';
+
+    // Generate QR code
+    const qrEl = document.getElementById('mpQrCode');
+    qrEl.innerHTML = '';
+    new QRCode(qrEl, {
+      text: MP.roomCode,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff'
+    });
+  });
+
+  MP.peer.on('connection', (conn) => {
+    MP.conn = conn;
+    mpSetupConnection();
+    document.getElementById('mpHostStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
+    playSound('correct');
+    vibrate([50,30,50]);
+  });
+
+  MP.peer.on('error', (err) => {
+    console.error('Peer error:', err);
+    document.getElementById('mpHostStatus').textContent = '❌ Chyba: ' + err.type;
+  });
+}
+
+function mpJoinRoom() {
+  const code = document.getElementById('mpJoinCode').value.trim().toUpperCase();
+  if(!code) {
+    document.getElementById('mpJoinStatus').textContent = '❌ Zadaj kód miestnosti';
+    document.getElementById('mpJoinStatus').style.opacity = '1';
+    return;
+  }
+
+  if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
+  MP.isHost = false;
+  MP.roomCode = code;
+
+  document.getElementById('mpJoinStatus').innerHTML = '⏳ Pripájam sa...';
+  document.getElementById('mpJoinStatus').style.opacity = '1';
+
+  try {
+    MP.peer = new Peer({
+      host: 'peerjs-server.herokuapp.com',
+      port: 443,
+      path: '/',
+      secure: true,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
+    });
+  } catch(e) {
+    console.error('PeerJS error:', e);
+    document.getElementById('mpJoinStatus').textContent = '❌ Chyba pripojenia';
+    return;
+  }
+
+  MP.peer.on('open', () => {
+    MP.conn = MP.peer.connect(MP.roomCode, { reliable: true });
+    mpSetupConnection();
+  });
+
+  MP.peer.on('error', (err) => {
+    console.error('Peer error:', err);
+    document.getElementById('mpJoinStatus').textContent = '❌ Chyba: ' + err.type;
+  });
+}
+
+function mpSetupConnection() {
+  if(!MP.conn) return;
+
+  MP.conn.on('open', () => {
+    MP.isConnected = true;
+    document.getElementById('mpJoinStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
+    document.getElementById('mpHost').style.display = 'none';
+    document.getElementById('mpJoin').style.display = 'none';
+    document.getElementById('mpDisconnectBtn').style.display = 'block';
+    playSound('correct');
+    vibrate([50,30,50]);
+
+    // Send initial handshake
+    mpSend({ type: 'handshake', name: globalP1 || 'Hráč' });
+  });
+
+  MP.conn.on('data', (data) => {
+    if(data.type === 'handshake') {
+      console.log('Handshake from:', data.name);
+    } else if(data.type === 'game_state') {
+      if(MP.onGameSync) MP.onGameSync(data.state);
+    } else if(data.type === 'move') {
+      if(MP.onGameSync) MP.onGameSync(data);
+    }
+  });
+
+  MP.conn.on('close', () => {
+    MP.isConnected = false;
+    mpDisconnect();
+  });
+
+  MP.conn.on('error', (err) => {
+    console.error('Connection error:', err);
+  });
+}
+
+function mpSend(data) {
+  if(MP.conn && MP.isConnected) {
+    try {
+      MP.conn.send(data);
+    } catch(e) {
+      console.error('Send error:', e);
+    }
+  }
+}
+
+function mpDisconnect() {
+  if(MP.conn) { MP.conn.close(); MP.conn = null; }
+  if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
+  MP.isConnected = false;
+  MP.isHost = false;
+  MP.roomCode = null;
+  MP.onGameSync = null;
+
+  // Reset UI
+  document.getElementById('mpHostRoom').style.display = 'none';
+  document.getElementById('mpHost').querySelector('.action-btn').style.display = 'block';
+  document.getElementById('mpHost').style.display = 'block';
+  document.getElementById('mpJoin').style.display = 'block';
+  document.getElementById('mpJoinCode').value = '';
+  document.getElementById('mpHostStatus').textContent = '⏳ Čaká sa na pripojenie...';
+  document.getElementById('mpJoinStatus').textContent = '';
+  document.getElementById('mpDisconnectBtn').style.display = 'none';
+  document.getElementById('mpQrCode').innerHTML = '';
+
+  mpClose();
+}
+
+function mpCopyCode() {
+  const code = document.getElementById('mpRoomCode');
+  code.select();
+  code.setSelectionRange(0, 99999);
+  try {
+    navigator.clipboard.writeText(code.value);
+    playSound('correct');
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Skopírované!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  } catch(e) {
+    document.execCommand('copy');
+  }
+}
+
+// Helper: Check if multiplayer is active
+function isMPActive() { return MP.isConnected; }
+
 // ===== PWA SERVICE WORKER =====
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -8010,5 +8238,38 @@ if('serviceWorker' in navigator) {
     </div>
   </div>
 </div>
+
+<div class="confirm-overlay" id="multiplayerOverlay">
+  <div class="multiplayer-box">
+    <button class="multiplayer-close" onclick="mpClose()">✕</button>
+    <h2 style="margin:0 0 20px">🌐 Online Multiplayer</h2>
+
+    <!-- Host -->
+    <div id="mpHost">
+      <p style="opacity:0.8;margin-bottom:20px">Vytvor miestnosť a pošli QR kód kamarátovi!</p>
+      <button class="action-btn primary-btn" onclick="mpCreateRoom()" style="width:100%;margin-bottom:20px">🏠 Vytvoriť miestnosť</button>
+      <div id="mpHostRoom" style="display:none">
+        <div style="padding:20px;background:white;border-radius:12px;margin:20px 0">
+          <div id="mpQrCode"></div>
+        </div>
+        <p style="font-size:0.85em;opacity:0.6">Alebo pošli kód:</p>
+        <input type="text" id="mpRoomCode" readonly style="width:100%;padding:12px;font-size:1.2em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:10px;font-family:monospace">
+        <button class="action-btn" onclick="mpCopyCode()" style="width:100%;background:rgba(255,255,255,0.1)">📋 Kopírovať kód</button>
+        <p id="mpHostStatus" style="margin-top:20px;font-weight:700;color:#ffd200">⏳ Čaká sa na pripojenie...</p>
+      </div>
+    </div>
+
+    <!-- Join -->
+    <div id="mpJoin">
+      <p style="opacity:0.8;margin-bottom:20px">Pripoj sa k miestnosti kamaráta:</p>
+      <input type="text" id="mpJoinCode" placeholder="Zadaj kód miestnosti" style="width:100%;padding:14px;font-size:1.1em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:15px;text-transform:uppercase">
+      <button class="action-btn primary-btn" onclick="mpJoinRoom()" style="width:100%">🚪 Pripojiť sa</button>
+      <p id="mpJoinStatus" style="margin-top:15px;opacity:0"></p>
+    </div>
+
+    <button class="action-btn danger-btn" onclick="mpDisconnect()" id="mpDisconnectBtn" style="width:100%;margin-top:20px;display:none">🔌 Odpojiť</button>
+  </div>
+</div>
+
 </body>
 </html>

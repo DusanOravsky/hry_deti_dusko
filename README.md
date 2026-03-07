@@ -69,9 +69,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v21**
+Aktuálna verzia: **v22**
 
 ## Changelog
+
+### v22 (2026-03-07)
+- 🌐 **Online Multiplayer** - WebRTC peer-to-peer cez PeerJS
+  - QR kód na pripojenie (bez vlastného servera)
+  - Host vytvorí miestnosť a zobrazí QR
+  - Guest naskenuje QR alebo zadá kód
+  - Real-time synchronizácia game state
+  - Pripravené pre rozšírenie na všetky hry
 
 ### v21 (2026-03-07)
 - 🎮 **Nová hra: Tetris** - 2 hráči súťažia (šípky vs WASD)
