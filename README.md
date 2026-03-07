@@ -69,9 +69,19 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v39**
+Aktuálna verzia: **v40**
 
 ## Changelog
+
+### v40 (2026-03-07)
+- 🚀 **MP Krok 1/5: Floating button**
+  - Circular floating button in bottom-right corner (🌐)
+  - Blue gradient with floating animation
+  - Completely separate from welcome screen (z-index: 8000)
+  - Opens alert() for testing (modal in next step)
+  - updateFloatingMPButton() helper for state management
+  - Changes to green pulsing when connected (✅)
+  - **No changes to welcome screen** - learned from v28-v38
 
 ### v39 (2026-03-07)
 - 🔄 **ROLLBACK to v37 again**
