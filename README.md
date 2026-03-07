@@ -74,9 +74,20 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v54**
+Aktuálna verzia: **v55**
 
 ## Changelog
+
+### v55 (2026-03-07)
+- 🔧 **MP: Piškvorky board size synchronization**
+  - Host sends TTT.size and TTT.grid in handshake
+  - Guest receives and applies host's board size automatically
+  - Guest's UI buttons update to match host's selection
+  - Fixes issue: "ja som zvolil piskvorky ale 4x4 a super mal 3x3 a mulpilayer nefungoval"
+- 🐛 **Fix: Multiple active size buttons**
+  - Improved selector in setTTTSize() to use parent.querySelectorAll
+  - Prevents multiple buttons staying active when clicking 3x3→4x4→5x5
+  - User: "a zvolil som 3x3 potom 4x4 a potom 5x5 a vsetko ostalo zakliknute"
 
 ### v54 (2026-03-07)
 - 📱 **Tetris: On-screen mobile controls**

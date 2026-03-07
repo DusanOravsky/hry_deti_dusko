@@ -3023,7 +3023,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 54;
+const APP_VERSION = 55;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3569,7 +3569,9 @@ function setTTTDiff(d,btn) {
   resetTTT();
 }
 function setTTTSize(s,btn) {
-  document.querySelectorAll('#ticTacToe .difficulty-selector:last-of-type .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  // Remove active from size buttons only (parent's siblings)
+  const parent = btn.parentElement;
+  parent.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const is15 = s==='15x15';
   document.getElementById('board').style.display       = is15?'none':'';
@@ -8316,8 +8318,14 @@ function mpCreateRoom() {
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
-        // Send handshake with name
-        conn.send({ type: 'handshake', from: 'host', name: MP.myName });
+        // Send handshake with name + game settings
+        conn.send({
+          type: 'handshake',
+          from: 'host',
+          name: MP.myName,
+          tttSize: TTT.size,
+          tttGrid: TTT.grid
+        });
       });
 
       conn.on('data', (data) => {
@@ -8392,8 +8400,12 @@ function mpJoinRoom() {
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
-        // Send handshake with name
-        MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
+        // Send handshake with name + confirm received settings
+        MP.connection.send({
+          type: 'handshake',
+          from: 'guest',
+          name: MP.myName
+        });
       });
 
       MP.connection.on('data', (data) => {
@@ -8457,6 +8469,21 @@ function mpHandleMessage(data) {
   if(data.type === 'handshake') {
     console.log('Handshake from:', data.from, 'name:', data.name);
     MP.opponentName = data.name || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
+
+    // Guest receives game settings from host
+    if(data.from === 'host' && data.tttSize && data.tttGrid) {
+      console.log('Applying host TTT settings:', data.tttSize, data.tttGrid);
+
+      // Find the matching button and click it to sync UI
+      const sizeText = data.tttSize === '15x15' ? '10×10' : data.tttSize.replace('x','×');
+      const allSizeButtons = document.querySelectorAll('#ticTacToe .difficulty-selector:last-of-type .difficulty-btn');
+      allSizeButtons.forEach(btn => {
+        if(btn.textContent.trim() === sizeText) {
+          // Simulate click to apply all UI changes properly
+          setTTTSize(data.tttSize, btn);
+        }
+      });
+    }
     return;
   }
 
