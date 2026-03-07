@@ -68,3 +68,18 @@ open http://localhost:8080
 ## Verzionovanie
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
+
+Aktuálna verzia: **v19**
+
+## Changelog
+
+### v19 (2026-03-07)
+- Oprava: Mobile topbar zmizol pri prezeraní štatistík (zvýšený z-index, explicitné skrývanie welcome screen)
+- Oprava: Button na vymazanie štatistík mal zlú pozíciu (flexbox layout namiesto float)
+- Oprava: Piškvorky 10x10 doska sa zmenšila pri prvom načítaní (CSS špecificita)
+
+### v18 (2026-03-07)
+- Oprava: Remízy sa nepočítali vo všetkých hrách (pridané addWin(0) do 10 hier)
+- Oprava: Navigácia späť nefungovala správne (nový _returnGameToParent helper)
+- Premenované: Piškvorky 15×15 → 10×10 (zodpovedá mobilnej veľkosti)
+- Pridané: README.md a CLAUDE.md dokumentácia

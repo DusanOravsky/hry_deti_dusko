@@ -52,3 +52,6 @@ GitHub Pages auto-deploys from main branch.
 - **Blank screen on mobile**: Game area not returned to parent when switching. Fixed via `_returnGameToParent()`.
 - **Cache not updating**: SW uses network-first for HTML, so refreshing should get latest. Bump `APP_VERSION` + `CACHE_NAME` for new SW activation.
 - **Draws not counted**: Every game path showing "Remíza" must call `addWin(0)`.
+- **Mobile topbar disappearing**: Welcome screen has high z-index (9000). Always explicitly hide it when navigating to levels 2/3. Topbar needs `position:sticky`, `z-index:1000`, and `flex-shrink:0`.
+- **Board too small on initial render**: ID selectors have higher specificity than class selectors. Use combined selector `#elementId.className` when both needed.
+- **Button positioning issues**: Avoid `float` with negative margins. Use flexbox with `justify-content:space-between` for headers.
