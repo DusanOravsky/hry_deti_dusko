@@ -1,6 +1,6 @@
 # Hrajme si - Lukáško & Natálka
 
-Offline herná zbierka pre deti. Single-file PWA s 20+ hrami pre dvoch hráčov alebo proti počítaču.
+Offline herná zbierka pre deti. Single-file PWA s 20+ hrami pre dvoch hráčov, proti počítaču, alebo **online cez internet**.
 
 ## Live
 
@@ -9,7 +9,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 ## Hry
 
 ### 2 hráči aj vs Počítač
-- Piškvorky (3x3, 4x4, 5x5, 10x10)
+- Piškvorky (3x3, 4x4, 5x5, 10x10) **🌐 Online MP**
 - Connect 4
 - Šach
 - Dáma (Checkers)
@@ -37,9 +37,14 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ## Technológie
 
-- Single HTML file (~7700 riadkov)
-- ~~PWA s Service Worker~~ (DISABLED v36 - cache issues)
-- Plne offline funkčná
+- Single HTML file (~8400+ riadkov)
+- PWA s Service Worker (re-enabled, network-first stratégia)
+- Plne offline funkčná (okrem online multiplayer)
+- **🌐 Online Multiplayer** - WebRTC peer-to-peer cez PeerJS (v48+)
+  - Žiadny backend server potrebný
+  - P2P pripojenie medzi dvoma zariadeniami
+  - Synchronizácia mien hráčov (Lukáško & Natálka)
+  - Room code systém pre pripojenie
 - Responsívny dizajn (mobile + desktop)
 - Canvas-based Puzzle Scramble s 6 scénami
 - DFS generovanie labyrintu, BFS AI solver
