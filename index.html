@@ -8506,6 +8506,9 @@ function applyGameMode(mode) {
   games.forEach(gId => {
     const area = document.getElementById(gId);
     if(!area) return;
+    // Hide mode selector — mode is chosen from welcome screen
+    const modeSel = area.querySelector('.mode-selector');
+    if(modeSel && !modeSel.classList.contains('quiz-themes-wrap')) modeSel.style.display='none';
     const btns = area.querySelectorAll('.mode-btn');
     let targetBtn = null;
     btns.forEach(b => {
