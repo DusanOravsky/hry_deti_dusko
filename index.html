@@ -132,8 +132,8 @@ body.light {
   .c4-col-btn { width:100%; font-size:0.9em; padding:4px 0; }
 
   /* BATTLESHIP */
-  .bs-grid { grid-template-columns:repeat(10,1fr)!important; grid-template-rows:repeat(10,1fr)!important; max-width:min(340px,88vw); width:100%; gap:1px; padding:3px; }
-  .bs-cell { width:auto!important; height:auto!important; aspect-ratio:1; font-size:0.7em; border-radius:3px; }
+  .bs-grid { grid-template-columns:repeat(10,1fr)!important; grid-template-rows:repeat(10,1fr)!important; max-width:95vw; width:100%; gap:2px; padding:4px; }
+  .bs-cell { width:auto!important; height:auto!important; aspect-ratio:1; font-size:0.85em; border-radius:3px; }
   .bs-wrapper { gap:10px; }
   .bs-grid-label { font-size:0.82em; }
 
@@ -2319,7 +2319,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="bsCelebration">🎉</div>
     <div id="bsSetupArea">
       <div style="text-align:center;margin:10px 0">
-        <span style="font-size:0.9em;opacity:0.8">Orientácia: </span>
+        <span class="bs-grid-label" style="font-size:0.9em;margin-bottom:0">Orientácia: </span>
         <button class="bs-orient-btn active" id="bsOrientBtn" onclick="toggleBSOrient()">↔️ Vodorovne</button>
       </div>
       <div class="bs-ships-panel" id="bsShipsPanel"></div>
@@ -3086,7 +3086,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 5;
+const APP_VERSION = 6;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
