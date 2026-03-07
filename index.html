@@ -3081,7 +3081,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 58;
+const APP_VERSION = 59;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3632,6 +3632,8 @@ function setTTTDiff(d,btn) {
   resetTTT();
 }
 function setTTTSize(s,btn) {
+  // In MP mode, only host can change size (guest gets it via handshake)
+  if(MP.isConnected && !MP.isHost && !MP._applyingHostSettings) return;
   // Remove active from size buttons only (parent's siblings)
   const parent = btn.parentElement;
   parent.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
@@ -8968,6 +8970,9 @@ function mpDisconnect() {
   document.getElementById('mpDisconnectBtn').classList.add('mp-hidden');
   document.getElementById('mpJoinCode').value = '';
   updateFloatingMPButton(false);
+  // Restore hidden selectors (were hidden for guest)
+  const tttSels = document.querySelectorAll('#ticTacToe .difficulty-selector');
+  tttSels.forEach(sel => sel.style.display = '');
   console.log('Disconnected');
 }
 
@@ -8983,12 +8988,16 @@ function mpHandleMessage(data) {
       // Find the matching button and click it to sync UI
       const sizeText = data.tttSize === '15x15' ? '10×10' : data.tttSize.replace('x','×');
       const allSizeButtons = document.querySelectorAll('#ticTacToe .difficulty-selector:last-of-type .difficulty-btn');
+      MP._applyingHostSettings = true;
       allSizeButtons.forEach(btn => {
         if(btn.textContent.trim() === sizeText) {
-          // Simulate click to apply all UI changes properly
           setTTTSize(data.tttSize, btn);
         }
       });
+      MP._applyingHostSettings = false;
+      // Hide size selector for guest — host decides settings
+      const sizeSelectors = document.querySelectorAll('#ticTacToe .difficulty-selector');
+      sizeSelectors.forEach(sel => sel.style.display = 'none');
     }
     return;
   }
