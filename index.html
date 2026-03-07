@@ -3016,7 +3016,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 47;
+const APP_VERSION = 48;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8211,19 +8211,15 @@ document.getElementById('wP2Input').addEventListener('keypress', e => { if(e.key
   window.addEventListener('resize', checkMobile);
 })();
 
-// =============================================================================
-// ONLINE MULTIPLAYER (WebRTC via PeerJS)
-// =============================================================================
+// ===== MP STATE =====
 const MP = {
   peer: null,
-  conn: null,
+  connection: null,
   isHost: false,
   isConnected: false,
-  roomCode: null,
-  onGameSync: null
+  roomCode: null
 };
 
-// Track if any game is in AI mode (hide MP button when true)
 // ===== MP MODAL CONTROLS =====
 function openMPModal() {
   document.getElementById('mpOverlay').classList.add('active');
@@ -8239,13 +8235,70 @@ function closeMPModalOnOverlay(event) {
   }
 }
 
-// ===== MP FUNCTIONS (placeholders for Step 3) =====
+// ===== MP PEERJS FUNCTIONS =====
 function mpCreateRoom() {
   const roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  MP.roomCode = roomCode;
+  MP.isHost = true;
+
   document.getElementById('mpRoomCode').textContent = roomCode;
   document.getElementById('mpHostRoom').classList.remove('mp-hidden');
-  console.log('Room created:', roomCode);
-  // PeerJS connection will be added in Step 3
+
+  // Create peer with room code as ID
+  try {
+    MP.peer = new Peer(roomCode, {
+      host: '0.peerjs.com',
+      port: 443,
+      secure: true,
+      debug: 0
+    });
+
+    MP.peer.on('open', (id) => {
+      console.log('Host peer opened with ID:', id);
+      document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...</div>';
+    });
+
+    MP.peer.on('connection', (conn) => {
+      console.log('Guest is connecting...');
+      MP.connection = conn;
+
+      conn.on('open', () => {
+        console.log('Guest connected!');
+        MP.isConnected = true;
+        document.getElementById('mpHostStatus').className = 'mp-status connected';
+        document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div>';
+        document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
+        updateFloatingMPButton(true);
+
+        // Send handshake
+        conn.send({ type: 'handshake', from: 'host' });
+      });
+
+      conn.on('data', (data) => {
+        console.log('Host received:', data);
+        mpHandleMessage(data);
+      });
+
+      conn.on('close', () => {
+        console.log('Guest disconnected');
+        mpDisconnect();
+      });
+
+      conn.on('error', (err) => {
+        console.error('Connection error:', err);
+        alert('❌ Chyba pripojenia');
+      });
+    });
+
+    MP.peer.on('error', (err) => {
+      console.error('Peer error:', err);
+      alert('❌ Chyba vytvorenia miestnosti: ' + err.type);
+    });
+
+  } catch(err) {
+    console.error('Failed to create peer:', err);
+    alert('❌ Nepodarilo sa vytvoriť miestnosť');
+  }
 }
 
 function mpJoinRoom() {
@@ -8255,24 +8308,92 @@ function mpJoinRoom() {
     return;
   }
 
+  MP.roomCode = code;
+  MP.isHost = false;
+
   const statusEl = document.getElementById('mpJoinStatus');
   statusEl.className = 'mp-status waiting';
   statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam sa...</div>';
   statusEl.classList.remove('mp-hidden');
 
-  console.log('Joining room:', code);
-  // PeerJS connection will be added in Step 3
+  try {
+    // Create peer with random ID
+    MP.peer = new Peer({
+      host: '0.peerjs.com',
+      port: 443,
+      secure: true,
+      debug: 0
+    });
 
-  // Simulate success after 1s (for testing)
-  setTimeout(() => {
-    statusEl.className = 'mp-status connected';
-    statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený! (test mode)</div>';
-    updateFloatingMPButton(true);
-    document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
-  }, 1000);
+    MP.peer.on('open', (id) => {
+      console.log('Guest peer opened with ID:', id);
+      console.log('Connecting to host:', code);
+
+      // Connect to host
+      MP.connection = MP.peer.connect(code, {
+        reliable: true
+      });
+
+      MP.connection.on('open', () => {
+        console.log('Connected to host!');
+        MP.isConnected = true;
+        statusEl.className = 'mp-status connected';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div>';
+        document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
+        updateFloatingMPButton(true);
+
+        // Send handshake
+        MP.connection.send({ type: 'handshake', from: 'guest' });
+      });
+
+      MP.connection.on('data', (data) => {
+        console.log('Guest received:', data);
+        mpHandleMessage(data);
+      });
+
+      MP.connection.on('close', () => {
+        console.log('Host disconnected');
+        mpDisconnect();
+      });
+
+      MP.connection.on('error', (err) => {
+        console.error('Connection error:', err);
+        statusEl.className = 'mp-status error';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia</div>';
+      });
+    });
+
+    MP.peer.on('error', (err) => {
+      console.error('Peer error:', err);
+      statusEl.className = 'mp-status error';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
+    });
+
+  } catch(err) {
+    console.error('Failed to join:', err);
+    statusEl.className = 'mp-status error';
+    statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Nepodarilo sa pripojiť</div>';
+  }
 }
 
 function mpDisconnect() {
+  // Close connection
+  if(MP.connection) {
+    MP.connection.close();
+    MP.connection = null;
+  }
+
+  // Close peer
+  if(MP.peer) {
+    MP.peer.destroy();
+    MP.peer = null;
+  }
+
+  // Reset state
+  MP.isHost = false;
+  MP.isConnected = false;
+  MP.roomCode = null;
+
   // Reset UI
   document.getElementById('mpHostRoom').classList.add('mp-hidden');
   document.getElementById('mpJoinStatus').classList.add('mp-hidden');
@@ -8280,6 +8401,13 @@ function mpDisconnect() {
   document.getElementById('mpJoinCode').value = '';
   updateFloatingMPButton(false);
   console.log('Disconnected');
+}
+
+function mpHandleMessage(data) {
+  // Placeholder for game messages (Step 4)
+  if(data.type === 'handshake') {
+    console.log('Handshake from:', data.from);
+  }
 }
 
 function mpCopyCode() {

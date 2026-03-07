@@ -69,9 +69,21 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v47**
+Aktuálna verzia: **v48**
 
 ## Changelog
+
+### v48 (2026-03-07)
+- 🚀 **MP Step 3/5: PeerJS Real Connections (debugged!)**
+  - **ROOT CAUSE FOUND:** v45 had old `const MP = {}` from v27 (line 8217)
+  - v46 added new `const MP = {}` (line 8243) → duplicate const declaration
+  - JavaScript crashed → welcome screen non-interactive
+  - **FIX:** Removed old MP object + old comment remnants from v45
+  - Now: Clean single MP state object with PeerJS implementation
+  - WebRTC peer-to-peer connections via 0.peerjs.com
+  - Host creates room, guest connects via code
+  - Real-time status updates, handshake protocol
+  - User helped debug: "asi si odstranil button multiplayer a s tym daco spolocne?"
 
 ### v47 (2026-03-07)
 - 🔄 **ROLLBACK to v45 (PeerJS broke welcome screen)**
