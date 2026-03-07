@@ -69,9 +69,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v38**
+Aktuálna verzia: **v39**
 
 ## Changelog
+
+### v39 (2026-03-07)
+- 🔄 **ROLLBACK to v37 again**
+  - v38 broke welcome screen (same issue as v28-v36)
+  - User: "zase nejde na nič klikať" - exact same problem
+  - ROOT CAUSE: v27 MP code has something that breaks welcome screen
+  - **v37 is KNOWN WORKING** - keeping it until we understand the root cause
+  - Will NOT attempt MP re-implementation until root cause is found
 
 ### v38 (2026-03-07)
 - 🌐 **Online Multiplayer re-implemented (carefully)**
