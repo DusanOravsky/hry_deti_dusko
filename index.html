@@ -353,6 +353,17 @@ body.light .mobile-game-card { background:rgba(255,255,255,0.8); border-color:rg
 .mobile-game-card-icon { font-size:2em; line-height:1; }
 .mobile-game-card-name { font-size:0.78em; font-weight:700; color:rgba(255,255,255,0.85); line-height:1.2; }
 body.light .mobile-game-card-name { color:#333; }
+.mobile-grid-section {
+  grid-column:1/-1;
+  font-size:0.8em;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:rgba(255,255,255,0.5);
+  padding:8px 4px 2px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+body.light .mobile-grid-section { color:rgba(0,0,0,0.4); border-bottom-color:rgba(0,0,0,0.08); }
 
 /* ── LEVEL 3: Game view ── */
 #mobileGameView {
@@ -3196,7 +3207,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 15;
+const APP_VERSION = 16;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3237,6 +3248,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(area) area.classList.add('active');
       btn.classList.add('active');
       currentGameId = gId;
+      if(typeof trackRecentGame==='function') trackRecentGame(gId);
       if(gId === 'stats') renderStats();
     });
   });
@@ -9251,32 +9263,73 @@ function mobileGoTo(level, gameId) {
     }
     _mobileCurrentGame = gameId;
     currentGameId = gameId;
+    trackRecentGame(gameId);
     if(gameId === 'stats') renderStats();
     content.scrollTop = 0;
   }
   _updateMobileToggles();
 }
 
+// ===== FAVORITES & RECENTLY PLAYED =====
+let _favorites = JSON.parse(localStorage.getItem('hry_favorites')||'[]');
+let _recentGames = JSON.parse(localStorage.getItem('hry_recent')||'[]');
+
+function toggleFavorite(gId, e) {
+  e.stopPropagation();
+  const idx = _favorites.indexOf(gId);
+  if(idx>=0) _favorites.splice(idx,1); else _favorites.push(gId);
+  localStorage.setItem('hry_favorites', JSON.stringify(_favorites));
+  playSound('click');
+  renderMobileGrid();
+}
+
+function trackRecentGame(gId) {
+  if(gId==='stats') return;
+  _recentGames = _recentGames.filter(id=>id!==gId);
+  _recentGames.unshift(gId);
+  if(_recentGames.length>5) _recentGames.length=5;
+  localStorage.setItem('hry_recent', JSON.stringify(_recentGames));
+}
+
+function _renderGameCard(g) {
+  const isFav = _favorites.includes(g.id);
+  return `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
+        style="background:linear-gradient(135deg,${g.grad})">
+     <div class="mobile-game-card-icon">${g.icon}</div>
+     <div class="mobile-game-card-name">${g.label}</div>
+     ${g.mp && welcomeGameMode!=='ai' ? '<div style="position:absolute;top:6px;right:8px;font-size:0.6em;opacity:0.7">🌐</div>' : ''}
+     <div onclick="toggleFavorite('${g.id}',event)" style="position:absolute;top:5px;left:7px;font-size:0.75em;cursor:pointer;opacity:${isFav?'1':'0.35'};transition:opacity 0.2s">${isFav?'⭐':'☆'}</div>
+   </div>`;
+}
+
 function renderMobileGrid() {
   const grid = document.getElementById('mobileGameGrid');
   if(!grid) return;
   const filtered = MOBILE_GAMES.filter(g => {
-    // Stats - show always regardless of mode
     if(g.mode==='always') return true;
-    // Solo games (Tetris) - show in default and AI modes
     if(g.mode==='solo') return !welcomeGameMode || welcomeGameMode==='' || welcomeGameMode==='ai';
     if(welcomeGameMode==='ai') return g.mode==='both';
     if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp';
     return true;
   });
-  grid.innerHTML = filtered.map(g =>
-    `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
-          style="background:linear-gradient(135deg,${g.grad})">
-       <div class="mobile-game-card-icon">${g.icon}</div>
-       <div class="mobile-game-card-name">${g.label}</div>
-       ${g.mp && welcomeGameMode!=='ai' ? '<div style="position:absolute;top:6px;right:8px;font-size:0.6em;opacity:0.7">🌐</div>' : ''}
-     </div>`
-  ).join('');
+  const filteredIds = filtered.map(g=>g.id);
+  // Recently played (that are in current filtered set)
+  const recent = _recentGames.filter(id=>filteredIds.includes(id)).slice(0,3);
+  const recentGames = recent.map(id=>filtered.find(g=>g.id===id)).filter(Boolean);
+  // Favorites first, then rest
+  const favs = filtered.filter(g=>_favorites.includes(g.id));
+  const rest = filtered.filter(g=>!_favorites.includes(g.id));
+  const sorted = [...favs, ...rest];
+
+  let html = '';
+  // Recent section
+  if(recentGames.length>0) {
+    html += '<div class="mobile-grid-section">Nedavno hrane</div>';
+    html += recentGames.map(g=>_renderGameCard(g)).join('');
+    html += '<div class="mobile-grid-section">Vsetky hry</div>';
+  }
+  html += sorted.map(g=>_renderGameCard(g)).join('');
+  grid.innerHTML = html;
 }
 
 function _updateMobileChips() {
