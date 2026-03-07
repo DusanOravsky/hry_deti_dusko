@@ -3081,7 +3081,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 59;
+const APP_VERSION = 60;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3707,10 +3707,11 @@ function getTTTAIMove() {
 function clickTTT(i) {
   if(TTT.over||TTT.board[i]) return;
 
-  // MP mode: only allow moves if it's your turn
+  // MP mode: only allow moves if it's your turn (alternates each round)
   if(MP.isConnected) {
-    const mySymbol = MP.isHost ? 'X' : 'O';
-    if(TTT.player !== mySymbol) return; // Not your turn
+    const hostIsX = MP.tttRound % 2 === 0;
+    const mySymbol = MP.isHost ? (hostIsX?'X':'O') : (hostIsX?'O':'X');
+    if(TTT.player !== mySymbol) return;
   }
 
   stopTurnTimer('ttt'); playSound('click');
@@ -8756,7 +8757,8 @@ const MP = {
   isConnected: false,
   roomCode: null,
   myName: '',
-  opponentName: ''
+  opponentName: '',
+  tttRound: 0
 };
 
 // Helper: Get player name for TTT (MP-aware)
@@ -8764,11 +8766,13 @@ function getTTTPlayerName(symbol) {
   if(!MP.isConnected) {
     return symbol === 'X' ? getP1Name('ttt') : getP2Name('ttt');
   }
-  // MP mode: Host=X, Guest=O
+  // MP mode: alternates each round — even rounds host=X, odd rounds host=O
+  const hostIsX = MP.tttRound % 2 === 0;
+  const hostSymbol = hostIsX ? 'X' : 'O';
   if(MP.isHost) {
-    return symbol === 'X' ? MP.myName : MP.opponentName;
+    return symbol === hostSymbol ? MP.myName : MP.opponentName;
   } else {
-    return symbol === 'O' ? MP.myName : MP.opponentName;
+    return symbol === hostSymbol ? MP.opponentName : MP.myName;
   }
 }
 
@@ -9123,16 +9127,34 @@ function mpHandleMessage(data) {
   // Rematch request
   if(data.type === 'mp-rematch') {
     const gameId = data.game;
-    if(gameId === 'ticTacToe') { TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0; document.getElementById('p1ScoreTTT').textContent='0'; document.getElementById('p2ScoreTTT').textContent='0'; renderTTT(); document.getElementById('tttStatus').textContent=getTTTPlayerName('X')+' na rade!'; activeTurn('tttP1Card','tttP2Card',1); }
+    if(gameId === 'ticTacToe') {
+      if(data.round !== undefined) MP.tttRound = data.round;
+      TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
+      document.getElementById('p1ScoreTTT').textContent='0'; document.getElementById('p2ScoreTTT').textContent='0';
+      renderTTT();
+      document.getElementById('tttStatus').textContent=getTTTPlayerName('X')+' na rade!';
+      const hostIsX = MP.tttRound % 2 === 0;
+      const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
+      activeTurn('tttP1Card','tttP2Card', iAmFirst ? 1 : 2);
+    }
     if(gameId === 'connect4') { resetC4(); }
   }
 }
 
 function mpRematch(gameId) {
   if(!MP.isConnected || !MP.connection) return;
-  MP.connection.send({ type: 'mp-rematch', game: gameId });
-  if(gameId === 'ticTacToe') { TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0; document.getElementById('p1ScoreTTT').textContent='0'; document.getElementById('p2ScoreTTT').textContent='0'; renderTTT(); document.getElementById('tttStatus').textContent=getTTTPlayerName('X')+' na rade!'; activeTurn('tttP1Card','tttP2Card',1); }
-  if(gameId === 'connect4') { resetC4(); }
+  if(gameId === 'ticTacToe') {
+    MP.tttRound++;
+    MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tttRound });
+    TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
+    document.getElementById('p1ScoreTTT').textContent='0'; document.getElementById('p2ScoreTTT').textContent='0';
+    renderTTT();
+    document.getElementById('tttStatus').textContent=getTTTPlayerName('X')+' na rade!';
+    const hostIsX = MP.tttRound % 2 === 0;
+    const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
+    activeTurn('tttP1Card','tttP2Card', iAmFirst ? 1 : 2);
+  }
+  if(gameId === 'connect4') { MP.connection.send({ type: 'mp-rematch', game: gameId }); resetC4(); }
 }
 
 function mpCopyCode() {
