@@ -3111,7 +3111,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -4209,7 +4209,7 @@ function initMem() {
     c.className='memory-card'; c.textContent='?'; c.onclick=()=>flipMem(i); b.appendChild(c);
   });
   // MP: host sends board to guest
-  if(MP.isConnected&&MP.isHost&&MP.connection) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff});
+  if(typeof MP!=='undefined'&&MP.isConnected&&MP.isHost&&MP.connection) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff});
 }
 function memCheckEnd() {
   if(MEM.matched.length>=MEM.cards.length-(MEM.cards.length%2===1?1:0)) {
@@ -5126,7 +5126,7 @@ function resetBS() {
   BS.boards=[Array(100).fill(0),Array(100).fill(0)];
   BS.hits=[Array(100).fill(0),Array(100).fill(0)];
   BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false; BS.aiHits=[]; BS.aiMode='hunt';
-  MP._meReady=false; MP._opponentReady=false;
+  if(typeof MP!=='undefined'){MP._meReady=false; MP._opponentReady=false;}
   document.getElementById('bsSetupArea').style.display='block';
   document.getElementById('bsGameArea').style.display='none';
   document.getElementById('bsCoverDiv').style.display='none';
