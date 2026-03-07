@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hrajmesi-v2';
+const CACHE_NAME = 'hrajmesi-v3';
 const ASSETS = [
   './',
   './index.html',
