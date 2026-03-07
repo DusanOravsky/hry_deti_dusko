@@ -1294,6 +1294,162 @@ body.light .stats-history-row { background:rgba(0,0,0,0.03); }
 /* HIGHER/LOWER CARDS */
 .hl-cards-row { display:flex; gap:16px; justify-content:center; align-items:center; margin:20px 0; flex-wrap:wrap; }
 
+/* ===== MP MODAL ===== */
+.mp-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 9500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.mp-overlay.active {
+  display: flex;
+}
+.mp-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid rgba(102,126,234,0.5);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 50px rgba(102,126,234,0.3);
+}
+body.light .mp-modal {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  color: #222;
+}
+.mp-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.8em;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  padding: 4px 10px;
+  transition: all 0.2s;
+}
+.mp-close:hover {
+  color: rgba(255,255,255,1);
+  transform: scale(1.2);
+}
+body.light .mp-close {
+  color: rgba(0,0,0,0.4);
+}
+body.light .mp-close:hover {
+  color: rgba(0,0,0,0.8);
+}
+.mp-title {
+  font-size: 1.8em;
+  font-weight: 800;
+  margin: 0 0 20px;
+  text-align: center;
+  color: #667eea;
+}
+.mp-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+}
+body.light .mp-section {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.1);
+}
+.mp-section-title {
+  font-size: 1.2em;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.mp-button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 10px;
+}
+.mp-button-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+.mp-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+}
+.mp-button-danger {
+  background: linear-gradient(135deg, #f5576c 0%, #e74c3c 100%);
+  color: white;
+}
+.mp-button-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245,87,108,0.5);
+}
+.mp-input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 1.1em;
+  text-align: center;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  font-family: monospace;
+}
+body.light .mp-input {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.2);
+  color: #222;
+}
+.mp-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+}
+.mp-status {
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 16px;
+  font-weight: 600;
+}
+.mp-status.waiting {
+  background: rgba(255,210,0,0.1);
+  border: 2px solid rgba(255,210,0,0.3);
+  color: #ffd200;
+}
+.mp-status.connected {
+  background: rgba(0,255,0,0.1);
+  border: 2px solid rgba(0,255,0,0.3);
+  color: #00ff00;
+}
+.mp-status.error {
+  background: rgba(255,0,0,0.1);
+  border: 2px solid rgba(255,0,0,0.3);
+  color: #ff6b6b;
+}
+.mp-hidden {
+  display: none;
+}
+
 /* ===== FLOATING MP BUTTON ===== */
 .floating-mp-btn {
   position: fixed;
@@ -2877,7 +3033,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 40;
+const APP_VERSION = 41;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8302,10 +8458,78 @@ function mpCopyCode() {
 // Helper: Check if multiplayer is active
 function isMPActive() { return MP.isConnected; }
 
-// ===== FLOATING MP BUTTON =====
+// ===== FLOATING MP BUTTON & MODAL =====
 function openMPModal() {
-  alert('MP Modal will open here! (Coming in next step)');
-  console.log('Floating MP button clicked!');
+  document.getElementById('mpOverlay').classList.add('active');
+}
+
+function closeMPModal() {
+  document.getElementById('mpOverlay').classList.remove('active');
+}
+
+function closeMPModalOnOverlay(event) {
+  if(event.target === document.getElementById('mpOverlay')) {
+    closeMPModal();
+  }
+}
+
+// ===== MP FUNCTIONS (placeholders for Step 3) =====
+function mpCreateRoom() {
+  const roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  document.getElementById('mpRoomCode').textContent = roomCode;
+  document.getElementById('mpHostRoom').classList.remove('mp-hidden');
+  console.log('Room created:', roomCode);
+  // PeerJS connection will be added in Step 3
+}
+
+function mpJoinRoom() {
+  const code = document.getElementById('mpJoinCode').value.trim().toUpperCase();
+  if(!code) {
+    alert('Zadaj kód miestnosti!');
+    return;
+  }
+
+  const statusEl = document.getElementById('mpJoinStatus');
+  statusEl.className = 'mp-status waiting';
+  statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam sa...</div>';
+  statusEl.classList.remove('mp-hidden');
+
+  console.log('Joining room:', code);
+  // PeerJS connection will be added in Step 3
+
+  // Simulate success after 1s (for testing)
+  setTimeout(() => {
+    statusEl.className = 'mp-status connected';
+    statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený! (test mode)</div>';
+    updateFloatingMPButton(true);
+    document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
+  }, 1000);
+}
+
+function mpDisconnect() {
+  // Reset UI
+  document.getElementById('mpHostRoom').classList.add('mp-hidden');
+  document.getElementById('mpJoinStatus').classList.add('mp-hidden');
+  document.getElementById('mpDisconnectBtn').classList.add('mp-hidden');
+  document.getElementById('mpJoinCode').value = '';
+  updateFloatingMPButton(false);
+  console.log('Disconnected');
+}
+
+function mpCopyCode() {
+  const code = document.getElementById('mpRoomCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    alert('✅ Kód skopírovaný: ' + code);
+  }).catch(() => {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = code;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('✅ Kód skopírovaný: ' + code);
+  });
 }
 
 function updateFloatingMPButton(isConnected) {
@@ -8366,6 +8590,42 @@ if('serviceWorker' in navigator) {
     </div>
 
     <button class="action-btn danger-btn" onclick="mpDisconnect()" id="mpDisconnectBtn" style="width:100%;margin-top:20px;display:none">🔌 Odpojiť</button>
+  </div>
+</div>
+
+<!-- MP Modal -->
+<div class="mp-overlay" id="mpOverlay" onclick="closeMPModalOnOverlay(event)">
+  <div class="mp-modal" onclick="event.stopPropagation()">
+    <button class="mp-close" onclick="closeMPModal()">✕</button>
+    <h2 class="mp-title">🌐 Online Multiplayer</h2>
+
+    <!-- Host Section -->
+    <div class="mp-section">
+      <div class="mp-section-title">🏠 Vytvor miestnosť</div>
+      <p style="opacity:0.8;font-size:0.9em;margin-bottom:12px">Vytvor miestnosť a pošli kód kamarátovi</p>
+      <button class="mp-button mp-button-primary" onclick="mpCreateRoom()">Vytvoriť miestnosť</button>
+
+      <div id="mpHostRoom" class="mp-hidden">
+        <div class="mp-input" id="mpRoomCode" style="background:rgba(102,126,234,0.2);border-color:#667eea;cursor:text;user-select:all">LOADING...</div>
+        <button class="mp-button" onclick="mpCopyCode()" style="background:rgba(102,126,234,0.2)">📋 Kopírovať kód</button>
+        <div id="mpHostStatus" class="mp-status waiting">
+          <div style="font-size:1.5em;margin-bottom:8px">⏳</div>
+          <div>Čaká sa na pripojenie...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Join Section -->
+    <div class="mp-section">
+      <div class="mp-section-title">🚪 Pripoj sa</div>
+      <p style="opacity:0.8;font-size:0.9em;margin-bottom:12px">Zadaj kód od kamaráta</p>
+      <input type="text" class="mp-input" id="mpJoinCode" placeholder="Zadaj kód (napr. HR123ABC)" maxlength="12">
+      <button class="mp-button mp-button-primary" onclick="mpJoinRoom()">Pripojiť sa</button>
+      <div id="mpJoinStatus" class="mp-hidden"></div>
+    </div>
+
+    <!-- Disconnect Button -->
+    <button class="mp-button mp-button-danger mp-hidden" id="mpDisconnectBtn" onclick="mpDisconnect()">🔌 Odpojiť</button>
   </div>
 </div>
 

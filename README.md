@@ -69,9 +69,24 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v40**
+Aktuálna verzia: **v41**
 
 ## Changelog
+
+### v41 (2026-03-07)
+- 🚀 **MP Krok 2/5: Modal UI**
+  - Full-screen overlay with blur effect (z-index: 9500)
+  - Beautiful gradient modal with close button
+  - **Host section:** "Vytvoriť miestnosť" → generates random code
+  - **Join section:** Input field + "Pripojiť sa" button
+  - Copy code button (📋)
+  - Simulates connection (test mode - 1s delay → ✅)
+  - Disconnect button
+  - Close via X or click outside modal
+  - Status indicators: waiting (⏳), connected (✅), error (❌)
+  - Light/dark mode support
+  - Mobile responsive
+  - **No PeerJS yet** - just UI (Step 3 will add real connections)
 
 ### v40 (2026-03-07)
 - 🚀 **MP Krok 1/5: Floating button**
