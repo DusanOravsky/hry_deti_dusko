@@ -47,6 +47,21 @@ git push
 
 GitHub Pages auto-deploys from main branch.
 
+## Sound & Feedback System
+
+Sounds are generated using Web Audio API. Available types:
+- `'click'/'move'` - UI clicks and piece moves
+- `'correct'` - Successful action
+- `'wrong'` - Incorrect action
+- `'flip'` - Card flip
+- `'shot'` - Battleship shot
+- `'miss'` - Battleship miss
+- `'hit'` - Hit/capture
+- `'win'` - Victory melody
+- `'timeout'` - Time expired
+
+Each sound also triggers vibration (15-100ms) if device supports it.
+
 ## Common Issues
 
 - **Blank screen on mobile**: Game area not returned to parent when switching. Fixed via `_returnGameToParent()`.
@@ -55,3 +70,4 @@ GitHub Pages auto-deploys from main branch.
 - **Mobile topbar disappearing**: Welcome screen has high z-index (9000). Always explicitly hide it when navigating to levels 2/3. Topbar needs `position:sticky`, `z-index:1000`, and `flex-shrink:0`.
 - **Board too small on initial render**: ID selectors have higher specificity than class selectors. Use combined selector `#elementId.className` when both needed.
 - **Button positioning issues**: Avoid `float` with negative margins. Use flexbox with `justify-content:space-between` for headers.
+- **Keyboard conflicts**: Games using keyboard (Tetris, Maze) should `preventDefault()` to avoid scrolling page.
