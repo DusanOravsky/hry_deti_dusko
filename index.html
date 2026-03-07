@@ -884,6 +884,22 @@ input[type="number"]::placeholder { color:rgba(255,255,255,0.3); }
   transition:all 0.3s;
   font-size:0.9em;
 }
+/* Quiz themes: horizontal scroll on mobile */
+.quiz-themes-wrap {
+  flex-wrap:wrap;
+}
+@media(max-width:640px) {
+  .quiz-themes-wrap {
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-bottom:4px;
+    justify-content:flex-start;
+  }
+  .quiz-themes-wrap::-webkit-scrollbar { display:none; }
+  .quiz-themes-wrap .quiz-theme-btn { flex-shrink:0; }
+}
 .quiz-theme-btn:hover { border-color:#a18cd1; }
 .quiz-theme-btn.active { background:linear-gradient(135deg,#a18cd1,#fbc2eb); color:white; border-color:transparent; }
 .question-text { font-size:1.2em; font-weight:600; margin:20px 0; text-align:center; color:white; line-height:1.4; }
@@ -1883,7 +1899,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
 
   <!-- ===== QUIZ ===== -->
   <div class="game-area" id="quiz">
-    <div class="mode-selector" style="flex-wrap:wrap;">
+    <div class="mode-selector quiz-themes-wrap">
       <button class="quiz-theme-btn active" onclick="setQuizTheme('all',this)">🎲 Všetko</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('general',this)">🌍 Všeobecné</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('food',this)">🍕 Jedlo</button>
@@ -6366,6 +6382,8 @@ function mobileGoTo(level, gameId) {
     }
     currentGameId = gameId;
     if(gameId === 'stats') renderStats();
+    // Scroll to top when opening a game
+    content.scrollTop = 0;
   }
   _updateMobileToggles();
 }
