@@ -69,9 +69,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v26**
+Aktuálna verzia: **v27**
 
 ## Changelog
+
+### v27 (2026-03-07)
+- 🌐 **Online Multiplayer: Funguje! 🎮**
+  - **Piškvorky** - hraj proti kamarátovi cez internet
+  - **Connect 4** - real-time synchronizácia ťahov
+  - Host = Hráč 1 (X/Red), Guest = Hráč 2 (O/Blue)
+  - WebRTC peer-to-peer (bez servera, bez oneskorenia)
+  - Automatická detekcia ťahu (iba aktívny hráč môže hrať)
 
 ### v26 (2026-03-07)
 - 🔧 **Online Multiplayer: UX vylepšenia**

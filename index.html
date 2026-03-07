@@ -2823,7 +2823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 26;
+const APP_VERSION = 27;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3441,8 +3441,21 @@ function getTTTAIMove() {
 }
 function clickTTT(i) {
   if(TTT.over||TTT.board[i]) return;
+
+  // MP: Check if it's my turn
+  if(isMPActive() && TTT.mode === 'pvp') {
+    const myPlayer = getMyMPPlayer();
+    const mySymbol = myPlayer === 1 ? 'X' : 'O';
+    if(TTT.player !== mySymbol) return; // Not my turn
+  }
+
   stopTurnTimer('ttt'); playSound('click');
   TTT.board[i]=TTT.player; renderTTT();
+
+  // MP: Send move to opponent
+  if(isMPActive() && TTT.mode === 'pvp') {
+    mpSend({ type: 'ttt_move', index: i });
+  }
   const w=checkTTTWin();
   if(w) {
     TTT.over=true;
@@ -3456,11 +3469,19 @@ function clickTTT(i) {
   }
   if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
   if(TTT.mode==='pvp') {
-    TTT.player=TTT.player==='X'?'O':'X';
-    const p=TTT.player==='X'?1:2;
-    document.getElementById('tttStatus').textContent=(p===1?getP1Name('ttt'):getP2Name('ttt'))+' na rade!';
-    activeTurn('tttP1Card','tttP2Card',p);
-    startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+(p===1?getP2Name('ttt'):getP1Name('ttt'))+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
+    // Don't switch turn in MP - opponent will make their move
+    if(!isMPActive()) {
+      TTT.player=TTT.player==='X'?'O':'X';
+      const p=TTT.player==='X'?1:2;
+      document.getElementById('tttStatus').textContent=(p===1?getP1Name('ttt'):getP2Name('ttt'))+' na rade!';
+      activeTurn('tttP1Card','tttP2Card',p);
+      startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+(p===1?getP2Name('ttt'):getP1Name('ttt'))+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
+    } else {
+      // MP: Wait for opponent's move
+      const opponentPlayer = getMyMPPlayer() === 1 ? 2 : 1;
+      document.getElementById('tttStatus').textContent = '⏳ Čaká sa na ' + (opponentPlayer === 1 ? getP1Name('ttt') : getP2Name('ttt')) + '...';
+      activeTurn('tttP1Card', 'tttP2Card', opponentPlayer);
+    }
   } else {
     setTimeout(()=>{
       const ai=getTTTAIMove(); TTT.board[ai]='O'; renderTTT();
@@ -4045,10 +4066,22 @@ function getC4AIMove() {
 function dropC4(col) {
   if(C4.over) return;
   if(C4.mode==='ai'&&C4.player!==1) return;
+
+  // MP: Check if it's my turn
+  if(isMPActive() && C4.mode === 'pvp') {
+    const myPlayer = getMyMPPlayer();
+    if(C4.player !== myPlayer) return; // Not my turn
+  }
+
   for(let r=5;r>=0;r--) {
     if(C4.board[col][r]===0) {
       stopTurnTimer('c4');
       C4.board[col][r]=C4.player; renderC4();
+
+      // MP: Send move to opponent
+      if(isMPActive() && C4.mode === 'pvp') {
+        mpSend({ type: 'c4_move', col: col });
+      }
       // Drop animation on the filled slot
       const slot=document.getElementById(`c4-${col}-${r}`);
       if(slot){ slot.classList.add('dropping'); setTimeout(()=>slot.classList.remove('dropping'),380); }
@@ -4062,10 +4095,18 @@ function dropC4(col) {
       }
       if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';addWin(0);return;}
       if(C4.mode==='pvp') {
-        C4.player=C4.player===1?2:1;
-        document.getElementById('c4Status').textContent=(C4.player===1?getP1Name('c4'):getP2Name('c4'))+' na rade!';
-        activeTurn('c4P1Card','c4P2Card',C4.player);
-        startTurnTimer('c4', ()=>c4TimerExpire());
+        // Don't switch turn in MP - opponent will make their move
+        if(!isMPActive()) {
+          C4.player=C4.player===1?2:1;
+          document.getElementById('c4Status').textContent=(C4.player===1?getP1Name('c4'):getP2Name('c4'))+' na rade!';
+          activeTurn('c4P1Card','c4P2Card',C4.player);
+          startTurnTimer('c4', ()=>c4TimerExpire());
+        } else {
+          // MP: Wait for opponent's move
+          const opponentPlayer = getMyMPPlayer() === 1 ? 2 : 1;
+          document.getElementById('c4Status').textContent = '⏳ Čaká sa na ' + (opponentPlayer === 1 ? getP1Name('c4') : getP2Name('c4')) + '...';
+          activeTurn('c4P1Card', 'c4P2Card', opponentPlayer);
+        }
       } else {
         C4.player=2;
         setTimeout(()=>{
@@ -8035,7 +8076,8 @@ const MP = {
   isHost: false,
   isConnected: false,
   roomCode: null,
-  onGameSync: null
+  onGameSync: null,
+  role: null  // 'host' or 'guest'
 };
 
 // Track if any game is in AI mode (hide MP button when true)
@@ -8061,6 +8103,7 @@ function mpClose() {
 function mpCreateRoom() {
   if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
   MP.isHost = true;
+  MP.role = 'host';
   // Generate random room code
   MP.roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
 
@@ -8105,7 +8148,11 @@ function mpCreateRoom() {
     mpSetupConnection();
     const icon = document.getElementById('mpStatusIcon');
     if(icon) icon.textContent = '✅';
-    document.getElementById('mpHostStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
+
+    // Show connected state
+    document.getElementById('mpHost').style.display = 'none';
+    document.getElementById('mpConnected').style.display = 'block';
+    document.getElementById('mpRoleText').textContent = 'Host (Hráč 1)';
     playSound('correct');
     vibrate([50,30,50]);
   });
@@ -8126,6 +8173,7 @@ function mpJoinRoom() {
 
   if(MP.peer) { MP.peer.destroy(); MP.peer = null; }
   MP.isHost = false;
+  MP.role = 'guest';
   MP.roomCode = code;
 
   document.getElementById('mpJoinStatus').innerHTML = '⏳ Pripájam sa...';
@@ -8166,10 +8214,13 @@ function mpSetupConnection() {
     MP.isConnected = true;
     const icon = document.getElementById('mpStatusIcon');
     if(icon) icon.textContent = '✅';
-    document.getElementById('mpJoinStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
+
+    // Show connected state
     document.getElementById('mpHost').style.display = 'none';
     document.getElementById('mpJoin').style.display = 'none';
-    document.getElementById('mpDisconnectBtn').style.display = 'block';
+    document.getElementById('mpDisconnectBtn').style.display = 'none';
+    document.getElementById('mpConnected').style.display = 'block';
+    document.getElementById('mpRoleText').textContent = MP.role === 'host' ? 'Host (Hráč 1)' : 'Guest (Hráč 2)';
     playSound('correct');
     vibrate([50,30,50]);
 
@@ -8180,6 +8231,10 @@ function mpSetupConnection() {
   MP.conn.on('data', (data) => {
     if(data.type === 'handshake') {
       console.log('Handshake from:', data.name);
+    } else if(data.type === 'ttt_move') {
+      applyTTTMove(data.index);
+    } else if(data.type === 'c4_move') {
+      applyC4Move(data.col);
     } else if(data.type === 'game_state') {
       if(MP.onGameSync) MP.onGameSync(data.state);
     } else if(data.type === 'move') {
@@ -8246,7 +8301,7 @@ function mpCopyCode() {
 }
 
 // Helper: Check if multiplayer is active
-function isMPActive() { return MP.isConnected; }
+
 
 // ===== PWA SERVICE WORKER =====
 if('serviceWorker' in navigator) {
@@ -8279,7 +8334,11 @@ if('serviceWorker' in navigator) {
         <p style="font-size:0.85em;opacity:0.6">Alebo pošli kód:</p>
         <input type="text" id="mpRoomCode" readonly style="width:100%;padding:12px;font-size:1.2em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:10px;font-family:monospace">
         <button class="action-btn" onclick="mpCopyCode()" style="width:100%;background:rgba(255,255,255,0.1)">📋 Kopírovať kód</button>
-        <p id="mpHostStatus" style="margin-top:20px;font-weight:700;color:#ffd200">⏳ Čaká sa na pripojenie...</p>
+        <div id="mpHostStatus" style="margin-top:20px;padding:16px;background:rgba(255,210,0,0.1);border:2px solid rgba(255,210,0,0.3);border-radius:12px">
+          <div style="font-size:2em;margin-bottom:8px">⏳</div>
+          <div style="font-weight:700;color:#ffd200;font-size:1.1em">Čaká sa na pripojenie...</div>
+          <div style="opacity:0.7;font-size:0.85em;margin-top:8px">Kamarát musí naskenovať QR alebo zadať kód</div>
+        </div>
       </div>
     </div>
 
@@ -8289,6 +8348,19 @@ if('serviceWorker' in navigator) {
       <input type="text" id="mpJoinCode" placeholder="Zadaj kód miestnosti" style="width:100%;padding:14px;font-size:1.1em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:15px;text-transform:uppercase">
       <button class="action-btn primary-btn" onclick="mpJoinRoom()" style="width:100%">🚪 Pripojiť sa</button>
       <p id="mpJoinStatus" style="margin-top:15px;opacity:0"></p>
+    </div>
+
+    <!-- Connected State -->
+    <div id="mpConnected" style="display:none">
+      <div style="padding:24px;background:rgba(0,255,0,0.1);border:2px solid rgba(0,255,0,0.3);border-radius:16px;margin-bottom:20px">
+        <div style="font-size:3em;margin-bottom:10px">✅</div>
+        <h3 style="color:#00ff00;margin:0 0 10px">Pripojený!</h3>
+        <p style="opacity:0.8;margin:0">
+          Si <strong id="mpRoleText">Host</strong><br>
+          <span style="font-size:0.9em;opacity:0.7">Môžeš zavrieť toto okno a začať hrať</span>
+        </p>
+      </div>
+      <button class="action-btn danger-btn" onclick="mpDisconnect()" style="width:100%">🔌 Odpojiť</button>
     </div>
 
     <button class="action-btn danger-btn" onclick="mpDisconnect()" id="mpDisconnectBtn" style="width:100%;margin-top:20px;display:none">🔌 Odpojiť</button>
