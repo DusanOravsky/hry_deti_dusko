@@ -6457,7 +6457,11 @@ function resetHL() {
 // RANDOM BATTLE
 // =============================================================================
 function randomBattle() {
-  const playable=MOBILE_GAMES.filter(g=>g.id!=='stats');
+  const playable=MOBILE_GAMES.filter(g=>{
+    if(g.id==='stats'||g.mode==='always') return false;
+    if(welcomeGameMode==='ai') return g.mode==='both';
+    return true;
+  });
   const pick=playable[Math.floor(Math.random()*playable.length)];
   vibrate([30,20,30,20,50]);
   mobileGoTo(3,pick.id);
@@ -6745,28 +6749,28 @@ updateWelcomeStats();
 const isMobile = () => window.innerWidth <= 640;
 
 const MOBILE_GAMES = [
-  { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)' },
-  { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)' },
-  { id:'memory',        label:'Memory',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)' },
-  { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)' },
-  { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)' },
-  { id:'quiz',          label:'Kvíz',           icon:'❓', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)' },
-  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)' },
-  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)' },
-  { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)' },
-  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)' },
-  { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)' },
-  { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)' },
-  { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)' },
-  { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)' },
-  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)' },
-  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)' },
-  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)' },
-  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)' },
-  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)' },
-  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)' },
-  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)' },
-  { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)' },
+  { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)', mode:'both' },
+  { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)', mode:'both' },
+  { id:'memory',        label:'Memory',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both' },
+  { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both' },
+  { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both' },
+  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'pvp' },
+  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'pvp' },
+  { id:'quiz',          label:'Kvíz',           icon:'❓', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp' },
+  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'pvp' },
+  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp' },
+  { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
+  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp' },
+  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp' },
+  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp' },
+  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp' },
+  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp' },
+  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
+  { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
+  { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp' },
+  { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
+  { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
+  { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
 // Original parent of each game-area (main-content) — for restoring on desktop
@@ -6815,7 +6819,12 @@ function mobileGoTo(level, gameId) {
 function renderMobileGrid() {
   const grid = document.getElementById('mobileGameGrid');
   if(!grid) return;
-  grid.innerHTML = MOBILE_GAMES.map(g =>
+  const filtered = MOBILE_GAMES.filter(g => {
+    if(g.mode==='always') return true;
+    if(welcomeGameMode==='ai') return g.mode==='both';
+    return true; // pvp shows all
+  });
+  grid.innerHTML = filtered.map(g =>
     `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
           style="background:linear-gradient(135deg,${g.grad})">
        <div class="mobile-game-card-icon">${g.icon}</div>
