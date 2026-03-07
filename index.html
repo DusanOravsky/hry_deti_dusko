@@ -3016,7 +3016,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 50;
+const APP_VERSION = 51;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8302,7 +8302,7 @@ function mpCreateRoom() {
         console.log('Guest connected!');
         MP.isConnected = true;
         document.getElementById('mpHostStatus').className = 'mp-status connected';
-        document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div>';
+        document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si Hráč 1 🔴 (X)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
@@ -8378,7 +8378,7 @@ function mpJoinRoom() {
         console.log('Connected to host!');
         MP.isConnected = true;
         statusEl.className = 'mp-status connected';
-        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div>';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si Hráč 2 🔵 (O)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 

@@ -74,9 +74,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v50**
+Aktuálna verzia: **v51**
 
 ## Changelog
+
+### v51 (2026-03-07)
+- 🎯 **MP: Player role indicator after connection**
+  - Host sees: "✅ Pripojený! Si Hráč 1 🔴 (X)"
+  - Guest sees: "✅ Pripojený! Si Hráč 2 🔵 (O)"
+  - Clear visual indication which mobile is which player
+  - Color-coded: red for P1/X, blue for P2/O
+  - User request: "akurat tam treba dat dajako najavo ktory mobil je ktory hrac"
 
 ### v50 (2026-03-07)
 - 👥 **MP: Real player names in game (Lukáško & Natálka)**
