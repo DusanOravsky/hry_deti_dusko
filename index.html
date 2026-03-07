@@ -2779,26 +2779,35 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <!-- ===== TETRIS ===== -->
   <div class="game-area" id="tetris">
-    <div class="rules"><h3>📋 Tetris - 2 hráči súťažia:</h3><ul>
-      <li>Každý hráč má vlastné pole — snaž sa prežiť čo najdlhšie!</li>
-      <li>Ovládanie: <strong>Šípky</strong> (P1) a <strong>WASD</strong> (P2)</li>
-      <li>↓/S = rýchlejší pád, ↑/W = rotácia, ←→/AD = pohyb</li>
+    <div class="rules"><h3>📋 Tetris vs Počítač:</h3><ul>
+      <li>Súťaž s počítačom — kto získa viac bodov!</li>
+      <li>Ovládanie: <strong>Šípky ←→</strong> na pohyb, <strong>↓</strong> rýchlejší pád</li>
+      <li><strong>Klikni/ťukni</strong> na svoje pole pre otočenie kocky</li>
       <li>Plná rada = zmazaná + body. Keď pole preteká = koniec!</li>
-      <li>Vyhráva kto získa viac bodov alebo prežije dlhšie</li>
+      <li>Počítač hrá automaticky vedľa teba</li>
     </ul></div>
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setTetMode('pvp',this)">👥 2 Hráči</button>
+      <button class="mode-btn" onclick="setTetMode('ai',this)">🤖 vs Počítač</button>
+    </div>
     <div class="player-info">
       <div class="player-card player1" id="tetP1Card"><div class="player-name-display" id="tetP1Name">Lukáško</div><div class="player-score" id="p1ScoreTet">0</div></div>
       <div class="player-card player2" id="tetP2Card"><div class="player-name-display" id="tetP2Name">Natálka</div><div class="player-score" id="p2ScoreTet">0</div></div>
     </div>
+    <div id="tetAISel" class="difficulty-selector" style="display:none">
+      <button class="difficulty-btn active" onclick="setTetDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setTetDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setTetDiff('hard',this)">Ťažká</button>
+    </div>
     <div class="status" id="tetStatus">Pripravení? Štart!</div>
     <div class="tetris-container">
       <div class="tetris-player">
-        <div class="tetris-label">Hráč 1 (⬆⬇⬅➡)</div>
+        <div class="tetris-label">Hráč 1</div>
         <div class="tetris-board" id="tetBoard1"></div>
         <div class="tetris-next" id="tetNext1"></div>
       </div>
       <div class="tetris-player">
-        <div class="tetris-label">Hráč 2 (WASD)</div>
+        <div class="tetris-label" id="tetP2Label">Hráč 2</div>
         <div class="tetris-board" id="tetBoard2"></div>
         <div class="tetris-next" id="tetNext2"></div>
       </div>
@@ -2817,7 +2826,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 22;
+const APP_VERSION = 23;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -7215,8 +7224,8 @@ function checkersAI() {
 // =============================================================================
 const TET = {
   p1:{board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800},
-  p2:{board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800},
-  running:false, started:false
+  p2:{board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800,aiMoveTimer:null},
+  running:false, started:false, mode:'pvp', diff:'easy'
 };
 const TET_SHAPES = [
   {name:'I',color:'#00f0f0',blocks:[[0,0],[1,0],[2,0],[3,0]]},
@@ -7228,7 +7237,21 @@ const TET_SHAPES = [
   {name:'L',color:'#f0a000',blocks:[[2,0],[0,1],[1,1],[2,1]]}
 ];
 function tetNewPiece(){const s=TET_SHAPES[Math.floor(Math.random()*TET_SHAPES.length)];return{...s,blocks:s.blocks.map(b=>[...b])};}
-function tetInitPlayer(p){p.board=Array(20).fill(0).map(()=>Array(10).fill(null));p.piece=tetNewPiece();p.next=tetNewPiece();p.x=3;p.y=0;p.score=0;p.level=1;p.lines=0;p.gameOver=false;p.dropSpeed=800;}
+function tetInitPlayer(p){p.board=Array(20).fill(0).map(()=>Array(10).fill(null));p.piece=tetNewPiece();p.next=tetNewPiece();p.x=3;p.y=0;p.score=0;p.level=1;p.lines=0;p.gameOver=false;p.dropSpeed=800;if(p.aiMoveTimer)clearInterval(p.aiMoveTimer);}
+function setTetMode(m,btn){
+  TET.mode=m;
+  document.querySelectorAll('#tetris .mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tetAISel').style.display=m==='ai'?'flex':'none';
+  document.getElementById('tetP2Label').textContent=m==='ai'?'Počítač':'Hráč 2';
+  setP2Card('tetP2Name',m==='ai','Počítač','Natálka');
+  resetTetris();
+}
+function setTetDiff(d,btn){
+  TET.diff=d;
+  document.querySelectorAll('#tetAISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
 function startTetris(){
   if(TET.running)return;
   TET.running=true;TET.started=true;
@@ -7238,6 +7261,7 @@ function startTetris(){
   document.getElementById('tetStatus').textContent='Hra beží!';
   tetRenderBoard(1);tetRenderBoard(2);tetRenderNext(1);tetRenderNext(2);
   tetStartDrop(TET.p1);tetStartDrop(TET.p2);
+  if(TET.mode==='ai')tetStartAI();
 }
 function tetStartDrop(p){
   if(p.dropTimer)clearInterval(p.dropTimer);
@@ -7248,6 +7272,11 @@ function tetRenderBoard(pn){
   const b=document.getElementById(`tetBoard${pn}`);
   if(!b)return;
   b.innerHTML='';
+  // Add click handler for rotation (player 1 only)
+  if(pn===1){
+    b.onclick=()=>{if(TET.running&&!p.gameOver)tetRotate(p);};
+    b.style.cursor='pointer';
+  }
   for(let y=0;y<20;y++){
     for(let x=0;x<10;x++){
       const c=document.createElement('div');
@@ -7353,10 +7382,58 @@ function tetCheckWinner(){
     addWin(1,'tetris');celebrate('tetCelebration');playSound('win');showPlayAgain(startTetris,'tetris');
   }
 }
+function tetStartAI(){
+  const delay=TET.diff==='easy'?1200:TET.diff==='medium'?800:500;
+  TET.p2.aiMoveTimer=setInterval(()=>{
+    if(!TET.running||TET.p2.gameOver)return;
+    tetAIMove();
+  },delay);
+}
+function tetAIMove(){
+  const p=TET.p2;
+  if(!p.piece)return;
+  // Simple AI: find best x position and rotation
+  let bestScore=-999999,bestX=p.x,bestRot=0;
+  for(let rot=0;rot<4;rot++){
+    const piece={...p.piece,blocks:p.piece.blocks.map(b=>[...b])};
+    for(let r=0;r<rot;r++){
+      piece.blocks=piece.blocks.map(([x,y])=>[-y,x]);
+    }
+    for(let x=0;x<=10-4;x++){
+      const score=tetEvalPosition(p,x,piece.blocks);
+      if(score>bestScore){bestScore=score;bestX=x;bestRot=rot;}
+    }
+  }
+  // Apply rotation
+  for(let r=0;r<bestRot;r++)tetRotate(p);
+  // Move to x
+  while(p.x<bestX&&tetCanMove(p,1,0,p.piece.blocks)){p.x++;tetRenderBoard(2);}
+  while(p.x>bestX&&tetCanMove(p,-1,0,p.piece.blocks)){p.x--;tetRenderBoard(2);}
+  // Drop
+  tetDrop(p);
+}
+function tetEvalPosition(p,x,blocks){
+  let score=0;
+  // Prefer lower positions
+  score-=blocks.reduce((s,[bx,by])=>s+by,0);
+  // Penalize holes
+  let holes=0;
+  blocks.forEach(([bx,by])=>{
+    const px=x+bx,py=p.y+by;
+    if(py<19){
+      for(let y=py+1;y<20;y++){
+        if(!p.board[y][px])holes++;
+      }
+    }
+  });
+  score-=holes*10;
+  return score;
+}
 function resetTetris(){
   TET.running=false;TET.started=false;
   if(TET.p1.dropTimer)clearInterval(TET.p1.dropTimer);
   if(TET.p2.dropTimer)clearInterval(TET.p2.dropTimer);
+  if(TET.p2.aiMoveTimer)clearInterval(TET.p2.aiMoveTimer);
   tetInitPlayer(TET.p1);tetInitPlayer(TET.p2);
   document.getElementById('p1ScoreTet').textContent='0';
   document.getElementById('p2ScoreTet').textContent='0';
@@ -7369,12 +7446,14 @@ document.addEventListener('keydown',e=>{
   if(!TET.running)return;
   if(e.key==='ArrowLeft'){tetMove(TET.p1,-1);e.preventDefault();}
   if(e.key==='ArrowRight'){tetMove(TET.p1,1);e.preventDefault();}
-  if(e.key==='ArrowUp'){tetRotate(TET.p1);e.preventDefault();}
   if(e.key==='ArrowDown'){tetDrop(TET.p1);e.preventDefault();}
-  if(e.key==='a'||e.key==='A'){tetMove(TET.p2,-1);e.preventDefault();}
-  if(e.key==='d'||e.key==='D'){tetMove(TET.p2,1);e.preventDefault();}
-  if(e.key==='w'||e.key==='W'){tetRotate(TET.p2);e.preventDefault();}
-  if(e.key==='s'||e.key==='S'){tetDrop(TET.p2);e.preventDefault();}
+  // PVP mode: Player 2 controls
+  if(TET.mode==='pvp'){
+    if(e.key==='a'||e.key==='A'){tetMove(TET.p2,-1);e.preventDefault();}
+    if(e.key==='d'||e.key==='D'){tetMove(TET.p2,1);e.preventDefault();}
+    if(e.key==='w'||e.key==='W'){tetRotate(TET.p2);e.preventDefault();}
+    if(e.key==='s'||e.key==='S'){tetDrop(TET.p2);e.preventDefault();}
+  }
 });
 
 // =============================================================================
@@ -7842,7 +7921,7 @@ const MOBILE_GAMES = [
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
-  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'pvp' },
+  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 

@@ -69,9 +69,18 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v22**
+Aktuálna verzia: **v23**
 
 ## Changelog
+
+### v23 (2026-03-07)
+- 🎮 **Tetris AI režim** - 1 hráč vs počítač
+  - Mode selector: 2 hráči alebo vs Počítač
+  - AI difficulty: Ľahká/Stredná/Ťažká
+  - **Rotácia cez klik/tap** na tvoje pole (nie šípky)
+  - AI hodnotí pozície a optimalizuje umiestnenie
+  - Šípky ←→↓ pre pohyb a rýchly pád
+  - PVP režim stále funguje s WASD pre P2
 
 ### v22 (2026-03-07)
 - 🌐 **Online Multiplayer** - WebRTC peer-to-peer cez PeerJS
