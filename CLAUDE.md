@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~9700 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~10100 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v12 (reset from v61, 2026-03-07)
+- **Current version**: v19
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
@@ -44,7 +44,7 @@ resetMem();    // MP.isConnected check works
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 
-## Games (27 total)
+## Games (28 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piškvorky (3×3, 4×4, 5×5, 10×10) 🌐
@@ -52,25 +52,36 @@ resetMem();    // MP.isConnected check works
 - Kameň Papier Nožnice 🌐
 - Hádaj Číslo 🌐
 - Pexeso (6 random themes) 🌐
-- Šach 🌐
-- Dáma 🌐
-- Lodičky (Battleship) 🌐
-- Človeče nehnevaj sa 🌐
+- Šach 🌐 (AI: easy/medium/hard)
+- Dáma 🌐 (AI: easy/medium/hard)
+- Lodičky (Battleship) 🌐 (AI: easy/medium/hard)
+- Človeče nehnevaj sa 🌐 (AI: easy/medium/hard)
 - Puzzle Scramble
-- Mini Labyrint
+- Mini Labyrint (AI: easy/medium/hard)
 
 ### 2 Players Only (mode:'pvp')
-- Kvíz (6 tém vrátane hlavných miest)
+- Kvíz (17 tém: vseobecne, jedlo, zvierata, psy, kone, superhrdinovia, zemepis, historia, biologia, veda, sport, filmy, hudba, slovensko, hlavne mesta)
 - Ghost
 - Reakčný Test
 - Scramble / Jazykový Scramble
 - Flashcards / Doplň písmeno / Prekladaj vety
 - Spam Click, Matika Duel, Emoji Hádanka
 - Obesenec, Vyššie Nižšie
+- Bodky a Krabičky (Dots and Boxes)
 
-### Solo (mode:'solo')
+### Solo (mode:'solo'/'always')
 - Tetris
 - Preteky (Racing)
+
+## Features (v13-v19)
+
+- **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
+- **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
+- **Sounds**: All games now have sounds on key actions (click, correct, wrong, win, flip, hit, move)
+- **Offline indicator**: Red banner when device offline, MP button auto-hides
+- **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
+- **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
+- **Achievement system**: 16 achievements checked after every `addWin()` and `toggleFavorite()`, toast notification on unlock, displayed in Stats page. Stored in `localStorage('hry_achievements')`.
 
 ## Adding a New Game
 

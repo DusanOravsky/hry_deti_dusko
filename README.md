@@ -1,32 +1,32 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA s 27 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA s 28 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (27)
+## Hry (28)
 
 ### 2 hraci aj vs Pocitac (mode: both)
-| Hra | Online MP |
-|-----|-----------|
-| Piskvorky (3x3, 4x4, 5x5, 10x10) | Yes |
-| Connect 4 | Yes |
-| Sach | - |
-| Dama (Checkers) | - |
-| Lodicky (Battleship) | Yes |
-| Pexeso (6 nahodnych tem) | Yes |
-| Clovece nehnevaj sa | Yes |
-| Puzzle Scramble (canvas obrazky, 3x3/4x4/5x5) | - |
-| Mini Labyrint | - |
+| Hra | Online MP | AI Difficulty |
+|-----|-----------|---------------|
+| Piskvorky (3x3, 4x4, 5x5, 10x10) | Yes | Yes |
+| Connect 4 | Yes | Yes |
+| Sach | - | Yes (easy/medium/hard) |
+| Dama (Checkers) | - | Yes (easy/medium/hard) |
+| Lodicky (Battleship) | Yes | Yes (easy/medium/hard) |
+| Pexeso (6 nahodnych tem) | Yes | Yes |
+| Clovece nehnevaj sa | Yes | Yes (easy/medium/hard) |
+| Puzzle Scramble (canvas obrazky, 3x3/4x4/5x5) | - | - |
+| Mini Labyrint | - | Yes (easy/medium/hard) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra | Online MP |
 |-----|-----------|
 | Kamen Papier Noznicky | - |
 | Hadaj Cislo | Yes |
-| Kviz | - |
+| Kviz (16 tem + 200+ otazok) | - |
 | Ghost | Yes |
 | Reakcny Test | - |
 | Scramble | - |
@@ -40,10 +40,11 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Obesenec | Yes |
 | Vyssie Nizsie | Yes |
 | Preteky (Racing) | - |
+| Bodky a Krabicky (Dots & Boxes) | - |
 
 ### Solo (mode: always)
 - Tetris (s mobilnymi ovladacimi tlacidlami)
-- Statistiky
+- Statistiky + Achievement system
 
 ## Online Multiplayer
 
@@ -60,17 +61,29 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 Pripojenie: Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code
 
+## Features
+
+- **Animacie**: cellAppear, flipCard, diceRoll, glowCorrect, shakeWrong, pieceMove, rpsReveal
+- **Zvuky**: Web Audio API zvuky (click, move, correct, wrong, flip, shot, hit, win) + vibracie
+- **AI Difficulty**: 5 hier s easy/medium/hard AI (Sach, Dama, Lodicky, Clovece, Labyrint)
+- **Offline indikator**: Cerveny banner ked nie je internet, auto-skrytie MP tlacidla
+- **Favoritne hry**: Hviezdicka na kartach hier, zoradenie na zaciatok gridu
+- **Posledne hrane**: Sekcia s 3 nedavno hranymi hrami + moznost vymazat
+- **Achievement system**: 16 achievementov s toast notifikaciami (prvá hra, serie, maraton, ...)
+- **Tmava/svetla tema**: Automaticky podla casu + manualne prepinanie
+- **Kviz**: 16 tematickych kategorii (vseobecne, jedlo, zvierata, psy, kone, Avengers, DC, zemepis, historia, veda, sport, filmy, hudba, Slovensko, hlavne mesta) s 200+ otazkami
+
 ## Technologie
 
-- Single HTML file (~9700+ riadkov)
+- Single HTML file (~10100+ riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS (ziadny backend)
 - Responsivny dizajn (mobile + desktop)
 - Web Audio API zvuky s vibraciami
-- Canvas-based Puzzle Scramble s 6 scenami
+- Canvas-based Puzzle Scramble s 6 scenami + Dots & Boxes
 - DFS generovanie labyrintu, BFS AI solver
-- Statistiky hier ulozene v localStorage
+- Statistiky hier + achievementy ulozene v localStorage
 
 ## Struktura
 
@@ -99,7 +112,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v12** (sw.js) / **v55** (APP_VERSION)
+Aktualna verzia: **v19**
 
 ## Deploy
 

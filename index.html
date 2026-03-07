@@ -1302,6 +1302,35 @@ body.light .stats-section h3 { border-bottom-color:rgba(0,0,0,0.08); }
 .stats-tile.green .stats-tile-val { color:#43e97b; }
 .stats-tile.purple { border-color:rgba(118,75,162,0.4); background:rgba(118,75,162,0.1); }
 .stats-tile.purple .stats-tile-val { color:#c39bd3; }
+/* ACHIEVEMENTS */
+.achievements-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.achievement {
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px; padding:12px 10px; text-align:center;
+  opacity:0.35; transition:all 0.3s;
+}
+.achievement.unlocked {
+  opacity:1; border-color:rgba(255,210,0,0.4); background:rgba(255,210,0,0.06);
+}
+.achievement-icon { font-size:1.8em; line-height:1; }
+.achievement-name { font-size:0.75em; font-weight:700; margin-top:4px; color:rgba(255,255,255,0.85); }
+.achievement-desc { font-size:0.65em; opacity:0.5; margin-top:2px; }
+.achievement.unlocked .achievement-name { color:#ffd200; }
+body.light .achievement { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0,0.08); }
+body.light .achievement.unlocked { background:rgba(255,210,0,0.1); border-color:rgba(255,180,0,0.3); }
+body.light .achievement-name { color:#333; }
+body.light .achievement.unlocked .achievement-name { color:#b8860b; }
+@media(max-width:640px) { .achievements-grid { grid-template-columns:repeat(3,1fr); gap:8px; } }
+/* Achievement toast */
+.achievement-toast {
+  position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-120px);
+  background:linear-gradient(135deg,#ffd200,#f5a623); color:#333;
+  padding:12px 24px; border-radius:16px; font-weight:700; font-size:0.9em;
+  box-shadow:0 6px 24px rgba(255,210,0,0.5); z-index:10001;
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap;
+}
+.achievement-toast.show { transform:translateX(-50%) translateY(0); }
+
 .stats-bar-wrap { margin:12px 0; }
 .stats-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
 .stats-bar-name { min-width:80px; font-size:0.85em; font-weight:600; text-align:right; opacity:0.8; }
@@ -2305,10 +2334,10 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="quiz-theme-btn" onclick="setQuizTheme('animals',this)">🐾 Zvieratá</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('dogs',this)">🐕 Psy</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('horses',this)">🐎 Kone</button>
-      <button class="quiz-theme-btn" onclick="setQuizTheme('avengers',this)">🦸 Avengers</button>
-      <button class="quiz-theme-btn" onclick="setQuizTheme('dc',this)">🦇 DC</button>
+      <button class="quiz-theme-btn" onclick="setQuizTheme('heroes',this)">🦸 Superhrdinovia</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('geography',this)">🗺️ Zemepis</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('history',this)">📜 História</button>
+      <button class="quiz-theme-btn" onclick="setQuizTheme('biology',this)">🧬 Biológia</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('science',this)">🔬 Veda</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('sport',this)">⚽ Šport</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('movies',this)">🎬 Filmy</button>
@@ -2663,6 +2692,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div class="stats-tile green"><div class="stats-tile-val" id="recScrambleBest">0</div><div class="stats-tile-label">Scramble max bodov</div></div>
         <div class="stats-tile blue"><div class="stats-tile-val" id="recGhostWins">0</div><div class="stats-tile-label">Ghost víťazstvá</div></div>
       </div>
+    </div>
+
+    <div class="stats-section">
+      <h3>🏅 Achievementy</h3>
+      <div id="stAchievements" class="achievements-grid"></div>
     </div>
 
     <div class="stats-section">
@@ -3207,7 +3241,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 17;
+const APP_VERSION = 19;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3549,6 +3583,7 @@ function addWin(w, gameId) {
   document.getElementById('p2Wins').textContent     = gStats.p2;
   saveStats();
   updateWelcomeStats();
+  checkAchievements();
 }
 function updateRecord(key, value) {
   if(key==='reacP1'||key==='reacP2') {
@@ -3568,12 +3603,77 @@ function refreshRecordUI() {
   document.getElementById('recReacP1Lbl').textContent = 'Najrýchlejšia reakcia ('+getP1Name('reac')+')';
   document.getElementById('recReacP2Lbl').textContent = 'Najrýchlejšia reakcia ('+getP2Name('reac')+')';
 }
+// ===== ACHIEVEMENT SYSTEM =====
+const ACHIEVEMENTS = [
+  { id:'first',    icon:'🎯', name:'Prvy krok',       desc:'Odohraj prvu hru',          check:()=>gStats.total>=1 },
+  { id:'win10',    icon:'🏆', name:'Desiatka',        desc:'Vyhraj 10 hier',            check:()=>gStats.p1+gStats.p2>=10 },
+  { id:'win50',    icon:'🏆', name:'Polstovka',       desc:'Vyhraj 50 hier',            check:()=>gStats.p1+gStats.p2>=50 },
+  { id:'win100',   icon:'💎', name:'Stovka',          desc:'Vyhraj 100 hier',           check:()=>gStats.p1+gStats.p2>=100 },
+  { id:'games5',   icon:'🎮', name:'Prieskumnik',     desc:'Skus 5 roznych hier',       check:()=>Object.keys(gStats.perGame).length>=5 },
+  { id:'games15',  icon:'🌟', name:'Znalec',          desc:'Skus 15 roznych hier',      check:()=>Object.keys(gStats.perGame).length>=15 },
+  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=Object.keys(GAME_NAMES).length-1 },
+  { id:'draw5',    icon:'🤝', name:'Mierotvorec',     desc:'Dosiahni 5 remiz',          check:()=>gStats.draws>=5 },
+  { id:'streak3',  icon:'🔥', name:'Seria 3',         desc:'Vyhraj 3x za sebou',        check:()=>_getWinStreak()>=3 },
+  { id:'streak5',  icon:'🔥', name:'Seria 5',         desc:'Vyhraj 5x za sebou',        check:()=>_getWinStreak()>=5 },
+  { id:'streak10', icon:'💪', name:'Neporazitelny',   desc:'Vyhraj 10x za sebou',       check:()=>_getWinStreak()>=10 },
+  { id:'fav1',     icon:'⭐', name:'Favorit',         desc:'Pridaj favoritnu hru',      check:()=>_favorites.length>=1 },
+  { id:'total100', icon:'🎲', name:'Maraton',         desc:'Odohraj 100 hier celkovo',  check:()=>gStats.total>=100 },
+  { id:'pexeso5',  icon:'🧠', name:'Pexeso majster',  desc:'Vyhraj 5x Pexeso',         check:()=>(gStats.perGame.memory?.p1||0)+(gStats.perGame.memory?.p2||0)>=5 },
+  { id:'chess5',   icon:'♟️', name:'Sachista',         desc:'Vyhraj 5x Sach',           check:()=>(gStats.perGame.chess?.p1||0)+(gStats.perGame.chess?.p2||0)>=5 },
+  { id:'bs5',      icon:'🚢', name:'Admiral',         desc:'Vyhraj 5x Lodicky',        check:()=>(gStats.perGame.battleship?.p1||0)+(gStats.perGame.battleship?.p2||0)>=5 },
+];
+
+let _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]');
+
+function _getWinStreak() {
+  let streak=0;
+  for(const h of gStats.history) {
+    if(h.winner===1||h.winner===2) streak++; else break;
+  }
+  return streak;
+}
+
+function checkAchievements() {
+  let newlyUnlocked = [];
+  for(const a of ACHIEVEMENTS) {
+    if(_unlockedAch.includes(a.id)) continue;
+    if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); }
+  }
+  if(newlyUnlocked.length>0) {
+    localStorage.setItem('hry_achievements', JSON.stringify(_unlockedAch));
+    showAchievementToast(newlyUnlocked[0]);
+  }
+}
+
+function showAchievementToast(a) {
+  const toast = document.getElementById('achievementToast');
+  if(!toast) return;
+  toast.textContent = a.icon + ' ' + a.name + '!';
+  toast.classList.add('show');
+  playSound('win');
+  setTimeout(()=>toast.classList.remove('show'), 3000);
+}
+
+function renderAchievements() {
+  const el = document.getElementById('stAchievements');
+  if(!el) return;
+  el.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = _unlockedAch.includes(a.id);
+    return `<div class="achievement${unlocked?' unlocked':''}">
+      <div class="achievement-icon">${unlocked?a.icon:'🔒'}</div>
+      <div class="achievement-name">${a.name}</div>
+      <div class="achievement-desc">${a.desc}</div>
+    </div>`;
+  }).join('');
+}
+
 function resetAllStats() { document.getElementById('confirmOverlay').classList.add('show'); }
 function doResetAllStats() {
   document.getElementById('confirmOverlay').classList.remove('show');
   gStats.total=0; gStats.p1=0; gStats.p2=0; gStats.draws=0;
   gStats.perGame={}; gStats.history=[];
   gStats.records={reacP1:null,reacP2:null,fcStreak:0,quizBest:0,scrambleBest:0,ghostWins:0};
+  _unlockedAch=[]; localStorage.removeItem('hry_achievements');
   document.getElementById('totalGames').textContent=0;
   document.getElementById('p1Wins').textContent=0;
   document.getElementById('p2Wins').textContent=0;
@@ -3733,6 +3833,7 @@ function renderStats() {
         <div class="stats-history-time">${h.time}</div></div>`;
     }).join('');
   }
+  renderAchievements();
 }
 
 
@@ -4670,6 +4771,33 @@ const quizDB = {
   ]
 };
 
+// Merge Avengers + DC into Superhrdinovia
+quizDB.heroes = [...quizDB.avengers, ...quizDB.dc];
+
+// Biology
+quizDB.biology = [
+  {q:'Co je bunka?',a:['Zakladna jednotka zivota','Typ vitaminu','Organ','Kosticka'],c:0},
+  {q:'Kolko kostí ma ludske telo?',a:['206','186','226','196'],c:0},
+  {q:'Co robi srdce?',a:['Pumpe krv','Travi jedlo','Dychame nim','Mysli nim'],c:0},
+  {q:'Aky organ pouzivame na dychanie?',a:['Pluca','Srdce','Pecen','Zaludok'],c:0},
+  {q:'Co je fotosynteza?',a:['Rastliny vyrábajú potravu zo svetla','Dychanie zvieraťa','Trávenie jedla','Rast kostí'],c:0},
+  {q:'Kolko chromosomov ma ludska bunka?',a:['46','23','48','92'],c:0},
+  {q:'Co je DNA?',a:['Nositeľ genetickej informácie','Typ bielkoviny','Vitamín','Hormón'],c:0},
+  {q:'Ktory organ travi jedlo?',a:['Žalúdok','Srdce','Pľúca','Mozog'],c:0},
+  {q:'Co produkuju cervene krvinky?',a:['Prenasaju kyslik','Boja s infekciami','Travia jedlo','Tvorba kosti'],c:0},
+  {q:'Aky je najvacsi organ ludskeho tela?',a:['Koža','Pečeň','Mozog','Srdce'],c:0},
+  {q:'Co su biele krvinky?',a:['Bojovníci proti infekciám','Prenášajú kyslík','Zrážajú krv','Tvoria kosti'],c:0},
+  {q:'Kolko litrov krvi ma dospely clovek?',a:['5 litrov','3 litre','8 litrov','10 litrov'],c:0},
+  {q:'Co robi pecen?',a:['Čistí krv a produkuje žlč','Pumpuje krv','Dýchame ňou','Trávi jedlo'],c:0},
+  {q:'Ako sa nazyvaju male organizmy viditelne len pod mikroskopom?',a:['Mikróby/baktérie','Vírusy','Bunky','Atómy'],c:0},
+  {q:'Co je ekosystem?',a:['Spoločenstvo živých organizmov a ich prostredie','Typ bunky','Časť mozgu','Druh rastliny'],c:0},
+  {q:'Kolko zubov ma dospely clovek?',a:['32','28','30','36'],c:0},
+  {q:'Co su geny?',a:['Úseky DNA s inštrukciami pre telo','Typ bunky','Orgán','Vitamín'],c:0},
+  {q:'Ktory organ riadi cele telo?',a:['Mozog','Srdce','Pečeň','Pľúca'],c:0},
+  {q:'Co je chlorofyl?',a:['Zelené farbivo v rastlinách','Typ baktérie','Ľudský hormón','Vitamín'],c:0},
+  {q:'Kolko svalov ma ludske telo priblizne?',a:['Okolo 600','Okolo 200','Okolo 1000','Okolo 100'],c:0},
+];
+
 // Add new themes to quizDB
 quizDB.geography = [
   {q:'Hlavné mesto Francúzska?',a:['Paríž','Lyon','Marseille','Bordeaux'],c:0},
@@ -4881,7 +5009,31 @@ quizDB.history.push(
   {q:'Čo bola Veľká čínska múr postavená na obranu?',a:['Pred vpádmi','Pred povodňami','Na určenie hraníc','Pre dopravu'],c:0},
   {q:'V ktorom roku Titanic potopil?',a:['1912','1908','1915','1920'],c:0},
   {q:'Kto bol Napoleon Bonaparte?',a:['Francúzsky cisár','Anglický kráľ','Ruský cár','Španielsky generál'],c:0},
-  {q:'Kedy bola podpísaná Magna Carta?',a:['1215','1066','1348','1400'],c:0}
+  {q:'Kedy bola podpísaná Magna Carta?',a:['1215','1066','1348','1400'],c:0},
+  {q:'Kto bol Džingischán?',a:['Mongolský dobyvateľ','Čínsky cisár','Indický kráľ','Perzský šach'],c:0},
+  {q:'V ktorom storočí žil Leonardo da Vinci?',a:['15. storočie','13. storočie','17. storočie','18. storočie'],c:0},
+  {q:'Kto postavil Veľkú čínsku múr?',a:['Viacero dynastií','Džingischán','Marco Polo','Konfúcius'],c:0},
+  {q:'Kedy Rímska ríša zanikla (západná)?',a:['476 n.l.','100 n.l.','800 n.l.','1000 n.l.'],c:0},
+  {q:'Kto bol Martin Luther King Jr.?',a:['Bojovník za práva černochov','Americký prezident','Vedec','Hudobník'],c:0},
+  {q:'V ktorom roku začala Francúzska revolúcia?',a:['1789','1776','1804','1815'],c:0},
+  {q:'Kto namaľoval Monu Lízu?',a:['Leonardo da Vinci','Michelangelo','Raphael','Botticelli'],c:0},
+  {q:'Čo bol starovekých Rím — republika alebo monarchia na začiatku?',a:['Monarchia','Republika','Demokracia','Anarchia'],c:0},
+  {q:'Kedy sa skončila prvá svetová vojna?',a:['1918','1916','1920','1914'],c:0},
+  {q:'Kto vynašiel žiarovku?',a:['Thomas Edison','Nikola Tesla','Benjamin Franklin','Alexander Bell'],c:0},
+  {q:'V ktorom roku bola objavená Amerika Kolumbom?',a:['1492','1500','1480','1510'],c:0},
+  {q:'Kto bol Kleopatra?',a:['Egyptská kráľovná','Grécka bohyňa','Rímska cisárovná','Perzská princezná'],c:0},
+  {q:'Kedy začala priemyselná revolúcia?',a:['18. storočie','16. storočie','19. storočie','15. storočie'],c:0},
+  {q:'Kde vznikla demokracia?',a:['Starovekých Aténach','Ríme','Egypte','Perzii'],c:0},
+  {q:'Kto bol prvý človek vo vesmíre?',a:['Jurij Gagarin','Neil Armstrong','Buzz Aldrin','John Glenn'],c:0},
+  {q:'V ktorom roku vypukla Veľká francúzska revolúcia?',a:['1789','1799','1776','1804'],c:0},
+  {q:'Kto viedol Indiu k nezávislosti?',a:['Mahátma Gándhí','Néhrú','Bose','Tagore'],c:0},
+  {q:'Čo boli gladiátorské hry?',a:['Boje v rímskej aréne','Olympijské hry','Divadelné predstavenia','Náboženské obrady'],c:0},
+  {q:'Kedy bol vynájdený kníhtlač?',a:['Okolo 1440','Okolo 1200','Okolo 1600','Okolo 1000'],c:0},
+  {q:'Kto bol Alexander Veľký?',a:['Macedónsky kráľ a dobyvateľ','Rímsky cisár','Grécky filozof','Egyptský faraón'],c:0},
+  {q:'V ktorom roku sa začal holokaust?',a:['1941','1939','1933','1945'],c:0},
+  {q:'Kto bol Vikingovia?',a:['Severskí námorníci a bojovníci','Rímski vojaci','Egyptskí kňazi','Grécki obchodníci'],c:0},
+  {q:'Kedy bola postavená Eiffelova veža?',a:['1889','1900','1875','1910'],c:0},
+  {q:'Kto vynašiel parný stroj?',a:['James Watt','Thomas Edison','Nikola Tesla','Henry Ford'],c:0}
 );
 
 // ===== EXTRA QUESTIONS — ANIMALS =====
@@ -5125,7 +5277,7 @@ function setQuizTheme(t,btn) {
   btn.classList.add('active');
 }
 function startQuiz() {
-  const allThemes=['general','food','animals','dogs','horses','avengers','dc','geography','history','science','sport','movies','music','slovakia','capitals','extra_general','extra_science','extra_animals','extra_sport'];
+  const allThemes=['general','food','animals','dogs','horses','heroes','geography','history','biology','science','sport','movies','music','slovakia','capitals','extra_general','extra_science','extra_animals','extra_sport'];
   if(QUIZ.theme==='all') {
     QUIZ.questions=allThemes.flatMap(t=>quizDB[t]||[]).sort(()=>Math.random()-0.5);
   } else {
@@ -9281,6 +9433,7 @@ function toggleFavorite(gId, e) {
   localStorage.setItem('hry_favorites', JSON.stringify(_favorites));
   playSound('click');
   renderMobileGrid();
+  checkAchievements();
 }
 
 function clearRecentGames() {
@@ -10088,6 +10241,9 @@ if('serviceWorker' in navigator) {
     <button class="mp-button mp-button-danger mp-hidden" id="mpDisconnectBtn" onclick="mpDisconnect()">🔌 Odpojiť</button>
   </div>
 </div>
+
+<!-- Achievement Toast -->
+<div class="achievement-toast" id="achievementToast"></div>
 
 <!-- Offline Banner -->
 <div class="offline-banner" id="offlineBanner"><span>📡</span> Offline — multiplayer nie je dostupny</div>
