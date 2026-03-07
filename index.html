@@ -1044,6 +1044,22 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 .score-pop { animation:scorePop 0.4s ease; }
 @keyframes bounce { from{transform:scale(1)} to{transform:scale(1.1)} }
 @keyframes c4drop { from{transform:translateY(-320px);opacity:0.3} to{transform:translateY(0);opacity:1} }
+@keyframes cellAppear { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.cell-appear { animation:cellAppear 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes flipCard { 0%{transform:rotateY(0)} 50%{transform:rotateY(90deg)} 100%{transform:rotateY(0)} }
+.flip-anim { animation:flipCard 0.4s ease; }
+@keyframes diceRoll { 0%{transform:rotate(0)} 25%{transform:rotate(20deg)} 50%{transform:rotate(-15deg)} 75%{transform:rotate(10deg)} 100%{transform:rotate(0)} }
+.dice-roll { animation:diceRoll 0.5s ease; }
+@keyframes glowCorrect { 0%{box-shadow:0 0 0 rgba(67,233,123,0)} 50%{box-shadow:0 0 20px rgba(67,233,123,0.6)} 100%{box-shadow:0 0 0 rgba(67,233,123,0)} }
+.glow-correct { animation:glowCorrect 0.6s ease; }
+@keyframes shakeWrong { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+.shake-wrong { animation:shakeWrong 0.4s ease; }
+@keyframes pieceMove { 0%{transform:scale(1.3);opacity:0.5} 100%{transform:scale(1);opacity:1} }
+.piece-move { animation:pieceMove 0.3s ease; }
+@keyframes rpsReveal { from{transform:scale(0) rotate(-180deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+.rps-reveal { animation:rpsReveal 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes countUp { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+.count-up { animation:countUp 0.3s ease; }
 
 /* BOARD CENTER */
 .board-center { display:flex; justify-content:center; }
@@ -3104,6 +3120,32 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <div class="game-area" id="dotsBoxes">
+    <div class="rules"><h3>Bodky a Krabicky:</h3><ul>
+      <li>Klikni na ciaru medzi dvoma bodkami</li>
+      <li>Kto uzavrie krabicku, ziska bod a hra dalej</li>
+      <li>Kto ma viac krabiciek, vyhra!</li>
+    </ul></div>
+    <div class="player-cards">
+      <div class="player-card" id="dbP1Card">
+        <div class="name" id="dbP1Name">Hrac 1</div>
+        <div class="name" id="dbP1Score" style="font-size:2em;font-weight:900">0</div>
+      </div>
+      <div class="player-card" id="dbP2Card">
+        <div class="name" id="dbP2Name">Hrac 2</div>
+        <div class="name" id="dbP2Score" style="font-size:2em;font-weight:900">0</div>
+      </div>
+    </div>
+    <div class="status" id="dbStatus">Hrac 1 je na rade</div>
+    <div style="display:flex;justify-content:center;margin:15px 0">
+      <canvas id="dbCanvas" width="320" height="320" style="border-radius:12px;cursor:pointer;max-width:90vw;touch-action:none"></canvas>
+    </div>
+    <div class="celebration" id="dbCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn danger-btn" onclick="resetDB()">Nova hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -3111,7 +3153,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3124,7 +3166,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn',
-  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3135,7 +3177,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', racing:'Preteky', ludo:'Človeče'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', tetris:'Tetris', racing:'Preteky', ludo:'Človeče', dotsBoxes:'Bodky'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3343,7 +3385,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3354,7 +3396,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',missingLetter:'ml',sentence:'st'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -3696,9 +3738,10 @@ function initTTTBoard() {
 }
 function renderTTT() {
   document.querySelectorAll('#board .cell').forEach((c,i)=>{
-    c.textContent=TTT.board[i]; c.className='cell';
+    const prev=c.textContent; c.textContent=TTT.board[i]; c.className='cell';
     if(TTT.board[i]==='X') c.classList.add('x');
     if(TTT.board[i]==='O') c.classList.add('o');
+    if(TTT.board[i]&&!prev) { c.classList.remove('cell-appear'); void c.offsetWidth; c.classList.add('cell-appear'); }
     if(TTT.over) c.classList.add('disabled');
   });
 }
@@ -3966,6 +4009,7 @@ function setRPSDiff(d,btn) {
   btn.classList.add('active');
 }
 function rpsChoose(choice) {
+  playSound('click');
   // MP mode: send choice and wait for opponent
   if(MP.isConnected) {
     MP.connection.send({ type: 'rps-choice', choice: choice });
@@ -4017,11 +4061,13 @@ function showRPSP2() {
 }
 function showRPSResult(n1,c1,n2,c2) {
   let resultText, winner=0;
-  if(c1===c2){resultText='<span class="result-draw">🤝 Remíza!</span>';addWin(0);}
-  else if(rpsBeats[c1]===c2){RPS.s1++;winner=1;resultText='<span class="result-win">🎉 '+n1+' vyhral!</span>';addWin(1);celebrate('rpsCelebration');}
-  else{RPS.s2++;winner=2;resultText='<span class="result-lose">🎉 '+n2+' vyhral!</span>';addWin(2);celebrate('rpsCelebration');}
-  document.getElementById('rpsResult').innerHTML=`<strong>${n1}:</strong> ${rpsNames[c1]}<br><strong>${n2}:</strong> ${rpsNames[c2]}<br>${resultText}`;
-  document.getElementById('rpsResult').classList.add('show');
+  if(c1===c2){resultText='<span class="result-draw">🤝 Remíza!</span>';addWin(0);playSound('flip');}
+  else if(rpsBeats[c1]===c2){RPS.s1++;winner=1;resultText='<span class="result-win">🎉 '+n1+' vyhral!</span>';addWin(1);celebrate('rpsCelebration');playSound('win');}
+  else{RPS.s2++;winner=2;resultText='<span class="result-lose">🎉 '+n2+' vyhral!</span>';addWin(2);celebrate('rpsCelebration');playSound('win');}
+  const resEl=document.getElementById('rpsResult');
+  resEl.innerHTML=`<strong>${n1}:</strong> ${rpsNames[c1]}<br><strong>${n2}:</strong> ${rpsNames[c2]}<br>${resultText}`;
+  resEl.classList.add('show');
+  resEl.classList.remove('rps-reveal'); void resEl.offsetWidth; resEl.classList.add('rps-reveal');
   document.getElementById('p1ScoreRPS').textContent=RPS.s1;
   document.getElementById('p2ScoreRPS').textContent=RPS.s2;
   activeTurn('rpsP1Card','rpsP2Card',winner||1);
@@ -4120,19 +4166,21 @@ function makeGuess() {
   const fb=document.getElementById('gnFeedback');
   if(val===GN.secret) {
     fb.textContent=`🎉 Správne! Číslo bolo ${GN.secret}. Uhádol si na ${GN.attempts}. pokus!`;
-    GN.s1++; addWin(1); celebrate('gnCelebration');
+    GN.s1++; addWin(1); celebrate('gnCelebration'); playSound('win');
     document.getElementById('p1ScoreGN').textContent=GN.s1;
     document.getElementById('gnStatus').textContent='✅ Výborne!';
     gnShowBoxes(false,false,false,false);
   } else if(GN.maxTries>0 && GN.attempts>=GN.maxTries) {
     fb.textContent=`😢 Koniec! Číslo bolo ${GN.secret}. Minuli sa ti pokusy!`;
-    GN.s2++; addWin(2);
+    GN.s2++; addWin(2); playSound('wrong');
     document.getElementById('p2ScoreGN').textContent=GN.s2;
     document.getElementById('gnStatus').textContent='❌ Nevyhral si!';
     gnShowBoxes(false,false,false,false);
   } else {
+    playSound('click');
     fb.textContent=val<GN.secret?`📈 ${val} je príliš nízke! Skús vyššie.`:`📉 ${val} je príliš vysoké! Skús nižšie.`;
     document.getElementById('gnStatus').textContent=gnStatusText();
+    fb.classList.remove('shake-wrong'); void fb.offsetWidth; fb.classList.add('shake-wrong');
   }
   document.getElementById('gnInput').value='';
 }
@@ -4216,8 +4264,8 @@ function memCheckEnd() {
     const winner=MEM.s1>MEM.s2?1:(MEM.s2>MEM.s1?2:0);
     const name2=MEM.mode==='ai'?'Počítač':'Hráč 2';
     document.getElementById('memStatus').textContent=winner===1?'🎉 Hráč 1 vyhral!':(winner===2?`🎉 ${name2} vyhral!`:'🤝 Remíza!');
-    if(winner){addWin(winner);celebrate('memCelebration');}
-    else{addWin(0);}
+    if(winner){addWin(winner);celebrate('memCelebration');playSound('win');}
+    else{addWin(0);playSound('flip');}
     return true;
   }
   return false;
@@ -4234,6 +4282,8 @@ function flipMem(i) {
   MEM.flipped.push(i);
   const cards=document.querySelectorAll('#memBoard .memory-card');
   cards[i].textContent=MEM.cards[i]; cards[i].classList.add('flipped');
+  cards[i].classList.remove('flip-anim'); void cards[i].offsetWidth; cards[i].classList.add('flip-anim');
+  playSound('flip');
   if(MEM.mode==='ai') MEM.aiMemory[i]=MEM.cards[i]; // AI remembers seen cards
   if(MEM.flipped.length===2) {
     MEM.locked=true;
@@ -4242,10 +4292,14 @@ function flipMem(i) {
         MEM.matched.push(...MEM.flipped);
         cards[MEM.flipped[0]].classList.add('matched');
         cards[MEM.flipped[1]].classList.add('matched');
+        cards[MEM.flipped[0]].classList.add('glow-correct');
+        cards[MEM.flipped[1]].classList.add('glow-correct');
+        playSound('correct');
         MEM.s1++;document.getElementById('p1ScoreMem').textContent=MEM.s1;
         MEM.flipped=[]; MEM.locked=false;
         if(!memCheckEnd()) document.getElementById('memStatus').textContent='Hráč 1 na rade!';
       } else {
+        playSound('wrong');
         cards[MEM.flipped[0]].textContent='?'; cards[MEM.flipped[0]].classList.remove('flipped');
         cards[MEM.flipped[1]].textContent='?'; cards[MEM.flipped[1]].classList.remove('flipped');
         MEM.flipped=[]; MEM.locked=false;
@@ -4411,7 +4465,7 @@ function dropC4(col) {
   for(let r=5;r>=0;r--) {
     if(C4.board[col][r]===0) {
       stopTurnTimer('c4');
-      C4.board[col][r]=C4.player; renderC4();
+      C4.board[col][r]=C4.player; renderC4(); playSound('move');
       // Send move to opponent in MP
       if(MP.isConnected && MP.connection) {
         MP.connection.send({ type: 'c4-move', col: col, player: C4.player });
@@ -4425,7 +4479,7 @@ function dropC4(col) {
         document.getElementById('c4Status').textContent=`🎉 ${name} vyhral!`;
         if(C4.player===1){C4.s1++;document.getElementById('p1ScoreC4').textContent=C4.s1;addWin(1);}
         else{C4.s2++;document.getElementById('p2ScoreC4').textContent=C4.s2;addWin(2);}
-        celebrate('c4Celebration'); return;
+        celebrate('c4Celebration'); playSound('win'); return;
       }
       if(C4.board.every(col=>col[0]!==0)){C4.over=true;document.getElementById('c4Status').textContent='🤝 Remíza!';addWin(0);return;}
       if(C4.mode==='pvp') {
@@ -7278,10 +7332,11 @@ function egAnswer(choice,correct,btn) {
     if(b.textContent===correct)b.classList.add('correct');
   });
   if(choice===correct){
-    playSound('win');
+    playSound('correct');
+    btn.classList.add('glow-correct');
     if(EG.player===1){EG.s1++;document.getElementById('p1ScoreEG').textContent=EG.s1;popScore('p1ScoreEG');}
     else{EG.s2++;document.getElementById('p2ScoreEG').textContent=EG.s2;popScore('p2ScoreEG');}
-  } else { playSound('wrong'); btn.classList.add('wrong'); }
+  } else { playSound('wrong'); btn.classList.add('wrong','shake-wrong'); }
   setTimeout(()=>{EG.player=EG.player===1?2:1;nextEGRound();},1800);
 }
 function egFinish() {
@@ -7382,9 +7437,11 @@ function hmGuessLetter(ch,btn) {
   if(HM.roundOver) return;
   HM.guessed.add(ch); btn.disabled=true;
   if(HM.word.includes(ch)) {
-    playSound('click'); btn.style.background='rgba(67,233,123,0.3)'; btn.style.borderColor='#43e97b';
+    playSound('correct'); btn.style.background='rgba(67,233,123,0.3)'; btn.style.borderColor='#43e97b';
+    btn.classList.add('glow-correct');
   } else {
     HM.errors++; playSound('wrong'); btn.style.background='rgba(245,87,108,0.3)'; btn.style.borderColor='#f5576c';
+    btn.classList.add('shake-wrong');
     drawHangman(HM.errors);
   }
   renderHM();
@@ -7552,7 +7609,7 @@ function renderChessBoard() {
     sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
     if(i===CH.lastFrom||i===CH.lastTo) sq.classList.add('last-move');
     if(CH.selected===i) sq.classList.add('selected');
-    if(CH.board[i]) sq.textContent=CH_ICONS[CH.board[i]];
+    if(CH.board[i]) { sq.textContent=CH_ICONS[CH.board[i]]; if(i===CH.lastTo) sq.classList.add('piece-move'); }
     if(CH.selected!==null && !CH.over) {
       const moves=getChessMoves(CH.selected);
       if(moves.includes(i)) sq.classList.add(CH.board[i]?'can-capture':'can-move');
@@ -7593,8 +7650,9 @@ function chessMove(from,to) {
   if(CH.board[to]==='wP'&&r===0) CH.board[to]='wQ';
   if(CH.board[to]==='bP'&&r===7) CH.board[to]='bQ';
   CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
-  playSound('click'); vibrate(20);
+  playSound('move'); vibrate(20);
   // Check for king capture (simplified - no check/checkmate detection)
+  if(captured) playSound('hit');
   if(captured==='wK') { chessWin('b'); return; }
   if(captured==='bK') { chessWin('w'); return; }
   CH.turn=CH.turn==='w'?'b':'w';
@@ -7689,7 +7747,7 @@ function resetCheckers() {
     const ri=6+Math.floor(i/4), c=(i%4)*2+(ri%2===0?1:0);
     DK.board[ri*8+c]='r'; // red bottom (rows 6-7)
   }
-  DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null;
+  DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null; DK._lastTo=null;
   document.getElementById('dkStatus').textContent=getP1Name('dk')+' (🔴) na ťahu';
   activeTurn('dkP1Card','dkP2Card',1);
   renderCheckersBoard();
@@ -7707,6 +7765,7 @@ function renderCheckersBoard() {
     else if(p==='b') sq.textContent='⚫';
     else if(p==='R') sq.textContent='👑';
     else if(p==='B') sq.textContent='♛';
+    if(p&&DK._lastTo===i) sq.classList.add('piece-move');
     if(DK.selected!==null && !DK.over) {
       const mvs=DK.mustJump!==null?jumps:getDKMoves(DK.selected);
       if(mvs.includes(i)) sq.classList.add(DK.board[i]?'can-capture':'can-move');
@@ -7752,12 +7811,14 @@ function dkDoMove(from,to,isJump) {
     const mr=(Math.floor(from/8)+Math.floor(to/8))/2;
     const mc=((from%8)+(to%8))/2;
     DK.board[mr*8+mc]='';
+    playSound('hit');
   }
   // Promotion
   const tr=Math.floor(to/8);
   if(DK.board[to]==='r'&&tr===0) DK.board[to]='R';
   if(DK.board[to]==='b'&&tr===7) DK.board[to]='B';
-  playSound('click'); vibrate(20);
+  playSound('move'); vibrate(20);
+  DK._lastTo=to;
   // Multi-jump?
   if(isJump) {
     const moreJumps=getDKJumps(to);
@@ -8135,7 +8196,9 @@ function ludoRoll() {
   LUDO.dice=1+Math.floor(Math.random()*6);
   LUDO.rolled=true;
   const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
-  document.getElementById('ludoDiceVal').textContent=diceE[LUDO.dice-1];
+  const diceEl=document.getElementById('ludoDiceVal');
+  diceEl.textContent=diceE[LUDO.dice-1];
+  diceEl.classList.remove('dice-roll'); void diceEl.offsetWidth; diceEl.classList.add('dice-roll');
   playSound('click');
   // Send dice to opponent
   if(MP.isConnected&&MP.connection) MP.connection.send({type:'ludo-roll',dice:LUDO.dice});
@@ -8817,6 +8880,151 @@ const MP = {
   tttRound: 0
 };
 
+// =============================================================================
+// SEKCIA 33: BODKY A KRABICKY (DOTS AND BOXES)
+// =============================================================================
+const DB = { rows:4, cols:4, hLines:[], vLines:[], boxes:[], turn:0, scores:[0,0], over:false };
+const DB_COLORS = ['rgba(239,83,80,0.6)','rgba(66,165,245,0.6)'];
+
+function resetDB() {
+  const r=DB.rows, c=DB.cols;
+  DB.hLines=[]; DB.vLines=[]; DB.boxes=[]; DB.turn=0; DB.scores=[0,0]; DB.over=false;
+  for(let i=0;i<=r;i++) { DB.hLines[i]=[]; for(let j=0;j<c;j++) DB.hLines[i][j]=null; }
+  for(let i=0;i<r;i++) { DB.vLines[i]=[]; for(let j=0;j<=c;j++) DB.vLines[i][j]=null; }
+  for(let i=0;i<r;i++) { DB.boxes[i]=[]; for(let j=0;j<c;j++) DB.boxes[i][j]=null; }
+  document.getElementById('dbP1Name').textContent=getP1Name('db');
+  document.getElementById('dbP2Name').textContent=getP2Name('db');
+  document.getElementById('dbP1Score').textContent='0';
+  document.getElementById('dbP2Score').textContent='0';
+  document.getElementById('dbStatus').textContent=getP1Name('db')+' je na rade';
+  document.getElementById('dbCelebration').style.display='none';
+  activeTurn('dbP1Card','dbP2Card',1);
+  renderDB();
+}
+
+function renderDB() {
+  const canvas=document.getElementById('dbCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const r=DB.rows, c=DB.cols;
+  const pad=25, dotR=5;
+  const cellW=(canvas.width-2*pad)/c, cellH=(canvas.height-2*pad)/r;
+  const isDark=document.body.classList.contains('dark');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // filled boxes
+  for(let i=0;i<r;i++) for(let j=0;j<c;j++) {
+    if(DB.boxes[i][j]!==null) {
+      ctx.fillStyle=DB_COLORS[DB.boxes[i][j]];
+      ctx.fillRect(pad+j*cellW+2,pad+i*cellH+2,cellW-4,cellH-4);
+    }
+  }
+  // horizontal lines
+  for(let i=0;i<=r;i++) for(let j=0;j<c;j++) {
+    ctx.strokeStyle=DB.hLines[i][j]!==null ? (DB.hLines[i][j]===0?'#ef5350':'#42a5f5') : (isDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.12)');
+    ctx.lineWidth=DB.hLines[i][j]!==null?4:2;
+    ctx.beginPath();
+    ctx.moveTo(pad+j*cellW+dotR,pad+i*cellH);
+    ctx.lineTo(pad+(j+1)*cellW-dotR,pad+i*cellH);
+    ctx.stroke();
+  }
+  // vertical lines
+  for(let i=0;i<r;i++) for(let j=0;j<=c;j++) {
+    ctx.strokeStyle=DB.vLines[i][j]!==null ? (DB.vLines[i][j]===0?'#ef5350':'#42a5f5') : (isDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.12)');
+    ctx.lineWidth=DB.vLines[i][j]!==null?4:2;
+    ctx.beginPath();
+    ctx.moveTo(pad+j*cellW,pad+i*cellH+dotR);
+    ctx.lineTo(pad+j*cellW,pad+(i+1)*cellH-dotR);
+    ctx.stroke();
+  }
+  // dots
+  ctx.fillStyle=isDark?'#fff':'#333';
+  for(let i=0;i<=r;i++) for(let j=0;j<=c;j++) {
+    ctx.beginPath();
+    ctx.arc(pad+j*cellW,pad+i*cellH,dotR,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function dbClick(e) {
+  if(DB.over) return;
+  const canvas=document.getElementById('dbCanvas');
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  const px=e.touches?e.touches[0].clientX:e.clientX;
+  const py=e.touches?e.touches[0].clientY:e.clientY;
+  const ex=(px-rect.left)*scaleX;
+  const ey=(py-rect.top)*scaleY;
+  const r=DB.rows, c=DB.cols, pad=25;
+  const cellW=(canvas.width-2*pad)/c, cellH=(canvas.height-2*pad)/r;
+  // find closest line
+  let best=null, bestDist=20;
+  // horizontal lines
+  for(let i=0;i<=r;i++) for(let j=0;j<c;j++) {
+    if(DB.hLines[i][j]!==null) continue;
+    const cx=pad+(j+0.5)*cellW, cy=pad+i*cellH;
+    const d=Math.sqrt((ex-cx)**2+(ey-cy)**2);
+    if(d<bestDist) { bestDist=d; best={type:'h',i,j}; }
+  }
+  // vertical lines
+  for(let i=0;i<r;i++) for(let j=0;j<=c;j++) {
+    if(DB.vLines[i][j]!==null) continue;
+    const cx=pad+j*cellW, cy=pad+(i+0.5)*cellH;
+    const d=Math.sqrt((ex-cx)**2+(ey-cy)**2);
+    if(d<bestDist) { bestDist=d; best={type:'v',i,j}; }
+  }
+  if(!best) return;
+  dbPlaceLine(best.type,best.i,best.j,DB.turn);
+}
+
+function dbPlaceLine(type,i,j,player) {
+  if(type==='h') DB.hLines[i][j]=player; else DB.vLines[i][j]=player;
+  playSound('click');
+  // check completed boxes
+  let completed=0;
+  const r=DB.rows, c=DB.cols;
+  for(let bi=0;bi<r;bi++) for(let bj=0;bj<c;bj++) {
+    if(DB.boxes[bi][bj]!==null) continue;
+    if(DB.hLines[bi][bj]!==null && DB.hLines[bi+1][bj]!==null &&
+       DB.vLines[bi][bj]!==null && DB.vLines[bi][bj+1]!==null) {
+      DB.boxes[bi][bj]=player;
+      DB.scores[player]++;
+      completed++;
+    }
+  }
+  document.getElementById('dbP1Score').textContent=DB.scores[0];
+  document.getElementById('dbP2Score').textContent=DB.scores[1];
+  if(completed>0) playSound('correct');
+  // check game over
+  const totalBoxes=r*c;
+  if(DB.scores[0]+DB.scores[1]>=totalBoxes) {
+    DB.over=true;
+    const n1=getP1Name('db'), n2=getP2Name('db');
+    if(DB.scores[0]>DB.scores[1]) {
+      document.getElementById('dbStatus').textContent=n1+' vyhra! '+DB.scores[0]+':'+DB.scores[1];
+      addWin(1,'dotsBoxes'); celebrate('dbCelebration'); playSound('win');
+    } else if(DB.scores[1]>DB.scores[0]) {
+      document.getElementById('dbStatus').textContent=n2+' vyhra! '+DB.scores[1]+':'+DB.scores[0];
+      addWin(2,'dotsBoxes'); celebrate('dbCelebration'); playSound('win');
+    } else {
+      document.getElementById('dbStatus').textContent='Remiza! '+DB.scores[0]+':'+DB.scores[1];
+      addWin(0,'dotsBoxes');
+    }
+    renderDB(); return;
+  }
+  // if no box completed, switch turn
+  if(completed===0) DB.turn=1-DB.turn;
+  const pName=DB.turn===0?getP1Name('db'):getP2Name('db');
+  document.getElementById('dbStatus').textContent=pName+' je na rade';
+  activeTurn('dbP1Card','dbP2Card',DB.turn===0?1:2);
+  renderDB();
+}
+
+(function(){
+  const c=document.getElementById('dbCanvas');
+  if(c) { c.addEventListener('click',dbClick); c.addEventListener('touchstart',function(e){e.preventDefault();dbClick(e);},{passive:false}); }
+})();
+
+resetDB();
 resetChess();
 resetCheckers();
 resetTetris();
@@ -8870,6 +9078,7 @@ const MOBILE_GAMES = [
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
+  { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
