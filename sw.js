@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hrajmesi-v16';
+const CACHE_NAME = 'hrajmesi-v17';
 const ASSETS = [
   './manifest.json',
   './icon-192.png',

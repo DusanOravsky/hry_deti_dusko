@@ -130,8 +130,8 @@ body.light {
   .c4-col-btn { width:100%; font-size:0.9em; padding:4px 0; }
 
   /* BATTLESHIP */
-  .bs-grid { gap:2px; padding:6px; }
-  .bs-cell { width:28px; height:28px; font-size:0.75em; border-radius:4px; }
+  .bs-grid { grid-template-columns:repeat(10,1fr)!important; grid-template-rows:repeat(10,1fr)!important; gap:2px; padding:4px; max-width:340px; width:100%; }
+  .bs-cell { width:auto; height:auto; aspect-ratio:1; font-size:0.7em; border-radius:3px; }
   .bs-section { gap:10px; }
   .bs-grid-label { font-size:0.82em; }
 
@@ -160,7 +160,7 @@ body.light {
   .reaction-pad { font-size:1.2em; border-radius:16px; }
 
   /* QUIZ */
-  .answers-grid { grid-template-columns:1fr; gap:8px; }
+  .answers-grid { grid-template-columns:1fr; gap:8px; max-width:100%!important; }
   .quiz-answer-btn { padding:12px; font-size:0.9em; }
   .quiz-theme-btn { padding:7px 10px; font-size:0.78em; }
 
@@ -602,7 +602,7 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 /* PUZZLE SCRAMBLE */
 .puzzle-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
 .puzzle-board { display:inline-grid; grid-template-columns:repeat(4,1fr); gap:3px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); padding:3px; max-width:320px; width:100%; touch-action:pan-y; }
-.puzzle-tile { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:1.8em; border-radius:8px; cursor:pointer; transition:transform 0.15s, background 0.15s; user-select:none; position:relative; }
+.puzzle-tile { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:1.8em; border-radius:6px; cursor:pointer; transition:transform 0.15s; user-select:none; position:relative; background-size:cover; }
 .puzzle-tile:active { transform:scale(0.93); }
 .puzzle-tile.empty { background:rgba(0,0,0,0.2)!important; cursor:default; }
 .puzzle-tile.correct { box-shadow:inset 0 0 0 2px rgba(0,255,100,0.4); }
@@ -1309,7 +1309,7 @@ body.light .chess-sq.dark-sq { background:#b58863; }
 .chess-sq.can-capture { background:rgba(255,80,80,0.4) !important; }
 .chess-sq.last-move { box-shadow:inset 0 0 0 3px rgba(255,255,0,0.5); }
 @media(max-width:480px) {
-  .chess-board { max-width:340px; }
+  .chess-board { max-width:100%; }
   .chess-sq { font-size:1.6em; }
 }
 
@@ -2464,18 +2464,25 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     </div>
     <div class="status" id="pzStatus">Vyber motív a klikni Štart!</div>
     <div class="timer-settings">
-      <label>🎨 Motív:</label>
+      <label>🎨 Obrázok:</label>
       <select class="timer-select" id="pzThemeSelect">
-        <option value="animals">🐶 Zvieratá</option>
+        <option value="sunset">🌅 Západ slnka</option>
+        <option value="mountains">🏔️ Hory</option>
+        <option value="ocean">🌊 Oceán</option>
+        <option value="forest">🌲 Les</option>
         <option value="space">🚀 Vesmír</option>
-        <option value="food">🍕 Jedlo</option>
-        <option value="nature">🌸 Príroda</option>
-        <option value="ocean">🐠 Oceán</option>
-        <option value="numbers">🔢 Čísla</option>
+        <option value="city">🏙️ Mesto</option>
+      </select>
+      <label style="margin-left:10px">📊 Obtiažnosť:</label>
+      <select class="timer-select" id="pzDiffSelect">
+        <option value="3">Ľahká (3×3)</option>
+        <option value="4" selected>Stredná (4×4)</option>
+        <option value="5">Ťažká (5×5)</option>
       </select>
     </div>
     <div class="puzzle-timer" id="pzTimer">0.0s</div>
     <div class="puzzle-moves" id="pzMoves"></div>
+    <div style="text-align:center;margin:5px 0"><canvas id="pzPreview" style="border-radius:8px;max-width:120px;opacity:0.6"></canvas></div>
     <div class="puzzle-container">
       <div class="puzzle-board" id="pzBoard"></div>
     </div>
@@ -2564,7 +2571,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     <div id="mdGameBox" style="display:none;text-align:center">
       <div style="font-size:0.85em;opacity:0.5;margin-bottom:6px" id="mdRound">Kolo 1/10</div>
       <div class="question-text" id="mdQuestion" style="font-size:2.2em;margin:20px 0"></div>
-      <div class="answers-grid" id="mdAnswers" style="max-width:400px;margin:0 auto"></div>
+      <div class="answers-grid" id="mdAnswers" style="margin:0 auto"></div>
     </div>
     <div class="celebration" id="mdCelebration">🎉</div>
     <div class="buttons-group">
@@ -2595,7 +2602,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     <div id="egGameBox" style="display:none;text-align:center">
       <div style="font-size:0.85em;opacity:0.5;margin-bottom:6px" id="egRound">Kolo 1/10</div>
       <div style="font-size:3.5em;margin:20px 0;padding:20px;background:rgba(255,255,255,0.06);border-radius:18px;border:2px solid rgba(255,255,255,0.1)" id="egEmoji"></div>
-      <div class="answers-grid" id="egAnswers" style="max-width:500px;margin:10px auto"></div>
+      <div class="answers-grid" id="egAnswers" style="margin:10px auto"></div>
     </div>
     <div class="celebration" id="egCelebration">🎉</div>
     <div class="buttons-group">
@@ -3260,7 +3267,7 @@ function resetTTT() {
 // =============================================================================
 // SEKCIA 7: PIŠKVORKY 15×15 — stav v objekte PSK15
 // =============================================================================
-const PSK15 = { mode:'pvp', diff:'easy', board:[], player:'X', over:false, s1:0, s2:0 };
+const PSK15 = { mode:'pvp', diff:'easy', board:[], player:'X', over:false, s1:0, s2:0, size:15 };
 
 // ===== PIŠKVORKY 15x15 =====
 
@@ -3279,9 +3286,13 @@ function setPsk15Diff(d,btn) {
   resetPsk15();
 }
 function initPsk15Board() {
+  PSK15.size=window.innerWidth<=640?10:15;
+  const sz=PSK15.size, total=sz*sz;
   const b=document.getElementById('psk15Board');
-  b.innerHTML=''; b.className='board-15x15';
-  PSK15.board=Array(225).fill('');
+  b.innerHTML='';
+  b.className='board-15x15';
+  b.style.gridTemplateColumns='repeat('+sz+',1fr)';
+  PSK15.board=Array(total).fill('');
   PSK15.board.forEach((_,i)=>{
     const c=document.createElement('div');
     c.className='cell'; c.onclick=()=>clickPsk15(i); b.appendChild(c);
@@ -3296,7 +3307,7 @@ function renderPsk15() {
   });
 }
 function checkPsk15Win() {
-  const s=15;
+  const s=PSK15.size;
   for(let r=0;r<s;r++) for(let c=0;c<=s-5;c++){const i=r*s+c;if(PSK15.board[i]&&PSK15.board[i]===PSK15.board[i+1]&&PSK15.board[i]===PSK15.board[i+2]&&PSK15.board[i]===PSK15.board[i+3]&&PSK15.board[i]===PSK15.board[i+4])return PSK15.board[i];}
   for(let c=0;c<s;c++) for(let r=0;r<=s-5;r++){const i=r*s+c;if(PSK15.board[i]&&PSK15.board[i]===PSK15.board[i+s]&&PSK15.board[i]===PSK15.board[i+2*s]&&PSK15.board[i]===PSK15.board[i+3*s]&&PSK15.board[i]===PSK15.board[i+4*s])return PSK15.board[i];}
   for(let r=0;r<=s-5;r++) for(let c=0;c<=s-5;c++){const i=r*s+c;if(PSK15.board[i]&&PSK15.board[i]===PSK15.board[i+s+1]&&PSK15.board[i]===PSK15.board[i+2*(s+1)]&&PSK15.board[i]===PSK15.board[i+3*(s+1)]&&PSK15.board[i]===PSK15.board[i+4*(s+1)])return PSK15.board[i];}
@@ -3304,7 +3315,7 @@ function checkPsk15Win() {
   return null;
 }
 function getPsk15AIMove() {
-  const SIZE=15, WIN=5;
+  const SIZE=PSK15.size, WIN=5;
   const empty=PSK15.board.map((v,i)=>v===''?i:null).filter(v=>v!==null);
   if(!empty.length) return null;
   if(PSK15.diff==='easy') return empty[Math.floor(Math.random()*empty.length)];
@@ -3354,7 +3365,7 @@ function getPsk15AIMove() {
     const def=scoreCell(idx,'X');
     if(def>=1000000) { bestScore=999999; bestMove=idx; continue; }
     const row=Math.floor(idx/SIZE), col=idx%SIZE;
-    const centerBonus=10-Math.max(Math.abs(row-7),Math.abs(col-7));
+    const mid=Math.floor(SIZE/2); const centerBonus=10-Math.max(Math.abs(row-mid),Math.abs(col-mid));
     const total=atk*1.2+def+centerBonus;
     if(total>bestScore) { bestScore=total; bestMove=idx; }
   }
@@ -6816,13 +6827,13 @@ const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump
 
 function resetCheckers() {
   DK.board=Array(64).fill('');
-  for(let i=0;i<24;i++){
+  for(let i=0;i<12;i++){
     const r=Math.floor(i/4), c=(i%4)*2+(r%2===0?1:0);
-    DK.board[r*8+c]='b'; // black top
+    DK.board[r*8+c]='b'; // black top (rows 0-2)
   }
-  for(let i=0;i<24;i++){
+  for(let i=0;i<12;i++){
     const ri=5+Math.floor(i/4), c=(i%4)*2+(ri%2===0?1:0);
-    DK.board[ri*8+c]='r'; // red bottom
+    DK.board[ri*8+c]='r'; // red bottom (rows 5-7)
   }
   DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null;
   document.getElementById('dkStatus').textContent=getP1Name('dk')+' (🔴) na ťahu';
@@ -6998,52 +7009,124 @@ function checkersAI() {
 }
 
 // =============================================================================
-// SEKCIA 30: PUZZLE SCRAMBLE
+// SEKCIA 30: PUZZLE SCRAMBLE (canvas-based image puzzle)
 // =============================================================================
-const PZ = { tiles:[], empty:15, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false };
+const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null };
 
-const PUZZLE_THEMES = {
-  animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵'],
-  space:   ['🚀','🌍','🌙','⭐','🪐','☄️','👽','🛸','🌌','🔭','👩‍🚀','🛰️','🌟','💫','🌠'],
-  food:    ['🍕','🍔','🍟','🌭','🍿','🧁','🍩','🍪','🍰','🎂','🍫','🍬','🍭','🧀','🥐'],
-  nature:  ['🌸','🌺','🌻','🌹','🌷','🌿','🍀','🌴','🍄','🦋','🌈','☀️','🌊','🍁','⛰️'],
-  ocean:   ['🐠','🐟','🐙','🦑','🐳','🐬','🦈','🐚','🦀','🦞','🪸','🐡','🦐','🐢','🧜'],
-  numbers: ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟','🅰️','🅱️','©️','🆎','🆑']
-};
-
-const PUZZLE_COLORS = [
-  '#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63',
-  '#ff7043','#66bb6a','#42a5f5','#ab47bc','#26c6da','#ffa726','#ef5350'
-];
-
+function pzDrawScene(canvas, theme) {
+  const s=canvas.width, ctx=canvas.getContext('2d');
+  if(theme==='sunset') {
+    const sky=ctx.createLinearGradient(0,0,0,s*0.6); sky.addColorStop(0,'#1a0533'); sky.addColorStop(0.3,'#6b2fa0'); sky.addColorStop(0.6,'#e85d04'); sky.addColorStop(1,'#ffba08');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,s,s*0.6);
+    ctx.fillStyle='#ffba08'; ctx.beginPath(); ctx.arc(s*0.5,s*0.55,s*0.12,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ff6d00'; ctx.beginPath(); ctx.arc(s*0.5,s*0.55,s*0.09,0,Math.PI*2); ctx.fill();
+    const water=ctx.createLinearGradient(0,s*0.6,0,s); water.addColorStop(0,'#e85d04'); water.addColorStop(0.3,'#3a0ca3'); water.addColorStop(1,'#10002b');
+    ctx.fillStyle=water; ctx.fillRect(0,s*0.6,s,s*0.4);
+    for(let i=0;i<8;i++){ctx.fillStyle='rgba(255,186,8,0.'+(2+Math.random()*2).toFixed(0)+')';ctx.fillRect(s*0.3+Math.random()*s*0.4,s*0.62+i*s*0.04,s*0.05+Math.random()*s*0.1,2);}
+    ctx.fillStyle='#2d006b'; ctx.beginPath(); ctx.moveTo(0,s*0.55); ctx.lineTo(s*0.15,s*0.35); ctx.lineTo(s*0.3,s*0.55); ctx.fill();
+    ctx.fillStyle='#1a0533'; ctx.beginPath(); ctx.moveTo(s*0.7,s*0.58); ctx.lineTo(s*0.85,s*0.38); ctx.lineTo(s,s*0.58); ctx.fill();
+  } else if(theme==='mountains') {
+    const sky=ctx.createLinearGradient(0,0,0,s); sky.addColorStop(0,'#0f4c75'); sky.addColorStop(0.5,'#3282b8'); sky.addColorStop(1,'#bbe1fa');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#1b262c'; ctx.beginPath(); ctx.moveTo(0,s*0.7); ctx.lineTo(s*0.2,s*0.25); ctx.lineTo(s*0.35,s*0.45); ctx.lineTo(s*0.5,s*0.2); ctx.lineTo(s*0.65,s*0.4); ctx.lineTo(s*0.8,s*0.15); ctx.lineTo(s,s*0.5); ctx.lineTo(s,s); ctx.lineTo(0,s); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.moveTo(s*0.5,s*0.2); ctx.lineTo(s*0.45,s*0.28); ctx.lineTo(s*0.55,s*0.28); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(s*0.8,s*0.15); ctx.lineTo(s*0.75,s*0.22); ctx.lineTo(s*0.85,s*0.22); ctx.fill();
+    ctx.fillStyle='#2d6a4f'; ctx.fillRect(0,s*0.75,s,s*0.25);
+    ctx.fillStyle='#40916c'; for(let i=0;i<6;i++){const tx=s*0.1+i*s*0.15; ctx.beginPath(); ctx.moveTo(tx,s*0.75); ctx.lineTo(tx-s*0.04,s*0.85); ctx.lineTo(tx+s*0.04,s*0.85); ctx.fill();}
+    ctx.fillStyle='#ffdd00'; ctx.beginPath(); ctx.arc(s*0.85,s*0.12,s*0.06,0,Math.PI*2); ctx.fill();
+  } else if(theme==='ocean') {
+    const bg=ctx.createLinearGradient(0,0,0,s); bg.addColorStop(0,'#0077b6'); bg.addColorStop(0.5,'#023e8a'); bg.addColorStop(1,'#03045e');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#caf0f8'; ctx.beginPath(); ctx.arc(s*0.3,s*0.15,s*0.08,0,Math.PI*2); ctx.fill();
+    for(let i=0;i<5;i++){ctx.fillStyle='rgba(202,240,248,0.3)'; ctx.beginPath(); ctx.arc(s*(0.1+i*0.2),s*(0.05+Math.random()*0.1),s*0.04,0,Math.PI*2); ctx.fill();}
+    ctx.fillStyle='#f77f00'; ctx.beginPath(); ctx.ellipse(s*0.35,s*0.4,s*0.08,s*0.05,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(s*0.32,s*0.38,s*0.015,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#f4a261'; ctx.beginPath(); ctx.moveTo(s*0.43,s*0.4); ctx.lineTo(s*0.5,s*0.35); ctx.lineTo(s*0.5,s*0.45); ctx.fill();
+    ctx.fillStyle='#e63946'; ctx.beginPath(); ctx.ellipse(s*0.7,s*0.6,s*0.1,s*0.06,0.3,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(s*0.66,s*0.57,s*0.015,0,Math.PI*2); ctx.stroke();
+    for(let i=0;i<8;i++){ctx.fillStyle='rgba(72,202,228,0.4)'; ctx.beginPath(); ctx.arc(s*(0.1+Math.random()*0.8),s*(0.7+Math.random()*0.25),s*0.015,0,Math.PI*2); ctx.fill();}
+    ctx.fillStyle='#2d6a4f'; for(let i=0;i<4;i++){const bx=s*(0.15+i*0.25),by=s*0.85; ctx.beginPath(); ctx.moveTo(bx,by); ctx.quadraticCurveTo(bx+s*0.05,by-s*0.15,bx+s*0.1,by); ctx.fill();}
+  } else if(theme==='forest') {
+    const bg=ctx.createLinearGradient(0,0,0,s); bg.addColorStop(0,'#a8dadc'); bg.addColorStop(0.4,'#457b9d'); bg.addColorStop(1,'#1d3557');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#2d6a4f'; ctx.fillRect(0,s*0.65,s,s*0.35);
+    const trees=[[0.1,0.08],[0.25,0.1],[0.4,0.12],[0.55,0.09],[0.7,0.11],[0.85,0.08],[0.15,0.07],[0.5,0.06],[0.75,0.09]];
+    trees.forEach(([tx,tw])=>{
+      const bx=s*tx,bw=s*tw,h=s*(0.15+Math.random()*0.2);
+      ctx.fillStyle='#6b4226'; ctx.fillRect(bx-s*0.01,s*0.65-h*0.3,s*0.02,h*0.3);
+      ctx.fillStyle='#2d6a4f'; ctx.beginPath(); ctx.moveTo(bx,s*0.65-h); ctx.lineTo(bx-bw,s*0.65-h*0.3); ctx.lineTo(bx+bw,s*0.65-h*0.3); ctx.fill();
+      ctx.fillStyle='#40916c'; ctx.beginPath(); ctx.moveTo(bx,s*0.65-h*0.85); ctx.lineTo(bx-bw*0.8,s*0.65-h*0.2); ctx.lineTo(bx+bw*0.8,s*0.65-h*0.2); ctx.fill();
+    });
+    ctx.fillStyle='#ffdd00'; ctx.beginPath(); ctx.arc(s*0.8,s*0.1,s*0.05,0,Math.PI*2); ctx.fill();
+  } else if(theme==='space') {
+    ctx.fillStyle='#0b0c10'; ctx.fillRect(0,0,s,s);
+    for(let i=0;i<60;i++){ctx.fillStyle='rgba(255,255,255,'+(0.3+Math.random()*0.7)+')'; ctx.beginPath(); ctx.arc(Math.random()*s,Math.random()*s,Math.random()*2+0.5,0,Math.PI*2); ctx.fill();}
+    const plan=ctx.createRadialGradient(s*0.3,s*0.5,s*0.02,s*0.3,s*0.5,s*0.15);
+    plan.addColorStop(0,'#4361ee'); plan.addColorStop(1,'#3a0ca3');
+    ctx.fillStyle=plan; ctx.beginPath(); ctx.arc(s*0.3,s*0.5,s*0.15,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(200,200,255,0.3)'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(s*0.3,s*0.5,s*0.22,s*0.05,0.3,0,Math.PI*2); ctx.stroke();
+    const sat=ctx.createRadialGradient(s*0.75,s*0.3,0,s*0.75,s*0.3,s*0.08);
+    sat.addColorStop(0,'#f72585'); sat.addColorStop(1,'#7209b7');
+    ctx.fillStyle=sat; ctx.beginPath(); ctx.arc(s*0.75,s*0.3,s*0.08,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffdd00'; ctx.beginPath(); ctx.arc(s*0.85,s*0.75,s*0.06,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#f4a261'; ctx.beginPath(); ctx.arc(s*0.85,s*0.75,s*0.04,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#e76f51'; ctx.beginPath(); ctx.moveTo(s*0.5,s*0.15); ctx.lineTo(s*0.48,s*0.05); ctx.lineTo(s*0.52,s*0.05); ctx.fill();
+    ctx.fillStyle='#aaa'; ctx.fillRect(s*0.49,s*0.05,s*0.02,s*0.1);
+  } else { // city
+    const bg=ctx.createLinearGradient(0,0,0,s); bg.addColorStop(0,'#22223b'); bg.addColorStop(0.5,'#4a4e69'); bg.addColorStop(1,'#9a8c98');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#f2e9e4'; ctx.beginPath(); ctx.arc(s*0.8,s*0.15,s*0.05,0,Math.PI*2); ctx.fill();
+    const buildings=[[0.05,0.15,0.35],[0.22,0.12,0.5],[0.36,0.14,0.3],[0.52,0.1,0.55],[0.64,0.16,0.4],[0.82,0.12,0.45]];
+    buildings.forEach(([bx,bw,bh])=>{
+      ctx.fillStyle='#22223b'; ctx.fillRect(s*bx,s*(1-bh),s*bw,s*bh);
+      ctx.fillStyle='#c9ada7'; for(let wy=0;wy<6;wy++) for(let wx=0;wx<3;wx++){
+        if(Math.random()>0.3) ctx.fillStyle=Math.random()>0.5?'#ffdd00':'#c9ada7';
+        ctx.fillRect(s*bx+s*bw*0.15+wx*s*bw*0.25,s*(1-bh)+s*bh*0.1+wy*s*bh*0.14,s*bw*0.15,s*bh*0.08);
+      }
+    });
+    ctx.fillStyle='#4a4e69'; ctx.fillRect(0,s*0.88,s,s*0.12);
+  }
+}
 function resetPuzzle() {
   PZ.solved=false; PZ.player=1; PZ.times=[0,0]; PZ.moves=[0,0]; PZ.aiSolving=false;
   if(PZ.timer) { clearInterval(PZ.timer); PZ.timer=null; }
-  document.getElementById('pzStatus').textContent='Vyber motív a klikni Štart!';
+  document.getElementById('pzStatus').textContent='Vyber obrázok a klikni Štart!';
   document.getElementById('pzTimer').textContent='0.0s';
   document.getElementById('pzMoves').textContent='';
   document.getElementById('pzBoard').innerHTML='';
+  const preview=document.getElementById('pzPreview'); preview.width=120; preview.height=120;
   activeTurn('pzP1Card','pzP2Card',1);
 }
 function generatePuzzle() {
-  const theme=document.getElementById('pzThemeSelect').value;
-  const icons=PUZZLE_THEMES[theme];
-  PZ.tiles=[...icons,null]; // 16 tiles, last is empty
-  PZ.empty=15;
-  // Scramble with valid moves (ensures solvability)
-  for(let i=0;i<200;i++){
+  PZ.size=parseInt(document.getElementById('pzDiffSelect').value);
+  const total=PZ.size*PZ.size;
+  // Draw image
+  const imgCanvas=document.createElement('canvas'); imgCanvas.width=300; imgCanvas.height=300;
+  pzDrawScene(imgCanvas, document.getElementById('pzThemeSelect').value);
+  PZ.img=imgCanvas;
+  // Show preview
+  const preview=document.getElementById('pzPreview'); preview.width=120; preview.height=120;
+  preview.getContext('2d').drawImage(imgCanvas,0,0,120,120);
+  // Create tiles: each tile stores its correct index
+  PZ.tiles=[];
+  for(let i=0;i<total-1;i++) PZ.tiles.push(i);
+  PZ.tiles.push(null);
+  PZ.empty=total-1;
+  // Scramble with valid moves
+  const moves=PZ.size===3?80:PZ.size===4?200:400;
+  for(let i=0;i<moves;i++){
     const neighbors=getPZNeighbors(PZ.empty);
     const pick=neighbors[Math.floor(Math.random()*neighbors.length)];
     PZ.tiles[PZ.empty]=PZ.tiles[pick]; PZ.tiles[pick]=null; PZ.empty=pick;
   }
-  PZ.scramble=PZ.tiles.slice(); // Save for player 2
+  PZ.scramble=PZ.tiles.slice();
 }
 function getPZNeighbors(idx) {
-  const r=Math.floor(idx/4),c=idx%4,n=[];
-  if(r>0) n.push(idx-4);
-  if(r<3) n.push(idx+4);
+  const sz=PZ.size, r=Math.floor(idx/sz), c=idx%sz, n=[];
+  if(r>0) n.push(idx-sz);
+  if(r<sz-1) n.push(idx+sz);
   if(c>0) n.push(idx-1);
-  if(c<3) n.push(idx+1);
+  if(c<sz-1) n.push(idx+1);
   return n;
 }
 function startPuzzle() {
@@ -7051,7 +7134,6 @@ function startPuzzle() {
   if(PZ.player===1) {
     generatePuzzle();
   } else {
-    // Player 2 gets same scramble
     PZ.tiles=PZ.scramble.slice();
     PZ.empty=PZ.tiles.indexOf(null);
   }
@@ -7061,26 +7143,33 @@ function startPuzzle() {
   activeTurn('pzP1Card','pzP2Card',PZ.player);
   PZ.startTime=Date.now();
   PZ.timer=setInterval(()=>{
-    const elapsed=((Date.now()-PZ.startTime)/1000).toFixed(1);
-    document.getElementById('pzTimer').textContent=elapsed+'s';
+    document.getElementById('pzTimer').textContent=((Date.now()-PZ.startTime)/1000).toFixed(1)+'s';
   },100);
   renderPuzzle();
 }
 function renderPuzzle() {
   const board=document.getElementById('pzBoard'); board.innerHTML='';
-  const theme=document.getElementById('pzThemeSelect').value;
-  const correct=PUZZLE_THEMES[theme];
-  for(let i=0;i<16;i++){
+  const sz=PZ.size, total=sz*sz;
+  board.style.gridTemplateColumns='repeat('+sz+',1fr)';
+  const tileSize=Math.floor(300/sz);
+  for(let i=0;i<total;i++){
     const tile=document.createElement('div');
     tile.className='puzzle-tile';
     if(PZ.tiles[i]===null) {
       tile.classList.add('empty');
     } else {
-      const origIdx=correct.indexOf(PZ.tiles[i]);
-      tile.style.background=PUZZLE_COLORS[origIdx]+'33';
-      tile.style.border='2px solid '+PUZZLE_COLORS[origIdx]+'88';
-      tile.textContent=PZ.tiles[i];
-      if(PZ.tiles[i]===correct[i]) tile.classList.add('correct');
+      const origIdx=PZ.tiles[i];
+      const sr=Math.floor(origIdx/sz), sc=origIdx%sz;
+      tile.style.backgroundImage='url('+PZ.img.toDataURL()+')';
+      tile.style.backgroundSize=(sz*100)+'% '+(sz*100)+'%';
+      tile.style.backgroundPosition=(-sc*100)+'% '+(-sr*100)+'%';
+      if(PZ.tiles[i]===i) tile.classList.add('correct');
+      // Small number hint
+      const num=document.createElement('span');
+      num.textContent=origIdx+1;
+      num.style.cssText='position:absolute;top:2px;left:4px;font-size:0.55em;opacity:0.5;color:#fff;text-shadow:0 0 3px #000';
+      tile.style.position='relative';
+      tile.appendChild(num);
       (function(idx){ tile.onclick=()=>pzClick(idx); })(i);
     }
     board.appendChild(tile);
@@ -7096,10 +7185,8 @@ function pzClick(idx) {
   PZ.moves[PZ.player-1]++;
   playSound('click'); vibrate(15);
   renderPuzzle();
-  // Check solved
-  const theme=document.getElementById('pzThemeSelect').value;
-  const correct=PUZZLE_THEMES[theme];
-  const isSolved=correct.every((c,i)=>PZ.tiles[i]===c);
+  const total=PZ.size*PZ.size;
+  const isSolved=PZ.tiles.every((t,i)=>i===total-1?t===null:t===i);
   if(isSolved) pzPlayerDone();
 }
 function pzPlayerDone() {
@@ -7108,64 +7195,50 @@ function pzPlayerDone() {
   PZ.times[PZ.player-1]=(Date.now()-PZ.startTime)/1000;
   const name=PZ.player===1?getP1Name('pz'):getP2Name('pz');
   playSound('win');
-  if(PZ.player===1 && !( welcomeGameMode==='ai')) {
-    // Player 1 done, player 2 goes
-    document.getElementById('pzStatus').textContent='✅ '+name+': '+PZ.times[0].toFixed(1)+'s ('+PZ.moves[0]+' ťahov). Teraz ide '+getP2Name('pz')+'!';
+  if(PZ.player===1 && welcomeGameMode!=='ai') {
+    document.getElementById('pzStatus').textContent='✅ '+name+': '+PZ.times[0].toFixed(1)+'s ('+PZ.moves[0]+' ťahov). Teraz '+getP2Name('pz')+'!';
     PZ.player=2; PZ.solved=false;
     setTimeout(startPuzzle,2000);
   } else if(PZ.player===1 && welcomeGameMode==='ai') {
-    // AI turn
     document.getElementById('pzStatus').textContent='✅ '+name+': '+PZ.times[0].toFixed(1)+'s. Počítač skladá...';
     PZ.player=2; PZ.solved=false;
     setTimeout(()=>{ startPuzzle(); setTimeout(puzzleAI,500); },1500);
   } else {
-    // Player 2 done, compare
     pzCompare();
   }
 }
 function pzCompare() {
   const t1=PZ.times[0], t2=PZ.times[1];
-  let winner;
-  if(t1<t2) winner=1;
-  else if(t2<t1) winner=2;
-  else winner=0;
-  if(winner===1) { PZ.s1++; document.getElementById('p1ScorePZ').textContent=PZ.s1; addWin(1,'puzzle'); }
-  else if(winner===2) { PZ.s2++; document.getElementById('p2ScorePZ').textContent=PZ.s2; addWin(2,'puzzle'); }
+  let w=t1<t2?1:t2<t1?2:0;
+  if(w===1) { PZ.s1++; document.getElementById('p1ScorePZ').textContent=PZ.s1; addWin(1,'puzzle'); }
+  else if(w===2) { PZ.s2++; document.getElementById('p2ScorePZ').textContent=PZ.s2; addWin(2,'puzzle'); }
   const n1=getP1Name('pz'), n2=getP2Name('pz');
-  if(winner===0) document.getElementById('pzStatus').textContent='🤝 Remíza! Oba '+t1.toFixed(1)+'s';
-  else {
-    const wName=winner===1?n1:n2;
-    document.getElementById('pzStatus').textContent='🏆 '+wName+' vyhral! ('+n1+': '+t1.toFixed(1)+'s / '+n2+': '+t2.toFixed(1)+'s)';
-  }
+  document.getElementById('pzStatus').textContent=w===0?'🤝 Remíza!':'🏆 '+(w===1?n1:n2)+' vyhral! ('+n1+': '+t1.toFixed(1)+'s / '+n2+': '+t2.toFixed(1)+'s)';
   celebrate('pzCelebration'); playSound('win');
   PZ.player=1;
 }
 function puzzleAI() {
   if(PZ.solved) return;
   PZ.aiSolving=true;
-  // Simple AI: repeatedly move tile that's closest to correct position toward empty
   function aiStep() {
     if(PZ.solved) { PZ.aiSolving=false; return; }
-    const theme=document.getElementById('pzThemeSelect').value;
-    const correct=PUZZLE_THEMES[theme];
-    if(correct.every((c,i)=>PZ.tiles[i]===c)) { PZ.aiSolving=false; pzPlayerDone(); return; }
+    const total=PZ.size*PZ.size;
+    if(PZ.tiles.every((t,i)=>i===total-1?t===null:t===i)) { PZ.aiSolving=false; pzPlayerDone(); return; }
     const neighbors=getPZNeighbors(PZ.empty);
-    // Pick neighbor that would be "most correct" in empty's position
-    let best=neighbors[0], bestScore=-1;
+    let best=neighbors[0], bestScore=-999;
     neighbors.forEach(n=>{
-      const tile=PZ.tiles[n];
-      const correctIdx=correct.indexOf(tile);
-      // Score: how much closer to correct position
-      const currDist=Math.abs(Math.floor(n/4)-Math.floor(correctIdx/4))+Math.abs(n%4-correctIdx%4);
-      const newDist=Math.abs(Math.floor(PZ.empty/4)-Math.floor(correctIdx/4))+Math.abs(PZ.empty%4-correctIdx%4);
+      const tile=PZ.tiles[n], correctIdx=tile;
+      const sz=PZ.size;
+      const currDist=Math.abs(Math.floor(n/sz)-Math.floor(correctIdx/sz))+Math.abs(n%sz-correctIdx%sz);
+      const newDist=Math.abs(Math.floor(PZ.empty/sz)-Math.floor(correctIdx/sz))+Math.abs(PZ.empty%sz-correctIdx%sz);
       const improvement=currDist-newDist;
-      if(improvement>bestScore || (improvement===bestScore && Math.random()>0.5)) { best=n; bestScore=improvement; }
+      if(improvement>bestScore||(improvement===bestScore&&Math.random()>0.5)){best=n;bestScore=improvement;}
     });
     PZ.tiles[PZ.empty]=PZ.tiles[best]; PZ.tiles[best]=null; PZ.empty=best;
     PZ.moves[1]++;
     renderPuzzle();
     playSound('click');
-    setTimeout(aiStep, 250);
+    setTimeout(aiStep, 200);
   }
   aiStep();
 }
@@ -7426,6 +7499,11 @@ function mobileGoTo(level, gameId) {
       (gDef ? gDef.icon + ' ' : '') + (GAME_NAMES[gameId] || gameId);
     // Move game-area into mobile content
     const content = document.getElementById('mobileGameContent');
+    // Return previous game area to its original parent before replacing
+    if(_mobileCurrentGame && _gameAreaParent) {
+      const prev = document.getElementById(_mobileCurrentGame);
+      if(prev) { prev.style.display='none'; _gameAreaParent.appendChild(prev); }
+    }
     content.innerHTML = '';
     const area = document.getElementById(gameId);
     if(area) {
