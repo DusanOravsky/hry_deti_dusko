@@ -1263,6 +1263,33 @@ body.light .stats-history-row { background:rgba(0,0,0,0.03); }
   .hl-card-vs { font-size:2em; }
 }
 
+/* CHESS / CHECKERS BOARD */
+.chess-board {
+  display:inline-grid; grid-template-columns:repeat(8,1fr);
+  border:3px solid rgba(255,255,255,0.3); border-radius:8px; overflow:hidden;
+  margin:10px auto; max-width:400px; width:100%;
+}
+.chess-sq {
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-size:2.2em; cursor:pointer; user-select:none; position:relative;
+  transition:background 0.15s;
+}
+.chess-sq.light-sq { background:#f0d9b5; }
+.chess-sq.dark-sq { background:#b58863; }
+body.light .chess-sq.light-sq { background:#f0d9b5; }
+body.light .chess-sq.dark-sq { background:#b58863; }
+.chess-sq.selected { background:#7fc97f !important; }
+.chess-sq.can-move::after {
+  content:''; position:absolute; width:30%; height:30%; border-radius:50%;
+  background:rgba(0,0,0,0.25);
+}
+.chess-sq.can-capture { background:rgba(255,80,80,0.4) !important; }
+.chess-sq.last-move { box-shadow:inset 0 0 0 3px rgba(255,255,0,0.5); }
+@media(max-width:480px) {
+  .chess-board { max-width:340px; }
+  .chess-sq { font-size:1.6em; }
+}
+
 /* CONFETTI */
 #confettiCanvas {
   position:fixed; top:0; left:0; width:100%; height:100%;
@@ -1547,7 +1574,8 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
       <span class="welcome-game-chip">🧮 Matika</span>
       <span class="welcome-game-chip">😂 Emoji</span>
       <span class="welcome-game-chip">💀 Obesenec</span>
-      <span class="welcome-game-chip">+13 ďalších</span>
+      <span class="welcome-game-chip">♟️ Šach</span>
+      <span class="welcome-game-chip">+14 ďalších</span>
     </div>
     <!-- MINI STATS na welcome screene -->
     <div id="welcomeStats" class="welcome-stats">
@@ -2462,6 +2490,13 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
       <li>Vyber správnu odpoveď zo 4 možností</li>
       <li>Hráči sa striedajú, 10 kôl</li>
     </ul></div>
+    <div class="mode-selector quiz-themes-wrap">
+      <button class="quiz-theme-btn active" onclick="setEGCat('all',this)">🎲 Všetko</button>
+      <button class="quiz-theme-btn" onclick="setEGCat('general',this)">🌍 Bežné</button>
+      <button class="quiz-theme-btn" onclick="setEGCat('movies',this)">🎬 Filmy</button>
+      <button class="quiz-theme-btn" onclick="setEGCat('series',this)">📺 Seriály</button>
+      <button class="quiz-theme-btn" onclick="setEGCat('fairy',this)">🧚 Rozprávky</button>
+    </div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="egP1Card"><div class="player-name-display" id="egP1Name">Lukáško</div><div class="player-score" id="p1ScoreEG">0</div></div>
       <div class="player-card player2" id="egP2Card"><div class="player-name-display" id="egP2Name">Natálka</div><div class="player-score" id="p2ScoreEG">0</div></div>
@@ -2544,6 +2579,49 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     </div>
   </div>
 
+  <!-- ===== ŠACH (CHESS) ===== -->
+  <div class="game-area" id="chess">
+    <div class="rules"><h3>📋 Šach:</h3><ul>
+      <li>Klasický šach — biely začína</li>
+      <li>Klikni na figúrku a potom na cieľové políčko</li>
+      <li>Šach mat = výhra!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="chP1Card"><div class="player-name-display" id="chP1Name">Lukáško</div><div class="player-score" id="p1ScoreCH">0</div></div>
+      <div class="player-card player2" id="chP2Card"><div class="player-name-display" id="chP2Name">Natálka</div><div class="player-score" id="p2ScoreCH">0</div></div>
+    </div>
+    <div class="status" id="chStatus">Biely na ťahu</div>
+    <div style="text-align:center;overflow-x:auto">
+      <div id="chessBoard" class="chess-board" style="touch-action:pan-y"></div>
+    </div>
+    <div class="celebration" id="chCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="resetChess()">🔄 Nová hra</button>
+    </div>
+  </div>
+
+  <!-- ===== DÁMA (CHECKERS) ===== -->
+  <div class="game-area" id="checkers">
+    <div class="rules"><h3>📋 Dáma:</h3><ul>
+      <li>Presúvaj figúrky diagonálne dopredu</li>
+      <li>Preskoč súperove figúrky a zober ich</li>
+      <li>Keď sa dostaneš na koniec, staníš sa dámou (môže aj dozadu)</li>
+      <li>Kto zoberie všetky súperove figúrky, vyhráva!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="dkP1Card"><div class="player-name-display" id="dkP1Name">Lukáško</div><div class="player-score" id="p1ScoreDK">0</div></div>
+      <div class="player-card player2" id="dkP2Card"><div class="player-name-display" id="dkP2Name">Natálka</div><div class="player-score" id="p2ScoreDK">0</div></div>
+    </div>
+    <div class="status" id="dkStatus">Červený na ťahu</div>
+    <div style="text-align:center;overflow-x:auto">
+      <div id="checkersBoard" class="chess-board" style="touch-action:pan-y"></div>
+    </div>
+    <div class="celebration" id="dkCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="resetCheckers()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -2562,6 +2640,7 @@ const gameKeys = {
   scramble:'scrambleBtn', langScramble:'langScrambleBtn', flashcard:'flashcardBtn',
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
+  chess:'chessBtn', checkers:'checkersBtn',
   missingLetter:'missingLetterBtn', sentence:'sentenceBtn', stats:'statsBtn'
 };
 
@@ -2572,7 +2651,8 @@ const GAME_NAMES = {
   scramble:'Scramble', langScramble:'Jazykový Scramble', flashcard:'Flashcards',
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
-  hangman:'Obesenec', higherLower:'Vyššie Nižšie'
+  hangman:'Obesenec', higherLower:'Vyššie Nižšie',
+  chess:'Šach', checkers:'Dáma'
 };
 
 let currentGameId = 'ticTacToe';
@@ -6055,38 +6135,90 @@ function resetMD() {
 // =============================================================================
 const EG = { player:1, s1:0, s2:0, round:0, over:false, answered:false };
 
-const EMOJI_PUZZLES = [
-  {emoji:'🍕+🏠',answer:'Pizza domov',wrong:['Obed vonku','Varenie','Nákupy']},
-  {emoji:'🐕+🦴',answer:'Pes a kosť',wrong:['Mačka','Zoo','Veterinár']},
-  {emoji:'⚽+🏆',answer:'Futbalový šampión',wrong:['Basketbal','Olympiáda','Beh']},
-  {emoji:'📚+🎒',answer:'Škola',wrong:['Knižnica','Obchod','Kino']},
-  {emoji:'🌧️+☂️',answer:'Dážď s dáždnikom',wrong:['Sneh','Búrka','Slnko']},
-  {emoji:'🎂+🎁',answer:'Narodeniny',wrong:['Vianoce','Svadba','Party']},
-  {emoji:'🚗+🏖️',answer:'Výlet na pláž',wrong:['Práca','Nákupy','Škola']},
-  {emoji:'❄️+⛷️',answer:'Lyžovanie',wrong:['Plávanie','Beh','Cyklistika']},
-  {emoji:'🎸+🎤',answer:'Koncert',wrong:['Divadlo','Kino','Diskotéka']},
-  {emoji:'🌙+⭐+😴',answer:'Spanie v noci',wrong:['Astronaut','Mesiac','Hviezdy']},
-  {emoji:'🍎+🐛',answer:'Červík v jablku',wrong:['Šalát','Ovocie','Záhrada']},
-  {emoji:'👨‍🍳+🍳',answer:'Varenie',wrong:['Jedenie','Reštaurácia','Nákup']},
-  {emoji:'🦁+👑',answer:'Kráľ zvierat',wrong:['Cirkus','Zoo','Savana']},
-  {emoji:'🎅+🎄',answer:'Vianoce',wrong:['Nový rok','Veľká noc','Halloween']},
-  {emoji:'🐱+🐭',answer:'Tom a Jerry',wrong:['Garfield','Pes a mačka','Zoo']},
-  {emoji:'🏊+🌊',answer:'Plávanie v mori',wrong:['Surfovanie','Loď','Rybolov']},
-  {emoji:'🌈+🦄',answer:'Rozprávka',wrong:['Počasie','Dúha','Park']},
-  {emoji:'🧙‍♂️+⚡',answer:'Harry Potter',wrong:['Gandalf','Merlin','Čarodejnica']},
-  {emoji:'🕷️+🕸️+🦸',answer:'Spider-Man',wrong:['Batman','Superman','Iron Man']},
-  {emoji:'🧊+🍦',answer:'Zmrzlina',wrong:['Ľad','Mrazák','Zima']},
-  {emoji:'🎃+👻',answer:'Halloween',wrong:['Vianoce','Karneval','Nový rok']},
-  {emoji:'🏠+🔥+🧑‍🚒',answer:'Hasič',wrong:['Požiar','Kuchyňa','Gril']},
-  {emoji:'✈️+🌍',answer:'Cestovanie',wrong:['Pilot','Letisko','Dovolenka']},
-  {emoji:'🦷+🪥',answer:'Čistenie zubov',wrong:['Zubár','Bolesť','Úsmev']},
-  {emoji:'🐸+👑+💋',answer:'Žabí princ',wrong:['Princezná','Rozprávka','Jazero']},
-  {emoji:'🎮+🏆',answer:'Herný šampión',wrong:['Esport','Konzola','Turnaj']},
-  {emoji:'🌍+♻️',answer:'Recyklácia',wrong:['Ekológia','Príroda','Planéta']},
-  {emoji:'🦇+🌙',answer:'Batman',wrong:['Vampír','Dracula','Netopier']},
-  {emoji:'🍔+🍟+🥤',answer:'Fast food',wrong:['Obed','Reštaurácia','McDonald']},
-  {emoji:'📱+📸',answer:'Fotenie mobilom',wrong:['Selfie','Instagram','Video']},
-];
+const EMOJI_PUZZLES = {
+  general: [
+    {emoji:'🍕+🏠',answer:'Pizza domov',wrong:['Obed vonku','Varenie','Nákupy']},
+    {emoji:'🐕+🦴',answer:'Pes a kosť',wrong:['Mačka','Zoo','Veterinár']},
+    {emoji:'⚽+🏆',answer:'Futbalový šampión',wrong:['Basketbal','Olympiáda','Beh']},
+    {emoji:'📚+🎒',answer:'Škola',wrong:['Knižnica','Obchod','Kino']},
+    {emoji:'🌧️+☂️',answer:'Dážď s dáždnikom',wrong:['Sneh','Búrka','Slnko']},
+    {emoji:'🎂+🎁',answer:'Narodeniny',wrong:['Vianoce','Svadba','Party']},
+    {emoji:'🚗+🏖️',answer:'Výlet na pláž',wrong:['Práca','Nákupy','Škola']},
+    {emoji:'❄️+⛷️',answer:'Lyžovanie',wrong:['Plávanie','Beh','Cyklistika']},
+    {emoji:'🎸+🎤',answer:'Koncert',wrong:['Divadlo','Kino','Diskotéka']},
+    {emoji:'🌙+⭐+😴',answer:'Spanie v noci',wrong:['Astronaut','Mesiac','Hviezdy']},
+    {emoji:'🍎+🐛',answer:'Červík v jablku',wrong:['Šalát','Ovocie','Záhrada']},
+    {emoji:'👨‍🍳+🍳',answer:'Varenie',wrong:['Jedenie','Reštaurácia','Nákup']},
+    {emoji:'🎅+🎄',answer:'Vianoce',wrong:['Nový rok','Veľká noc','Halloween']},
+    {emoji:'🏊+🌊',answer:'Plávanie v mori',wrong:['Surfovanie','Loď','Rybolov']},
+    {emoji:'🧊+🍦',answer:'Zmrzlina',wrong:['Ľad','Mrazák','Zima']},
+    {emoji:'🎃+👻',answer:'Halloween',wrong:['Vianoce','Karneval','Nový rok']},
+    {emoji:'🏠+🔥+🧑‍🚒',answer:'Hasič',wrong:['Požiar','Kuchyňa','Gril']},
+    {emoji:'✈️+🌍',answer:'Cestovanie',wrong:['Pilot','Letisko','Dovolenka']},
+    {emoji:'🦷+🪥',answer:'Čistenie zubov',wrong:['Zubár','Bolesť','Úsmev']},
+    {emoji:'🎮+🏆',answer:'Herný šampión',wrong:['Esport','Konzola','Turnaj']},
+    {emoji:'🌍+♻️',answer:'Recyklácia',wrong:['Ekológia','Príroda','Planéta']},
+    {emoji:'🍔+🍟+🥤',answer:'Fast food',wrong:['Obed','Reštaurácia','McDonald']},
+    {emoji:'📱+📸',answer:'Fotenie mobilom',wrong:['Selfie','Instagram','Video']},
+  ],
+  movies: [
+    {emoji:'🐭+👨‍🍳',answer:'Ratatouille',wrong:['Shrek','Kung Fu Panda','Nemo']},
+    {emoji:'🕷️+🕸️+🦸',answer:'Spider-Man',wrong:['Batman','Superman','Iron Man']},
+    {emoji:'🦇+🌙+🦸',answer:'Batman',wrong:['Spider-Man','Superman','Zorro']},
+    {emoji:'🧙‍♂️+⚡+👓',answer:'Harry Potter',wrong:['Pán prsteňov','Narnia','Merlin']},
+    {emoji:'🦁+👑',answer:'Leví kráľ',wrong:['Madagaskar','Kniha džunglí','Tarzan']},
+    {emoji:'❄️+👸+⛄',answer:'Frozen (Ľadové kráľovstvo)',wrong:['Snehulienka','Popoluška','Rapunzel']},
+    {emoji:'🐠+🔍',answer:'Hľadá sa Nemo',wrong:['Malá morská víla','Žralok','Moana']},
+    {emoji:'🚀+👨‍🚀+🤠',answer:'Toy Story (Príbeh hračiek)',wrong:['Wall-E','Hore','Coco']},
+    {emoji:'🏴‍☠️+💀+⚓',answer:'Piráti z Karibiku',wrong:['Peter Pan','Moana','Poklad']},
+    {emoji:'🐒+👑+🌴',answer:'Kniha džunglí',wrong:['Tarzan','Madagaskar','Leví kráľ']},
+    {emoji:'🧟+🌍+🔫',answer:'World War Z',wrong:['Resident Evil','The Walking Dead','I Am Legend']},
+    {emoji:'🦖+🏝️',answer:'Jurský park',wrong:['King Kong','Godzilla','Avatar']},
+    {emoji:'🏎️+⚡',answer:'Cars (Autá)',wrong:['Rýchlo a zbesilo','Need for Speed','Turbo']},
+    {emoji:'👸+🐸+💋',answer:'Princezná a žaba',wrong:['Žabí princ','Shrek','Popoluška']},
+    {emoji:'🤖+❤️+🌱',answer:'Wall-E',wrong:['Toy Story','Veľká šestka','Roboti']},
+    {emoji:'🏠+🎈+👴',answer:'Hore (Up)',wrong:['Coco','Príšerky','Toy Story']},
+    {emoji:'👽+🚲+🌙',answer:'E.T. Mimozemšťan',wrong:['Star Wars','Avatar','Votrelec']},
+    {emoji:'🦸‍♂️+🔨+⚡',answer:'Thor',wrong:['Superman','Iron Man','Hulk']},
+    {emoji:'🐼+🥋',answer:'Kung Fu Panda',wrong:['Mulan','Karate Kid','Ninjago']},
+    {emoji:'🧜‍♀️+🌊+🐚',answer:'Malá morská víla',wrong:['Moana','Nemo','Ponyo']},
+  ],
+  series: [
+    {emoji:'🐉+🗡️+👑',answer:'Hra o tróny',wrong:['Pán prsteňov','Vikingovia','Zaklínač']},
+    {emoji:'👨‍🔬+💎+🧪',answer:'Breaking Bad',wrong:['Dexter','Narcos','Better Call Saul']},
+    {emoji:'🧟+🔫+🏕️',answer:'The Walking Dead',wrong:['World War Z','Resident Evil','Fear']},
+    {emoji:'👧+🔦+👹',answer:'Stranger Things',wrong:['IT','Temné kúty','Goosebumps']},
+    {emoji:'🐱+🐭+🏠',answer:'Tom a Jerry',wrong:['Garfield','Sylvester','Miško']},
+    {emoji:'🧽+🍍+🌊',answer:'SpongeBob',wrong:['Nemo','Morské príšery','Patrick']},
+    {emoji:'🦸+🛡️+🌍',answer:'Avengers',wrong:['Justice League','X-Men','Watchmen']},
+    {emoji:'👨‍👩‍👧‍👦+💛+🍩',answer:'Simpsonovci',wrong:['Griffinovci','Futurama','Bob Burger']},
+    {emoji:'🏫+🎤+🎶',answer:'Glee',wrong:['High School Musical','Victorious','Camp Rock']},
+    {emoji:'🐕+🔍+👦',answer:'Scooby-Doo',wrong:['Lassie','Bolt','101 dalmatíncov']},
+    {emoji:'🥷+🍥+🌀',answer:'Naruto',wrong:['Dragon Ball','One Piece','Bleach']},
+    {emoji:'🐵+🔥+💪',answer:'Dragon Ball',wrong:['Naruto','One Piece','Bleach']},
+    {emoji:'🏴‍☠️+🍖+🚢',answer:'One Piece',wrong:['Naruto','Dragon Ball','Piráti z Karibiku']},
+    {emoji:'🐾+🚒+🐕',answer:'Paw Patrol (Labková patrola)',wrong:['Scooby-Doo','Požiarnik Sam','Fireman Sam']},
+    {emoji:'👩‍❤️‍👨+🏥+🔪',answer:'Chirurgovia (Grey\'s Anatomy)',wrong:['Dr. House','ER','Dobrý doktor']},
+  ],
+  fairy: [
+    {emoji:'👸+🥿+🕛',answer:'Popoluška',wrong:['Snehulienka','Šípková Ruženka','Rapunzel']},
+    {emoji:'🍎+☠️+👸',answer:'Snehulienka',wrong:['Popoluška','Rapunzel','Šípková Ruženka']},
+    {emoji:'🐸+👑+💋',answer:'Žabí princ',wrong:['Princezná a žaba','Popoluška','Kráľ']},
+    {emoji:'🌹+🦁+👸',answer:'Kráska a zviera',wrong:['Leví kráľ','Frozen','Mulan']},
+    {emoji:'🏰+💤+🌹',answer:'Šípková Ruženka',wrong:['Snehulienka','Popoluška','Frozen']},
+    {emoji:'👧+🐻+🏠',answer:'Zlatovláska a 3 medvede',wrong:['Mášenka','Červená čiapočka','Snehulienka']},
+    {emoji:'👧+🔴+🐺',answer:'Červená čiapočka',wrong:['Zlatovláska','Snehulienka','Peter Pan']},
+    {emoji:'🧒+🫘+🌱+🏰',answer:'Jack a fazuľový strom',wrong:['Peter Pan','Palčik','Pinocchio']},
+    {emoji:'🤥+👃+🪵',answer:'Pinocchio',wrong:['Peter Pan','Palčik','Škriatok']},
+    {emoji:'👦+🧚+✨+🏝️',answer:'Peter Pan',wrong:['Pinocchio','Aladin','Jack']},
+    {emoji:'🧞‍♂️+🪔+👳',answer:'Aladin',wrong:['Peter Pan','Ali Baba','Sindibád']},
+    {emoji:'🌊+🧜‍♀️+🏰',answer:'Malá morská víla',wrong:['Moana','Frozen','Popoluška']},
+    {emoji:'👧+🐇+🕳️',answer:'Alica v ríši divov',wrong:['Peter Pan','Popoluška','Oz']},
+    {emoji:'🌈+🦄+✨',answer:'Rozprávka',wrong:['Počasie','Dúha','Park']},
+    {emoji:'🧹+🧙‍♀️+🐈',answer:'Čarodejnica',wrong:['Harry Potter','Merlin','Gandalf']},
+  ]
+};
+let egCategory = 'all';
 
 function startEG() {
   EG.round=0; EG.s1=0; EG.s2=0; EG.player=1; EG.over=false;
@@ -6102,7 +6234,8 @@ function nextEGRound() {
   document.getElementById('egRound').textContent='Kolo '+EG.round+'/10';
   document.getElementById('egStatus').textContent=(EG.player===1?getP1Name('eg'):getP2Name('eg'))+' — uhádni emoji!';
   activeTurn('egP1Card','egP2Card',EG.player);
-  const puzzle=EMOJI_PUZZLES[Math.floor(Math.random()*EMOJI_PUZZLES.length)];
+  const pool = egCategory==='all' ? [].concat(...Object.values(EMOJI_PUZZLES)) : (EMOJI_PUZZLES[egCategory]||[]);
+  const puzzle=pool[Math.floor(Math.random()*pool.length)];
   document.getElementById('egEmoji').textContent=puzzle.emoji;
   const choices=[puzzle.answer,...puzzle.wrong].sort(()=>Math.random()-0.5);
   const el=document.getElementById('egAnswers'); el.innerHTML='';
@@ -6143,6 +6276,11 @@ function resetEG() {
   document.getElementById('egStatus').textContent='Klikni Štart!';
   document.getElementById('egGameBox').style.display='none';
   activeTurn('egP1Card','egP2Card',1);
+}
+function setEGCat(cat,btn) {
+  egCategory=cat;
+  document.querySelectorAll('#emojiGuess .quiz-theme-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
 }
 
 // =============================================================================
@@ -6325,6 +6463,268 @@ function randomBattle() {
   mobileGoTo(3,pick.id);
 }
 
+// =============================================================================
+// SEKCIA 28: ŠACH (CHESS)
+// =============================================================================
+const CH = { board:[], selected:null, turn:'w', s1:0, s2:0, over:false, lastFrom:-1, lastTo:-1 };
+const CH_START = [
+  'bR','bN','bB','bQ','bK','bB','bN','bR',
+  'bP','bP','bP','bP','bP','bP','bP','bP',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  'wP','wP','wP','wP','wP','wP','wP','wP',
+  'wR','wN','wB','wQ','wK','wB','wN','wR'
+];
+const CH_ICONS = {wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
+
+function resetChess() {
+  CH.board=[...CH_START]; CH.selected=null; CH.turn='w'; CH.over=false;
+  CH.lastFrom=-1; CH.lastTo=-1;
+  document.getElementById('chStatus').textContent='Biely na ťahu';
+  activeTurn('chP1Card','chP2Card',1);
+  renderChessBoard();
+}
+function renderChessBoard() {
+  const el=document.getElementById('chessBoard'); el.innerHTML='';
+  for(let i=0;i<64;i++){
+    const r=Math.floor(i/8),c=i%8;
+    const sq=document.createElement('div');
+    sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
+    if(i===CH.lastFrom||i===CH.lastTo) sq.classList.add('last-move');
+    if(CH.selected===i) sq.classList.add('selected');
+    if(CH.board[i]) sq.textContent=CH_ICONS[CH.board[i]];
+    if(CH.selected!==null && !CH.over) {
+      const moves=getChessMoves(CH.selected);
+      if(moves.includes(i)) sq.classList.add(CH.board[i]?'can-capture':'can-move');
+    }
+    sq.onclick=()=>chessClick(i);
+    el.appendChild(sq);
+  }
+}
+function chessClick(i) {
+  if(CH.over) return;
+  const piece=CH.board[i];
+  if(CH.selected===null) {
+    if(piece && piece[0]===CH.turn) { CH.selected=i; renderChessBoard(); }
+  } else {
+    const moves=getChessMoves(CH.selected);
+    if(moves.includes(i)) {
+      chessMove(CH.selected,i);
+    } else if(piece && piece[0]===CH.turn) {
+      CH.selected=i; renderChessBoard();
+    } else { CH.selected=null; renderChessBoard(); }
+  }
+}
+function chessMove(from,to) {
+  const captured=CH.board[to];
+  CH.board[to]=CH.board[from]; CH.board[from]='';
+  // Pawn promotion
+  const r=Math.floor(to/8);
+  if(CH.board[to]==='wP'&&r===0) CH.board[to]='wQ';
+  if(CH.board[to]==='bP'&&r===7) CH.board[to]='bQ';
+  CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
+  playSound('click'); vibrate(20);
+  // Check for king capture (simplified - no check/checkmate detection)
+  if(captured==='wK') { chessWin('b'); return; }
+  if(captured==='bK') { chessWin('w'); return; }
+  CH.turn=CH.turn==='w'?'b':'w';
+  const turnName=CH.turn==='w'?getP1Name('ch'):getP2Name('ch');
+  document.getElementById('chStatus').textContent=(CH.turn==='w'?'⬜':'⬛')+' '+turnName+' na ťahu';
+  activeTurn('chP1Card','chP2Card',CH.turn==='w'?1:2);
+  renderChessBoard();
+}
+function chessWin(color) {
+  CH.over=true;
+  const w=color==='w'?1:2;
+  const name=w===1?getP1Name('ch'):getP2Name('ch');
+  if(w===1){CH.s1++;document.getElementById('p1ScoreCH').textContent=CH.s1;}
+  else{CH.s2++;document.getElementById('p2ScoreCH').textContent=CH.s2;}
+  document.getElementById('chStatus').textContent='🏆 '+name+' vyhral šach!';
+  addWin(w,'chess'); celebrate('chCelebration'); playSound('win');
+  renderChessBoard();
+}
+function getChessMoves(idx) {
+  const piece=CH.board[idx]; if(!piece) return [];
+  const color=piece[0], type=piece[1];
+  const r=Math.floor(idx/8),c=idx%8, moves=[];
+  const enemy=color==='w'?'b':'w';
+  const inB=(rr,cc)=>rr>=0&&rr<8&&cc>=0&&cc<8;
+  const at=(rr,cc)=>CH.board[rr*8+cc];
+  const canGo=(rr,cc)=>inB(rr,cc)&&!at(rr,cc);
+  const canCap=(rr,cc)=>inB(rr,cc)&&at(rr,cc)&&at(rr,cc)[0]===enemy;
+  if(type==='P') {
+    const dir=color==='w'?-1:1; const start=color==='w'?6:1;
+    if(canGo(r+dir,c)) { moves.push((r+dir)*8+c); if(r===start&&canGo(r+2*dir,c)) moves.push((r+2*dir)*8+c); }
+    if(canCap(r+dir,c-1)) moves.push((r+dir)*8+(c-1));
+    if(canCap(r+dir,c+1)) moves.push((r+dir)*8+(c+1));
+  } else if(type==='N') {
+    [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc])=>{
+      if(inB(r+dr,c+dc)&&(!at(r+dr,c+dc)||at(r+dr,c+dc)[0]===enemy)) moves.push((r+dr)*8+(c+dc));
+    });
+  } else if(type==='K') {
+    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++) {
+      if(dr===0&&dc===0) continue;
+      if(inB(r+dr,c+dc)&&(!at(r+dr,c+dc)||at(r+dr,c+dc)[0]===enemy)) moves.push((r+dr)*8+(c+dc));
+    }
+  } else {
+    const dirs=type==='R'?[[0,1],[0,-1],[1,0],[-1,0]]:type==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+    dirs.forEach(([dr,dc])=>{
+      for(let s=1;s<8;s++){
+        const nr=r+dr*s,nc=c+dc*s;
+        if(!inB(nr,nc)) break;
+        if(!at(nr,nc)){moves.push(nr*8+nc);}
+        else{if(at(nr,nc)[0]===enemy)moves.push(nr*8+nc);break;}
+      }
+    });
+  }
+  return moves;
+}
+
+// =============================================================================
+// SEKCIA 29: DÁMA (CHECKERS)
+// =============================================================================
+const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null };
+
+function resetCheckers() {
+  DK.board=Array(64).fill('');
+  for(let i=0;i<24;i++){
+    const r=Math.floor(i/4), c=(i%4)*2+(r%2===0?1:0);
+    DK.board[r*8+c]='b'; // black top
+  }
+  for(let i=0;i<24;i++){
+    const ri=5+Math.floor(i/4), c=(i%4)*2+(ri%2===0?1:0);
+    DK.board[ri*8+c]='r'; // red bottom
+  }
+  DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null;
+  document.getElementById('dkStatus').textContent=getP1Name('dk')+' (🔴) na ťahu';
+  activeTurn('dkP1Card','dkP2Card',1);
+  renderCheckersBoard();
+}
+function renderCheckersBoard() {
+  const el=document.getElementById('checkersBoard'); el.innerHTML='';
+  const jumps=DK.mustJump!==null?getDKJumps(DK.mustJump):[];
+  for(let i=0;i<64;i++){
+    const r=Math.floor(i/8),c=i%8;
+    const sq=document.createElement('div');
+    sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
+    if(DK.selected===i) sq.classList.add('selected');
+    const p=DK.board[i];
+    if(p==='r') sq.textContent='🔴';
+    else if(p==='b') sq.textContent='⚫';
+    else if(p==='R') sq.textContent='👑';
+    else if(p==='B') sq.textContent='♛';
+    if(DK.selected!==null && !DK.over) {
+      const mvs=DK.mustJump!==null?jumps:getDKMoves(DK.selected);
+      if(mvs.includes(i)) sq.classList.add(DK.board[i]?'can-capture':'can-move');
+    }
+    sq.onclick=()=>dkClick(i);
+    el.appendChild(sq);
+  }
+}
+function dkClick(i) {
+  if(DK.over) return;
+  const p=DK.board[i];
+  const isOwn=p&&((DK.turn==='r'&&(p==='r'||p==='R'))||(DK.turn==='b'&&(p==='b'||p==='B')));
+  if(DK.mustJump!==null) {
+    const jumps=getDKJumps(DK.mustJump);
+    if(jumps.includes(i)) { dkDoMove(DK.mustJump,i,true); }
+    return;
+  }
+  if(DK.selected===null) {
+    if(isOwn) { DK.selected=i; renderCheckersBoard(); }
+  } else {
+    const mvs=getDKMoves(DK.selected);
+    if(mvs.includes(i)) {
+      const isJump=Math.abs(Math.floor(i/8)-Math.floor(DK.selected/8))===2;
+      dkDoMove(DK.selected,i,isJump);
+    } else if(isOwn) {
+      DK.selected=i; renderCheckersBoard();
+    } else { DK.selected=null; renderCheckersBoard(); }
+  }
+}
+function dkDoMove(from,to,isJump) {
+  DK.board[to]=DK.board[from]; DK.board[from]='';
+  if(isJump) {
+    const mr=(Math.floor(from/8)+Math.floor(to/8))/2;
+    const mc=((from%8)+(to%8))/2;
+    DK.board[mr*8+mc]='';
+  }
+  // Promotion
+  const tr=Math.floor(to/8);
+  if(DK.board[to]==='r'&&tr===0) DK.board[to]='R';
+  if(DK.board[to]==='b'&&tr===7) DK.board[to]='B';
+  playSound('click'); vibrate(20);
+  // Multi-jump?
+  if(isJump) {
+    const moreJumps=getDKJumps(to);
+    if(moreJumps.length>0) {
+      DK.selected=to; DK.mustJump=to; renderCheckersBoard(); return;
+    }
+  }
+  DK.selected=null; DK.mustJump=null;
+  // Check win
+  const rCount=DK.board.filter(p=>p==='r'||p==='R').length;
+  const bCount=DK.board.filter(p=>p==='b'||p==='B').length;
+  if(bCount===0) { dkWin('r'); return; }
+  if(rCount===0) { dkWin('b'); return; }
+  DK.turn=DK.turn==='r'?'b':'r';
+  const name=DK.turn==='r'?getP1Name('dk'):getP2Name('dk');
+  document.getElementById('dkStatus').textContent=name+(DK.turn==='r'?' (🔴)':' (⚫)')+' na ťahu';
+  activeTurn('dkP1Card','dkP2Card',DK.turn==='r'?1:2);
+  renderCheckersBoard();
+}
+function dkWin(color) {
+  DK.over=true;
+  const w=color==='r'?1:2;
+  const name=w===1?getP1Name('dk'):getP2Name('dk');
+  if(w===1){DK.s1++;document.getElementById('p1ScoreDK').textContent=DK.s1;}
+  else{DK.s2++;document.getElementById('p2ScoreDK').textContent=DK.s2;}
+  document.getElementById('dkStatus').textContent='🏆 '+name+' vyhral!';
+  addWin(w,'checkers'); celebrate('dkCelebration'); playSound('win');
+  renderCheckersBoard();
+}
+function getDKMoves(idx) {
+  const p=DK.board[idx]; if(!p) return [];
+  const r=Math.floor(idx/8),c=idx%8;
+  const isKing=p==='R'||p==='B';
+  const dirs=isKing?[-1,1]:(p==='r'||p==='R')?[-1]:[1];
+  const moves=[], jumps=[];
+  dirs.forEach(dr=>{
+    [-1,1].forEach(dc=>{
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<8&&nc>=0&&nc<8&&!DK.board[nr*8+nc]) moves.push(nr*8+nc);
+      // Jump
+      const jr=r+2*dr,jc=c+2*dc,mr=r+dr,mc=c+dc;
+      if(jr>=0&&jr<8&&jc>=0&&jc<8&&!DK.board[jr*8+jc]) {
+        const mid=DK.board[mr*8+mc];
+        if(mid && ((p==='r'||p==='R')?(mid==='b'||mid==='B'):(mid==='r'||mid==='R'))) jumps.push(jr*8+jc);
+      }
+    });
+  });
+  return jumps.length>0?jumps:moves;
+}
+function getDKJumps(idx) {
+  const p=DK.board[idx]; if(!p) return [];
+  const r=Math.floor(idx/8),c=idx%8;
+  const isKing=p==='R'||p==='B';
+  const dirs=isKing?[-1,1]:(p==='r'||p==='R')?[-1]:[1];
+  const jumps=[];
+  dirs.forEach(dr=>{
+    [-1,1].forEach(dc=>{
+      const jr=r+2*dr,jc=c+2*dc,mr=r+dr,mc=c+dc;
+      if(jr>=0&&jr<8&&jc>=0&&jc<8&&!DK.board[jr*8+jc]) {
+        const mid=DK.board[mr*8+mc];
+        if(mid && ((p==='r'||p==='R')?(mid==='b'||mid==='B'):(mid==='r'||mid==='R'))) jumps.push(jr*8+jc);
+      }
+    });
+  });
+  return jumps;
+}
+
+resetChess();
+resetCheckers();
 resetTTT();
 resetPsk15();
 resetRPS();
@@ -6364,6 +6764,8 @@ const MOBILE_GAMES = [
   { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)' },
   { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)' },
   { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)' },
+  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)' },
+  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)' },
 ];
 
