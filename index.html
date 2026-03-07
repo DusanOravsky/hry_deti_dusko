@@ -1486,6 +1486,24 @@ body.light .mp-input {
 }
 
 /* ===== FLOATING MP BUTTON ===== */
+/* OFFLINE INDICATOR */
+.offline-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: linear-gradient(135deg, #f5576c, #ff6b6b);
+  color: white;
+  text-align: center;
+  padding: 6px 16px;
+  font-size: 0.85em;
+  font-weight: 700;
+  z-index: 10000;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 12px rgba(245,87,108,0.5);
+}
+.offline-banner.show { transform: translateY(0); }
+.offline-banner span { margin-right: 8px; }
+
 .floating-mp-btn {
   position: fixed;
   bottom: 20px;
@@ -3178,7 +3196,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 14;
+const APP_VERSION = 15;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -9133,6 +9151,23 @@ document.getElementById('appVersion').textContent='v'+APP_VERSION;
 const svEl=document.getElementById('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
 
+// ===== OFFLINE INDICATOR =====
+function updateOnlineStatus() {
+  const banner = document.getElementById('offlineBanner');
+  const mpBtn = document.getElementById('floatingMpBtn');
+  if(!navigator.onLine) {
+    if(banner) banner.classList.add('show');
+    if(mpBtn) mpBtn.style.display = 'none';
+  } else {
+    if(banner) banner.classList.remove('show');
+    // Restore MP button unless in AI mode
+    if(mpBtn && welcomeGameMode !== 'ai') mpBtn.style.display = '';
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
@@ -9993,6 +10028,9 @@ if('serviceWorker' in navigator) {
     <button class="mp-button mp-button-danger mp-hidden" id="mpDisconnectBtn" onclick="mpDisconnect()">🔌 Odpojiť</button>
   </div>
 </div>
+
+<!-- Offline Banner -->
+<div class="offline-banner" id="offlineBanner"><span>📡</span> Offline — multiplayer nie je dostupny</div>
 
 <!-- Floating MP Button -->
 <div class="floating-mp-btn" id="floatingMpBtn" onclick="openMPModal()" title="Online Multiplayer">
