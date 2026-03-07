@@ -1430,6 +1430,8 @@ body.light #welcomeScreen {
   opacity:0;
   transform:scale(1.04);
   pointer-events:none;
+  display:none !important;
+  z-index:-1;
 }
 .welcome-box {
   background:rgba(255,255,255,0.06);
@@ -1641,7 +1643,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <button class="welcome-mp-btn" onclick="mpOpen()">🌐 Online Multiplayer</button>
+    <button class="welcome-mp-btn" onclick="mpOpen()"><span id="mpStatusIcon">🌐</span> Online Multiplayer</button>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Memory</span>
@@ -2779,37 +2781,32 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <!-- ===== TETRIS ===== -->
   <div class="game-area" id="tetris">
-    <div class="rules"><h3>📋 Tetris vs Počítač:</h3><ul>
-      <li>Súťaž s počítačom — kto získa viac bodov!</li>
+    <div class="rules"><h3>📋 Tetris - Solo:</h3><ul>
+      <li>Klasický Tetris pre jedného hráča!</li>
       <li>Ovládanie: <strong>Šípky ←→</strong> na pohyb, <strong>↓</strong> rýchlejší pád</li>
-      <li><strong>Klikni/ťukni</strong> na svoje pole pre otočenie kocky</li>
+      <li><strong>Klikni/ťukni</strong> na pole pre otočenie kocky</li>
       <li>Plná rada = zmazaná + body. Keď pole preteká = koniec!</li>
-      <li>Počítač hrá automaticky vedľa teba</li>
+      <li>Snaž sa dosiahnuť čo najvyššie skóre!</li>
     </ul></div>
-    <div class="mode-selector">
-      <button class="mode-btn active" onclick="setTetMode('pvp',this)">👥 2 Hráči</button>
-      <button class="mode-btn" onclick="setTetMode('ai',this)">🤖 vs Počítač</button>
-    </div>
-    <div class="player-info">
-      <div class="player-card player1" id="tetP1Card"><div class="player-name-display" id="tetP1Name">Lukáško</div><div class="player-score" id="p1ScoreTet">0</div></div>
-      <div class="player-card player2" id="tetP2Card"><div class="player-name-display" id="tetP2Name">Natálka</div><div class="player-score" id="p2ScoreTet">0</div></div>
-    </div>
-    <div id="tetAISel" class="difficulty-selector" style="display:none">
-      <button class="difficulty-btn active" onclick="setTetDiff('easy',this)">Ľahká</button>
-      <button class="difficulty-btn" onclick="setTetDiff('medium',this)">Stredná</button>
-      <button class="difficulty-btn" onclick="setTetDiff('hard',this)">Ťažká</button>
+    <div style="text-align:center;margin:15px 0">
+      <div style="display:inline-block;text-align:center">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Skóre</div>
+        <div id="tetScore" style="font-size:2.5em;font-weight:900;color:#ffd200">0</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:40px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Level</div>
+        <div id="tetLevel" style="font-size:2.5em;font-weight:900;color:#4facfe">1</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:40px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Riadky</div>
+        <div id="tetLines" style="font-size:2.5em;font-weight:900;color:#00ff88">0</div>
+      </div>
     </div>
     <div class="status" id="tetStatus">Pripravení? Štart!</div>
-    <div class="tetris-container">
+    <div class="tetris-container" style="justify-content:center">
       <div class="tetris-player">
-        <div class="tetris-label">Hráč 1</div>
-        <div class="tetris-board" id="tetBoard1"></div>
-        <div class="tetris-next" id="tetNext1"></div>
-      </div>
-      <div class="tetris-player">
-        <div class="tetris-label" id="tetP2Label">Hráč 2</div>
-        <div class="tetris-board" id="tetBoard2"></div>
-        <div class="tetris-next" id="tetNext2"></div>
+        <div class="tetris-board" id="tetBoard" style="margin:0 auto"></div>
+        <div class="tetris-next" id="tetNext"></div>
       </div>
     </div>
     <div class="celebration" id="tetCelebration">🎉</div>
@@ -2826,7 +2823,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 24;
+const APP_VERSION = 25;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -7237,9 +7234,7 @@ function checkersAI() {
 // SEKCIA 29.5: TETRIS — 2 hráči súťažia
 // =============================================================================
 const TET = {
-  p1:{board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800},
-  p2:{board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800,aiMoveTimer:null},
-  running:false, started:false, mode:'pvp', diff:'easy'
+  board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800,running:false
 };
 const TET_SHAPES = [
   {name:'I',color:'#00f0f0',blocks:[[0,0],[1,0],[2,0],[3,0]]},
@@ -7251,223 +7246,137 @@ const TET_SHAPES = [
   {name:'L',color:'#f0a000',blocks:[[2,0],[0,1],[1,1],[2,1]]}
 ];
 function tetNewPiece(){const s=TET_SHAPES[Math.floor(Math.random()*TET_SHAPES.length)];return{...s,blocks:s.blocks.map(b=>[...b])};}
-function tetInitPlayer(p){p.board=Array(20).fill(0).map(()=>Array(10).fill(null));p.piece=tetNewPiece();p.next=tetNewPiece();p.x=3;p.y=0;p.score=0;p.level=1;p.lines=0;p.gameOver=false;p.dropSpeed=800;if(p.aiMoveTimer)clearInterval(p.aiMoveTimer);}
-function setTetMode(m,btn){
-  TET.mode=m;
-  document.querySelectorAll('#tetris .mode-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tetAISel').style.display=m==='ai'?'flex':'none';
-  document.getElementById('tetP2Label').textContent=m==='ai'?'Počítač':'Hráč 2';
-  setP2Card('tetP2Name',m==='ai','Počítač','Natálka');
-  resetTetris();
-}
-function setTetDiff(d,btn){
-  TET.diff=d;
-  document.querySelectorAll('#tetAISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+function tetInit(){
+  TET.board=Array(20).fill(0).map(()=>Array(10).fill(null));
+  TET.piece=tetNewPiece();
+  TET.next=tetNewPiece();
+  TET.x=3;TET.y=0;TET.score=0;TET.level=1;TET.lines=0;TET.gameOver=false;TET.dropSpeed=800;
 }
 function startTetris(){
   if(TET.running)return;
-  TET.running=true;TET.started=true;
-  tetInitPlayer(TET.p1);tetInitPlayer(TET.p2);
-  document.getElementById('p1ScoreTet').textContent='0';
-  document.getElementById('p2ScoreTet').textContent='0';
+  TET.running=true;
+  tetInit();
+  document.getElementById('tetScore').textContent='0';
+  document.getElementById('tetLevel').textContent='1';
+  document.getElementById('tetLines').textContent='0';
   document.getElementById('tetStatus').textContent='Hra beží!';
-  tetRenderBoard(1);tetRenderBoard(2);tetRenderNext(1);tetRenderNext(2);
-  tetStartDrop(TET.p1);tetStartDrop(TET.p2);
-  if(TET.mode==='ai')tetStartAI();
+  tetRenderBoard();tetRenderNext();tetStartDrop();
 }
-function tetStartDrop(p){
-  if(p.dropTimer)clearInterval(p.dropTimer);
-  p.dropTimer=setInterval(()=>{if(!p.gameOver&&TET.running)tetMoveDown(p);},p.dropSpeed);
+function tetStartDrop(){
+  if(TET.dropTimer)clearInterval(TET.dropTimer);
+  TET.dropTimer=setInterval(()=>{if(!TET.gameOver&&TET.running)tetMoveDown();},TET.dropSpeed);
 }
-function tetRenderBoard(pn){
-  const p=pn===1?TET.p1:TET.p2;
-  const b=document.getElementById(`tetBoard${pn}`);
+function tetRenderBoard(){
+  const b=document.getElementById('tetBoard');
   if(!b)return;
   b.innerHTML='';
-  // Add click handler for rotation (player 1 only)
-  if(pn===1){
-    b.onclick=()=>{if(TET.running&&!p.gameOver)tetRotate(p);};
-    b.style.cursor='pointer';
-  }
+  b.onclick=()=>{if(TET.running&&!TET.gameOver)tetRotate();};
+  b.style.cursor='pointer';
   for(let y=0;y<20;y++){
     for(let x=0;x<10;x++){
       const c=document.createElement('div');
       c.className='tetris-cell';
-      const col=p.board[y][x];
+      const col=TET.board[y][x];
       if(col){c.classList.add('filled');c.style.setProperty('--tet-color',col);}
-      if(p.piece&&!p.gameOver){
-        const inPiece=p.piece.blocks.some(([bx,by])=>bx+p.x===x&&by+p.y===y);
-        if(inPiece){c.classList.add('filled');c.style.setProperty('--tet-color',p.piece.color);}
+      if(TET.piece&&!TET.gameOver){
+        const inPiece=TET.piece.blocks.some(([bx,by])=>bx+TET.x===x&&by+TET.y===y);
+        if(inPiece){c.classList.add('filled');c.style.setProperty('--tet-color',TET.piece.color);}
       }
       b.appendChild(c);
     }
   }
 }
-function tetRenderNext(pn){
-  const p=pn===1?TET.p1:TET.p2;
-  const el=document.getElementById(`tetNext${pn}`);
-  if(!el||!p.next)return;
-  el.innerHTML='<div class="tetris-next-label">Ďalší:</div><div class="tetris-next-preview" id="tetNextPrev'+pn+'"></div>';
-  const prev=document.getElementById(`tetNextPrev${pn}`);
+function tetRenderNext(){
+  const el=document.getElementById('tetNext');
+  if(!el||!TET.next)return;
+  el.innerHTML='<div class="tetris-next-label">Ďalší:</div><div class="tetris-next-preview" id="tetNextPrev"></div>';
+  const prev=document.getElementById('tetNextPrev');
   for(let i=0;i<16;i++){
     const c=document.createElement('div');
     c.className='tetris-next-cell';
     const x=i%4,y=Math.floor(i/4);
-    if(p.next.blocks.some(([bx,by])=>bx===x&&by===y)){c.classList.add('filled');c.style.setProperty('--tet-color',p.next.color);}
+    if(TET.next.blocks.some(([bx,by])=>bx===x&&by===y)){c.classList.add('filled');c.style.setProperty('--tet-color',TET.next.color);}
     prev.appendChild(c);
   }
 }
-function tetCanMove(p,dx,dy,blocks){
+function tetCanMove(dx,dy,blocks){
   return blocks.every(([bx,by])=>{
-    const nx=p.x+bx+dx,ny=p.y+by+dy;
-    return nx>=0&&nx<10&&ny<20&&(ny<0||!p.board[ny][nx]);
+    const nx=TET.x+bx+dx,ny=TET.y+by+dy;
+    return nx>=0&&nx<10&&ny<20&&(ny<0||!TET.board[ny][nx]);
   });
 }
-function tetLockPiece(p){
-  p.piece.blocks.forEach(([bx,by])=>{
-    const x=p.x+bx,y=p.y+by;
-    if(y>=0&&y<20&&x>=0&&x<10)p.board[y][x]=p.piece.color;
+function tetLockPiece(){
+  TET.piece.blocks.forEach(([bx,by])=>{
+    const x=TET.x+bx,y=TET.y+by;
+    if(y>=0&&y<20&&x>=0&&x<10)TET.board[y][x]=TET.piece.color;
   });
   let cleared=0;
   for(let y=19;y>=0;y--){
-    if(p.board[y].every(c=>c)){
-      p.board.splice(y,1);
-      p.board.unshift(Array(10).fill(null));
+    if(TET.board[y].every(c=>c)){
+      TET.board.splice(y,1);
+      TET.board.unshift(Array(10).fill(null));
       cleared++;y++;
     }
   }
   if(cleared>0){
-    p.lines+=cleared;
-    p.score+=cleared*100*p.level;
-    p.level=Math.floor(p.lines/10)+1;
-    p.dropSpeed=Math.max(100,800-p.level*70);
+    TET.lines+=cleared;
+    TET.score+=cleared*100*TET.level;
+    TET.level=Math.floor(TET.lines/10)+1;
+    TET.dropSpeed=Math.max(100,800-TET.level*70);
     playSound('correct');
-    tetStartDrop(p);
+    tetStartDrop();
+    document.getElementById('tetScore').textContent=TET.score;
+    document.getElementById('tetLevel').textContent=TET.level;
+    document.getElementById('tetLines').textContent=TET.lines;
   }
-  p.piece=p.next;p.next=tetNewPiece();p.x=3;p.y=0;
-  if(!tetCanMove(p,0,0,p.piece.blocks)){
-    p.gameOver=true;
-    if(p.dropTimer)clearInterval(p.dropTimer);
-    tetCheckWinner();
-  }
-}
-function tetMoveDown(p){
-  if(p.gameOver)return;
-  if(tetCanMove(p,0,1,p.piece.blocks)){p.y++;}
-  else{tetLockPiece(p);}
-  tetRenderBoard(p===TET.p1?1:2);
-  tetRenderNext(p===TET.p1?1:2);
-  const pn=p===TET.p1?1:2;
-  document.getElementById(`p${pn}ScoreTet`).textContent=p.score;
-}
-function tetMove(p,dx){
-  if(p.gameOver||!TET.running)return;
-  if(tetCanMove(p,dx,0,p.piece.blocks)){p.x+=dx;playSound('move');tetRenderBoard(p===TET.p1?1:2);}
-}
-function tetRotate(p){
-  if(p.gameOver||!TET.running)return;
-  const rotated=p.piece.blocks.map(([x,y])=>[-y,x]);
-  if(tetCanMove(p,0,0,rotated)){p.piece.blocks=rotated;playSound('flip');tetRenderBoard(p===TET.p1?1:2);}
-}
-function tetDrop(p){
-  if(p.gameOver||!TET.running)return;
-  while(tetCanMove(p,0,1,p.piece.blocks))p.y++;
-  tetMoveDown(p);
-}
-function tetCheckWinner(){
-  if(TET.p1.gameOver&&TET.p2.gameOver){
-    TET.running=false;
-    const w=TET.p1.score>TET.p2.score?1:TET.p2.score>TET.p1.score?2:0;
-    const n1=getP1Name('tet'),n2=getP2Name('tet');
-    if(w===1){document.getElementById('tetStatus').textContent='🏆 '+n1+' vyhral! ('+TET.p1.score+' bodov)';addWin(1,'tetris');celebrate('tetCelebration');playSound('win');showPlayAgain(startTetris,'tetris');}
-    else if(w===2){document.getElementById('tetStatus').textContent='🏆 '+n2+' vyhral! ('+TET.p2.score+' bodov)';addWin(2,'tetris');celebrate('tetCelebration');playSound('win');showPlayAgain(startTetris,'tetris');}
-    else{document.getElementById('tetStatus').textContent='🤝 Remíza! ('+TET.p1.score+' bodov)';addWin(0,'tetris');showPlayAgain(startTetris,'tetris');}
-  }else if(TET.p1.gameOver){
-    TET.running=false;
-    const n2=getP2Name('tet');
-    document.getElementById('tetStatus').textContent='🏆 '+n2+' vyhral!';
-    addWin(2,'tetris');celebrate('tetCelebration');playSound('win');showPlayAgain(startTetris,'tetris');
-  }else if(TET.p2.gameOver){
-    TET.running=false;
-    const n1=getP1Name('tet');
-    document.getElementById('tetStatus').textContent='🏆 '+n1+' vyhral!';
-    addWin(1,'tetris');celebrate('tetCelebration');playSound('win');showPlayAgain(startTetris,'tetris');
+  TET.piece=TET.next;TET.next=tetNewPiece();TET.x=3;TET.y=0;
+  if(!tetCanMove(0,0,TET.piece.blocks)){
+    TET.gameOver=true;TET.running=false;
+    if(TET.dropTimer)clearInterval(TET.dropTimer);
+    document.getElementById('tetStatus').textContent='🎮 Game Over! Skóre: '+TET.score;
+    playSound('wrong');vibrate([100,50,100]);
+    updateRecord('tetrisScore',TET.score);
+    showPlayAgain(startTetris,'tetris');
   }
 }
-function tetStartAI(){
-  const delay=TET.diff==='easy'?1200:TET.diff==='medium'?800:500;
-  TET.p2.aiMoveTimer=setInterval(()=>{
-    if(!TET.running||TET.p2.gameOver)return;
-    tetAIMove();
-  },delay);
+function tetMoveDown(){
+  if(TET.gameOver)return;
+  if(tetCanMove(0,1,TET.piece.blocks)){TET.y++;}
+  else{tetLockPiece();}
+  tetRenderBoard();
 }
-function tetAIMove(){
-  const p=TET.p2;
-  if(!p.piece)return;
-  // Simple AI: find best x position and rotation
-  let bestScore=-999999,bestX=p.x,bestRot=0;
-  for(let rot=0;rot<4;rot++){
-    const piece={...p.piece,blocks:p.piece.blocks.map(b=>[...b])};
-    for(let r=0;r<rot;r++){
-      piece.blocks=piece.blocks.map(([x,y])=>[-y,x]);
-    }
-    for(let x=0;x<=10-4;x++){
-      const score=tetEvalPosition(p,x,piece.blocks);
-      if(score>bestScore){bestScore=score;bestX=x;bestRot=rot;}
-    }
-  }
-  // Apply rotation
-  for(let r=0;r<bestRot;r++)tetRotate(p);
-  // Move to x
-  while(p.x<bestX&&tetCanMove(p,1,0,p.piece.blocks)){p.x++;tetRenderBoard(2);}
-  while(p.x>bestX&&tetCanMove(p,-1,0,p.piece.blocks)){p.x--;tetRenderBoard(2);}
-  // Drop
-  tetDrop(p);
+function tetMove(dx){
+  if(TET.gameOver||!TET.running)return;
+  if(tetCanMove(dx,0,TET.piece.blocks)){TET.x+=dx;playSound('move');tetRenderBoard();}
 }
-function tetEvalPosition(p,x,blocks){
-  let score=0;
-  // Prefer lower positions
-  score-=blocks.reduce((s,[bx,by])=>s+by,0);
-  // Penalize holes
-  let holes=0;
-  blocks.forEach(([bx,by])=>{
-    const px=x+bx,py=p.y+by;
-    if(py<19){
-      for(let y=py+1;y<20;y++){
-        if(!p.board[y][px])holes++;
-      }
-    }
-  });
-  score-=holes*10;
-  return score;
+function tetRotate(){
+  if(TET.gameOver||!TET.running)return;
+  const rotated=TET.piece.blocks.map(([x,y])=>[-y,x]);
+  if(tetCanMove(0,0,rotated)){TET.piece.blocks=rotated;playSound('flip');tetRenderBoard();}
+}
+function tetDrop(){
+  if(TET.gameOver||!TET.running)return;
+  while(tetCanMove(0,1,TET.piece.blocks))TET.y++;
+  tetMoveDown();
 }
 function resetTetris(){
-  TET.running=false;TET.started=false;
-  if(TET.p1.dropTimer)clearInterval(TET.p1.dropTimer);
-  if(TET.p2.dropTimer)clearInterval(TET.p2.dropTimer);
-  if(TET.p2.aiMoveTimer)clearInterval(TET.p2.aiMoveTimer);
-  tetInitPlayer(TET.p1);tetInitPlayer(TET.p2);
-  document.getElementById('p1ScoreTet').textContent='0';
-  document.getElementById('p2ScoreTet').textContent='0';
+  TET.running=false;
+  if(TET.dropTimer)clearInterval(TET.dropTimer);
+  tetInit();
+  document.getElementById('tetScore').textContent='0';
+  document.getElementById('tetLevel').textContent='1';
+  document.getElementById('tetLines').textContent='0';
   document.getElementById('tetStatus').textContent='Pripravení? Štart!';
-  tetRenderBoard(1);tetRenderBoard(2);
-  const next1=document.getElementById('tetNext1'),next2=document.getElementById('tetNext2');
-  if(next1)next1.innerHTML='';if(next2)next2.innerHTML='';
+  const b=document.getElementById('tetBoard');
+  if(b)b.innerHTML='';
+  const next=document.getElementById('tetNext');
+  if(next)next.innerHTML='';
 }
 document.addEventListener('keydown',e=>{
   if(!TET.running)return;
-  if(e.key==='ArrowLeft'){tetMove(TET.p1,-1);e.preventDefault();}
-  if(e.key==='ArrowRight'){tetMove(TET.p1,1);e.preventDefault();}
-  if(e.key==='ArrowDown'){tetDrop(TET.p1);e.preventDefault();}
-  // PVP mode: Player 2 controls
-  if(TET.mode==='pvp'){
-    if(e.key==='a'||e.key==='A'){tetMove(TET.p2,-1);e.preventDefault();}
-    if(e.key==='d'||e.key==='D'){tetMove(TET.p2,1);e.preventDefault();}
-    if(e.key==='w'||e.key==='W'){tetRotate(TET.p2);e.preventDefault();}
-    if(e.key==='s'||e.key==='S'){tetDrop(TET.p2);e.preventDefault();}
-  }
+  if(e.key==='ArrowLeft'){tetMove(-1);e.preventDefault();}
+  if(e.key==='ArrowRight'){tetMove(1);e.preventDefault();}
+  if(e.key==='ArrowDown'){tetDrop();e.preventDefault();}
 });
 
 // =============================================================================
@@ -7935,7 +7844,7 @@ const MOBILE_GAMES = [
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
-  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'both' },
+  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
@@ -8134,11 +8043,9 @@ function mpCreateRoom() {
   MP.roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
 
   try {
+    // Use PeerJS cloud server (0.peerjs.com is default)
     MP.peer = new Peer(MP.roomCode, {
-      host: 'peerjs-server.herokuapp.com',
-      port: 443,
-      path: '/',
-      secure: true,
+      debug: 2,
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -8174,6 +8081,8 @@ function mpCreateRoom() {
   MP.peer.on('connection', (conn) => {
     MP.conn = conn;
     mpSetupConnection();
+    const icon = document.getElementById('mpStatusIcon');
+    if(icon) icon.textContent = '✅';
     document.getElementById('mpHostStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
     playSound('correct');
     vibrate([50,30,50]);
@@ -8201,11 +8110,9 @@ function mpJoinRoom() {
   document.getElementById('mpJoinStatus').style.opacity = '1';
 
   try {
+    // Use PeerJS cloud server (0.peerjs.com is default)
     MP.peer = new Peer({
-      host: 'peerjs-server.herokuapp.com',
-      port: 443,
-      path: '/',
-      secure: true,
+      debug: 2,
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -8235,6 +8142,8 @@ function mpSetupConnection() {
 
   MP.conn.on('open', () => {
     MP.isConnected = true;
+    const icon = document.getElementById('mpStatusIcon');
+    if(icon) icon.textContent = '✅';
     document.getElementById('mpJoinStatus').innerHTML = '✅ <span style="color:#00ff00">Pripojený!</span>';
     document.getElementById('mpHost').style.display = 'none';
     document.getElementById('mpJoin').style.display = 'none';

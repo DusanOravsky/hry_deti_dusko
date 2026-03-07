@@ -69,9 +69,23 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v24**
+Aktuálna verzia: **v25**
 
 ## Changelog
+
+### v25 (2026-03-07)
+- 🎮 **Tetris: Solo režim** - iba 1 hráč (score/level tracking)
+  - Odstránený 2-player a AI režim
+  - Klikni/ťukni na pole pre otočenie kocky
+  - Šípky ←→↓ pre pohyb
+  - High score tracking
+- 🌐 **Online Multiplayer: opravy**
+  - Fix: PeerJS server (0.peerjs.com cloud namiesto Heroku)
+  - Nové: Status indikátor na MP tlačidle (🌐 → ✅)
+  - Debug režim pre diagnostiku pripojenia
+- 🔧 **Topbar: fix viditeľnosti**
+  - Oprava: Navigačná lišta zmizla v hrách/štatistikách
+  - welcomeScreen.hide teraz správne skrýva overlay
 
 ### v24 (2026-03-07)
 - Fix: V štatistikách sa teraz zobrazujú správne mená hráčov (namiesto "Hráč 1/2")
