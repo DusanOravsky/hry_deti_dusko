@@ -9,17 +9,23 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~8400+ 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets (Note: SW was disabled in v36, re-enabled later)
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Game modes**: `welcomeGameMode` variable — `'pvp'` (2 players) or `'ai'` (vs computer)
+- **Current version**: v54 (2026-03-07)
+- **Game modes**: `welcomeGameMode` variable — `''` (default/all games), `'pvp'` (2 players), or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
 - **Online Multiplayer**: WebRTC peer-to-peer via PeerJS (v48+)
 
 ## Important Variables
 
-- `MOBILE_GAMES` array — defines games with `mode`: `'both'` (AI+PVP), `'pvp'` (2-player only), `'always'` (stats)
+- `MOBILE_GAMES` array — defines games with `mode`:
+  - `'both'` = AI + PVP (shows in both modes)
+  - `'pvp'` = 2-player only (shows only in pvp mode)
+  - `'always'` = Solo/Stats (shows only when no mode selected, e.g. Tetris, Stats)
+- `welcomeGameMode` — `''` (default), `'pvp'`, or `'ai'`
 - `GAME_NAMES` object — display names for each game
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `_mobileCurrentGame` / `_gameAreaParent` — tracks which game area is moved into mobile content
+- `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 
 ## Adding a New Game
 
@@ -93,8 +99,53 @@ getTTTPlayerName(symbol) // Returns MP.myName/opponentName in MP mode
 ```
 
 **Games with MP Support:**
-- ✅ Piškvorky (v49+)
+- ✅ Piškvorky (v49+) - full sync with player names
 - 🔜 Connect4, Ghost, Hádaj Číslo, Obesenec (planned)
+
+**MP UI Improvements:**
+- **v51**: Player role indicators after connection
+  - Host sees: "✅ Pripojený! Si Hráč 1 🔴 (X)"
+  - Guest sees: "✅ Pripojený! Si Hráč 2 🔵 (O)"
+- **v52**: Info box in MP modal explaining roles before connection
+
+## Tetris (Solo-Only Mode)
+
+**Important:** Tetris is `mode:'always'` which means:
+- Shows ONLY in default game grid (when `welcomeGameMode=''`)
+- Does NOT show when "2 Hráči" or "vs Počítač" is selected
+- This is by design - Tetris is solo-only, not for 2-player mode
+
+**Controls:**
+- Keyboard: ←→ move, ↑ rotate, ↓ drop
+- Mobile: On-screen arrow buttons (60px touch-friendly)
+- Board tap/click: Also rotates piece
+
+**Implementation (v54):**
+```html
+<div style="display:flex;gap:8px;justify-content:center;margin-top:15px">
+  <button onclick="tetMove(-1)">←</button>
+  <button onclick="tetRotate()">↑</button>
+  <button onclick="tetMove(1)">→</button>
+  <button onclick="tetDrop()">↓</button>
+</div>
+```
+
+## Game Mode Filtering
+
+`renderMobileGrid()` filters games based on `welcomeGameMode`:
+
+```javascript
+const filtered = MOBILE_GAMES.filter(g => {
+  if(g.mode==='always') return !welcomeGameMode || welcomeGameMode===''; // Solo games
+  if(welcomeGameMode==='ai') return g.mode==='both'; // AI-capable only
+  if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp'; // PVP games
+  return true;
+});
+```
+
+**Default state:** `welcomeGameMode = ''` (no mode selected)
+- Shows ALL games including Tetris and Stats
+- Welcome screen buttons NOT active by default (v53+)
 
 ## Common Patterns
 
@@ -143,7 +194,44 @@ Each sound also triggers vibration (15-100ms) if device supports it.
 ### Multiplayer-Specific Issues
 
 - **Welcome screen broken after MP changes (v28-v38, v46)**: Duplicate `const MP = {}` declarations cause JavaScript crash. Always check for old MP code remnants before adding new MP state.
+  - **Root cause (v46)**: Old `const MP = {}` from v27 (line 8217) + new `const MP = {}` (line 8243) = duplicate declaration
+  - **Solution**: Use `grep "const MP = {" index.html` to find all occurrences before adding new one
 - **Duplicate modal structures**: Old MP modals from v27 can conflict with new implementations. Remove ALL old MP HTML/CSS/JS before implementing new version.
-- **GitHub Pages deploy delay**: Typically 1-3 minutes, but can take longer (4+ min). Check status: `gh run list --repo USER/REPO`
+- **Missing modal functions (v42)**: When cleaning up old code, check that you don't accidentally remove current functions. v42 removed `openMPModal()`, `closeMPModal()`, `closeMPModalOnOverlay()` along with old duplicate code.
+- **GitHub Pages deploy delay**: Typically 1-3 minutes, but can take longer (4+ min, v49 took 7min). Check status: `gh run list --repo USER/REPO`
 - **PeerJS connection timeout**: If peers can't connect, check firewall/NAT. PeerJS uses STUN servers for NAT traversal.
 - **Service Worker cache**: Hard refresh (Ctrl+Shift+R) may be needed to see new MP code on mobile.
+
+### Tetris Issues
+
+- **Showing in wrong mode (v52-v53)**: If Tetris appears in 2-player grid, check `renderMobileGrid()` filter logic and `welcomeGameMode` default value.
+  - Default should be `''` (empty), NOT `'pvp'`
+  - mode='always' games should filter: `if(g.mode==='always') return !welcomeGameMode || welcomeGameMode==='';`
+- **Missing mobile controls**: Desktop keyboard works but mobile needs on-screen buttons (added v54)
+
+## Recent Session Notes (2026-03-07)
+
+**MP Implementation Complete (v48-v54):**
+- v48: PeerJS WebRTC connections (debugged duplicate MP object issue)
+- v49: Piškvorky online multiplayer working
+- v50: Real player names sync (Lukáško & Natálka)
+- v51: Player role indicators after connection (🔴 P1, 🔵 P2)
+- v52: Info box in MP modal + Tetris ArrowUp rotation
+- v53: Tetris removed from 2-player mode grid
+- v54: On-screen mobile controls for Tetris
+
+**Key Learnings:**
+- Always grep for duplicate declarations before adding new state objects
+- Test MP on actual 2 devices/mobiles, not just 2 browser windows
+- GitHub Pages deploy can be slow, use `gh run list` to monitor
+- mode='always' games need special filter logic to hide in pvp/ai modes
+- Mobile games need on-screen controls, can't rely on keyboard
+
+**Testing Checklist for MP:**
+1. Open on 2 devices/mobiles
+2. Device 1: Click globe → Create room → copy code
+3. Device 2: Click globe → paste code → Join
+4. Both see green ✅ with role indicator
+5. Open same game on both devices
+6. Take turns, moves sync in real-time
+7. Winner displays correctly with real player names
