@@ -185,11 +185,14 @@ body.light {
 /* 3-LEVEL NAV — vždy aktívny (mobile aj desktop) */
 .container { display:none !important; }
 .mobile-nav {
-  display:flex;
+  display:none;
   flex-direction:column;
   min-height:100vh;
   width:100%;
   overflow-x:hidden;
+}
+.mobile-nav.active {
+  display:flex;
 }
 
 /* Desktop vylepšenia pre 3-level nav */
@@ -2892,7 +2895,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 30;
+const APP_VERSION = 31;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -7988,12 +7991,15 @@ function mobileGoTo(level, gameId) {
   picker.classList.remove('active');
   view.classList.remove('active');
 
+  const mobileNav = document.querySelector('.mobile-nav');
+
   if(level === 1) {
     _returnGameToParent();
     anyGameInAIMode = false;
     updateMPButtonVisibility();
     ws.style.display = '';
     ws.classList.remove('hide');
+    if(mobileNav) mobileNav.classList.remove('active');
   } else if(level === 2) {
     _returnGameToParent();
     anyGameInAIMode = false;
@@ -8001,6 +8007,7 @@ function mobileGoTo(level, gameId) {
     ws.classList.add('hide');
     ws.style.display = 'none';
     picker.classList.add('active');
+    if(mobileNav) mobileNav.classList.add('active');
     renderMobileGrid();
     _updateMobileChips();
   } else if(level === 3 && gameId) {
@@ -8008,6 +8015,7 @@ function mobileGoTo(level, gameId) {
     ws.classList.add('hide');
     ws.style.display = 'none';
     view.classList.add('active');
+    if(mobileNav) mobileNav.classList.add('active');
     // Set title
     const gDef = MOBILE_GAMES.find(g => g.id === gameId);
     document.getElementById('mobileGameTitle').textContent =

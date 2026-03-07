@@ -69,9 +69,14 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v30**
+Aktuálna verzia: **v31**
 
 ## Changelog
+
+### v31 (2026-03-07)
+- 🔧 **CRITICAL FIX: Welcome screen clickable na mobile**
+  - Opravené: buttons na welcome screen nefungovali na mobile v30
+  - `.mobile-nav` skrytý dokým nie je aktívny
 
 ### v30 (2026-03-07)
 - 🌐 **MP indikátory v hrách**
