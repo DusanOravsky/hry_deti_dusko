@@ -74,9 +74,19 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v51**
+Aktuálna verzia: **v52**
 
 ## Changelog
+
+### v52 (2026-03-07)
+- 🎮 **Tetris: ArrowUp rotácia + info text v MP modal**
+  - Pridaná šípka ↑ na otáčanie kocky (predtým len klik)
+  - Ovládanie: ←→ pohyb, ↑ otočiť, ↓ rýchly pád
+  - Tetris je už len solo mode (nie 2-player) ✅
+  - MP modal: pridaný info box vysvetľujúci roly
+    - "🔴 Hráč 1 (X) - vytvorí miestnosť, hrá prvý"
+    - "🔵 Hráč 2 (O) - pripojí sa, hrá druhý"
+  - User: "threba pri tetrise dat sipky na otacanie"
 
 ### v51 (2026-03-07)
 - 🎯 **MP: Player role indicator after connection**

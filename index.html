@@ -2976,8 +2976,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <div class="game-area" id="tetris">
     <div class="rules"><h3>📋 Tetris - Solo:</h3><ul>
       <li>Klasický Tetris pre jedného hráča!</li>
-      <li>Ovládanie: <strong>Šípky ←→</strong> na pohyb, <strong>↓</strong> rýchlejší pád</li>
-      <li><strong>Klikni/ťukni</strong> na pole pre otočenie kocky</li>
+      <li>Ovládanie: <strong>Šípky ←→</strong> na pohyb, <strong>↑</strong> otočiť, <strong>↓</strong> rýchlejší pád</li>
+      <li>Môžeš aj <strong>kliknúť/ťuknúť</strong> na pole pre otočenie</li>
       <li>Plná rada = zmazaná + body. Keď pole preteká = koniec!</li>
       <li>Snaž sa dosiahnuť čo najvyššie skóre!</li>
     </ul></div>
@@ -3016,7 +3016,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 51;
+const APP_VERSION = 52;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -7586,6 +7586,7 @@ document.addEventListener('keydown',e=>{
   if(!TET.running)return;
   if(e.key==='ArrowLeft'){tetMove(-1);e.preventDefault();}
   if(e.key==='ArrowRight'){tetMove(1);e.preventDefault();}
+  if(e.key==='ArrowUp'){tetRotate();e.preventDefault();}
   if(e.key==='ArrowDown'){tetDrop();e.preventDefault();}
 });
 
@@ -8558,6 +8559,15 @@ if('serviceWorker' in navigator) {
   <div class="mp-modal" onclick="event.stopPropagation()">
     <button class="mp-close" onclick="closeMPModal()">✕</button>
     <h2 class="mp-title">🌐 Online Multiplayer</h2>
+
+    <!-- Info -->
+    <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-bottom:20px;font-size:0.85em;line-height:1.5">
+      <div style="margin-bottom:8px"><strong>Po pripojení uvidíš svoju rolu:</strong></div>
+      <div style="margin-left:12px">
+        <div style="margin-bottom:4px">🔴 <strong>Hráč 1 (X)</strong> - vytvorí miestnosť, hrá prvý</div>
+        <div>🔵 <strong>Hráč 2 (O)</strong> - pripojí sa, hrá druhý</div>
+      </div>
+    </div>
 
     <!-- Host Section -->
     <div class="mp-section">
