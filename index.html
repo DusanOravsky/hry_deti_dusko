@@ -1574,6 +1574,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     <div class="welcome-emoji">🎮</div>
     <div class="welcome-title">Hrajme si!</div>
     <div class="welcome-sub">Lukáško &amp; Natálka — Premium Vydanie</div>
+    <div id="appVersion" style="font-size:0.7em;opacity:0.4;margin-top:2px"></div>
     <div class="welcome-mode-pick">
       <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
       <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
@@ -1662,6 +1663,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     <div class="sidebar-scroll-hint" id="sidebarScrollHint">›</div>
     <div class="sidebar-header">
       <div class="sidebar-title">🎮 Hrajme si<br>Lukáško & Natálka</div>
+      <div id="sidebarVersion" style="font-size:0.65em;opacity:0.35;text-align:center;margin-top:-5px"></div>
       <div class="sidebar-sub">Offline Premium Vydanie</div>
     </div>
     <div class="sidebar-stats">
@@ -2726,6 +2728,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
+const APP_VERSION = 17;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -7439,6 +7442,8 @@ updateSidebarNames();
 loadStats();
 loadSavedNames();
 loadTheme();
+document.getElementById('appVersion').textContent='v'+APP_VERSION;
+const svEl=document.getElementById('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
 
 // ===== MOBILE 3-LEVEL NAVIGATION =====
