@@ -1104,6 +1104,7 @@ body.light .bs-cell { background:rgba(41,128,185,0.1); border-color:rgba(41,128,
 body.light .bs-grid-label { color:rgba(0,0,0,0.7); }
 body.light .bs-ship-btn { color:#333; border-color:rgba(0,0,0,0.2); background:rgba(0,0,0,0.05); }
 body.light .bs-orient-btn { color:#333; border-color:rgba(0,0,0,0.2); background:rgba(0,0,0,0.05); }
+body.light .bs-orient-btn.active { color:white; }
 
 /* GHOST GAME */
 .ghost-letter-display {
@@ -2318,7 +2319,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="bsCelebration">🎉</div>
     <div id="bsSetupArea">
       <div style="text-align:center;margin:10px 0">
-        <span style="color:rgba(255,255,255,0.7);font-size:0.9em">Orientácia: </span>
+        <span style="font-size:0.9em;opacity:0.8">Orientácia: </span>
         <button class="bs-orient-btn active" id="bsOrientBtn" onclick="toggleBSOrient()">↔️ Vodorovne</button>
       </div>
       <div class="bs-ships-panel" id="bsShipsPanel"></div>
@@ -3085,7 +3086,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 3;
+const APP_VERSION = 4;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
