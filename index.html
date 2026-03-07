@@ -3033,7 +3033,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 43;
+const APP_VERSION = 44;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -8362,38 +8362,6 @@ if('serviceWorker' in navigator) {
       <button class="action-btn confirm-no" onclick="document.getElementById('confirmOverlay').classList.remove('show')">Zrušiť</button>
       <button class="action-btn confirm-yes" onclick="doResetAllStats()">Vymazať</button>
     </div>
-  </div>
-</div>
-
-<div class="confirm-overlay" id="multiplayerOverlay">
-  <div class="multiplayer-box">
-    <button class="multiplayer-close" onclick="mpClose()">✕</button>
-    <h2 style="margin:0 0 20px">🌐 Online Multiplayer</h2>
-
-    <!-- Host -->
-    <div id="mpHost">
-      <p style="opacity:0.8;margin-bottom:20px">Vytvor miestnosť a pošli QR kód kamarátovi!</p>
-      <button class="action-btn primary-btn" onclick="mpCreateRoom()" style="width:100%;margin-bottom:20px">🏠 Vytvoriť miestnosť</button>
-      <div id="mpHostRoom" style="display:none">
-        <div style="padding:20px;background:white;border-radius:12px;margin:20px 0">
-          <div id="mpQrCode"></div>
-        </div>
-        <p style="font-size:0.85em;opacity:0.6">Alebo pošli kód:</p>
-        <input type="text" id="mpRoomCode" readonly style="width:100%;padding:12px;font-size:1.2em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:10px;font-family:monospace">
-        <button class="action-btn" onclick="mpCopyCode()" style="width:100%;background:rgba(255,255,255,0.1)">📋 Kopírovať kód</button>
-        <p id="mpHostStatus" style="margin-top:20px;font-weight:700;color:#ffd200">⏳ Čaká sa na pripojenie...</p>
-      </div>
-    </div>
-
-    <!-- Join -->
-    <div id="mpJoin">
-      <p style="opacity:0.8;margin-bottom:20px">Pripoj sa k miestnosti kamaráta:</p>
-      <input type="text" id="mpJoinCode" placeholder="Zadaj kód miestnosti" style="width:100%;padding:14px;font-size:1.1em;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;margin-bottom:15px;text-transform:uppercase">
-      <button class="action-btn primary-btn" onclick="mpJoinRoom()" style="width:100%">🚪 Pripojiť sa</button>
-      <p id="mpJoinStatus" style="margin-top:15px;opacity:0"></p>
-    </div>
-
-    <button class="action-btn danger-btn" onclick="mpDisconnect()" id="mpDisconnectBtn" style="width:100%;margin-top:20px;display:none">🔌 Odpojiť</button>
   </div>
 </div>
 

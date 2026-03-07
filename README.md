@@ -69,9 +69,17 @@ open http://localhost:8080
 
 Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musí byť synchronizovaná s `sw.js` (`CACHE_NAME`).
 
-Aktuálna verzia: **v43**
+Aktuálna verzia: **v44**
 
 ## Changelog
+
+### v44 (2026-03-07)
+- 🔧 **HOTFIX: Removed duplicate old modal structure**
+  - ROOT CAUSE: Old modal from v27 was never removed
+  - Duplicate IDs caused mpCreateRoom() to target wrong elements
+  - Removed old multiplayerOverlay modal (lines 8368-8398)
+  - Only new mp-overlay modal remains
+  - User symptom: "vytvorenie miestnosti nedovoli"
 
 ### v43 (2026-03-07)
 - 🔧 **HOTFIX: Restored missing modal control functions**
