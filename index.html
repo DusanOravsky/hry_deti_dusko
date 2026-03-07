@@ -1414,6 +1414,9 @@ body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
       <div class="mobile-player-chip p1" id="mobileP1Chip">🔴 Lukáško</div>
       <div class="mobile-player-chip p2" id="mobileP2Chip">🔵 Natálka</div>
     </div>
+    <div style="padding:8px 14px">
+      <button onclick="randomBattle()" style="width:100%;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite;box-shadow:0 4px 16px rgba(255,0,128,0.4)">🎲 RANDOM BATTLE!</button>
+    </div>
     <div class="mobile-game-grid" id="mobileGameGrid">
       <!-- filled by JS -->
     </div>
@@ -1461,6 +1464,7 @@ body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
     <nav class="sidebar-nav">
       <button class="theme-toggle sidebar-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Tmavý</button>
       <button class="sound-toggle sidebar-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+      <button onclick="randomBattle()" style="width:100%;padding:10px;margin-bottom:8px;border:none;border-radius:10px;font-size:0.85em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite">🎲 RANDOM BATTLE!</button>
       <button class="game-btn active" id="ticTacToeBtn" style="background:linear-gradient(135deg,rgba(240,147,251,0.25),rgba(245,87,108,0.25))"><span class="game-btn-icon">🔶</span><span class="game-btn-label">Piškvorky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="rockPaperBtn" style="background:linear-gradient(135deg,rgba(79,172,254,0.2),rgba(0,242,254,0.2))"><span class="game-btn-icon">🪨</span><span class="game-btn-label">Kameň Papier</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="guessNumBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.2),rgba(56,249,215,0.2))"><span class="game-btn-icon">🎲</span><span class="game-btn-label">Hádaj Číslo</span><span class="game-btn-dot"></span></button>
@@ -1475,6 +1479,11 @@ body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
       <button class="game-btn" id="flashcardBtn" style="background:linear-gradient(135deg,rgba(102,126,234,0.2),rgba(118,75,162,0.2))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Flashcards</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="missingLetterBtn" style="background:linear-gradient(135deg,rgba(17,153,142,0.2),rgba(56,239,125,0.2))"><span class="game-btn-icon">🔡</span><span class="game-btn-label">Doplň písmeno</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="sentenceBtn" style="background:linear-gradient(135deg,rgba(233,108,60,0.2),rgba(247,151,30,0.2))"><span class="game-btn-icon">💬</span><span class="game-btn-label">Prekladaj vety</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="spamClickBtn" style="background:linear-gradient(135deg,rgba(255,0,128,0.25),rgba(255,100,0,0.25))"><span class="game-btn-icon">👆</span><span class="game-btn-label">Spam Click</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="mathDuelBtn" style="background:linear-gradient(135deg,rgba(0,200,100,0.2),rgba(0,150,255,0.2))"><span class="game-btn-icon">🧮</span><span class="game-btn-label">Matika Duel</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="emojiGuessBtn" style="background:linear-gradient(135deg,rgba(255,200,0,0.25),rgba(255,100,200,0.25))"><span class="game-btn-icon">😂</span><span class="game-btn-label">Emoji Hádanka</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="hangmanBtn" style="background:linear-gradient(135deg,rgba(120,80,200,0.25),rgba(200,100,150,0.25))"><span class="game-btn-icon">💀</span><span class="game-btn-label">Obesenec</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="higherLowerBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.2),rgba(0,0,0,0.2))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vyššie Nižšie</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
   </div>
@@ -2226,6 +2235,150 @@ body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
     </div>
   </div>
 
+  <!-- ===== SPAM CLICK ===== -->
+  <div class="game-area" id="spamClick">
+    <div class="rules"><h3>📋 Spam Click:</h3><ul>
+      <li>Každý hráč má 5 sekúnd na čo najviac kliknutí</li>
+      <li>Najprv ide Hráč 1, potom Hráč 2</li>
+      <li>Kto klikne viackrát, vyhráva!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="scP1Card"><div class="player-name-display" id="scP1Name">Lukáško</div><div class="player-score" id="p1ScoreSC">0</div></div>
+      <div class="player-card player2" id="scP2Card"><div class="player-name-display" id="scP2Name">Natálka</div><div class="player-score" id="p2ScoreSC">0</div></div>
+    </div>
+    <div class="status" id="scStatus">Klikni Štart!</div>
+    <div id="scGameBox" style="display:none;text-align:center">
+      <div style="font-size:3em;font-weight:900;margin:10px 0" id="scTimer">5</div>
+      <div style="font-size:5em;font-weight:900;color:#ffd200;margin:10px 0" id="scCount">0</div>
+      <div class="reaction-pad" id="scPad" onclick="scTap()" style="height:180px;font-size:1.8em;background:linear-gradient(135deg,#ff0080,#ff6600);cursor:pointer">
+        👆 KLIKAJ!
+      </div>
+    </div>
+    <div class="celebration" id="scCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startSC()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetSC()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- ===== MATH DUEL ===== -->
+  <div class="game-area" id="mathDuel">
+    <div class="rules"><h3>📋 Matika Duel:</h3><ul>
+      <li>Hráči sa striedajú v riešení príkladov</li>
+      <li>Správna odpoveď = 1 bod</li>
+      <li>10 kôl — kto má viac bodov, vyhráva!</li>
+    </ul></div>
+    <div class="difficulty-selector">
+      <button class="difficulty-btn active" onclick="setMDDiff('easy',this)">Ľahká (+−)</button>
+      <button class="difficulty-btn" onclick="setMDDiff('medium',this)">Stredná (+−×)</button>
+      <button class="difficulty-btn" onclick="setMDDiff('hard',this)">Ťažká (+−×÷)</button>
+    </div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="mdP1Card"><div class="player-name-display" id="mdP1Name">Lukáško</div><div class="player-score" id="p1ScoreMD">0</div></div>
+      <div class="player-card player2" id="mdP2Card"><div class="player-name-display" id="mdP2Name">Natálka</div><div class="player-score" id="p2ScoreMD">0</div></div>
+    </div>
+    <div class="status" id="mdStatus">Klikni Štart!</div>
+    <div id="mdGameBox" style="display:none;text-align:center">
+      <div style="font-size:0.85em;opacity:0.5;margin-bottom:6px" id="mdRound">Kolo 1/10</div>
+      <div class="question-text" id="mdQuestion" style="font-size:2.2em;margin:20px 0"></div>
+      <div class="answers-grid" id="mdAnswers" style="max-width:400px;margin:0 auto"></div>
+    </div>
+    <div class="celebration" id="mdCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startMD()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetMD()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- ===== EMOJI HÁDANKA ===== -->
+  <div class="game-area" id="emojiGuess">
+    <div class="rules"><h3>📋 Emoji Hádanka:</h3><ul>
+      <li>Ukáže sa kombinácia emoji — uhádni čo znamená!</li>
+      <li>Vyber správnu odpoveď zo 4 možností</li>
+      <li>Hráči sa striedajú, 10 kôl</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="egP1Card"><div class="player-name-display" id="egP1Name">Lukáško</div><div class="player-score" id="p1ScoreEG">0</div></div>
+      <div class="player-card player2" id="egP2Card"><div class="player-name-display" id="egP2Name">Natálka</div><div class="player-score" id="p2ScoreEG">0</div></div>
+    </div>
+    <div class="status" id="egStatus">Klikni Štart!</div>
+    <div id="egGameBox" style="display:none;text-align:center">
+      <div style="font-size:0.85em;opacity:0.5;margin-bottom:6px" id="egRound">Kolo 1/10</div>
+      <div style="font-size:3.5em;margin:20px 0;padding:20px;background:rgba(255,255,255,0.06);border-radius:18px;border:2px solid rgba(255,255,255,0.1)" id="egEmoji"></div>
+      <div class="answers-grid" id="egAnswers" style="max-width:500px;margin:10px auto"></div>
+    </div>
+    <div class="celebration" id="egCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startEG()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetEG()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- ===== OBESENEC (HANGMAN) ===== -->
+  <div class="game-area" id="hangman">
+    <div class="rules"><h3>📋 Obesenec:</h3><ul>
+      <li>Hráč 1 háda slovo — kliká na písmená</li>
+      <li>Každé nesprávne písmeno = časť panáčika</li>
+      <li>6 chýb a prehrávaš! Uhádni slovo skôr!</li>
+      <li>Hráči sa striedajú</li>
+    </ul></div>
+    <div class="difficulty-selector">
+      <button class="difficulty-btn active" onclick="setHMDiff('easy',this)">Ľahká (4-5 písmen)</button>
+      <button class="difficulty-btn" onclick="setHMDiff('medium',this)">Stredná (6-7)</button>
+      <button class="difficulty-btn" onclick="setHMDiff('hard',this)">Ťažká (8+)</button>
+    </div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="hmP1Card"><div class="player-name-display" id="hmP1Name">Lukáško</div><div class="player-score" id="p1ScoreHM">0</div></div>
+      <div class="player-card player2" id="hmP2Card"><div class="player-name-display" id="hmP2Name">Natálka</div><div class="player-score" id="p2ScoreHM">0</div></div>
+    </div>
+    <div class="status" id="hmStatus">Klikni Štart!</div>
+    <div id="hmGameBox" style="display:none;text-align:center">
+      <div style="font-size:0.85em;opacity:0.5;margin-bottom:6px" id="hmRoundInfo"></div>
+      <div style="font-size:2.5em;margin:10px 0" id="hmLives"></div>
+      <canvas id="hmCanvas" width="200" height="200" style="margin:10px auto;display:block;border-radius:12px;background:rgba(255,255,255,0.05)"></canvas>
+      <div style="font-size:2em;letter-spacing:8px;font-weight:900;margin:16px 0;font-family:monospace" id="hmWord"></div>
+      <div style="font-size:0.9em;opacity:0.6;margin:6px 0" id="hmHint"></div>
+      <div class="ghost-keyboard" id="hmKeyboard"></div>
+    </div>
+    <div class="celebration" id="hmCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startHM()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetHM()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- ===== VYŠŠIE NIŽŠIE ===== -->
+  <div class="game-area" id="higherLower">
+    <div class="rules"><h3>📋 Vyššie alebo Nižšie:</h3><ul>
+      <li>Vidíš kartu — bude ďalšia vyššia alebo nižšia?</li>
+      <li>Správny tip = 1 bod, zlý = koniec kola</li>
+      <li>Hráči sa striedajú — kto získa viac bodov!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="hlP1Card"><div class="player-name-display" id="hlP1Name">Lukáško</div><div class="player-score" id="p1ScoreHL">0</div></div>
+      <div class="player-card player2" id="hlP2Card"><div class="player-name-display" id="hlP2Name">Natálka</div><div class="player-score" id="p2ScoreHL">0</div></div>
+    </div>
+    <div class="status" id="hlStatus">Klikni Štart!</div>
+    <div id="hlGameBox" style="display:none;text-align:center">
+      <div style="font-size:0.85em;opacity:0.5;margin-bottom:6px" id="hlRoundInfo"></div>
+      <div style="display:flex;gap:20px;justify-content:center;align-items:center;margin:20px 0">
+        <div style="font-size:4em;padding:20px 30px;background:linear-gradient(135deg,rgba(200,0,0,0.3),rgba(150,0,0,0.2));border:3px solid rgba(200,0,0,0.5);border-radius:18px;min-width:90px;color:white;font-weight:900" id="hlCurrentCard">?</div>
+        <div style="font-size:2em;opacity:0.4">vs</div>
+        <div style="font-size:4em;padding:20px 30px;background:rgba(255,255,255,0.06);border:3px solid rgba(255,255,255,0.15);border-radius:18px;min-width:90px;color:white;font-weight:900" id="hlNextCard">?</div>
+      </div>
+      <div style="font-size:1.2em;margin:10px 0;opacity:0.7" id="hlStreak">Séria: 0</div>
+      <div class="buttons-group">
+        <button class="action-btn primary-btn" onclick="hlGuess('higher')" style="background:linear-gradient(135deg,#43e97b,#38ef7d);font-size:1.2em;padding:16px 32px">📈 Vyššie</button>
+        <button class="action-btn danger-btn" onclick="hlGuess('lower')" style="font-size:1.2em;padding:16px 32px">📉 Nižšie</button>
+      </div>
+    </div>
+    <div class="celebration" id="hlCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startHL()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetHL()">🔄 Reset</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -2242,6 +2395,8 @@ const gameKeys = {
   memory:'memoryBtn', connect4:'connect4Btn', quiz:'quizBtn',
   battleship:'battleshipBtn', ghost:'ghostBtn', reaction:'reactionBtn',
   scramble:'scrambleBtn', langScramble:'langScrambleBtn', flashcard:'flashcardBtn',
+  spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
+  hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   missingLetter:'missingLetterBtn', sentence:'sentenceBtn', stats:'statsBtn'
 };
 
@@ -2250,7 +2405,9 @@ const GAME_NAMES = {
   guessNum:'Hádaj Číslo', memory:'Pamäť', connect4:'Connect 4',
   quiz:'Kvíz', battleship:'Lodičky', ghost:'Ghost', reaction:'Reakčný Test',
   scramble:'Scramble', langScramble:'Jazykový Scramble', flashcard:'Flashcards',
-  missingLetter:'Doplň písmeno', sentence:'Prekladaj vety'
+  missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
+  spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
+  hangman:'Obesenec', higherLower:'Vyššie Nižšie'
 };
 
 let currentGameId = 'ticTacToe';
@@ -5583,6 +5740,429 @@ function resetST(){
   activeTurn('stP1Card','stP2Card',1);
 }
 
+// =============================================================================
+// SEKCIA 23: SPAM CLICK
+// =============================================================================
+const SC = { player:1, s1:0, s2:0, count:0, timer:null, running:false, p1Score:0, p2Score:0 };
+
+function startSC() {
+  SC.count=0; SC.player=1; SC.s1=0; SC.s2=0; SC.p1Score=0; SC.p2Score=0;
+  document.getElementById('p1ScoreSC').textContent='0';
+  document.getElementById('p2ScoreSC').textContent='0';
+  document.getElementById('scGameBox').style.display='block';
+  activeTurn('scP1Card','scP2Card',1);
+  startSCRound();
+}
+function startSCRound() {
+  SC.count=0; SC.running=false;
+  document.getElementById('scCount').textContent='0';
+  document.getElementById('scTimer').textContent='5';
+  document.getElementById('scStatus').textContent=(SC.player===1?getP1Name('sc'):getP2Name('sc'))+' — klikaj čo najrýchlejšie!';
+  document.getElementById('scPad').textContent='👆 KLIKNI PRE ŠTART!';
+  document.getElementById('scPad').style.background='linear-gradient(135deg,#636e72,#2d3436)';
+}
+function scTap() {
+  if(!SC.running) {
+    SC.running=true; let t=5;
+    document.getElementById('scPad').textContent='👆 KLIKAJ!';
+    document.getElementById('scPad').style.background='linear-gradient(135deg,#ff0080,#ff6600)';
+    SC.timer=setInterval(()=>{
+      t--; document.getElementById('scTimer').textContent=t;
+      if(t<=0) { clearInterval(SC.timer); SC.running=false; scRoundEnd(); }
+    },1000);
+  }
+  if(!SC.running) return;
+  SC.count++; playSound('click'); vibrate(10);
+  document.getElementById('scCount').textContent=SC.count;
+}
+function scRoundEnd() {
+  document.getElementById('scPad').textContent='⏰ Čas!';
+  document.getElementById('scPad').style.background='linear-gradient(135deg,#636e72,#2d3436)';
+  if(SC.player===1) {
+    SC.p1Score=SC.count;
+    document.getElementById('p1ScoreSC').textContent=SC.p1Score;
+    SC.player=2; activeTurn('scP1Card','scP2Card',2);
+    document.getElementById('scStatus').textContent=getP1Name('sc')+': '+SC.p1Score+' klikov! Teraz '+getP2Name('sc')+'!';
+    setTimeout(startSCRound,1500);
+  } else {
+    SC.p2Score=SC.count;
+    document.getElementById('p2ScoreSC').textContent=SC.p2Score;
+    const n1=getP1Name('sc'),n2=getP2Name('sc');
+    if(SC.p1Score>SC.p2Score){document.getElementById('scStatus').textContent='🏆 '+n1+' vyhral! ('+SC.p1Score+' vs '+SC.p2Score+')';addWin(1,'spamClick');celebrate('scCelebration');}
+    else if(SC.p2Score>SC.p1Score){document.getElementById('scStatus').textContent='🏆 '+n2+' vyhral! ('+SC.p2Score+' vs '+SC.p1Score+')';addWin(2,'spamClick');celebrate('scCelebration');}
+    else{document.getElementById('scStatus').textContent='🤝 Remíza! ('+SC.p1Score+':'+SC.p2Score+')';addWin(0,'spamClick');}
+    playSound('win');
+  }
+}
+function resetSC() {
+  clearInterval(SC.timer); SC.running=false; SC.player=1; SC.count=0;
+  document.getElementById('p1ScoreSC').textContent='0';
+  document.getElementById('p2ScoreSC').textContent='0';
+  document.getElementById('scStatus').textContent='Klikni Štart!';
+  document.getElementById('scGameBox').style.display='none';
+  activeTurn('scP1Card','scP2Card',1);
+}
+
+// =============================================================================
+// SEKCIA 24: MATH DUEL
+// =============================================================================
+const MD = { player:1, s1:0, s2:0, round:0, over:false, diff:'easy', answered:false };
+
+function setMDDiff(d,btn) {
+  MD.diff=d;
+  document.querySelectorAll('#mathDuel .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function startMD() {
+  MD.round=0; MD.s1=0; MD.s2=0; MD.player=1; MD.over=false;
+  document.getElementById('p1ScoreMD').textContent='0';
+  document.getElementById('p2ScoreMD').textContent='0';
+  document.getElementById('mdGameBox').style.display='block';
+  activeTurn('mdP1Card','mdP2Card',1);
+  nextMDRound();
+}
+function nextMDRound() {
+  if(MD.round>=10) { mdFinish(); return; }
+  MD.round++; MD.answered=false;
+  document.getElementById('mdRound').textContent='Kolo '+MD.round+'/10';
+  document.getElementById('mdStatus').textContent=(MD.player===1?getP1Name('md'):getP2Name('md'))+' — vyrieš príklad!';
+  activeTurn('mdP1Card','mdP2Card',MD.player);
+  let a,b,op,answer;
+  const ops = MD.diff==='easy'?['+','-']:MD.diff==='medium'?['+','-','×']:['+','-','×','÷'];
+  op=ops[Math.floor(Math.random()*ops.length)];
+  if(op==='+'){a=Math.floor(Math.random()*50)+1;b=Math.floor(Math.random()*50)+1;answer=a+b;}
+  else if(op==='-'){a=Math.floor(Math.random()*50)+10;b=Math.floor(Math.random()*a)+1;answer=a-b;}
+  else if(op==='×'){a=Math.floor(Math.random()*12)+1;b=Math.floor(Math.random()*12)+1;answer=a*b;}
+  else{b=Math.floor(Math.random()*10)+1;answer=Math.floor(Math.random()*10)+1;a=b*answer;}
+  document.getElementById('mdQuestion').textContent=a+' '+op+' '+b+' = ?';
+  const wrong=new Set();
+  while(wrong.size<3){const w=answer+Math.floor(Math.random()*21)-10;if(w!==answer&&w>=0)wrong.add(w);}
+  const choices=[answer,...wrong].sort(()=>Math.random()-0.5);
+  const el=document.getElementById('mdAnswers'); el.innerHTML='';
+  choices.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='answer-btn'; btn.textContent=c;
+    btn.onclick=()=>mdAnswer(c,answer,btn);
+    el.appendChild(btn);
+  });
+}
+function mdAnswer(choice,correct,btn) {
+  if(MD.answered||MD.over) return;
+  MD.answered=true;
+  document.querySelectorAll('#mdAnswers .answer-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===correct) b.classList.add('correct');
+  });
+  if(choice===correct) {
+    playSound('win'); btn.classList.add('correct');
+    if(MD.player===1){MD.s1++;document.getElementById('p1ScoreMD').textContent=MD.s1;popScore('p1ScoreMD');}
+    else{MD.s2++;document.getElementById('p2ScoreMD').textContent=MD.s2;popScore('p2ScoreMD');}
+  } else { playSound('wrong'); btn.classList.add('wrong'); }
+  setTimeout(()=>{ MD.player=MD.player===1?2:1; nextMDRound(); },1500);
+}
+function mdFinish() {
+  MD.over=true;
+  const n1=getP1Name('md'),n2=getP2Name('md');
+  const msg=MD.s1>MD.s2?'🏆 '+n1+' vyhral! ('+MD.s1+':'+MD.s2+')':MD.s2>MD.s1?'🏆 '+n2+' vyhral! ('+MD.s2+':'+MD.s1+')':'🤝 Remíza! ('+MD.s1+':'+MD.s2+')';
+  document.getElementById('mdStatus').textContent=msg;
+  if(MD.s1>MD.s2){addWin(1,'mathDuel');celebrate('mdCelebration');}
+  else if(MD.s2>MD.s1){addWin(2,'mathDuel');celebrate('mdCelebration');}
+  playSound('win');
+}
+function resetMD() {
+  MD.over=false; MD.round=0; MD.s1=0; MD.s2=0; MD.player=1;
+  document.getElementById('p1ScoreMD').textContent='0';
+  document.getElementById('p2ScoreMD').textContent='0';
+  document.getElementById('mdStatus').textContent='Klikni Štart!';
+  document.getElementById('mdGameBox').style.display='none';
+  activeTurn('mdP1Card','mdP2Card',1);
+}
+
+// =============================================================================
+// SEKCIA 25: EMOJI HÁDANKA
+// =============================================================================
+const EG = { player:1, s1:0, s2:0, round:0, over:false, answered:false };
+
+const EMOJI_PUZZLES = [
+  {emoji:'🍕+🏠',answer:'Pizza domov',wrong:['Obed vonku','Varenie','Nákupy']},
+  {emoji:'🐕+🦴',answer:'Pes a kosť',wrong:['Mačka','Zoo','Veterinár']},
+  {emoji:'⚽+🏆',answer:'Futbalový šampión',wrong:['Basketbal','Olympiáda','Beh']},
+  {emoji:'📚+🎒',answer:'Škola',wrong:['Knižnica','Obchod','Kino']},
+  {emoji:'🌧️+☂️',answer:'Dážď s dáždnikom',wrong:['Sneh','Búrka','Slnko']},
+  {emoji:'🎂+🎁',answer:'Narodeniny',wrong:['Vianoce','Svadba','Party']},
+  {emoji:'🚗+🏖️',answer:'Výlet na pláž',wrong:['Práca','Nákupy','Škola']},
+  {emoji:'❄️+⛷️',answer:'Lyžovanie',wrong:['Plávanie','Beh','Cyklistika']},
+  {emoji:'🎸+🎤',answer:'Koncert',wrong:['Divadlo','Kino','Diskotéka']},
+  {emoji:'🌙+⭐+😴',answer:'Spanie v noci',wrong:['Astronaut','Mesiac','Hviezdy']},
+  {emoji:'🍎+🐛',answer:'Červík v jablku',wrong:['Šalát','Ovocie','Záhrada']},
+  {emoji:'👨‍🍳+🍳',answer:'Varenie',wrong:['Jedenie','Reštaurácia','Nákup']},
+  {emoji:'🦁+👑',answer:'Kráľ zvierat',wrong:['Cirkus','Zoo','Savana']},
+  {emoji:'🎅+🎄',answer:'Vianoce',wrong:['Nový rok','Veľká noc','Halloween']},
+  {emoji:'🐱+🐭',answer:'Tom a Jerry',wrong:['Garfield','Pes a mačka','Zoo']},
+  {emoji:'🏊+🌊',answer:'Plávanie v mori',wrong:['Surfovanie','Loď','Rybolov']},
+  {emoji:'🌈+🦄',answer:'Rozprávka',wrong:['Počasie','Dúha','Park']},
+  {emoji:'🧙‍♂️+⚡',answer:'Harry Potter',wrong:['Gandalf','Merlin','Čarodejnica']},
+  {emoji:'🕷️+🕸️+🦸',answer:'Spider-Man',wrong:['Batman','Superman','Iron Man']},
+  {emoji:'🧊+🍦',answer:'Zmrzlina',wrong:['Ľad','Mrazák','Zima']},
+  {emoji:'🎃+👻',answer:'Halloween',wrong:['Vianoce','Karneval','Nový rok']},
+  {emoji:'🏠+🔥+🧑‍🚒',answer:'Hasič',wrong:['Požiar','Kuchyňa','Gril']},
+  {emoji:'✈️+🌍',answer:'Cestovanie',wrong:['Pilot','Letisko','Dovolenka']},
+  {emoji:'🦷+🪥',answer:'Čistenie zubov',wrong:['Zubár','Bolesť','Úsmev']},
+  {emoji:'🐸+👑+💋',answer:'Žabí princ',wrong:['Princezná','Rozprávka','Jazero']},
+  {emoji:'🎮+🏆',answer:'Herný šampión',wrong:['Esport','Konzola','Turnaj']},
+  {emoji:'🌍+♻️',answer:'Recyklácia',wrong:['Ekológia','Príroda','Planéta']},
+  {emoji:'🦇+🌙',answer:'Batman',wrong:['Vampír','Dracula','Netopier']},
+  {emoji:'🍔+🍟+🥤',answer:'Fast food',wrong:['Obed','Reštaurácia','McDonald']},
+  {emoji:'📱+📸',answer:'Fotenie mobilom',wrong:['Selfie','Instagram','Video']},
+];
+
+function startEG() {
+  EG.round=0; EG.s1=0; EG.s2=0; EG.player=1; EG.over=false;
+  document.getElementById('p1ScoreEG').textContent='0';
+  document.getElementById('p2ScoreEG').textContent='0';
+  document.getElementById('egGameBox').style.display='block';
+  activeTurn('egP1Card','egP2Card',1);
+  nextEGRound();
+}
+function nextEGRound() {
+  if(EG.round>=10){egFinish();return;}
+  EG.round++; EG.answered=false;
+  document.getElementById('egRound').textContent='Kolo '+EG.round+'/10';
+  document.getElementById('egStatus').textContent=(EG.player===1?getP1Name('eg'):getP2Name('eg'))+' — uhádni emoji!';
+  activeTurn('egP1Card','egP2Card',EG.player);
+  const puzzle=EMOJI_PUZZLES[Math.floor(Math.random()*EMOJI_PUZZLES.length)];
+  document.getElementById('egEmoji').textContent=puzzle.emoji;
+  const choices=[puzzle.answer,...puzzle.wrong].sort(()=>Math.random()-0.5);
+  const el=document.getElementById('egAnswers'); el.innerHTML='';
+  choices.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='answer-btn'; btn.textContent=c;
+    btn.onclick=()=>egAnswer(c,puzzle.answer,btn);
+    el.appendChild(btn);
+  });
+}
+function egAnswer(choice,correct,btn) {
+  if(EG.answered||EG.over)return;
+  EG.answered=true;
+  document.querySelectorAll('#egAnswers .answer-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(choice===correct){
+    playSound('win');
+    if(EG.player===1){EG.s1++;document.getElementById('p1ScoreEG').textContent=EG.s1;popScore('p1ScoreEG');}
+    else{EG.s2++;document.getElementById('p2ScoreEG').textContent=EG.s2;popScore('p2ScoreEG');}
+  } else { playSound('wrong'); btn.classList.add('wrong'); }
+  setTimeout(()=>{EG.player=EG.player===1?2:1;nextEGRound();},1800);
+}
+function egFinish() {
+  EG.over=true;
+  const n1=getP1Name('eg'),n2=getP2Name('eg');
+  const msg=EG.s1>EG.s2?'🏆 '+n1+' vyhral! ('+EG.s1+':'+EG.s2+')':EG.s2>EG.s1?'🏆 '+n2+' vyhral! ('+EG.s2+':'+EG.s1+')':'🤝 Remíza! ('+EG.s1+':'+EG.s2+')';
+  document.getElementById('egStatus').textContent=msg;
+  if(EG.s1>EG.s2){addWin(1,'emojiGuess');celebrate('egCelebration');}
+  else if(EG.s2>EG.s1){addWin(2,'emojiGuess');celebrate('egCelebration');}
+  playSound('win');
+}
+function resetEG() {
+  EG.over=false;EG.round=0;EG.s1=0;EG.s2=0;EG.player=1;
+  document.getElementById('p1ScoreEG').textContent='0';
+  document.getElementById('p2ScoreEG').textContent='0';
+  document.getElementById('egStatus').textContent='Klikni Štart!';
+  document.getElementById('egGameBox').style.display='none';
+  activeTurn('egP1Card','egP2Card',1);
+}
+
+// =============================================================================
+// SEKCIA 26: OBESENEC (HANGMAN)
+// =============================================================================
+const HM = { player:1, s1:0, s2:0, word:'', guessed:new Set(), errors:0, over:false, diff:'easy', roundOver:false };
+
+const HM_WORDS = {
+  easy:['pes','dom','les','mak','nos','oko','ucho','ryba','lopta','lampa','koláč','strom','vlak','kniha','žaba','kľúč','kruh','slon','hrad','most'],
+  medium:['slnko','kamarát','záhrada','počítač','princezná','futbal','čerešňa','kúzlo','zmrzlina','medveď','ľadový','koberec','kúpalisko','lyžovať','potápať'],
+  hard:['dinosaurus','rozprávka','dobrodruh','šťastie','čokoláda','cestovanie','hrdinstvo','priateľstvo','skúsenosť','dobrodružstvo']
+};
+
+function setHMDiff(d,btn) {
+  HM.diff=d;
+  document.querySelectorAll('#hangman .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function startHM() {
+  HM.s1=0; HM.s2=0; HM.player=1;
+  document.getElementById('p1ScoreHM').textContent='0';
+  document.getElementById('p2ScoreHM').textContent='0';
+  document.getElementById('hmGameBox').style.display='block';
+  activeTurn('hmP1Card','hmP2Card',1);
+  nextHMRound();
+}
+function nextHMRound() {
+  HM.roundOver=false; HM.errors=0; HM.guessed=new Set();
+  const pool=HM_WORDS[HM.diff];
+  HM.word=pool[Math.floor(Math.random()*pool.length)].toUpperCase();
+  document.getElementById('hmRoundInfo').textContent=(HM.player===1?getP1Name('hm'):getP2Name('hm'))+' háda!';
+  document.getElementById('hmStatus').textContent=(HM.player===1?getP1Name('hm'):getP2Name('hm'))+' — uhádni slovo!';
+  activeTurn('hmP1Card','hmP2Card',HM.player);
+  renderHM(); drawHangman(0); buildHMKeyboard();
+}
+function renderHM() {
+  let display='';
+  for(const ch of HM.word) {
+    if(HM.guessed.has(ch)) display+=ch+' ';
+    else display+='_ ';
+  }
+  document.getElementById('hmWord').textContent=display.trim();
+  const lives='❤️'.repeat(6-HM.errors)+'🖤'.repeat(HM.errors);
+  document.getElementById('hmLives').textContent=lives;
+}
+function buildHMKeyboard() {
+  const el=document.getElementById('hmKeyboard'); el.innerHTML='';
+  const letters='AÁÄBCČDĎEÉFGHCHIÍJKLĹĽMNŇOÓÔPQRŔSŠTŤUÚVWXYÝZŽ';
+  for(const ch of letters) {
+    const btn=document.createElement('button');
+    btn.className='ghost-key'; btn.textContent=ch;
+    btn.onclick=()=>hmGuessLetter(ch,btn);
+    if(HM.guessed.has(ch)) btn.disabled=true;
+    el.appendChild(btn);
+  }
+}
+function drawHangman(errors) {
+  const c=document.getElementById('hmCanvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,200,200);
+  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=3; ctx.lineCap='round';
+  if(errors>=1){ctx.beginPath();ctx.moveTo(40,180);ctx.lineTo(160,180);ctx.stroke();ctx.beginPath();ctx.moveTo(60,180);ctx.lineTo(60,30);ctx.stroke();ctx.beginPath();ctx.moveTo(60,30);ctx.lineTo(130,30);ctx.stroke();ctx.beginPath();ctx.moveTo(130,30);ctx.lineTo(130,50);ctx.stroke();}
+  if(errors>=2){ctx.beginPath();ctx.arc(130,65,15,0,Math.PI*2);ctx.stroke();}
+  if(errors>=3){ctx.beginPath();ctx.moveTo(130,80);ctx.lineTo(130,130);ctx.stroke();}
+  if(errors>=4){ctx.beginPath();ctx.moveTo(130,90);ctx.lineTo(110,115);ctx.stroke();}
+  if(errors>=5){ctx.beginPath();ctx.moveTo(130,90);ctx.lineTo(150,115);ctx.stroke();}
+  if(errors>=6){ctx.beginPath();ctx.moveTo(130,130);ctx.lineTo(110,160);ctx.stroke();ctx.beginPath();ctx.moveTo(130,130);ctx.lineTo(150,160);ctx.stroke();}
+}
+function hmGuessLetter(ch,btn) {
+  if(HM.roundOver) return;
+  HM.guessed.add(ch); btn.disabled=true;
+  if(HM.word.includes(ch)) {
+    playSound('click'); btn.style.background='rgba(67,233,123,0.3)'; btn.style.borderColor='#43e97b';
+  } else {
+    HM.errors++; playSound('wrong'); btn.style.background='rgba(245,87,108,0.3)'; btn.style.borderColor='#f5576c';
+    drawHangman(HM.errors);
+  }
+  renderHM();
+  const allRevealed=[...HM.word].every(c=>HM.guessed.has(c));
+  if(allRevealed) {
+    HM.roundOver=true; playSound('win');
+    if(HM.player===1){HM.s1++;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
+    else{HM.s2++;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
+    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word;
+    document.getElementById('hmHint').style.color='#43e97b';
+    setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
+  } else if(HM.errors>=6) {
+    HM.roundOver=true; playSound('wrong');
+    document.getElementById('hmHint').textContent='💀 Prehral! Slovo bolo: '+HM.word;
+    document.getElementById('hmHint').style.color='#f5576c';
+    document.getElementById('hmWord').textContent=HM.word.split('').join(' ');
+    setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2500);
+  }
+}
+function resetHM() {
+  HM.s1=0;HM.s2=0;HM.player=1;HM.roundOver=false;HM.errors=0;HM.guessed=new Set();
+  document.getElementById('p1ScoreHM').textContent='0';
+  document.getElementById('p2ScoreHM').textContent='0';
+  document.getElementById('hmStatus').textContent='Klikni Štart!';
+  document.getElementById('hmGameBox').style.display='none';
+  document.getElementById('hmHint').textContent='';
+  activeTurn('hmP1Card','hmP2Card',1);
+}
+
+// =============================================================================
+// SEKCIA 27: VYŠŠIE NIŽŠIE (HIGHER LOWER)
+// =============================================================================
+const HL = { player:1, s1:0, s2:0, current:0, streak:0, over:false, p1Best:0, p2Best:0 };
+
+const HL_CARDS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const HL_VALUES={A:1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,J:11,Q:12,K:13};
+
+function startHL() {
+  HL.player=1; HL.s1=0; HL.s2=0; HL.p1Best=0; HL.p2Best=0;
+  document.getElementById('p1ScoreHL').textContent='0';
+  document.getElementById('p2ScoreHL').textContent='0';
+  document.getElementById('hlGameBox').style.display='block';
+  activeTurn('hlP1Card','hlP2Card',1);
+  hlNewRound();
+}
+function hlNewRound() {
+  HL.streak=0; HL.over=false;
+  const card=HL_CARDS[Math.floor(Math.random()*HL_CARDS.length)];
+  HL.current=card;
+  document.getElementById('hlCurrentCard').textContent=card;
+  document.getElementById('hlNextCard').textContent='?';
+  document.getElementById('hlStreak').textContent='Séria: 0';
+  document.getElementById('hlRoundInfo').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' hrá!';
+  document.getElementById('hlStatus').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' — bude ďalšia karta vyššia alebo nižšia?';
+  activeTurn('hlP1Card','hlP2Card',HL.player);
+}
+function hlGuess(dir) {
+  if(HL.over) return;
+  const next=HL_CARDS[Math.floor(Math.random()*HL_CARDS.length)];
+  const curVal=HL_VALUES[HL.current], nextVal=HL_VALUES[next];
+  document.getElementById('hlNextCard').textContent=next;
+  const correct=(dir==='higher'&&nextVal>=curVal)||(dir==='lower'&&nextVal<=curVal);
+  if(correct) {
+    HL.streak++; playSound('click'); vibrate(20);
+    document.getElementById('hlStreak').textContent='Séria: '+HL.streak+' 🔥';
+    setTimeout(()=>{
+      HL.current=next;
+      document.getElementById('hlCurrentCard').textContent=next;
+      document.getElementById('hlNextCard').textContent='?';
+    },800);
+  } else {
+    HL.over=true; playSound('wrong'); vibrate([80,40,80]);
+    const score=HL.streak;
+    if(HL.player===1){HL.s1=score;HL.p1Best=score;document.getElementById('p1ScoreHL').textContent=score;popScore('p1ScoreHL');}
+    else{HL.s2=score;HL.p2Best=score;document.getElementById('p2ScoreHL').textContent=score;popScore('p2ScoreHL');}
+    if(HL.player===1){
+      document.getElementById('hlStatus').textContent='❌ Zlý tip! '+getP1Name('hl')+' dosiahol '+score+' bodov. Teraz '+getP2Name('hl')+'!';
+      HL.player=2;
+      setTimeout(hlNewRound,2000);
+    } else {
+      const n1=getP1Name('hl'),n2=getP2Name('hl');
+      if(HL.p1Best>HL.p2Best){document.getElementById('hlStatus').textContent='🏆 '+n1+' vyhral! ('+HL.p1Best+' vs '+HL.p2Best+')';addWin(1,'higherLower');celebrate('hlCelebration');}
+      else if(HL.p2Best>HL.p1Best){document.getElementById('hlStatus').textContent='🏆 '+n2+' vyhral! ('+HL.p2Best+' vs '+HL.p1Best+')';addWin(2,'higherLower');celebrate('hlCelebration');}
+      else{document.getElementById('hlStatus').textContent='🤝 Remíza! ('+HL.p1Best+':'+HL.p2Best+')';addWin(0,'higherLower');}
+      playSound('win');
+    }
+  }
+}
+function resetHL() {
+  HL.player=1;HL.s1=0;HL.s2=0;HL.streak=0;HL.over=false;
+  document.getElementById('p1ScoreHL').textContent='0';
+  document.getElementById('p2ScoreHL').textContent='0';
+  document.getElementById('hlStatus').textContent='Klikni Štart!';
+  document.getElementById('hlGameBox').style.display='none';
+  activeTurn('hlP1Card','hlP2Card',1);
+}
+
+// =============================================================================
+// RANDOM BATTLE
+// =============================================================================
+function randomBattle() {
+  const playable=MOBILE_GAMES.filter(g=>g.id!=='stats');
+  const pick=playable[Math.floor(Math.random()*playable.length)];
+  vibrate([30,20,30,20,50]);
+  if(window.innerWidth<=640) {
+    mobileGoTo(3,pick.id);
+  } else {
+    document.querySelectorAll('.game-area').forEach(g=>g.classList.remove('active'));
+    document.querySelectorAll('.game-btn').forEach(b=>b.classList.remove('active'));
+    const area=document.getElementById(pick.id);
+    if(area)area.classList.add('active');
+    const btn=document.getElementById(gameKeys[pick.id]);
+    if(btn)btn.classList.add('active');
+    currentGameId=pick.id;
+  }
+}
+
 resetTTT();
 resetPsk15();
 resetRPS();
@@ -5616,6 +6196,11 @@ const MOBILE_GAMES = [
   { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)' },
   { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)' },
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)' },
+  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)' },
+  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)' },
+  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)' },
+  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)' },
+  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)' },
 ];
 
