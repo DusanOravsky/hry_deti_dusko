@@ -124,9 +124,10 @@ body.light {
   .board-15x15 .cell { width:28px; height:28px; font-size:0.8em; }
 
   /* CONNECT 4 */
-  .c4-board { gap:4px; padding:8px; border-radius:12px; }
-  .c4-cell { width:36px; height:36px; border-radius:50%; }
-  .c4-drop-btn { width:36px; font-size:0.9em; padding:4px 0; }
+  .board-7x6 { grid-template-columns:repeat(7,40px); grid-template-rows:repeat(6,40px); gap:4px; padding:8px; border-radius:12px; }
+  .slot { width:40px; height:40px; }
+  .c4-col-btns { grid-template-columns:repeat(7,40px); gap:4px; }
+  .c4-col-btn { width:40px; font-size:0.9em; padding:4px 0; }
 
   /* BATTLESHIP */
   .bs-grid { gap:2px; padding:6px; }
@@ -595,6 +596,7 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 #missingLetterBtn { background:linear-gradient(135deg,#11998e,#38ef7d); }
 #sentenceBtn { background:linear-gradient(135deg,#e96c3c,#f7971e); }
 #puzzleBtn { background:linear-gradient(135deg,#e44d26,#f16529); }
+#mazeBtn { background:linear-gradient(135deg,#2ecc71,#27ae60); }
 #statsBtn { background:linear-gradient(135deg,#2c3e50,#3498db); }
 
 /* PUZZLE SCRAMBLE */
@@ -607,6 +609,15 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 .puzzle-timer { font-size:2em; font-weight:700; text-align:center; font-variant-numeric:tabular-nums; }
 .puzzle-moves { font-size:0.9em; opacity:0.7; text-align:center; }
 @media(max-width:480px) { .puzzle-tile { font-size:1.4em; } .puzzle-board { max-width:280px; } }
+
+/* MINI MAZE */
+.maze-canvas { border-radius:12px; border:3px solid rgba(255,255,255,0.2); display:block; margin:10px auto; touch-action:none; max-width:100%; }
+.maze-timer { font-size:2em; font-weight:700; text-align:center; font-variant-numeric:tabular-nums; }
+.maze-controls { display:grid; grid-template-columns:repeat(3,60px); grid-template-rows:repeat(3,60px); gap:4px; width:fit-content; margin:10px auto; }
+.maze-dir-btn { width:60px; height:60px; border:none; border-radius:12px; background:rgba(255,255,255,0.1); color:white; font-size:1.5em; cursor:pointer; transition:all 0.1s; }
+.maze-dir-btn:active { background:rgba(255,255,255,0.25); transform:scale(0.9); }
+.maze-dir-btn.empty { background:transparent; cursor:default; }
+@media(max-width:480px) { .maze-controls { grid-template-columns:repeat(3,50px); grid-template-rows:repeat(3,50px); } .maze-dir-btn { width:50px; height:50px; font-size:1.3em; } }
 
 /* MODE & DIFFICULTY */
 .mode-selector, .difficulty-selector {
@@ -1001,7 +1012,7 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 @keyframes c4drop { from{transform:translateY(-320px);opacity:0.3} to{transform:translateY(0);opacity:1} }
 
 /* BOARD CENTER */
-.board-center { display:flex; justify-content:center; overflow-x:auto; }
+.board-center { display:flex; justify-content:center; overflow-x:auto; touch-action:pan-x pan-y; }
 
 /* WIN HIGHLIGHT */
 .cell.win-cell { background:rgba(255,215,0,0.35)!important; border-color:#ffd700!important; box-shadow:0 0 12px rgba(255,215,0,0.6); animation:pulse-win 0.6s infinite alternate; }
@@ -1685,6 +1696,7 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
       <button class="game-btn" id="missingLetterBtn" style="background:linear-gradient(135deg,rgba(17,153,142,0.2),rgba(56,239,125,0.2))"><span class="game-btn-icon">🔡</span><span class="game-btn-label">Doplň písmeno</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="sentenceBtn" style="background:linear-gradient(135deg,rgba(233,108,60,0.2),rgba(247,151,30,0.2))"><span class="game-btn-icon">💬</span><span class="game-btn-label">Prekladaj vety</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="puzzleBtn" style="background:linear-gradient(135deg,rgba(228,77,38,0.25),rgba(241,101,41,0.25))"><span class="game-btn-icon">🧩</span><span class="game-btn-label">Puzzle</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="mazeBtn" style="background:linear-gradient(135deg,rgba(46,204,113,0.25),rgba(39,174,96,0.25))"><span class="game-btn-icon">🏁</span><span class="game-btn-label">Labyrint</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="spamClickBtn" style="background:linear-gradient(135deg,rgba(255,0,128,0.25),rgba(255,100,0,0.25))"><span class="game-btn-icon">👆</span><span class="game-btn-label">Spam Click</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="mathDuelBtn" style="background:linear-gradient(135deg,rgba(0,200,100,0.2),rgba(0,150,255,0.2))"><span class="game-btn-icon">🧮</span><span class="game-btn-label">Matika Duel</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="emojiGuessBtn" style="background:linear-gradient(135deg,rgba(255,200,0,0.25),rgba(255,100,200,0.25))"><span class="game-btn-icon">😂</span><span class="game-btn-label">Emoji Hádanka</span><span class="game-btn-dot"></span></button>
@@ -2476,6 +2488,38 @@ body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0
     </div>
   </div>
 
+  <!-- ===== MINI LABYRINT ===== -->
+  <div class="game-area" id="maze">
+    <div class="rules"><h3>📋 Mini Labyrint:</h3><ul>
+      <li>Naviguj 🟢 bodku cez labyrint k 🏁 cieľu</li>
+      <li>Použi šípky, swipe alebo klávesnicu</li>
+      <li>Hráči sa striedajú — kto prejde rýchlejšie, vyhráva!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="mzP1Card"><div class="player-name-display" id="mzP1Name">Lukáško</div><div class="player-score" id="p1ScoreMZ">0</div></div>
+      <div class="player-card player2" id="mzP2Card"><div class="player-name-display" id="mzP2Name">Natálka</div><div class="player-score" id="p2ScoreMZ">0</div></div>
+    </div>
+    <div class="status" id="mzStatus">Klikni Štart!</div>
+    <div class="maze-timer" id="mzTimer">0.0s</div>
+    <canvas class="maze-canvas" id="mzCanvas" width="300" height="300"></canvas>
+    <div class="maze-controls">
+      <div class="maze-dir-btn empty"></div>
+      <button class="maze-dir-btn" onclick="mazeMove(0,-1)">⬆️</button>
+      <div class="maze-dir-btn empty"></div>
+      <button class="maze-dir-btn" onclick="mazeMove(-1,0)">⬅️</button>
+      <div class="maze-dir-btn empty"></div>
+      <button class="maze-dir-btn" onclick="mazeMove(1,0)">➡️</button>
+      <div class="maze-dir-btn empty"></div>
+      <button class="maze-dir-btn" onclick="mazeMove(0,1)">⬇️</button>
+      <div class="maze-dir-btn empty"></div>
+    </div>
+    <div class="celebration" id="mzCelebration">🎉</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startMaze()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetMaze()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   <!-- ===== SPAM CLICK ===== -->
   <div class="game-area" id="spamClick">
     <div class="rules"><h3>📋 Spam Click:</h3><ul>
@@ -2688,7 +2732,7 @@ const gameKeys = {
   scramble:'scrambleBtn', langScramble:'langScrambleBtn', flashcard:'flashcardBtn',
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
-  chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn',
+  chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn',
   missingLetter:'missingLetterBtn', sentence:'sentenceBtn', stats:'statsBtn'
 };
 
@@ -2700,7 +2744,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint'
 };
 
 let currentGameId = 'ticTacToe';
@@ -7128,9 +7172,188 @@ function puzzleAI() {
   aiStep();
 }
 
+// =============================================================================
+// SEKCIA 31: MINI LABYRINT (MAZE)
+// =============================================================================
+const MZ = { grid:null, cols:15, rows:15, px:0, py:0, ex:14, ey:14, player:1, times:[0,0], timer:null, startTime:0, done:false, s1:0, s2:0, mazeData:null, cellSize:20, aiSolving:false };
+
+function resetMaze() {
+  MZ.done=false; MZ.player=1; MZ.times=[0,0]; MZ.aiSolving=false;
+  if(MZ.timer) { clearInterval(MZ.timer); MZ.timer=null; }
+  document.getElementById('mzStatus').textContent='Klikni Štart!';
+  document.getElementById('mzTimer').textContent='0.0s';
+  const canvas=document.getElementById('mzCanvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  activeTurn('mzP1Card','mzP2Card',1);
+}
+function generateMaze(cols,rows) {
+  // DFS maze generation
+  const grid=[];
+  for(let y=0;y<rows;y++) for(let x=0;x<cols;x++) grid.push({x,y,walls:{N:true,S:true,E:true,W:true},visited:false});
+  const cell=(x,y)=>grid[y*cols+x];
+  const stack=[cell(0,0)]; stack[0].visited=true;
+  while(stack.length>0){
+    const curr=stack[stack.length-1];
+    const neighbors=[];
+    if(curr.y>0&&!cell(curr.x,curr.y-1).visited) neighbors.push(cell(curr.x,curr.y-1));
+    if(curr.y<rows-1&&!cell(curr.x,curr.y+1).visited) neighbors.push(cell(curr.x,curr.y+1));
+    if(curr.x>0&&!cell(curr.x-1,curr.y).visited) neighbors.push(cell(curr.x-1,curr.y));
+    if(curr.x<cols-1&&!cell(curr.x+1,curr.y).visited) neighbors.push(cell(curr.x+1,curr.y));
+    if(neighbors.length===0) { stack.pop(); continue; }
+    const next=neighbors[Math.floor(Math.random()*neighbors.length)];
+    // Remove walls
+    if(next.x===curr.x&&next.y===curr.y-1) { curr.walls.N=false; next.walls.S=false; }
+    if(next.x===curr.x&&next.y===curr.y+1) { curr.walls.S=false; next.walls.N=false; }
+    if(next.x===curr.x+1&&next.y===curr.y) { curr.walls.E=false; next.walls.W=false; }
+    if(next.x===curr.x-1&&next.y===curr.y) { curr.walls.W=false; next.walls.E=false; }
+    next.visited=true;
+    stack.push(next);
+  }
+  return grid;
+}
+function drawMaze() {
+  const canvas=document.getElementById('mzCanvas');
+  const cs=MZ.cellSize;
+  canvas.width=MZ.cols*cs; canvas.height=MZ.rows*cs;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=2;
+  const grid=MZ.grid;
+  for(let i=0;i<grid.length;i++){
+    const c=grid[i], x=c.x*cs, y=c.y*cs;
+    if(c.walls.N) { ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+cs,y); ctx.stroke(); }
+    if(c.walls.S) { ctx.beginPath(); ctx.moveTo(x,y+cs); ctx.lineTo(x+cs,y+cs); ctx.stroke(); }
+    if(c.walls.W) { ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+cs); ctx.stroke(); }
+    if(c.walls.E) { ctx.beginPath(); ctx.moveTo(x+cs,y); ctx.lineTo(x+cs,y+cs); ctx.stroke(); }
+  }
+  // End
+  ctx.fillStyle='#e74c3c'; ctx.font=(cs*0.7)+'px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🏁',MZ.ex*cs+cs/2,MZ.ey*cs+cs/2);
+  // Player
+  ctx.fillStyle='#2ecc71';
+  ctx.beginPath(); ctx.arc(MZ.px*cs+cs/2,MZ.py*cs+cs/2,cs*0.35,0,Math.PI*2); ctx.fill();
+}
+function startMaze() {
+  if(MZ.timer) clearInterval(MZ.timer);
+  if(MZ.player===1) {
+    MZ.grid=generateMaze(MZ.cols,MZ.rows);
+    MZ.mazeData=JSON.stringify(MZ.grid);
+  } else {
+    MZ.grid=JSON.parse(MZ.mazeData);
+  }
+  MZ.px=0; MZ.py=0; MZ.done=false;
+  const name=MZ.player===1?getP1Name('mz'):getP2Name('mz');
+  document.getElementById('mzStatus').textContent='🏁 '+name+' — nájdi cestu!';
+  activeTurn('mzP1Card','mzP2Card',MZ.player);
+  MZ.startTime=Date.now();
+  MZ.timer=setInterval(()=>{
+    document.getElementById('mzTimer').textContent=((Date.now()-MZ.startTime)/1000).toFixed(1)+'s';
+  },100);
+  drawMaze();
+}
+function mazeMove(dx,dy) {
+  if(MZ.done||MZ.aiSolving||!MZ.grid) return;
+  if(welcomeGameMode==='ai'&&MZ.player===2) return;
+  const cell=MZ.grid[MZ.py*MZ.cols+MZ.px];
+  if(dx===1&&cell.walls.E) return;
+  if(dx===-1&&cell.walls.W) return;
+  if(dy===-1&&cell.walls.N) return;
+  if(dy===1&&cell.walls.S) return;
+  MZ.px+=dx; MZ.py+=dy;
+  playSound('click'); vibrate(10);
+  drawMaze();
+  if(MZ.px===MZ.ex&&MZ.py===MZ.ey) mazeDone();
+}
+function mazeDone() {
+  clearInterval(MZ.timer); MZ.timer=null;
+  MZ.done=true;
+  MZ.times[MZ.player-1]=(Date.now()-MZ.startTime)/1000;
+  const name=MZ.player===1?getP1Name('mz'):getP2Name('mz');
+  playSound('win');
+  if(MZ.player===1 && welcomeGameMode!=='ai') {
+    document.getElementById('mzStatus').textContent='✅ '+name+': '+MZ.times[0].toFixed(1)+'s. Teraz '+getP2Name('mz')+'!';
+    MZ.player=2;
+    setTimeout(startMaze,2000);
+  } else if(MZ.player===1 && welcomeGameMode==='ai') {
+    document.getElementById('mzStatus').textContent='✅ '+name+': '+MZ.times[0].toFixed(1)+'s. Počítač rieši...';
+    MZ.player=2;
+    setTimeout(()=>{ startMaze(); setTimeout(mazeAI,500); },1500);
+  } else {
+    mzCompare();
+  }
+}
+function mzCompare() {
+  const t1=MZ.times[0],t2=MZ.times[1];
+  let w=t1<t2?1:t2<t1?2:0;
+  if(w===1){MZ.s1++;document.getElementById('p1ScoreMZ').textContent=MZ.s1;addWin(1,'maze');}
+  else if(w===2){MZ.s2++;document.getElementById('p2ScoreMZ').textContent=MZ.s2;addWin(2,'maze');}
+  const n1=getP1Name('mz'),n2=getP2Name('mz');
+  document.getElementById('mzStatus').textContent=w===0?'🤝 Remíza!':'🏆 '+(w===1?n1:n2)+' vyhral! ('+n1+': '+t1.toFixed(1)+'s / '+n2+': '+t2.toFixed(1)+'s)';
+  celebrate('mzCelebration'); playSound('win');
+  MZ.player=1;
+}
+function mazeAI() {
+  // BFS to find shortest path, then animate
+  MZ.aiSolving=true;
+  const grid=MZ.grid,cols=MZ.cols,rows=MZ.rows;
+  const visited=new Set(); const queue=[{x:0,y:0,path:[]}];
+  visited.add('0,0');
+  let solution=null;
+  while(queue.length>0){
+    const{x,y,path}=queue.shift();
+    if(x===MZ.ex&&y===MZ.ey){solution=path;break;}
+    const cell=grid[y*cols+x];
+    const dirs=[{dx:1,dy:0,w:'E'},{dx:-1,dy:0,w:'W'},{dx:0,dy:-1,w:'N'},{dx:0,dy:1,w:'S'}];
+    for(const d of dirs){
+      if(cell.walls[d.w]) continue;
+      const nx=x+d.dx,ny=y+d.dy,key=nx+','+ny;
+      if(!visited.has(key)){visited.add(key);queue.push({x:nx,y:ny,path:[...path,{dx:d.dx,dy:d.dy}]});}
+    }
+  }
+  if(!solution){MZ.aiSolving=false;return;}
+  let step=0;
+  const speed=Math.max(50,200-solution.length*2); // Faster for longer mazes
+  function aiStep(){
+    if(step>=solution.length){MZ.aiSolving=false;mazeDone();return;}
+    const{dx,dy}=solution[step++];
+    MZ.px+=dx; MZ.py+=dy;
+    drawMaze();
+    setTimeout(aiStep,speed);
+  }
+  aiStep();
+}
+// Keyboard controls for maze
+document.addEventListener('keydown',e=>{
+  if(!MZ.grid||MZ.done) return;
+  const el=document.getElementById('maze');
+  if(!el||el.style.display==='none') return;
+  if(e.key==='ArrowRight'||e.key==='d') mazeMove(1,0);
+  else if(e.key==='ArrowLeft'||e.key==='a') mazeMove(-1,0);
+  else if(e.key==='ArrowUp'||e.key==='w') { e.preventDefault(); mazeMove(0,-1); }
+  else if(e.key==='ArrowDown'||e.key==='s') { e.preventDefault(); mazeMove(0,1); }
+});
+// Swipe controls for maze canvas
+(function(){
+  const canvas=document.getElementById('mzCanvas');
+  if(!canvas) return;
+  let sx,sy;
+  canvas.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;e.preventDefault();},{passive:false});
+  canvas.addEventListener('touchend',e=>{
+    if(sx===undefined) return;
+    const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)<15&&Math.abs(dy)<15) return;
+    if(Math.abs(dx)>Math.abs(dy)) mazeMove(dx>0?1:-1,0);
+    else mazeMove(0,dy>0?1:-1);
+    sx=undefined;
+  });
+})();
+
 resetChess();
 resetCheckers();
 resetPuzzle();
+resetMaze();
 resetTTT();
 resetPsk15();
 resetRPS();
@@ -7173,6 +7396,7 @@ const MOBILE_GAMES = [
   { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
+  { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
