@@ -2826,7 +2826,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 23;
+const APP_VERSION = 24;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3054,12 +3054,26 @@ function activeTurn(card1id, card2id, active) {
 }
 
 function getActiveP1Name(gId) {
-  const keys = {ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',flashcard:'fc'};
-  const k = keys[gId]; return k ? getP1Name(k) : 'Hráč 1';
+  const keys = {
+    ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
+    quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
+    flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',missingLetter:'ml',sentence:'st'
+  };
+  const k = keys[gId];
+  if(k) return getP1Name(k);
+  return globalP1 || 'Hráč 1';
 }
 function getActiveP2Name(gId) {
-  const keys = {ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',flashcard:'fc'};
-  const k = keys[gId]; return k ? getP2Name(k) : 'Hráč 2';
+  const keys = {
+    ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
+    quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
+    flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',tetris:'tet',missingLetter:'ml',sentence:'st'
+  };
+  const k = keys[gId];
+  if(k) return getP2Name(k);
+  return globalP2 || 'Hráč 2';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
