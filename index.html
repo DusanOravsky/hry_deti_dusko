@@ -1059,8 +1059,8 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 .cell-appear { animation:cellAppear 0.25s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes flipCard { 0%{transform:rotateY(0)} 50%{transform:rotateY(90deg)} 100%{transform:rotateY(0)} }
 .flip-anim { animation:flipCard 0.4s ease; }
-@keyframes diceRoll { 0%{transform:rotate(0)} 25%{transform:rotate(20deg)} 50%{transform:rotate(-15deg)} 75%{transform:rotate(10deg)} 100%{transform:rotate(0)} }
-.dice-roll { animation:diceRoll 0.5s ease; }
+@keyframes diceRoll { 0%{transform:rotate(0) scale(1)} 15%{transform:rotate(25deg) scale(1.15)} 35%{transform:rotate(-20deg) scale(1.2)} 55%{transform:rotate(15deg) scale(1.1)} 75%{transform:rotate(-8deg) scale(1.05)} 100%{transform:rotate(0) scale(1)} }
+.dice-roll { animation:diceRoll 0.6s ease; }
 @keyframes glowCorrect { 0%{box-shadow:0 0 0 rgba(67,233,123,0)} 50%{box-shadow:0 0 20px rgba(67,233,123,0.6)} 100%{box-shadow:0 0 0 rgba(67,233,123,0)} }
 .glow-correct { animation:glowCorrect 0.6s ease; }
 @keyframes shakeWrong { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
@@ -3214,8 +3214,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>6 = bonus hod! Kto dostane všetky 4 domov vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="ludoP1Card"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div class="player-score" id="p1ScoreLudo">0</div></div>
-      <div class="player-card player2" id="ludoP2Card"><div class="player-name-display" id="ludoP2Name">Hráč 2</div><div class="player-score" id="p2ScoreLudo">0</div></div>
+      <div class="player-card player1 active-turn" id="ludoP1Card"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div style="font-size:1.4em">🔴</div><div class="player-score" id="p1ScoreLudo">0</div></div>
+      <div class="player-card player2" id="ludoP2Card"><div class="player-name-display" id="ludoP2Name">Hráč 2</div><div style="font-size:1.4em">🔵</div><div class="player-score" id="p2ScoreLudo">0</div></div>
     </div>
     <div class="difficulty-selector" id="ludoAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setLudoDiff('easy',this)">Ľahká</button>
@@ -3224,7 +3224,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="status" id="ludoStatus">Hráč 1 hádže kockou!</div>
     <div style="text-align:center;margin:15px 0">
-      <button onclick="ludoRoll()" id="ludoDiceBtn" style="font-size:3em;padding:10px 25px;border:3px solid rgba(255,255,255,0.3);border-radius:15px;background:rgba(255,255,255,0.1);cursor:pointer;transition:all 0.2s;color:white"><span id="ludoDiceVal">🎲</span></button>
+      <button onclick="ludoRoll()" id="ludoDiceBtn" style="font-size:3.5em;padding:12px 30px;border:3px solid rgba(255,255,255,0.3);border-radius:18px;background:rgba(255,255,255,0.1);cursor:pointer;transition:all 0.2s;color:white;min-width:100px"><span id="ludoDiceVal">🎲</span><span id="ludoDiceNum" style="display:none;font-size:0.6em;margin-left:6px;font-weight:800;text-shadow:0 0 10px rgba(255,255,255,0.5)"></span></button>
     </div>
     <div style="display:flex;justify-content:center;margin:10px 0">
       <div id="ludoBoard" style="display:grid;grid-template-columns:repeat(11,1fr);gap:2px;width:100%;max-width:min(400px,92vw);aspect-ratio:1;box-sizing:border-box;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:4px"></div>
@@ -3299,7 +3299,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 23;
+const APP_VERSION = 24;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -5517,7 +5517,7 @@ function resetQuiz() {
 const BS = {
   boards:[null,null], hits:[null,null],
   currSetup:0, selectedShip:null, orientH:true,
-  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy'
+  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy', enemySunk:new Set()
 };
 function setBSDiff(d,btn) { BS.diff=d; document.querySelectorAll('#bsAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
@@ -5526,7 +5526,7 @@ function setBSDiff(d,btn) { BS.diff=d; document.querySelectorAll('#bsAISel .diff
 function resetBS() {
   BS.boards=[Array(100).fill(0),Array(100).fill(0)];
   BS.hits=[Array(100).fill(0),Array(100).fill(0)];
-  BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false; BS.aiHits=[]; BS.aiMode='hunt';
+  BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false; BS.aiHits=[]; BS.aiMode='hunt'; BS.enemySunk=new Set();
   MP._meReady=false; MP._opponentReady=false;
   document.getElementById('bsSetupArea').style.display='block';
   document.getElementById('bsGameArea').style.display='none';
@@ -5640,8 +5640,9 @@ function bsRenderGame() {
   // Enemy grid (clickable) — detect sunk ships on enemy board
   const oppBoardIdx = MP.isConnected ? (MP.isHost ? 1 : 0) : defender;
   const enemySunk = new Set();
-  // We can only detect sunk from hits pattern (no access to opponent board in MP), but in local we can
-  if(!MP.isConnected) {
+  if(MP.isConnected) {
+    BS.enemySunk.forEach(j=>enemySunk.add(j));
+  } else {
     for(let shipId=1;shipId<=bsShipDefs.length;shipId++){
       const cells=[];
       for(let j=0;j<100;j++) if(BS.boards[oppBoardIdx][j]===shipId) cells.push(j);
@@ -8775,6 +8776,7 @@ function resetLudo() {
   LUDO.pieces=[[-1,-1,-1,-1],[-1,-1,-1,-1]];
   document.getElementById('ludoStatus').textContent=getP1Name('lu')+' hádže kockou!';
   document.getElementById('ludoDiceVal').textContent='🎲';
+  document.getElementById('ludoDiceNum').style.display='none';
   activeTurn('ludoP1Card','ludoP2Card',1);
   renderLudo();
 }
@@ -8853,8 +8855,13 @@ function ludoRoll() {
   LUDO.rolled=true;
   const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
   const diceEl=document.getElementById('ludoDiceVal');
+  const diceNum=document.getElementById('ludoDiceNum');
   diceEl.textContent=diceE[LUDO.dice-1];
-  diceEl.classList.remove('dice-roll'); void diceEl.offsetWidth; diceEl.classList.add('dice-roll');
+  diceNum.textContent=LUDO.dice;
+  diceNum.style.display='inline';
+  diceNum.style.color=LUDO.dice===6?'#ffd700':'white';
+  const btn=document.getElementById('ludoDiceBtn');
+  btn.classList.remove('dice-roll'); void btn.offsetWidth; btn.classList.add('dice-roll');
   playSound('click');
   // Send dice to opponent
   if(MP.isConnected&&MP.connection) MP.connection.send({type:'ludo-roll',dice:LUDO.dice});
@@ -8876,6 +8883,10 @@ function ludoDoRollAI() {
   LUDO.rolled=true;
   const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
   document.getElementById('ludoDiceVal').textContent=diceE[LUDO.dice-1];
+  const diceNumAI=document.getElementById('ludoDiceNum');
+  diceNumAI.textContent=LUDO.dice; diceNumAI.style.display='inline'; diceNumAI.style.color=LUDO.dice===6?'#ffd700':'white';
+  const btnAI=document.getElementById('ludoDiceBtn');
+  btnAI.classList.remove('dice-roll'); void btnAI.offsetWidth; btnAI.classList.add('dice-roll');
   playSound('click');
   const pName=getP2Name('lu');
   const movable=ludoGetMovable();
@@ -10482,6 +10493,10 @@ function mpHandleMessage(data) {
     LUDO.dice = data.dice; LUDO.rolled = true;
     const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
     document.getElementById('ludoDiceVal').textContent=diceE[LUDO.dice-1];
+    const dnMP=document.getElementById('ludoDiceNum');
+    dnMP.textContent=LUDO.dice; dnMP.style.display='inline'; dnMP.style.color=LUDO.dice===6?'#ffd700':'white';
+    const btnMP=document.getElementById('ludoDiceBtn');
+    btnMP.classList.remove('dice-roll'); void btnMP.offsetWidth; btnMP.classList.add('dice-roll');
     playSound('click');
     const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
     const movable=ludoGetMovable();
@@ -10526,7 +10541,15 @@ function mpHandleMessage(data) {
     const myBoard = MP.isHost ? 0 : 1;
     const isHit = !!BS.boards[myBoard][idx];
     BS.hits[myBoard][idx] = isHit ? 2 : 1;
-    MP.connection.send({ type:'bs-result', index:idx, hit:isHit, sunk:false });
+    // Check if the hit ship is fully sunk
+    let sunkCells = null;
+    if(isHit) {
+      const shipId = BS.boards[myBoard][idx];
+      const cells = [];
+      for(let j=0;j<100;j++) if(BS.boards[myBoard][j]===shipId) cells.push(j);
+      if(cells.every(j=>BS.hits[myBoard][j]===2)) sunkCells = cells;
+    }
+    MP.connection.send({ type:'bs-result', index:idx, hit:isHit, sunkCells: sunkCells });
     playSound(isHit ? 'hit' : 'miss');
     // Only switch turn on miss — hit means opponent shoots again
     if(!isHit) BS.turn = BS.turn===1?2:1;
@@ -10552,8 +10575,10 @@ function mpHandleMessage(data) {
   if(data.type === 'bs-result') {
     const oppBoard = MP.isHost ? 1 : 0;
     BS.hits[oppBoard][data.index] = data.hit ? 2 : 1;
+    // Store sunk ship cells from opponent
+    if(data.sunkCells) { data.sunkCells.forEach(j=>BS.enemySunk.add(j)); playSound('win'); }
     playSound(data.hit ? 'hit' : 'miss');
-    document.getElementById('bsStatus').textContent = data.hit ? '💥 Zásah! Strieľaj znova!' : '🌊 Vedľa!';
+    document.getElementById('bsStatus').textContent = data.sunkCells ? '🚢 Potopená!' : (data.hit ? '💥 Zásah! Strieľaj znova!' : '🌊 Vedľa!');
     if(!data.hit) BS.turn = BS.turn===1?2:1;
     bsRenderGame();
     // Animate the shot cell on enemy grid
