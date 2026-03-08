@@ -9707,21 +9707,9 @@ document.addEventListener('keydown',e=>{
   });
 })();
 
-// PeerJS config with STUN/TURN servers for NAT traversal
+// PeerJS config
 const PEER_CONFIG = {
-  debug: 2,
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' },
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
-    ]
-  }
+  host: '0.peerjs.com', port: 443, secure: true, debug: 2
 };
 
 // MP state must be declared before any reset calls that reference it
@@ -9915,20 +9903,8 @@ document.getElementById('appVersion').textContent='v'+APP_VERSION;
 const svEl=document.getElementById('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
 
-// ===== MP AUTO-RECONNECT =====
-window.addEventListener('beforeunload', () => {
-  if(MP.isConnected && MP.roomCode) {
-    sessionStorage.setItem('mp_session', JSON.stringify({
-      roomCode: MP.roomCode,
-      isHost: MP.isHost,
-      myName: MP.myName,
-      opponentName: MP.opponentName,
-      tttRound: MP.tttRound, memRound: MP.memRound, c4Round: MP.c4Round,
-      chRound: MP.chRound, dkRound: MP.dkRound, bsRound: MP.bsRound,
-      ludoRound: MP.ludoRound, gnRound: MP.gnRound
-    }));
-  }
-});
+// Clear any stale MP session data on load
+sessionStorage.removeItem('mp_session');
 function mpAutoReconnect() {
   const saved = sessionStorage.getItem('mp_session');
   if(!saved) return;
@@ -9990,7 +9966,7 @@ function mpAutoReconnect() {
     }
   } catch(e) { console.error('Auto-reconnect failed:', e); }
 }
-mpAutoReconnect();
+// mpAutoReconnect(); // Disabled — was causing connection conflicts
 
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
@@ -10448,22 +10424,12 @@ function mpJoinRoom() {
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
       console.log('Connecting to host:', code);
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Server OK, pripájam k miestnosti <strong>'+code+'</strong>...</div><div id="mpDebugLog" style="font-size:0.7em;opacity:0.5;margin-top:8px;max-height:80px;overflow-y:auto;text-align:left"></div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Server OK, pripájam k <strong>'+code+'</strong>...</div>';
 
       // Connect to host
       MP.connection = MP.peer.connect(code, {
         reliable: true
       });
-      const dbg=document.getElementById('mpDebugLog');
-      if(dbg) dbg.innerHTML+='<div>→ connect() volaný</div>';
-      if(MP.connection.peerConnection) {
-        MP.connection.peerConnection.onicecandidate = (e) => {
-          if(dbg && e.candidate) dbg.innerHTML+='<div>ICE: '+e.candidate.type+'</div>';
-        };
-        MP.connection.peerConnection.oniceconnectionstatechange = () => {
-          if(dbg) dbg.innerHTML+='<div>ICE stav: '+MP.connection.peerConnection.iceConnectionState+'</div>';
-        };
-      }
 
       MP.connection.on('open', () => {
         console.log('Connected to host!');
