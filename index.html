@@ -1175,9 +1175,19 @@ body.light .ghost-letter-display { color:#222; background:rgba(0,0,0,0.04); bord
 body.light .ghost-key { color:#333; border-color:rgba(0,0,0,0.2); background:rgba(0,0,0,0.06); }
 
 /* HANGMAN (OBESENEC) */
-body.light #hmRoundInfo { color:rgba(0,0,0,0.5); }
-body.light #hmWord { color:#222; }
-body.light #hmHint { color:#222; }
+#hmRoundInfo { font-size:0.85em; margin-bottom:6px; color:rgba(255,255,255,0.5); }
+#hmLives { font-size:2.5em; margin:10px 0; }
+#hmCanvas { margin:10px auto; display:block; border-radius:12px; background:rgba(255,255,255,0.05); }
+#hmWord { font-size:2em; letter-spacing:8px; font-weight:900; margin:16px 0; font-family:monospace; color:rgba(255,255,255,0.95); }
+#hmHint { font-size:0.9em; margin:6px 0; font-weight:700; color:rgba(255,255,255,0.85); }
+#hmHint.hm-success { color:#43e97b; }
+#hmHint.hm-error { color:#f5576c; }
+body.light #hmRoundInfo { color:rgba(0,0,0,0.7); }
+body.light #hmCanvas { background:rgba(0,0,0,0.03); }
+body.light #hmWord { color:#1a1a1a; }
+body.light #hmHint { color:#1a1a1a; }
+body.light #hmHint.hm-success { color:#2d8659; }
+body.light #hmHint.hm-error { color:#c73849; }
 
 /* REACTION TEST */
 .reaction-pad {
@@ -3157,11 +3167,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="status" id="hmStatus">Klikni Štart!</div>
     <div id="hmGameBox" style="display:none;text-align:center">
-      <div style="font-size:0.85em;margin-bottom:6px;color:rgba(255,255,255,0.5)" id="hmRoundInfo"></div>
-      <div style="font-size:2.5em;margin:10px 0" id="hmLives"></div>
-      <canvas id="hmCanvas" width="200" height="200" style="margin:10px auto;display:block;border-radius:12px;background:rgba(255,255,255,0.05)"></canvas>
-      <div style="font-size:2em;letter-spacing:8px;font-weight:900;margin:16px 0;font-family:monospace;color:rgba(255,255,255,0.95)" id="hmWord"></div>
-      <div style="font-size:0.9em;margin:6px 0;font-weight:600" id="hmHint"></div>
+      <div id="hmRoundInfo"></div>
+      <div id="hmLives"></div>
+      <canvas id="hmCanvas" width="200" height="200"></canvas>
+      <div id="hmWord"></div>
+      <div id="hmHint"></div>
       <div style="margin:8px 0"><button class="action-btn" onclick="hmUseHint()" id="hmHintBtn" style="font-size:0.9em;padding:8px 16px">💡 Nápoveda</button></div>
       <div class="ghost-keyboard" id="hmKeyboard"></div>
     </div>
@@ -3498,7 +3508,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 61;
+const APP_VERSION = 62;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -8763,7 +8773,7 @@ function nextHMRound() {
   activeTurn('hmP1Card','hmP2Card',HM.player);
   renderHM(); drawHangman(0); buildHMKeyboard();
   const hb=document.getElementById('hmHintBtn'); if(hb){hb.disabled=false;hb.style.opacity='1';}
-  document.getElementById('hmHint').textContent=''; document.getElementById('hmHint').style.color='';
+  const hint=document.getElementById('hmHint'); hint.textContent=''; hint.className='';
 }
 function renderHM() {
   let display='';
@@ -8818,13 +8828,15 @@ function hmGuessLetter(ch,btn) {
     const pts=HM.hintUsed?0.5:1;
     if(HM.player===1){HM.s1+=pts;document.getElementById('p1ScoreHM').textContent=HM.s1;popScore('p1ScoreHM');}
     else{HM.s2+=pts;document.getElementById('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
-    document.getElementById('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word+(HM.hintUsed?' (0.5 bodu za nápovedu)':'');
-    document.getElementById('hmHint').style.color='#43e97b';
+    const hint=document.getElementById('hmHint');
+    hint.textContent='✅ Správne! Slovo bolo: '+HM.word+(HM.hintUsed?' (0.5 bodu za nápovedu)':'');
+    hint.className='hm-success';
     setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
   } else if(HM.errors>=8) {
     HM.roundOver=true; playSound('wrong');
-    document.getElementById('hmHint').textContent='💀 Prehral! Slovo bolo: '+HM.word;
-    document.getElementById('hmHint').style.color='#f5576c';
+    const hint=document.getElementById('hmHint');
+    hint.textContent='💀 Prehral! Slovo bolo: '+HM.word;
+    hint.className='hm-error';
     document.getElementById('hmWord').textContent=HM.word.split('').join(' ');
     setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2500);
   }
