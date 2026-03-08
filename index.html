@@ -3375,7 +3375,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 41;
+const APP_VERSION = 42;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10274,6 +10274,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 
+let welcomeGameMode = 'pvp';
 resetDB();
 resetChess();
 resetCheckers();
@@ -10510,7 +10511,6 @@ const _origTS = toggleSound; toggleSound = function(){ _origTS(); _updateMobileT
 // Resize handler — no longer needed since 3-level nav is always active
 
 // ===== WELCOME SCREEN =====
-let welcomeGameMode = 'pvp';
 
 function updateWelcomeSub() {
   const p1 = document.getElementById('wP1Input').value.trim() || 'Hráč 1';
