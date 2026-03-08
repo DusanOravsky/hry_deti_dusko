@@ -3454,13 +3454,13 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <!-- ===== WORDLE ===== -->
   <div class="game-area" id="wordle">
     <div class="rules"><h3>Wordle:</h3><ul>
-      <li>Uhodni 5-pismenove slovo za 6 pokusov</li>
-      <li><span style="background:#538d4e;color:white;padding:1px 5px;border-radius:3px">Zelena</span> = spravne pismeno na spravnom mieste</li>
-      <li><span style="background:#b59f3b;color:white;padding:1px 5px;border-radius:3px">Zlta</span> = pismeno je v slove, ale inde</li>
-      <li><span style="background:#3a3a3c;color:white;padding:1px 5px;border-radius:3px">Siva</span> = pismeno nie je v slove</li>
+      <li>Uhádni 5-písmenové slovo za 6 pokusov</li>
+      <li><span style="background:#538d4e;color:white;padding:1px 5px;border-radius:3px">Zelená</span> = správne písmeno na správnom mieste</li>
+      <li><span style="background:#b59f3b;color:white;padding:1px 5px;border-radius:3px">Žltá</span> = písmeno je v slove, ale inde</li>
+      <li><span style="background:#3a3a3c;color:white;padding:1px 5px;border-radius:3px">Sivá</span> = písmeno nie je v slove</li>
     </ul></div>
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px">
-      <button class="action-btn" id="wdlLangSK" onclick="setWdlLang('sk')" style="padding:6px 16px;font-size:0.85em">&#127480;&#127472; Slovencina</button>
+      <button class="action-btn" id="wdlLangSK" onclick="setWdlLang('sk')" style="padding:6px 16px;font-size:0.85em">&#127480;&#127472; Slovenčina</button>
       <button class="action-btn" id="wdlLangEN" onclick="setWdlLang('en')" style="padding:6px 16px;font-size:0.85em">&#127468;&#127463; English</button>
     </div>
     <div class="player-info">
@@ -3483,7 +3483,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 45;
+const APP_VERSION = 46;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10423,7 +10423,7 @@ resetBS();
 resetGhost();
 resetReaction();
 resetLudo();
-resetWordle();
+setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 
 // Load persisted data
 loadStats();
