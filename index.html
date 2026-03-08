@@ -9707,6 +9707,22 @@ document.addEventListener('keydown',e=>{
   });
 })();
 
+// PeerJS config with TURN servers for NAT traversal
+const PEER_CONFIG = {
+  host: '0.peerjs.com', port: 443, secure: true, debug: 2,
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun.relay.metered.ca:80' },
+      { urls: 'turn:a.relay.metered.ca:80', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' },
+      { urls: 'turn:a.relay.metered.ca:80?transport=tcp', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' },
+      { urls: 'turn:a.relay.metered.ca:443', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' },
+      { urls: 'turns:a.relay.metered.ca:443?transport=tcp', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' }
+    ]
+  }
+};
+
 // MP state must be declared before any reset calls that reference it
 const MP = {
   peer: null,
@@ -9927,7 +9943,7 @@ function mpAutoReconnect() {
     MP.ludoRound = s.ludoRound||0; MP.gnRound = s.gnRound||0;
     console.log('Auto-reconnecting as', s.isHost?'host':'guest', 'to', s.roomCode);
     if(s.isHost) {
-      MP.peer = new Peer(s.roomCode, {host:'0.peerjs.com',port:443,secure:true,debug:0});
+      MP.peer = new Peer(s.roomCode, PEER_CONFIG);
       MP.peer.on('open', () => {
         console.log('Host peer re-opened');
         document.getElementById('mpHostStatus').innerHTML='<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Znovu pripájam... Čakám na súpera.</div>';
@@ -9951,7 +9967,7 @@ function mpAutoReconnect() {
       });
       MP.peer.on('error', (err) => { console.error('Reconnect error:', err); mpDisconnect(); });
     } else {
-      MP.peer = new Peer({host:'0.peerjs.com',port:443,secure:true,debug:0});
+      MP.peer = new Peer(PEER_CONFIG);
       MP.peer.on('open', () => {
         console.log('Guest peer re-opened, connecting to', s.roomCode);
         MP.connection = MP.peer.connect(s.roomCode, {reliable:true});
@@ -10336,16 +10352,11 @@ function mpCreateRoom() {
 
   // Create peer with room code as ID
   try {
-    MP.peer = new Peer(roomCode, {
-      host: '0.peerjs.com',
-      port: 443,
-      secure: true,
-      debug: 1
-    });
+    MP.peer = new Peer(roomCode, PEER_CONFIG);
 
     MP.peer.on('open', (id) => {
       console.log('Host peer opened with ID:', id);
-      document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...</div>';
+      document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Miestnosť vytvorená!</div><div style="font-size:0.8em;opacity:0.6;margin-top:4px">Čaká sa na pripojenie hráča...</div>';
     });
 
     MP.peer.on('connection', (conn) => {
@@ -10431,16 +10442,12 @@ function mpJoinRoom() {
 
   try {
     // Create peer with random ID
-    MP.peer = new Peer({
-      host: '0.peerjs.com',
-      port: 443,
-      secure: true,
-      debug: 1
-    });
+    MP.peer = new Peer(PEER_CONFIG);
 
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
       console.log('Connecting to host:', code);
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Server OK, pripájam k miestnosti...</div>';
 
       // Connect to host
       MP.connection = MP.peer.connect(code, {
@@ -10552,7 +10559,7 @@ function mpTryReconnect() {
     if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
     try {
       if(MP.isHost) {
-        MP.peer = new Peer(MP.roomCode, {host:'0.peerjs.com',port:443,secure:true,debug:0});
+        MP.peer = new Peer(MP.roomCode, PEER_CONFIG);
         MP.peer.on('open', () => {
           console.log('Reconnect: host peer open, waiting for guest...');
         });
@@ -10576,7 +10583,7 @@ function mpTryReconnect() {
         // If no guest connects in 15s, try again
         setTimeout(() => { if(MP._reconnecting && !MP.isConnected) attempt(); }, 15000);
       } else {
-        MP.peer = new Peer({host:'0.peerjs.com',port:443,secure:true,debug:0});
+        MP.peer = new Peer(PEER_CONFIG);
         MP.peer.on('open', () => {
           MP.connection = MP.peer.connect(MP.roomCode, {reliable:true});
           MP.connection.on('open', () => {
