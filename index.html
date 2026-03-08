@@ -10111,6 +10111,10 @@ function updateWelcomeSub() {
   const sub = document.getElementById('welcomeSub');
   if(sub) sub.textContent = (p1 !== 'Hráč 1' && p2 !== 'Hráč 2') ? p1 + ' & ' + p2 + ' — Premium Vydanie' : 'Premium Vydanie';
   document.title = (p1 !== 'Hráč 1' && p2 !== 'Hráč 2') ? 'Hrajme si ' + p1 + ' a ' + p2 : 'Hrajme si';
+  // Sync welcome inputs to global and save
+  document.getElementById('globalP1Input').value = document.getElementById('wP1Input').value;
+  document.getElementById('globalP2Input').value = document.getElementById('wP2Input').value;
+  saveNames();
 }
 function setWelcomeMode(mode) {
   welcomeGameMode = mode;
