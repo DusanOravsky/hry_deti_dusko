@@ -2486,6 +2486,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="quiz-theme-btn" onclick="setQuizTheme('technology',this)">💻 Technológia</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('finance',this)">💰 Financie</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('business',this)">📊 Podnikanie</button>
+      <button class="quiz-theme-btn" onclick="setQuizTheme('chemistry',this)">🧪 Chémia</button>
       <button class="quiz-theme-btn" onclick="setQuizTheme('capitals',this)">🏛️ Hlavné mestá</button>
     </div>
     <div class="timer-settings">
@@ -3492,7 +3493,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 58;
+const APP_VERSION = 59;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6107,6 +6108,60 @@ quizDB.business = [
   {q:'Čo je licencia?',a:['Povolenie používať niečo cudzieho','Daň','Produkt','Zisk'],c:0},
   {q:'Čo znamená skratka NDA?',a:['Non-Disclosure Agreement','New Development Agreement','National Distribution Act','Network Data Access'],c:0},
   {q:'Čo je pivotovanie?',a:['Zmena smerovania firmy','Zisk','Reklama','Daň'],c:0}
+];
+
+// ===== CHEMISTRY =====
+quizDB.chemistry = [
+  {q:'Aký je chemický symbol pre vodu?',a:['H₂O','O₂','CO₂','H₂'],c:0},
+  {q:'Koľko prvkov je v periodickej tabuľke?',a:['118','100','92','120'],c:0},
+  {q:'Čo je kyslík?',a:['Prvok','Zlúčenina','Zmes','Molekula'],c:0},
+  {q:'Aký prvok má symbol Au?',a:['Zlato','Striebro','Železo','Meď'],c:0},
+  {q:'Čo je chemická reakcia?',a:['Premena látok na nové látky','Topenie','Mrazenie','Vyparovanie'],c:0},
+  {q:'Aký prvok má symbol Fe?',a:['Železo','Fluór','Fosfor','Francium'],c:0},
+  {q:'Čo je atómové číslo?',a:['Počet protónov','Počet elektrónov','Počet neutrónov','Hmotnosť'],c:0},
+  {q:'Aký prvok má symbol Ag?',a:['Striebro','Zlato','Hliník','Argón'],c:0},
+  {q:'Čo je pH stupnica?',a:['Miera kyslosti/zásaditosti','Teplota','Tlak','Objem'],c:0},
+  {q:'Aký prvok má symbol Na?',a:['Sodík','Dusík','Neón','Nikel'],c:0},
+  {q:'Čo je molekula?',a:['Spojenie atómov','Jednoduchý atóm','Elektrón','Protón'],c:0},
+  {q:'Aký prvok má symbol Cu?',a:['Meď','Uhlík','Vápnik','Chlór'],c:0},
+  {q:'Čo je oxidácia?',a:['Reakcia s kyslíkom','Redukcia','Topenie','Mrazenie'],c:0},
+  {q:'Aký prvok má symbol C?',a:['Uhlík','Vápnik','Chlór','Meď'],c:0},
+  {q:'Čo je katalyzátor?',a:['Urýchľuje reakciu','Spomaľuje reakciu','Zastaví reakciu','Vytvorí reakciu'],c:0},
+  {q:'Aký prvok má symbol N?',a:['Dusík','Sodík','Neón','Nikel'],c:0},
+  {q:'Čo je ionizácia?',a:['Získanie alebo strata elektrónov','Rozpad atómu','Spojenie atómov','Topenie'],c:0},
+  {q:'Aký prvok má symbol O?',a:['Kyslík','Osmium','Olovjo','Orgazón'],c:0},
+  {q:'Čo je acidita?',a:['Kyslý charakter látky','Zásaditý charakter','Neutrálny charakter','Slanosť'],c:0},
+  {q:'Aký prvok má symbol Ca?',a:['Vápnik','Uhlík','Meď','Kadmium'],c:0},
+  {q:'Čo je elektrolýza?',a:['Rozklad látky elektrickým prúdom','Topenie','Mrazenie','Vyparovanie'],c:0},
+  {q:'Aký prvok má symbol K?',a:['Draslík','Krypton','Kadmium','Kobalt'],c:0},
+  {q:'Čo je redukcia?',a:['Získanie elektrónov','Strata elektrónov','Topenie','Mrazenie'],c:0},
+  {q:'Aký prvok má symbol Cl?',a:['Chlór','Vápnik','Meď','Uhlík'],c:0},
+  {q:'Čo je zásada?',a:['Látka s pH > 7','Látka s pH < 7','Látka s pH = 7','Kyselina'],c:0},
+  {q:'Aký prvok má symbol He?',a:['Hélium','Vodík','Hafnium','Holmium'],c:0},
+  {q:'Čo je destilá cia?',a:['Čistenie kvapaliny varením','Mrazenie','Topenie','Zmiešanie'],c:0},
+  {q:'Aký prvok má symbol Mg?',a:['Horčík','Mangán','Mangan','Molybdén'],c:0},
+  {q:'Čo je exotermická reakcia?',a:['Uvoľňuje teplo','Pohlcuje teplo','Nevytvára teplo','Chladne'],c:0},
+  {q:'Aký prvok má symbol P?',a:['Fosfor','Platina','Paládium','Polonium'],c:0},
+  {q:'Čo je endotermická reakcia?',a:['Pohlcuje teplo','Uvoľňuje teplo','Nevytvára teplo','Horí'],c:0},
+  {q:'Aký prvok má symbol S?',a:['Síra','Sodík','Striebro','Skandium'],c:0},
+  {q:'Čo je zlúčenina?',a:['Spojenie rôznych prvkov','Čistý prvok','Zmes','Atóm'],c:0},
+  {q:'Aký prvok má symbol Zn?',a:['Zinok','Zirkónium','Xenón','Ytrium'],c:0},
+  {q:'Čo je neutralizácia?',a:['Reakcia kyseliny so zásadou','Oxidácia','Redukcia','Topenie'],c:0},
+  {q:'Aký prvok má symbol Al?',a:['Hliník','Striebro','Zlato','Argón'],c:0},
+  {q:'Čo je rozpúšťadlo?',a:['Látka, ktorá rozpúšťa inú látku','Rozpustená látka','Zmes','Zlúčenina'],c:0},
+  {q:'Aký prvok má symbol Pb?',a:['Olovo','Fosfor','Platina','Paládium'],c:0},
+  {q:'Čo je koncentrácia?',a:['Množstvo látky v roztoku','Teplota','Tlak','Objem'],c:0},
+  {q:'Aký prvok má symbol Si?',a:['Kremík','Striebro','Síra','Sodík'],c:0},
+  {q:'Čo je precipitácia?',a:['Tvorba pevnej látky v roztoku','Topenie','Vyparovanie','Mrazenie'],c:0},
+  {q:'Aký prvok má symbol H?',a:['Vodík','Hélium','Hafnium','Holmium'],c:0},
+  {q:'Čo je titrácia?',a:['Meranie koncentrácie látky','Topenie','Mrazenie','Vyparovanie'],c:0},
+  {q:'Aký prvok má symbol F?',a:['Fluór','Železo','Francium','Fermium'],c:0},
+  {q:'Čo je kryštalizácia?',a:['Tvorba kryštálov','Topenie','Vyparovanie','Sublimácia'],c:0},
+  {q:'Aký prvok má symbol I?',a:['Jód','Železo','Indium','Iridium'],c:0},
+  {q:'Čo je sublimácia?',a:['Premena pevnej látky na plyn','Topenie','Vyparovanie','Kryštalizácia'],c:0},
+  {q:'Aký prvok má symbol Ne?',a:['Neón','Dusík','Nikel','Neptúnium'],c:0},
+  {q:'Čo je hydrolýza?',a:['Rozklad látky vodou','Oxidácia','Redukcia','Neutralizácia'],c:0},
+  {q:'Aký prvok má symbol Ar?',a:['Argón','Striebro','Hliník','Arzén'],c:0}
 ];
 
 // ===== CAPITALS QUIZ — 200 hlavné mestá =====
