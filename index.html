@@ -1107,7 +1107,9 @@ button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba
 .bs-cell.preview-bad { background:rgba(245,87,108,0.35); border-color:#f5576c; }
 .bs-cell.hit { background:rgba(245,87,108,0.5); border-color:#f5576c; cursor:default; }
 .bs-cell.miss { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.15); cursor:default; }
-.bs-cell.sunk { background:rgba(245,87,108,0.8); border-color:#f5576c; }
+.bs-cell.sunk { background:rgba(245,87,108,0.8); border-color:#f5576c; opacity:0.85; }
+.bs-cell.ship.hit { background:rgba(245,87,108,0.5); }
+.bs-cell.ship:not(.hit):not(.miss) { background:rgba(79,172,254,0.25); border-color:rgba(79,172,254,0.5); }
 @keyframes bs-hit { 0%{transform:scale(1)} 30%{transform:scale(1.4)} 60%{transform:scale(0.9)} 100%{transform:scale(1)} }
 @keyframes bs-miss { 0%{opacity:1} 50%{opacity:0.3} 100%{opacity:1} }
 .bs-cell.hit-anim { animation:bs-hit 0.4s ease; }
@@ -5635,24 +5637,50 @@ function bsRenderGame() {
   const attacker=viewAs===1?0:1, defender=viewAs===1?1:0;
   document.getElementById('bsEnemyLabel').textContent='🎯 Nepriateľ — '+(viewAs===1?getP2Name('bs'):getP1Name('bs'));
   document.getElementById('bsMyLabel').textContent='🛡️ Moja doska';
-  // Enemy grid (clickable)
+  // Enemy grid (clickable) — detect sunk ships on enemy board
+  const oppBoardIdx = MP.isConnected ? (MP.isHost ? 1 : 0) : defender;
+  const enemySunk = new Set();
+  // We can only detect sunk from hits pattern (no access to opponent board in MP), but in local we can
+  if(!MP.isConnected) {
+    for(let shipId=1;shipId<=bsShipDefs.length;shipId++){
+      const cells=[];
+      for(let j=0;j<100;j++) if(BS.boards[oppBoardIdx][j]===shipId) cells.push(j);
+      if(cells.length>0 && cells.every(j=>BS.hits[oppBoardIdx][j]===2)) cells.forEach(j=>enemySunk.add(j));
+    }
+  }
   const eg=document.getElementById('bsEnemyGrid'); eg.innerHTML='';
   for(let i=0;i<100;i++){
     const c=document.createElement('div'); c.className='bs-cell';
-    const h=BS.hits[defender][i];
+    const h=BS.hits[oppBoardIdx][i];
     if(h===1){c.classList.add('miss');c.textContent='💧';}
-    else if(h===2){c.classList.add('hit');c.textContent='🔴';}
+    else if(h===2){
+      c.classList.add('hit');
+      c.textContent=enemySunk.has(i)?'💀':'🔴';
+      if(enemySunk.has(i)) c.classList.add('sunk');
+    }
     else if(!BS.over) c.onclick=()=>bsShoot(i);
     eg.appendChild(c);
   }
-  // My grid (view only, show ships)
+  // My grid (view only, show ships + sunk detection)
+  const myBoardIdx = MP.isConnected ? (MP.isHost ? 0 : 1) : (viewAs===1 ? 0 : 1);
   const mg=document.getElementById('bsMyGrid'); mg.innerHTML='';
+  // Detect fully sunk ships on my board
+  const sunkCells = new Set();
+  for(let shipId=1;shipId<=bsShipDefs.length;shipId++){
+    const cells=[];
+    for(let j=0;j<100;j++) if(BS.boards[myBoardIdx][j]===shipId) cells.push(j);
+    if(cells.length>0 && cells.every(j=>BS.hits[myBoardIdx][j]===2)) cells.forEach(j=>sunkCells.add(j));
+  }
   for(let i=0;i<100;i++){
     const c=document.createElement('div'); c.className='bs-cell';
-    if(BS.boards[attacker][i])c.classList.add('ship');
-    const h=BS.hits[attacker][i];
+    if(BS.boards[myBoardIdx][i])c.classList.add('ship');
+    const h=BS.hits[myBoardIdx][i];
     if(h===1){c.classList.add('miss');c.textContent='💧';}
-    else if(h===2){c.classList.add('hit');c.textContent='🔴';}
+    else if(h===2){
+      c.classList.add('hit');
+      c.textContent=sunkCells.has(i)?'💀':'🔴';
+      if(sunkCells.has(i)) c.classList.add('sunk');
+    }
     mg.appendChild(c);
   }
   if(!BS.over) {
@@ -10503,6 +10531,13 @@ function mpHandleMessage(data) {
     // Only switch turn on miss — hit means opponent shoots again
     if(!isHit) BS.turn = BS.turn===1?2:1;
     bsRenderGame();
+    // Animate the hit cell on my grid
+    const myCells = document.querySelectorAll('#bsMyGrid .bs-cell');
+    if(myCells[idx]) {
+      const cls = isHit ? 'hit-anim' : 'miss-anim';
+      myCells[idx].classList.add(cls);
+      setTimeout(()=>myCells[idx].classList.remove(cls), 500);
+    }
     // Check if all ships sunk
     const allSunk = BS.boards[myBoard].every((v,i) => !v || BS.hits[myBoard][i]===2);
     if(allSunk) {
@@ -10521,6 +10556,13 @@ function mpHandleMessage(data) {
     document.getElementById('bsStatus').textContent = data.hit ? '💥 Zásah! Strieľaj znova!' : '🌊 Vedľa!';
     if(!data.hit) BS.turn = BS.turn===1?2:1;
     bsRenderGame();
+    // Animate the shot cell on enemy grid
+    const enemyCells = document.querySelectorAll('#bsEnemyGrid .bs-cell');
+    if(enemyCells[data.index]) {
+      const cls = data.hit ? 'hit-anim' : 'miss-anim';
+      enemyCells[data.index].classList.add(cls);
+      setTimeout(()=>enemyCells[data.index].classList.remove(cls), 500);
+    }
   }
   if(data.type === 'bs-gameover') {
     BS.over=true;
