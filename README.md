@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA s 30 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA s 31 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (30)
+## Hry (31)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -20,6 +20,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Pexeso (6 nahodnych tem) | Yes | Yes |
 | Clovece nehnevaj sa | Yes | Yes (easy/medium/hard) |
 | Hadaj Cislo | Yes | - |
+| Wordle (SK/EN, ~400 slov/jazyk) | - | Yes (solo) + PVP |
 | Puzzle Scramble (canvas obrazky, 3x3/4x4/5x5) | - | - |
 | Mini Labyrint | - | Yes (easy/medium/hard) |
 | Reversi (Othello) | - | Yes (easy/medium/hard) |
@@ -57,14 +58,19 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 **Pripojenie:** Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code alebo QR kod
 
-**Funguje aj cez rozne siete** (WiFi vs mobilne data) vdaka TURN serverom (Xirsys, 500MB/mesiac zadarmo). Po pripojeni sa zobrazi indikator typu spojenia:
-- **Priame spojenie** — obe zariadenia na rovnakej WiFi (neminaturn kvotu)
-- **Cez server (TURN)** — rozne siete, data idu cez Xirsys relay server (mina 500MB kvotu)
+**TURN server s ochranou hesla:**
+- Na rovnakej WiFi funguje priame spojenie (STUN) — zadarmo, bez limitu
+- Na roznych sietach (WiFi vs mobilne data) sa pouzije TURN relay server (Metered, 500MB/mesiac)
+- TURN je chraneny heslom — pri prvom pouziti cez rozne siete sa zobrazi dialog na zadanie hesla
+- Po odomknuti sa heslo ulozi v localStorage a netreba ho zadavat znova
+- Indikator typu spojenia: "Priame spojenie" alebo "Cez server (TURN)"
 
 **Session persistence:** Po refreshi stranky sa MP automaticky pokusi znovu pripojit (8s timeout).
 
 ## Features
 
+- **Mena hracov**: Prazdne na zaciatku, deti si nastavia vlastne mena, ulozia sa v localStorage per zariadenie
+- **Wordle**: Slovensky aj anglicky jazyk (~400 slov/jazyk), solo (AI vyberie slovo) + PVP (striedanie zadavanie/hadanie)
 - **Animacie**: cellAppear, flipCard, diceRoll, glowCorrect, shakeWrong, pieceMove, rpsReveal
 - **Zvuky**: Web Audio API zvuky (click, move, correct, wrong, flip, shot, hit, win) + vibracie
 - **AI Difficulty**: hry s easy/medium/hard AI (Sach, Dama, Lodicky, Clovece, Labyrint, Reversi)
@@ -76,16 +82,15 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Aktivny hrac**: Vizualny indikator kto je na tahu (dimovanie + "Na rade" badge)
 - **Sachove suradnice**: A-H / 1-8 okolo dosky, otocene pre cierneho v MP
 - **Hlasove prikazy (Sach)**: Web Speech API (sk-SK), povedz "E2 E4" pre tah
-- **TURN server**: Xirsys TURN pre hru cez rozne siete + indikator typu spojenia
 - **QR kody**: Generovanie a skenovanie QR kodu pre MP room code
 - **Kviz**: 17 tematickych kategorii s 200+ otazkami
 
 ## Technologie
 
-- Single HTML file (~11400+ riadkov)
-- PWA s Service Worker (network-first pre HTML, cache-first pre assety)
+- Single HTML file (~11600+ riadkov)
+- PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
-- WebRTC peer-to-peer cez PeerJS 1.5.5 + Xirsys TURN servery
+- WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
 - Responsivny dizajn (mobile + desktop)
 - Web Audio API zvuky s vibraciami
 - Canvas-based Puzzle Scramble + Dots & Boxes
@@ -123,7 +128,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v36**
+Aktualna verzia: **v42**
 
 ## Deploy
 

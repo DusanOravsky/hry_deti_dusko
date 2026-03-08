@@ -2,35 +2,40 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~11400 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~11600 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v36
+- **Current version**: v42
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
-- **Online Multiplayer**: WebRTC peer-to-peer via PeerJS + Xirsys TURN
+- **Online Multiplayer**: WebRTC peer-to-peer via PeerJS + Metered TURN (password-protected)
 
-## CRITICAL: MP Declaration Order
+## CRITICAL: TDZ Declaration Order
 
-**`const MP` MUST be declared BEFORE any `reset*()` init calls.**
+**ALL `const`/`let` variables MUST be declared BEFORE any code that references them at init time.**
 
-`const` in JavaScript has a "temporal dead zone" (TDZ). Even `typeof MP` throws a ReferenceError if `const MP` is declared later in the same scope. This has caused crashes in v10-v12, v46, and v28-v38.
+`const` and `let` in JavaScript have a "temporal dead zone" (TDZ). Even `typeof X` throws a ReferenceError if `const X` or `let X` is declared later in the same scope. This has caused crashes in v10-v12, v28-v38, and v42.
 
 ```javascript
-// CORRECT ORDER:
-const MP = { peer: null, connection: null, ... };  // Line ~8809
+// CORRECT ORDER — all declarations before any reset*() calls:
+const MP = { peer: null, connection: null, ... };
+let welcomeGameMode = 'pvp';           // MUST be before resetWordle() etc.
 resetChess();  // These can now safely reference MP
 resetBS();     // MP._meReady = false works
-resetMem();    // MP.isConnected check works
+resetWordle(); // welcomeGameMode check works
 ```
 
-**Rule**: Any function called at init time that references `MP` will crash if `MP` is declared after the call site. Always grep for `MP.` in any function you call during initialization.
+**Rules:**
+1. Any function called at init time that references `MP` will crash if `const MP` is declared after the call site.
+2. Any function called at init time that references `welcomeGameMode` will crash if `let welcomeGameMode` is declared after the call site.
+3. **Before adding any new `reset*()` call**, grep for ALL variables it references and verify they are declared EARLIER in the file.
+4. Always grep: `grep -n "const MP\|let welcomeGameMode\|resetWordle\|resetDB\|resetChess" index.html`
 
 ## Important Variables
 
@@ -45,7 +50,7 @@ resetMem();    // MP.isConnected check works
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 
-## Games (30 total)
+## Games (31 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -60,6 +65,7 @@ resetMem();    // MP.isConnected check works
 - Puzzle Scramble
 - Mini Labyrint (AI: easy/medium/hard)
 - Reversi/Othello (AI: easy/medium/hard)
+- Wordle (SK: ~400 slov, EN: ~400 slov, language selector)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem)
@@ -76,7 +82,7 @@ resetMem();    // MP.isConnected check works
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v36)
+## Features (v13-v42)
 
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
@@ -88,12 +94,14 @@ resetMem();    // MP.isConnected check works
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
 - **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
-- **MP TURN servers**: Xirsys TURN for cross-network play (WiFi vs mobile data)
+- **MP TURN servers**: Metered TURN for cross-network play, password-protected (STUN-first, TURN fallback)
 - **MP connection type indicator**: Shows "Cez server (TURN)" or "Priame spojenie" after connecting
 - **MP session persistence**: `sessionStorage` saves roomCode/isHost/myName, auto-reconnect on refresh (8s timeout)
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
-- **Game count + copyright**: "Obsahuje 30 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
+- **Game count + copyright**: "Obsahuje 31 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **SW auto-reload**: New service worker version triggers automatic page reload
 
 ## Adding a New Game
 
@@ -102,9 +110,11 @@ resetMem();    // MP.isConnected check works
 3. Add entry to `GAME_NAMES` object
 4. Add to `gameKeys` object (button ID mapping)
 5. Add stat key to both `getActiveP1Name` and `getActiveP2Name`
-6. Add `reset*()` function and call it in init section (AFTER `const MP`)
+6. Add `reset*()` function and call it in init section (AFTER `const MP` AND `let welcomeGameMode`)
 7. Implement game logic with `addWin()` calls for all outcomes
 8. For AI mode: block player clicks with `if(welcomeGameMode==='ai' && turn===opponent) return;`
+9. **CRITICAL**: Verify your `reset*()` function does NOT reference any `const`/`let` variable declared later in the file. Grep all referenced variables and check line numbers.
+10. For colors: use `color:inherit` instead of `color:white` — supports both dark and light mode
 
 ## Online Multiplayer
 
@@ -112,23 +122,37 @@ resetMem();    // MP.isConnected check works
 - PeerJS 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - WebRTC peer-to-peer, cloud broker: `0.peerjs.com`
 - Floating globe button (hidden in AI mode)
-- **Works across any network** via Xirsys TURN servers
+- **TURN password-protected** — STUN-first, TURN fallback with password
 
-**PEER_CONFIG (shared constant):**
+**ICE Config (STUN-first + TURN fallback):**
 ```javascript
-const PEER_CONFIG = {
+const STUN_ONLY_CONFIG = {
+  host: '0.peerjs.com', port: 443, secure: true, debug: 0,
+  config: { iceServers: [
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun.relay.metered.ca:80'}
+  ]}
+};
+const TURN_CONFIG = {
   host: '0.peerjs.com', port: 443, secure: true, debug: 0,
   config: { iceServers: [
     {urls:'stun:stun.l.google.com:19302'},
     {urls:'stun:stun.relay.metered.ca:80'},
     {urls:'turn:global.relay.metered.ca:80', username:'...', credential:'...'},
-    {urls:'turn:global.relay.metered.ca:80?transport=tcp', ...},
-    {urls:'turn:global.relay.metered.ca:443', ...},
-    {urls:'turns:global.relay.metered.ca:443?transport=tcp', ...}
+    // + TCP/TLS variants on ports 80 and 443
   ]}
 };
+const TURN_PASSWORD = 'lukaskonatalka2026';
 ```
-All `new Peer()` calls use `PEER_CONFIG`. Credentials are from Xirsys free tier.
+- `mpGetConfig()` returns STUN_ONLY or TURN based on `mpIsTurnUnlocked()`
+- TURN unlock stored in `localStorage('mp_turn_unlocked')`
+- MP modal has TURN section with password input and lock/unlock buttons
+
+**Connection Flow (guest):**
+1. Try STUN-only connection (8s timeout)
+2. If fails → show TURN password prompt
+3. Correct password → reconnect with TURN config
+4. Both sides need TURN unlocked for cross-network play
 
 **Connection Type Detection:**
 - `mpCheckConnectionType()` — called after connection opens, uses `RTCPeerConnection.getStats()`
@@ -151,6 +175,12 @@ const MP = {
 - `mpSaveSession()` — saves to sessionStorage after handshake
 - `mpClearSession()` — clears on disconnect
 - `mpTryReconnect()` — called on page load, 8s timeout, toast UI
+
+**Player Names in MP:**
+- Both host and guest use `wP1Input` (device owner's name) as their MP name
+- MP handshake temporarily swaps globalP1/globalP2 to show correct names
+- `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
+- `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
 **Games with MP Support (9 games):**
 - Piskvorky — `ttt-move`, alternating start (tttRound)
@@ -192,30 +222,30 @@ GitHub Pages auto-deploys from main branch.
 
 ## Common Issues
 
-- **Blank screen / can't click**: JS crash. Check browser console. Most common: duplicate `const` declaration or TDZ issue with MP.
-- **Cache not updating**: Hard refresh (Ctrl+Shift+R). Bump `APP_VERSION` + `CACHE_NAME`.
+- **Blank screen / can't click**: JS crash from TDZ. Check browser console. Most common: `const`/`let` variable referenced before declaration. See "CRITICAL: TDZ Declaration Order" section.
+- **Cache not updating**: Hard refresh (Ctrl+Shift+R). Bump `APP_VERSION` + `CACHE_NAME`. SW auto-reload should handle most cases.
 - **Board too small on mobile**: Use `max-width:min(Xpx, 90vw)` with `1fr` grid columns.
-- **Text invisible**: Don't hardcode `color:white` — use classes that handle both dark/light mode.
+- **Text invisible**: Don't hardcode `color:white` — use `color:inherit` to handle both dark/light mode.
 - **Topbar disappearing**: `#mobileGameView` and `#mobileGamePicker` need `position:fixed`.
 - **Mode selectors in games**: Hidden via `applyGameMode()` when mode chosen from welcome screen.
 
 ### MP-Specific Issues
 
-- **const MP TDZ crash (v10-v12, v46)**: `const` declarations are NOT hoisted. Even `typeof` throws in TDZ. Solution: declare MP before any init calls.
+- **TDZ crash (v10-v12, v28-v38, v42)**: `const`/`let` declarations are NOT hoisted. Even `typeof` throws in TDZ. Solution: declare ALL variables before any init calls. This applies to `const MP`, `let welcomeGameMode`, and any other module-level variable.
 - **Game state desync**: Host MUST send all game settings in handshake. Guest applies via UI functions.
 - **Guest changing settings**: Block or hide setting controls for guest in MP mode.
-- **Duplicate declarations**: Always `grep "const MP" index.html` before changes.
+- **Duplicate declarations**: Always `grep "const MP\|let welcomeGameMode" index.html` before changes.
 - **TURN servers replace PeerJS defaults**: When `config: { iceServers: [...] }` is specified in Peer(), it REPLACES (not supplements) PeerJS built-in ICE servers. Always include STUN servers alongside TURN.
 - **Stale peers on PeerJS broker**: Always destroy old peer before creating new one in mpCreateRoom/mpJoinRoom.
+- **MP name overwrite**: `saveNames()` must NOT run when `MP._savedP1` exists, otherwise MP temporary names overwrite user's real names in localStorage.
 
-## TURN Server (Xirsys)
+## TURN Server (Metered)
 
-- **Provider**: Xirsys (https://xirsys.com), free trial 500MB/month
-- **Dashboard**: https://dashboard.xirsys.com — manage credentials, check usage
-- **Config**: Shared `PEER_CONFIG` constant used by all `new Peer()` calls
-- **ICE Servers**: Google STUN + Metered STUN + Xirsys TURN (UDP/TCP/TLS on ports 80 and 443)
-- **Connection type detection**: `mpCheckConnectionType()` checks both local+remote ICE candidates
-- **User notification**: Badge shows "Cez server (TURN)" or "Priame spojenie" after connecting
+- **Provider**: Metered (relay.metered.ca), free tier
+- **Password**: `lukaskonatalka2026` — stored in `TURN_PASSWORD` constant
+- **Config**: `STUN_ONLY_CONFIG` (same WiFi) and `TURN_CONFIG` (cross-network), selected by `mpGetConfig()`
+- **Unlock UI**: TURN section in MP modal + automatic prompt on STUN failure
+- **Unlock storage**: `localStorage('mp_turn_unlocked')` — persists across sessions
+- **Connection flow**: STUN-first (8s timeout) → TURN password prompt → reconnect with TURN
 - **Same WiFi**: Uses direct/STUN connection (no TURN quota used)
-- **Different networks**: Uses TURN relay (counts against 500MB quota)
-- **If quota exceeded**: Upgrade plan at Xirsys, or replace with another provider (Twilio, self-hosted coturn)
+- **Different networks**: Uses TURN relay (both sides need TURN unlocked)
