@@ -9703,7 +9703,9 @@ const MP = {
   dkRound: 0,
   bsRound: 0,
   ludoRound: 0,
-  gnRound: 0
+  gnRound: 0,
+  _heartbeat: null,
+  _reconnecting: false
 };
 
 // =============================================================================
@@ -10323,6 +10325,7 @@ function mpCreateRoom() {
       conn.on('open', () => {
         console.log('Guest connected!');
         MP.isConnected = true;
+        mpStartHeartbeat();
         document.getElementById('mpHostStatus').className = 'mp-status connected';
         document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si Hráč 1 🔴 (X)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
@@ -10347,18 +10350,19 @@ function mpCreateRoom() {
 
       conn.on('close', () => {
         console.log('Guest disconnected');
-        mpDisconnect();
+        mpTryReconnect();
       });
 
       conn.on('error', (err) => {
         console.error('Connection error:', err);
-        alert('❌ Chyba pripojenia');
+        mpTryReconnect();
       });
     });
 
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
-      alert('❌ Chyba vytvorenia miestnosti: ' + err.type);
+      if(!MP.isConnected) alert('❌ Chyba vytvorenia miestnosti: ' + err.type);
+      else mpTryReconnect();
     });
 
   } catch(err) {
@@ -10407,6 +10411,7 @@ function mpJoinRoom() {
       MP.connection.on('open', () => {
         console.log('Connected to host!');
         MP.isConnected = true;
+        mpStartHeartbeat();
         statusEl.className = 'mp-status connected';
         statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si Hráč 2 🔵 (O)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
@@ -10427,20 +10432,21 @@ function mpJoinRoom() {
 
       MP.connection.on('close', () => {
         console.log('Host disconnected');
-        mpDisconnect();
+        mpTryReconnect();
       });
 
       MP.connection.on('error', (err) => {
         console.error('Connection error:', err);
-        statusEl.className = 'mp-status error';
-        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia</div>';
+        mpTryReconnect();
       });
     });
 
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
-      statusEl.className = 'mp-status error';
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
+      if(!MP.isConnected) {
+        statusEl.className = 'mp-status error';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
+      } else mpTryReconnect();
     });
 
   } catch(err) {
@@ -10450,24 +10456,117 @@ function mpJoinRoom() {
   }
 }
 
+function mpStartHeartbeat() {
+  mpStopHeartbeat();
+  MP._heartbeat = setInterval(() => {
+    if(MP.connection && MP.connection.open) {
+      try { MP.connection.send({type:'ping'}); } catch(e) {}
+    }
+  }, 15000);
+}
+function mpStopHeartbeat() {
+  if(MP._heartbeat) { clearInterval(MP._heartbeat); MP._heartbeat = null; }
+}
+function mpTryReconnect() {
+  if(MP._reconnecting || !MP.roomCode) { mpDisconnect(); return; }
+  MP._reconnecting = true;
+  MP.isConnected = false;
+  updateFloatingMPButton(false);
+  mpStopHeartbeat();
+  // Show reconnecting status
+  const banner = document.getElementById('mpReconnectBanner');
+  if(banner) banner.style.display = 'flex';
+  console.log('Attempting reconnect as', MP.isHost?'host':'guest', 'room:', MP.roomCode);
+  let attempts = 0;
+  const maxAttempts = 5;
+  function attempt() {
+    attempts++;
+    if(attempts > maxAttempts || !MP._reconnecting) {
+      MP._reconnecting = false;
+      if(banner) banner.style.display = 'none';
+      mpDisconnect();
+      return;
+    }
+    if(banner) banner.querySelector('span').textContent = 'Znovu pripájam... ('+attempts+'/'+maxAttempts+')';
+    // Destroy old peer
+    if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+    if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+    try {
+      if(MP.isHost) {
+        MP.peer = new Peer(MP.roomCode, {host:'0.peerjs.com',port:443,secure:true,debug:0});
+        MP.peer.on('open', () => {
+          console.log('Reconnect: host peer open, waiting for guest...');
+        });
+        MP.peer.on('connection', (conn) => {
+          MP.connection = conn;
+          conn.on('open', () => {
+            mpReconnected(conn);
+            conn.send({type:'handshake',from:'host',name:MP.myName,tttSize:TTT.size,tttGrid:TTT.grid,memCards:MEM.cards,memDiff:MEM.diff});
+          });
+          conn.on('data', (data) => mpHandleMessage(data));
+          conn.on('close', () => mpTryReconnect());
+          conn.on('error', () => mpTryReconnect());
+        });
+        MP.peer.on('error', (err) => {
+          console.error('Reconnect host error:', err.type);
+          if(err.type === 'unavailable-id') {
+            // Room ID taken (old peer not cleaned up), wait and retry
+            setTimeout(attempt, 3000);
+          } else { setTimeout(attempt, 2000); }
+        });
+        // If no guest connects in 15s, try again
+        setTimeout(() => { if(MP._reconnecting && !MP.isConnected) attempt(); }, 15000);
+      } else {
+        MP.peer = new Peer({host:'0.peerjs.com',port:443,secure:true,debug:0});
+        MP.peer.on('open', () => {
+          MP.connection = MP.peer.connect(MP.roomCode, {reliable:true});
+          MP.connection.on('open', () => {
+            mpReconnected(MP.connection);
+            MP.connection.send({type:'handshake',from:'guest',name:MP.myName});
+          });
+          MP.connection.on('data', (data) => mpHandleMessage(data));
+          MP.connection.on('close', () => mpTryReconnect());
+          MP.connection.on('error', () => setTimeout(attempt, 2000));
+        });
+        MP.peer.on('error', (err) => {
+          console.error('Reconnect guest error:', err.type);
+          setTimeout(attempt, 2000);
+        });
+      }
+    } catch(e) { console.error('Reconnect exception:', e); setTimeout(attempt, 2000); }
+  }
+  attempt();
+}
+function mpReconnected(conn) {
+  MP._reconnecting = false;
+  MP.isConnected = true;
+  MP.connection = conn;
+  updateFloatingMPButton(true);
+  mpStartHeartbeat();
+  const banner = document.getElementById('mpReconnectBanner');
+  if(banner) banner.style.display = 'none';
+  document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
+  console.log('Reconnected!');
+}
 function mpDisconnect() {
+  mpStopHeartbeat();
+  MP._reconnecting = false;
+  const banner = document.getElementById('mpReconnectBanner');
+  if(banner) banner.style.display = 'none';
   // Close connection
   if(MP.connection) {
-    MP.connection.close();
+    try { MP.connection.close(); } catch(e) {}
     MP.connection = null;
   }
-
   // Close peer
   if(MP.peer) {
-    MP.peer.destroy();
+    try { MP.peer.destroy(); } catch(e) {}
     MP.peer = null;
   }
-
   // Reset state
   MP.isHost = false;
   MP.isConnected = false;
   MP.roomCode = null;
-
   // Reset UI
   document.getElementById('mpHostRoom').classList.add('mp-hidden');
   document.getElementById('mpJoinStatus').classList.add('mp-hidden');
@@ -10491,6 +10590,9 @@ function mpDisconnect() {
 }
 
 function mpHandleMessage(data) {
+  // Heartbeat
+  if(data.type === 'ping') { if(MP.connection) try { MP.connection.send({type:'pong'}); } catch(e) {} return; }
+  if(data.type === 'pong') return;
   if(data.type === 'handshake') {
     console.log('Handshake from:', data.from, 'name:', data.name);
     MP.opponentName = data.name || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
@@ -11053,6 +11155,11 @@ if('serviceWorker' in navigator) {
 
 <!-- Offline Banner -->
 <div class="offline-banner" id="offlineBanner"><span>📡</span> Offline — multiplayer nie je dostupny</div>
+<!-- Reconnect Banner -->
+<div id="mpReconnectBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(135deg,#f5a623,#f7c948);color:#333;padding:8px 16px;font-size:0.85em;font-weight:700;text-align:center;align-items:center;justify-content:center;gap:8px">
+  <span>Znovu pripájam...</span>
+  <button onclick="MP._reconnecting=false;mpDisconnect()" style="background:rgba(0,0,0,0.15);border:none;color:#333;padding:3px 10px;border-radius:12px;font-size:0.85em;cursor:pointer;font-weight:700">✕ Zrušiť</button>
+</div>
 
 <!-- Floating MP Button -->
 <div class="floating-mp-btn" id="floatingMpBtn" onclick="openMPModal()" title="Online Multiplayer">
