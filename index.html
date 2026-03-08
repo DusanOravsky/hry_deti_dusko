@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 35;
+const APP_VERSION = 36;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10246,9 +10246,9 @@ function mpCheckConnectionType() {
     pc.getStats().then(stats => {
       stats.forEach(report => {
         if(report.type === 'candidate-pair' && report.state === 'succeeded') {
-          const localId = report.localCandidateId;
-          const local = stats.get(localId);
-          const isRelay = local && local.candidateType === 'relay';
+          const local = stats.get(report.localCandidateId);
+          const remote = stats.get(report.remoteCandidateId);
+          const isRelay = (local && local.candidateType === 'relay') || (remote && remote.candidateType === 'relay');
           MP._isRelay = isRelay;
           console.log('Connection type:', isRelay ? 'RELAY (TURN)' : 'DIRECT (P2P)');
           // Show connection type in status
