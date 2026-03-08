@@ -742,6 +742,11 @@ body.light .player-card input.player-name-input {
 .player-card input.player-name-input:disabled + .edit-hint {
   display: none;
 }
+.player-card:not(.active-turn) {
+  opacity:0.4;
+  transform:scale(0.96);
+  filter:grayscale(0.3);
+}
 .player-card.active-turn {
   background:rgba(255,255,255,0.14);
   box-shadow:0 0 24px rgba(255,255,255,0.12), 0 4px 16px rgba(0,0,0,0.2);
@@ -749,14 +754,26 @@ body.light .player-card input.player-name-input {
   transform-origin: center;
 }
 .player-card.active-turn::after {
-  content:'';
+  content:'▶ Na rade';
   position:absolute;
-  top:-2px; left:-2px; right:-2px; bottom:-2px;
-  border-radius:17px;
-  background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent,rgba(255,255,255,0.1));
-  pointer-events:none;
-  z-index:0;
+  bottom:-10px; left:50%; transform:translateX(-50%);
+  font-size:0.55em;
+  font-weight:700;
+  padding:1px 8px;
+  border-radius:8px;
+  white-space:nowrap;
+  z-index:1;
 }
+.player1.active-turn::after {
+  background:#f5576c;
+  color:white;
+}
+.player2.active-turn::after {
+  background:#4facfe;
+  color:white;
+}
+body.light .player1.active-turn::after { background:#e04460; }
+body.light .player2.active-turn::after { background:#3a9aed; }
 .player1 { border-top-color:#f5576c; }
 .player2 { border-top-color:#4facfe; }
 .player-name { font-weight:700; font-size:1em; color:rgba(255,255,255,0.9); margin-bottom:5px; }
