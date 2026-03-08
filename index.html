@@ -4679,14 +4679,22 @@ function mpGetMyChessColor() {
   const hostIsWhite = MP.chRound % 2 === 0;
   return (MP.isHost === hostIsWhite) ? 'w' : 'b';
 }
+function getChessColorName(color) {
+  // In MP, map chess color to correct player name
+  if(MP.isConnected) {
+    const hostIsWhite = MP.chRound % 2 === 0;
+    const isHost = (color === 'w') === hostIsWhite;
+    return isHost ? getP1Name('ch') : getP2Name('ch');
+  }
+  return color === 'w' ? getP1Name('ch') : getP2Name('ch');
+}
 function applyChessMPStart() {
   if(!MP.isConnected) return;
-  const myColor = mpGetMyChessColor();
   CH.turn = 'w'; // white always starts
-  const iAmFirst = myColor === 'w';
-  const pName = iAmFirst ? getP1Name('ch') : getP2Name('ch');
-  document.getElementById('chStatus').textContent = (iAmFirst ? '⬜' : '⬛') + ' ' + pName + ' na ťahu';
-  activeTurn('chP1Card', 'chP2Card', iAmFirst ? 1 : 2);
+  const whiteName = getChessColorName('w');
+  document.getElementById('chStatus').textContent = '⬜ ' + whiteName + ' na ťahu';
+  const hostIsWhite = MP.chRound % 2 === 0;
+  activeTurn('chP1Card', 'chP2Card', hostIsWhite ? 1 : 2);
   renderChessBoard();
 }
 function mpGetMyDKColor() {
@@ -8114,9 +8122,16 @@ function chessMove(from,to) {
   if(captured==='wK') { chessWin('b'); return; }
   if(captured==='bK') { chessWin('w'); return; }
   CH.turn=CH.turn==='w'?'b':'w';
-  const turnName=CH.turn==='w'?getP1Name('ch'):getP2Name('ch');
+  const turnName=getChessColorName(CH.turn);
   document.getElementById('chStatus').textContent=(CH.turn==='w'?'⬜':'⬛')+' '+turnName+' na ťahu';
-  activeTurn('chP1Card','chP2Card',CH.turn==='w'?1:2);
+  // Active turn card: in MP, determine which card based on who plays this color
+  if(MP.isConnected) {
+    const hostIsWhite = MP.chRound % 2 === 0;
+    const turnIsHost = (CH.turn === 'w') === hostIsWhite;
+    activeTurn('chP1Card','chP2Card', turnIsHost ? 1 : 2);
+  } else {
+    activeTurn('chP1Card','chP2Card',CH.turn==='w'?1:2);
+  }
   renderChessBoard();
   // AI move
   if(welcomeGameMode==='ai'&&CH.turn==='b'&&!CH.over) {
@@ -8162,8 +8177,13 @@ function chessAI() {
 }
 function chessWin(color) {
   CH.over=true;
-  const w=color==='w'?1:2;
-  const name=w===1?getP1Name('ch'):getP2Name('ch');
+  const name=getChessColorName(color);
+  // Determine which player number won (for stats)
+  let w;
+  if(MP.isConnected) {
+    const hostIsWhite = MP.chRound % 2 === 0;
+    w = (color === 'w') === hostIsWhite ? 1 : 2;
+  } else { w = color==='w' ? 1 : 2; }
   if(w===1){CH.s1++;document.getElementById('p1ScoreCH').textContent=CH.s1;}
   else{CH.s2++;document.getElementById('p2ScoreCH').textContent=CH.s2;}
   document.getElementById('chStatus').textContent='🏆 '+name+' vyhral šach!';
