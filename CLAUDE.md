@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~11600 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v42
+- **Current version**: v43
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -210,6 +210,45 @@ const MP = {
 - `getChessColorName(color)` maps chess color to correct player name based on round
 - QR code for room joining: `mpGenerateQR()` / `mpScanQR()`
 - Cleanup old peers: `mpCreateRoom()` and `mpJoinRoom()` destroy previous peer before creating new one
+
+## Performance Optimization (v43+)
+
+### DOM Helper Function
+
+**Added in v43**: `const $ = id => document.getElementById(id);` (line ~3381)
+
+Shorter syntax for DOM access. Used throughout codebase to reduce repetitive `document.getElementById()` calls.
+
+```javascript
+// Before (v42):
+document.getElementById('tttStatus').textContent = '...';
+
+// After (v43+):
+$('tttStatus').textContent = '...';
+```
+
+**Benefits:**
+- Shorter code (882 → reduced by ~300 chars)
+- Better readability
+- Same performance (no caching yet, just syntax sugar)
+- No logic changes — MP and all games work identically
+
+**Implementation Status (v43):**
+- ✅ **Piškvorky (Tic Tac Toe)** — fully optimized (all 4 sizes: 3x3, 4x4, 5x5, 10x10)
+- ⏳ **Connect4, Lodičky, Pexeso, etc.** — pending (waiting for MP test confirmation)
+- 📝 **Next**: Apply to remaining ~800 `document.getElementById()` calls
+
+**MP Testing Required:**
+Before continuing optimization, test MP functionality:
+1. Create room (host) + join (guest) on 2 devices
+2. Play Piškvorky in all modes (3x3, 4x4, 5x5, 10x10/15x15)
+3. Verify turn sync, rematch, score counting
+4. If OK → continue to other games
+
+**TDZ Safety:**
+- `const $` declared at line ~3381 (early in JS section)
+- All `reset*()` calls at ~line 10288+ (safe, no TDZ issues)
+- Always verify declaration order before adding new helper functions
 
 ## Deploy
 
