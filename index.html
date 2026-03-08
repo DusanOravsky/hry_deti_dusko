@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 33;
+const APP_VERSION = 34;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10239,6 +10239,17 @@ function closeMPModalOnOverlay(event) {
 }
 
 // ===== MP PEERJS FUNCTIONS =====
+const PEER_CONFIG = {
+  host: '0.peerjs.com', port: 443, secure: true, debug: 0,
+  config: { iceServers: [
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun.relay.metered.ca:80'},
+    {urls:'turn:global.relay.metered.ca:80',username:'f45a85de1539a10dc89832f0',credential:'TM1l2sIHjJ/of0r9'},
+    {urls:'turn:global.relay.metered.ca:80?transport=tcp',username:'f45a85de1539a10dc89832f0',credential:'TM1l2sIHjJ/of0r9'},
+    {urls:'turn:global.relay.metered.ca:443',username:'f45a85de1539a10dc89832f0',credential:'TM1l2sIHjJ/of0r9'},
+    {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'f45a85de1539a10dc89832f0',credential:'TM1l2sIHjJ/of0r9'}
+  ]}
+};
 function mpCreateRoom() {
   // Cleanup any previous peer
   if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
@@ -10257,9 +10268,7 @@ function mpCreateRoom() {
   mpGenerateQR(roomCode);
 
   try {
-    MP.peer = new Peer(roomCode, {
-      host: '0.peerjs.com', port: 443, secure: true, debug: 0
-    });
+    MP.peer = new Peer(roomCode, PEER_CONFIG);
 
     MP.peer.on('open', (id) => {
       console.log('Host peer opened with ID:', id);
@@ -10340,9 +10349,7 @@ function mpJoinRoom() {
   statusEl.classList.remove('mp-hidden');
 
   try {
-    MP.peer = new Peer({
-      host: '0.peerjs.com', port: 443, secure: true, debug: 0
-    });
+    MP.peer = new Peer(PEER_CONFIG);
 
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
