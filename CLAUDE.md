@@ -110,7 +110,7 @@ resetMem();    // MP.isConnected check works
 - PeerJS 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - WebRTC peer-to-peer, cloud broker: `0.peerjs.com`
 - Floating globe button (hidden in AI mode)
-- **REQUIRES same WiFi network** (no TURN server yet — see TODO below)
+- **Works across any network** (Xirsys TURN servers, 500MB/month free)
 
 **MP State:**
 ```javascript
@@ -157,10 +157,11 @@ const MP = {
 - QR code for room joining: `mpGenerateQR()` / `mpScanQR()`
 - Cleanup old peers: `mpCreateRoom()` and `mpJoinRoom()` destroy previous peer before creating new one
 
-**MP Network Requirements:**
-- STUN only (PeerJS defaults) — works on same WiFi / simple NAT
-- Does NOT work across different networks (WiFi vs mobile data) without TURN server
-- See TODO section for TURN server plans
+**MP Network:**
+- STUN (Google + Metered) + TURN (Xirsys) via shared `PEER_CONFIG`
+- Works across any network (WiFi vs mobile data, different locations)
+- Xirsys free tier: 500MB/month, credentials in `PEER_CONFIG`
+- WebRTC auto-selects: direct → STUN → TURN (transparent to user)
 
 ## Deploy
 
@@ -190,14 +191,9 @@ GitHub Pages auto-deploys from main branch.
 - **MP not connecting across networks**: Without TURN, WebRTC only works on same WiFi. Users must be on same network.
 - **Stale peers on PeerJS broker**: Always destroy old peer before creating new one in mpCreateRoom/mpJoinRoom.
 
-## TODO
+## TURN Server (Xirsys)
 
-### TURN Server for Cross-Network MP
-Currently MP only works on same WiFi. To enable cross-network play (WiFi vs mobile data):
-
-**Free options:**
-1. **Metered.ca** (recommended) — free tier 50GB/month, register at https://www.metered.ca/turn, get API key, add their TURN servers to Peer config
-2. **PeerJS built-in TURN** (`turn:0.peerjs.com:3478`, user: `peerjs`, pass: `peerjsp`) — included in PeerJS defaults but unreliable
-3. **Cloudflare Calls** — has TURN, requires Cloudflare account
-
-**Implementation:** Add `config: { iceServers: [...] }` to BOTH `new Peer()` calls (host and guest) with STUN + verified TURN servers. MUST include STUN servers too since config replaces defaults.
+- **Provider**: Xirsys (https://xirsys.com), free trial 500MB/month
+- **Config**: Shared `PEER_CONFIG` constant used by all `new Peer()` calls
+- **Servers**: Google STUN + Metered STUN + Xirsys TURN (UDP/TCP/TLS on ports 80 and 443)
+- **If quota exceeded**: Upgrade plan or replace with another provider (metered.ca enterprise, Twilio, self-hosted coturn)

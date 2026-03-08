@@ -57,7 +57,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 **Pripojenie:** Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code alebo QR kod
 
-**Poznamka:** Online MP vyzaduje aby obe zariadenia boli na rovnakej WiFi sieti (bez TURN servera).
+**Funguje aj cez rozne siete** (WiFi vs mobilne data) vdaka TURN serverom (Xirsys).
 
 **Session persistence:** Po refreshi stranky sa MP automaticky pokusi znovu pripojit (8s timeout).
 
@@ -119,7 +119,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v33**
+Aktualna verzia: **v34**
 
 ## Deploy
 

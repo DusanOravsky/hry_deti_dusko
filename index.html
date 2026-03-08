@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 34;
+const APP_VERSION = 35;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10239,6 +10239,32 @@ function closeMPModalOnOverlay(event) {
 }
 
 // ===== MP PEERJS FUNCTIONS =====
+function mpCheckConnectionType() {
+  if(!MP.connection || !MP.connection.peerConnection) return;
+  const pc = MP.connection.peerConnection;
+  setTimeout(() => {
+    pc.getStats().then(stats => {
+      stats.forEach(report => {
+        if(report.type === 'candidate-pair' && report.state === 'succeeded') {
+          const localId = report.localCandidateId;
+          const local = stats.get(localId);
+          const isRelay = local && local.candidateType === 'relay';
+          MP._isRelay = isRelay;
+          console.log('Connection type:', isRelay ? 'RELAY (TURN)' : 'DIRECT (P2P)');
+          // Show connection type in status
+          const hostStatus = document.getElementById('mpHostStatus');
+          const joinStatus = document.getElementById('mpJoinStatus');
+          const statusEl = MP.isHost ? hostStatus : joinStatus;
+          if(statusEl && !statusEl.classList.contains('mp-hidden')) {
+            const badge = isRelay ? '<div style="font-size:0.65em;opacity:0.6;margin-top:6px">📡 Cez server (TURN)</div>' : '<div style="font-size:0.65em;opacity:0.6;margin-top:6px">⚡ Priame spojenie</div>';
+            statusEl.innerHTML += badge;
+          }
+        }
+      });
+    }).catch(() => {});
+  }, 2000);
+}
+
 const PEER_CONFIG = {
   host: '0.peerjs.com', port: 443, secure: true, debug: 0,
   config: { iceServers: [
@@ -10282,6 +10308,7 @@ function mpCreateRoom() {
       conn.on('open', () => {
         console.log('Guest connected!');
         MP.isConnected = true;
+        mpCheckConnectionType();
         document.getElementById('mpHostStatus').className = 'mp-status connected';
         document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si 🔴 ' + MP.myName + ' (X)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
@@ -10372,6 +10399,7 @@ function mpJoinRoom() {
         clearTimeout(joinTimeout);
         console.log('Connected to host!');
         MP.isConnected = true;
+        mpCheckConnectionType();
         statusEl.className = 'mp-status connected';
         statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si 🔵 ' + MP.myName + ' (O)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
@@ -10512,6 +10540,7 @@ function mpTryReconnect() {
         MP.connection = conn;
         conn.on('open', () => {
           MP.isConnected = true;
+        mpCheckConnectionType();
           onReconnected();
           conn.send({ type: 'handshake', from: 'host', name: MP.myName,
             tttSize: TTT.size, tttGrid: TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
@@ -10528,6 +10557,7 @@ function mpTryReconnect() {
         MP.connection = MP.peer.connect(sess.roomCode, { reliable: true });
         MP.connection.on('open', () => {
           MP.isConnected = true;
+        mpCheckConnectionType();
           onReconnected();
           MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
         });
