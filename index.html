@@ -3483,7 +3483,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 49;
+const APP_VERSION = 50;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4469,12 +4469,12 @@ function rpsChoose(choice) {
       event.target.classList.add('p1-selected');
       document.getElementById('rpsCover').classList.add('show');
       document.getElementById('rpsChoicesArea').style.display='none';
-      document.getElementById('rpsStatus').textContent='Hráč 1 vybral tajne. Hráč 2 je na rade!';
+      document.getElementById('rpsStatus').textContent=getP1Name('rps')+' vybral tajne. '+getP2Name('rps')+' je na rade!';
       RPS.step=2;
     } else {
       document.getElementById('rpsCover').classList.remove('show');
       document.getElementById('rpsChoicesArea').style.display='block';
-      showRPSResult('Hráč 1',RPS.p1Choice,'Hráč 2',choice);
+      showRPSResult(getP1Name('rps'),RPS.p1Choice,getP2Name('rps'),choice);
       RPS.step=1; RPS.p1Choice=null;
     }
   }
@@ -4483,7 +4483,7 @@ function showRPSP2() {
   document.getElementById('rpsCover').classList.remove('show');
   document.getElementById('rpsChoicesArea').style.display='block';
   document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('p1-selected'));
-  document.getElementById('rpsStatus').textContent='Hráč 2 — vyber svoj tah!';
+  document.getElementById('rpsStatus').textContent=getP2Name('rps')+' — vyber svoj tah!';
 }
 function showRPSResult(n1,c1,n2,c2) {
   let resultText, winner=0;
@@ -4497,7 +4497,7 @@ function showRPSResult(n1,c1,n2,c2) {
   document.getElementById('p1ScoreRPS').textContent=RPS.s1;
   document.getElementById('p2ScoreRPS').textContent=RPS.s2;
   activeTurn('rpsP1Card','rpsP2Card',winner||1);
-  document.getElementById('rpsStatus').textContent = RPS.mode==='pvp'?'Hráč 1 — vyber tah!':'Vyber svoj tah!';
+  document.getElementById('rpsStatus').textContent = RPS.mode==='pvp'?getP1Name('rps')+' — vyber tah!':'Vyber svoj tah!';
 }
 function resetRPS() {
   RPS.s1=0; RPS.s2=0; RPS.step=1; RPS.p1Choice=null;
@@ -4535,8 +4535,8 @@ function setGNMode(m,btn) {
   GN.mode=m;
   document.querySelectorAll('#guessNum .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('gnP1Name').textContent=m==='pvp'?'Hráč 1 (hádač)':'Ty (hádač)';
-  document.getElementById('gnP2Name').textContent=m==='pvp'?'Hráč 2 (myslí)':'Počítač (myslí)';
+  document.getElementById('gnP1Name').textContent=m==='pvp'?getP1Name('gn')+' (hádač)':getP1Name('gn')+' (hádač)';
+  document.getElementById('gnP2Name').textContent=m==='pvp'?getP2Name('gn')+' (myslí)':'Počítač (myslí)';
   resetGN();
 }
 function setGNRange(r,btn) {
@@ -4545,7 +4545,7 @@ function setGNRange(r,btn) {
   btn.classList.add('active');
   document.getElementById('gnSecretInput').max=r;
   document.getElementById('gnInput').max=r;
-  document.getElementById('gnSetupText').textContent=`🤫 Hráč 2: Zadaj tajné číslo (1–${r}). Hráč 1 sa nepozerá!`;
+  document.getElementById('gnSetupText').textContent=`🤫 ${getP2Name('gn')}: Zadaj tajné číslo (1–${r}). ${getP1Name('gn')} sa nepozerá!`;
   document.getElementById('gnAISetupText').textContent=`Počítač si myslí číslo od 1 do ${r}. Klikni Štart!`;
   resetGN();
 }
@@ -4733,7 +4733,8 @@ function flipMem(i) {
         MEM.flipped=[]; MEM.locked=false;
         if(MEM.mode==='pvp') {
           MEM.player=MEM.player===1?2:1;
-          document.getElementById('memStatus').textContent='Hráč '+MEM.player+' na rade!';
+          const playerName=MEM.player===1?getP1Name('mem'):getP2Name('mem');
+          document.getElementById('memStatus').textContent=playerName+' na rade!';
           activeTurn('memP1Card','memP2Card',MEM.player);
         } else {
           MEM.player=2;
@@ -4799,7 +4800,7 @@ function aiMemTurn() {
           cards[pick2].textContent='?'; cards[pick2].classList.remove('flipped');
           playSound('wrong');
           MEM.player=1; activeTurn('memP1Card','memP2Card',1);
-          document.getElementById('memStatus').textContent='Hráč 1 na rade!';
+          document.getElementById('memStatus').textContent=getP1Name('mem')+' na rade!';
         }
       }, 900);
     }, MEM.aiDiff==='hard' ? 600 : 800); // pause between card 1 and card 2
@@ -4809,7 +4810,7 @@ function resetMem() {
   MEM.s1=0; MEM.s2=0; MEM.player=1; MEM.locked=false; MEM.aiMemory={};
   document.getElementById('p1ScoreMem').textContent='0';
   document.getElementById('p2ScoreMem').textContent='0';
-  document.getElementById('memStatus').textContent='Hráč 1 na rade!';
+  document.getElementById('memStatus').textContent=getP1Name('mem')+' na rade!';
   activeTurn('memP1Card','memP2Card',1);
   initMem();
 }
@@ -5020,7 +5021,7 @@ function dropC4(col) {
 function resetC4() {
   stopTurnTimer('c4');
   C4.player=1; C4.over=false;
-  document.getElementById('c4Status').textContent='Hráč 1 na rade!';
+  document.getElementById('c4Status').textContent=getP1Name('c4')+' na rade!';
   activeTurn('c4P1Card','c4P2Card',1);
   initC4(); renderC4();
   if(C4.mode==='pvp') startTurnTimer('c4', ()=>c4TimerExpire());
@@ -8678,7 +8679,7 @@ function resetReversi(){
   REV.board[27]=2;REV.board[28]=1;REV.board[35]=1;REV.board[36]=2;
   REV.turn=1;REV.over=false;
   renderReversi();
-  document.getElementById('revStatus').textContent='Hráč 1 ⚫ je na rade';
+  document.getElementById('revStatus').textContent=getP1Name('rev')+' ⚫ je na rade';
   activeTurn('revP1Card','revP2Card',1);
 }
 function revRC(i){return[Math.floor(i/8),i%8];}
