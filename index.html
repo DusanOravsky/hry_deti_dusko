@@ -10431,8 +10431,8 @@ function mpJoinRoom() {
   MP.roomCode = code;
   MP.isHost = false;
 
-  const p2Input = document.getElementById('wP2Input');
-  MP.myName = p2Input ? (p2Input.value.trim() || 'Hráč 2') : 'Hráč 2';
+  const p1Input = document.getElementById('wP1Input');
+  MP.myName = p1Input ? (p1Input.value.trim() || 'Hráč 1') : 'Hráč 1';
 
   const statusEl = document.getElementById('mpJoinStatus');
   statusEl.className = 'mp-status waiting';
