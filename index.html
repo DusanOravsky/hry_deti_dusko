@@ -10011,10 +10011,10 @@ let wdlLang = 'sk';
 function setWdlLang(lang) {
   wdlLang = lang;
   WORDLE_WORDS = lang === 'en' ? WORDLE_EN : WORDLE_SK;
-  document.getElementById('wdlLangSK').style.background = lang === 'sk' ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'rgba(255,255,255,0.1)';
-  document.getElementById('wdlLangEN').style.background = lang === 'en' ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'rgba(255,255,255,0.1)';
-  document.getElementById('wdlLangSK').style.color = 'white';
-  document.getElementById('wdlLangEN').style.color = 'white';
+  document.getElementById('wdlLangSK').style.background = lang === 'sk' ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'rgba(128,128,128,0.2)';
+  document.getElementById('wdlLangEN').style.background = lang === 'en' ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'rgba(128,128,128,0.2)';
+  document.getElementById('wdlLangSK').style.color = lang === 'sk' ? 'white' : 'inherit';
+  document.getElementById('wdlLangEN').style.color = lang === 'en' ? 'white' : 'inherit';
   resetWordle();
 }
 
@@ -10034,7 +10034,7 @@ function wdlBuildBoard() {
     for(let c = 0; c < 5; c++) {
       const tile = document.createElement('div');
       tile.id = 'wdl-' + r + '-' + c;
-      tile.style.cssText = 'width:52px;height:52px;border:2px solid rgba(255,255,255,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.6em;font-weight:900;color:white;text-transform:uppercase;transition:transform 0.3s,background 0.3s,border-color 0.3s';
+      tile.style.cssText = 'width:52px;height:52px;border:2px solid rgba(128,128,128,0.4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.6em;font-weight:900;color:inherit;text-transform:uppercase;transition:transform 0.3s,background 0.3s,border-color 0.3s';
       row.appendChild(tile);
     }
     board.appendChild(row);
@@ -10057,7 +10057,7 @@ function wdlBuildKeyboard() {
       btn.textContent = key;
       btn.id = 'wdlKey-' + key;
       const isWide = key === 'ENTER' || key === '⌫';
-      btn.style.cssText = 'padding:10px ' + (isWide ? '12px' : '6px') + ';min-width:' + (isWide ? '52px' : '30px') + ';height:46px;border:none;border-radius:6px;background:rgba(255,255,255,0.2);color:white;font-weight:700;font-size:' + (isWide ? '0.7em' : '0.9em') + ';cursor:pointer;text-transform:uppercase;transition:background 0.2s';
+      btn.style.cssText = 'padding:10px ' + (isWide ? '12px' : '6px') + ';min-width:' + (isWide ? '52px' : '30px') + ';height:46px;border:none;border-radius:6px;background:rgba(128,128,128,0.25);color:inherit;font-weight:700;font-size:' + (isWide ? '0.7em' : '0.9em') + ';cursor:pointer;text-transform:uppercase;transition:background 0.2s';
       btn.onclick = () => wdlKeyPress(key);
       rowDiv.appendChild(btn);
     });
@@ -10088,7 +10088,7 @@ function wdlUpdateRow() {
   for(let c = 0; c < 5; c++) {
     const tile = document.getElementById('wdl-' + WDL.row + '-' + c);
     tile.textContent = WDL.current[c] || '';
-    tile.style.borderColor = WDL.current[c] ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)';
+    tile.style.borderColor = WDL.current[c] ? 'rgba(128,128,128,0.7)' : 'rgba(128,128,128,0.4)';
     if(WDL.current[c]) {
       tile.style.transform = 'scale(1.05)';
       setTimeout(() => { tile.style.transform = 'scale(1)'; }, 100);
@@ -10209,7 +10209,7 @@ function wdlRevealRow(row, guess, result) {
       setTimeout(() => {
         tile.textContent = guess[c];
         tile.style.background = colors[result[c]];
-        tile.style.borderColor = colors[result[c]];
+        tile.style.borderColor = colors[result[c]]; tile.style.color = 'white';
         tile.style.transform = 'scaleY(1)';
       }, 150);
     }, delay);
@@ -10221,7 +10221,7 @@ function wdlRevealRow(row, guess, result) {
       if(result[c] === 'correct') WDL.keyStates[letter] = 'correct';
       else if(result[c] === 'present' && cur !== 'correct') WDL.keyStates[letter] = 'present';
       else if(cur === 'unused') WDL.keyStates[letter] = 'absent';
-      setTimeout(() => { keyBtn.style.background = colors[WDL.keyStates[letter]] || 'rgba(255,255,255,0.2)'; }, delay + 300);
+      setTimeout(() => { const c = colors[WDL.keyStates[letter]]; if(c) { keyBtn.style.background = c; keyBtn.style.color = 'white'; } }, delay + 300);
     }
   }
   if(soundEnabled) playSound(440, 'sine', 0.15, 0.2);
