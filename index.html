@@ -3560,10 +3560,10 @@ function onGlobalNameChange() {
   const r2 = document.getElementById('recReacP2Lbl');
   if(r1) r1.textContent = 'Najrýchlejšia reakcia (' + globalP1 + ')';
   if(r2) r2.textContent = 'Najrýchlejšia reakcia (' + globalP2 + ')';
-  saveNames();
+  if(!MP._savedP1) saveNames();
 }
 function updateSidebarNames() { onGlobalNameChange(); }
-function syncNames(game, player, val) { onGlobalNameChange(); saveNames(); }
+function syncNames(game, player, val) { onGlobalNameChange(); if(!MP._savedP1) saveNames(); }
 
 // Helper: swap P2 card between human name and AI label
 function setP2Card(nameId, isAI, aiLabel) {
@@ -10115,7 +10115,7 @@ function updateWelcomeSub() {
   // Sync welcome inputs to global and save
   document.getElementById('globalP1Input').value = document.getElementById('wP1Input').value;
   document.getElementById('globalP2Input').value = document.getElementById('wP2Input').value;
-  saveNames();
+  if(!MP._savedP1) saveNames();
 }
 function setWelcomeMode(mode) {
   welcomeGameMode = mode;
