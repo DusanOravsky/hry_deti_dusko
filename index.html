@@ -10312,6 +10312,12 @@ function closeMPModalOnOverlay(event) {
 
 // ===== MP PEERJS FUNCTIONS =====
 function mpCreateRoom() {
+  // Clean up any previous peer/connection
+  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+  MP.isConnected = false;
+  MP._reconnecting = false;
+
   const roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
   MP.roomCode = roomCode;
   MP.isHost = true;
@@ -10330,7 +10336,7 @@ function mpCreateRoom() {
       host: '0.peerjs.com',
       port: 443,
       secure: true,
-      debug: 0
+      debug: 1
     });
 
     MP.peer.on('open', (id) => {
@@ -10370,19 +10376,22 @@ function mpCreateRoom() {
 
       conn.on('close', () => {
         console.log('Guest disconnected');
-        mpTryReconnect();
+        if(MP.isConnected) mpTryReconnect();
       });
 
       conn.on('error', (err) => {
         console.error('Connection error:', err);
-        mpTryReconnect();
+        if(MP.isConnected) mpTryReconnect();
       });
     });
 
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
-      if(!MP.isConnected) alert('❌ Chyba vytvorenia miestnosti: ' + err.type);
-      else mpTryReconnect();
+      if(MP.isConnected) mpTryReconnect();
+      else {
+        document.getElementById('mpHostStatus').className = 'mp-status error';
+        document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
+      }
     });
 
   } catch(err) {
@@ -10397,6 +10406,12 @@ function mpJoinRoom() {
     alert('Zadaj kód miestnosti!');
     return;
   }
+
+  // Clean up any previous peer/connection
+  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+  MP.isConnected = false;
+  MP._reconnecting = false;
 
   MP.roomCode = code;
   MP.isHost = false;
@@ -10416,7 +10431,7 @@ function mpJoinRoom() {
       host: '0.peerjs.com',
       port: 443,
       secure: true,
-      debug: 0
+      debug: 1
     });
 
     MP.peer.on('open', (id) => {
@@ -10431,6 +10446,7 @@ function mpJoinRoom() {
       MP.connection.on('open', () => {
         console.log('Connected to host!');
         MP.isConnected = true;
+        if(MP._joinTimeout) { clearTimeout(MP._joinTimeout); MP._joinTimeout = null; }
         mpStartHeartbeat();
         statusEl.className = 'mp-status connected';
         statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si Hráč 2 🔵 (O)</div>';
@@ -10452,22 +10468,41 @@ function mpJoinRoom() {
 
       MP.connection.on('close', () => {
         console.log('Host disconnected');
-        mpTryReconnect();
+        if(MP.isConnected) mpTryReconnect();
+        else {
+          statusEl.className = 'mp-status error';
+          statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Spojenie odmietnuté</div>';
+        }
       });
 
       MP.connection.on('error', (err) => {
         console.error('Connection error:', err);
-        mpTryReconnect();
+        if(MP.isConnected) mpTryReconnect();
+        else {
+          statusEl.className = 'mp-status error';
+          statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia</div>';
+        }
       });
     });
 
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
-      if(!MP.isConnected) {
+      if(MP.isConnected) mpTryReconnect();
+      else {
         statusEl.className = 'mp-status error';
         statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
-      } else mpTryReconnect();
+      }
     });
+
+    // Timeout — if not connected within 12s, show error
+    MP._joinTimeout = setTimeout(() => {
+      if(!MP.isConnected) {
+        statusEl.className = 'mp-status error';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Nepodarilo sa pripojiť — skontroluj kód</div>';
+        if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+        if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+      }
+    }, 12000);
 
   } catch(err) {
     console.error('Failed to join:', err);
