@@ -3483,7 +3483,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 47;
+const APP_VERSION = 48;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10270,7 +10270,7 @@ function wdlSubmitGuess() {
     if(welcomeGameMode === 'ai') {
       WDL.p1Score++;
       document.getElementById('p1ScoreWDL').textContent = WDL.p1Score;
-      document.getElementById('wdlStatus').textContent = 'Vyborne! Slovo bolo ' + WDL.secret + ' (' + WDL.row + '/6)';
+      document.getElementById('wdlStatus').textContent = getP1Name('wdl') + ' — vyborne! Slovo: ' + WDL.secret + ' (' + WDL.row + '/6)';
       addWin(1, 'wordle');
     } else {
       if(winner === 1) { WDL.p1Score++; document.getElementById('p1ScoreWDL').textContent = WDL.p1Score; }
@@ -10303,7 +10303,13 @@ function wdlSubmitGuess() {
     return;
   }
 
-  document.getElementById('wdlStatus').textContent = 'Pokus ' + (WDL.row + 1) + '/6';
+  // Next turn status
+  if(welcomeGameMode === 'ai') {
+    document.getElementById('wdlStatus').textContent = getP1Name('wdl') + ' — pokus ' + (WDL.row + 1) + '/6';
+  } else {
+    const guesser = WDL.turn === 1 ? globalP2 : globalP1;
+    document.getElementById('wdlStatus').textContent = guesser + ' — pokus ' + (WDL.row + 1) + '/6';
+  }
 }
 
 function wdlEvaluate(guess, secret) {
@@ -10380,7 +10386,7 @@ function resetWordle() {
     // AI mode: random word
     WDL.secret = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
     WDL.pvpPhase = 'guess';
-    document.getElementById('wdlStatus').textContent = 'Uhodni slovo! Pokus 1/6';
+    document.getElementById('wdlStatus').textContent = getP1Name('wdl') + ' — uhádni slovo! Pokus 1/6';
     activeTurn('wdlP1Card', 'wdlP2Card', 1);
     setP2Card('wdlP2Name', true, 'Pocitac');
   } else {
