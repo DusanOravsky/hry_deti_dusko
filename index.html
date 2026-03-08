@@ -2074,7 +2074,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="difficulty-btn active" onclick="setTTTDiff('easy',this)">Ľahká</button>
       <button class="difficulty-btn" onclick="setTTTDiff('hard',this)">Ťažká</button>
     </div>
-    <div class="difficulty-selector">
+    <div class="difficulty-selector" id="tttSizeSel">
       <button class="difficulty-btn active" onclick="setTTTSize('3x3',this)">3×3</button>
       <button class="difficulty-btn" onclick="setTTTSize('4x4',this)">4×4</button>
       <button class="difficulty-btn" onclick="setTTTSize('5x5',this)">5×5</button>
@@ -10223,8 +10223,7 @@ function mpDisconnect() {
   document.getElementById('mpJoinCode').value = '';
   updateFloatingMPButton(false);
   // Restore hidden selectors (were hidden for guest)
-  const tttSels = document.querySelectorAll('#ticTacToe .difficulty-selector');
-  tttSels.forEach(sel => sel.style.display = '');
+  document.getElementById('tttSizeSel').style.display = '';
   document.getElementById('memSizeSel').style.display='';
   console.log('Disconnected');
 }
@@ -10240,7 +10239,7 @@ function mpHandleMessage(data) {
 
       // Find the matching button and click it to sync UI
       const sizeText = data.tttSize === '15x15' ? '10×10' : data.tttSize.replace('x','×');
-      const allSizeButtons = document.querySelectorAll('#ticTacToe .difficulty-selector:last-of-type .difficulty-btn');
+      const allSizeButtons = document.querySelectorAll('#tttSizeSel .difficulty-btn');
       MP._applyingHostSettings = true;
       allSizeButtons.forEach(btn => {
         if(btn.textContent.trim() === sizeText) {
@@ -10249,8 +10248,7 @@ function mpHandleMessage(data) {
       });
       MP._applyingHostSettings = false;
       // Hide size selector for guest — host decides settings
-      const sizeSelectors = document.querySelectorAll('#ticTacToe .difficulty-selector');
-      sizeSelectors.forEach(sel => sel.style.display = 'none');
+      document.getElementById('tttSizeSel').style.display = 'none';
     }
 
     // Guest receives Pexeso board from host handshake
@@ -10263,7 +10261,7 @@ function mpHandleMessage(data) {
   // Piškvorky size change from host
   if(data.type === 'ttt-size') {
     const sizeText = data.tttSize === '15x15' ? '10×10' : data.tttSize.replace('x','×');
-    const allSizeButtons = document.querySelectorAll('#ticTacToe .difficulty-selector:last-of-type .difficulty-btn');
+    const allSizeButtons = document.querySelectorAll('#tttSizeSel .difficulty-btn');
     MP._applyingHostSettings = true;
     allSizeButtons.forEach(btn => {
       if(btn.textContent.trim() === sizeText) setTTTSize(data.tttSize, btn);
