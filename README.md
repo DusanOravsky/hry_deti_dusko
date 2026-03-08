@@ -13,79 +13,83 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 |-----|-----------|---------------|
 | Piskvorky (3x3, 4x4, 5x5, 10x10) | Yes | Yes |
 | Connect 4 | Yes | Yes |
-| Sach | - | Yes (easy/medium/hard) |
-| Dama (Checkers) | - | Yes (easy/medium/hard) |
+| Kamen Papier Noznice | Yes | - |
+| Sach | Yes | Yes (easy/medium/hard) |
+| Dama (Checkers) | Yes | Yes (easy/medium/hard) |
 | Lodicky (Battleship) | Yes | Yes (easy/medium/hard) |
 | Pexeso (6 nahodnych tem) | Yes | Yes |
 | Clovece nehnevaj sa | Yes | Yes (easy/medium/hard) |
+| Hadaj Cislo | Yes | - |
 | Puzzle Scramble (canvas obrazky, 3x3/4x4/5x5) | - | - |
 | Mini Labyrint | - | Yes (easy/medium/hard) |
 | Reversi (Othello) | - | Yes (easy/medium/hard) |
 
 ### Len 2 hraci (mode: pvp)
-| Hra | Online MP |
-|-----|-----------|
-| Kamen Papier Noznicky | - |
-| Hadaj Cislo | Yes |
-| Kviz (16 tem + 200+ otazok) | - |
-| Ghost | Yes |
-| Reakcny Test | - |
-| Scramble | - |
-| Jazykovy Scramble | - |
-| Flashcards | - |
-| Dopln pismeno | - |
-| Prekladaj vety | - |
-| Spam Click | - |
-| Matika Duel | - |
-| Emoji Hadanka | - |
-| Obesenec | Yes |
-| Vyssie Nizsie | Yes |
-| Preteky (Racing) | - |
-| Bodky a Krabicky (Dots & Boxes) | - |
+| Hra |
+|-----|
+| Kviz (17 tem + 200+ otazok) |
+| Ghost |
+| Reakcny Test |
+| Scramble / Jazykovy Scramble |
+| Flashcards / Dopln pismeno / Prekladaj vety |
+| Spam Click, Matika Duel, Emoji Hadanka |
+| Obesenec, Vyssie Nizsie |
+| Bodky a Krabicky (Dots & Boxes) |
 
-### Solo (mode: always)
+### Solo
 - Tetris (s mobilnymi ovladacimi tlacidlami)
-- Snake (canvas, swipe + sipky + tlacidla)
+- Snake (canvas, swipe + sipky + tlacidla, high score)
+- Preteky (Racing) (5x12 grid, 3 drahy, prekazky + mince)
 - Statistiky + Achievement system
 
 ## Online Multiplayer
 
-9 hier podporuje online multiplayer cez WebRTC peer-to-peer (PeerJS):
+9 hier podporuje online multiplayer cez WebRTC peer-to-peer (PeerJS 1.5.5):
 - **Piskvorky** - sync velkosti dosky, striedanie startujuceho hraca
 - **Connect 4** - realtime sync tahov
-- **Lodicky** - placement + strelanina
+- **Kamen Papier Noznice** - sucasne odhalenie volieb
+- **Sach** - suradnice, otocenie dosky pre cierneho, hlasove prikazy
+- **Dama** - striedanie startujuceho hraca
+- **Lodicky** - placement + strelanina + potopene lode
 - **Pexeso** - sync otacania kariet + rozlozenia
-- **Clovece** - sync kocky + tahov
+- **Clovece** - sync kocky + tahov, farby hracov
 - **Hadaj Cislo** - host posle cislo, guest hada
-- **Ghost** - sync pismen
-- **Obesenec** - sync hadania
-- **Vyssie Nizsie** - sync tipov
 
-Pripojenie: Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code
+**Pripojenie:** Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code alebo QR kod
+
+**Poznamka:** Online MP vyzaduje aby obe zariadenia boli na rovnakej WiFi sieti (bez TURN servera).
+
+**Session persistence:** Po refreshi stranky sa MP automaticky pokusi znovu pripojit (8s timeout).
 
 ## Features
 
 - **Animacie**: cellAppear, flipCard, diceRoll, glowCorrect, shakeWrong, pieceMove, rpsReveal
 - **Zvuky**: Web Audio API zvuky (click, move, correct, wrong, flip, shot, hit, win) + vibracie
-- **AI Difficulty**: 5 hier s easy/medium/hard AI (Sach, Dama, Lodicky, Clovece, Labyrint)
+- **AI Difficulty**: hry s easy/medium/hard AI (Sach, Dama, Lodicky, Clovece, Labyrint, Reversi)
 - **Offline indikator**: Cerveny banner ked nie je internet, auto-skrytie MP tlacidla
 - **Favoritne hry**: Hviezdicka na kartach hier, zoradenie na zaciatok gridu
-- **Posledne hrane**: Sekcia s 3 nedavno hranymi hrami + moznost vymazat
-- **Achievement system**: 16 achievementov s toast notifikaciami (prvá hra, serie, maraton, ...)
+- **Posledne hrane**: Sekcia s nedavno hranymi hrami + moznost vymazat
+- **Achievement system**: 16 achievementov s toast notifikaciami
 - **Tmava/svetla tema**: Automaticky podla casu + manualne prepinanie
-- **Kviz**: 16 tematickych kategorii (vseobecne, jedlo, zvierata, psy, kone, Avengers, DC, zemepis, historia, veda, sport, filmy, hudba, Slovensko, hlavne mesta) s 200+ otazkami
+- **Aktivny hrac**: Vizualny indikator kto je na tahu (dimovanie + "Na rade" badge)
+- **Sachove suradnice**: A-H / 1-8 okolo dosky, otocene pre cierneho v MP
+- **Hlasove prikazy (Sach)**: Web Speech API (sk-SK), povedz "E2 E4" pre tah
+- **QR kody**: Generovanie a skenovanie QR kodu pre MP room code
+- **Kviz**: 17 tematickych kategorii s 200+ otazkami
 
 ## Technologie
 
-- Single HTML file (~10100+ riadkov)
+- Single HTML file (~11300+ riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety)
 - Plne offline funkcna (okrem online multiplayer)
-- WebRTC peer-to-peer cez PeerJS (ziadny backend)
+- WebRTC peer-to-peer cez PeerJS 1.5.5 (ziadny backend)
 - Responsivny dizajn (mobile + desktop)
 - Web Audio API zvuky s vibraciami
-- Canvas-based Puzzle Scramble s 6 scenami + Dots & Boxes
+- Canvas-based Puzzle Scramble + Dots & Boxes
 - DFS generovanie labyrintu, BFS AI solver
+- Web Speech API pre hlasove prikazy
 - Statistiky hier + achievementy ulozene v localStorage
+- MP session persistence v sessionStorage
 
 ## Struktura
 
@@ -96,6 +100,7 @@ manifest.json   # PWA manifest
 icon-192.png    # App ikona 192x192
 icon-512.png    # App ikona 512x512
 CLAUDE.md       # Dokumentacia pre Claude Code
+README.md       # Tento subor
 ```
 
 ## Vyvoj
@@ -114,7 +119,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v22**
+Aktualna verzia: **v33**
 
 ## Deploy
 
@@ -125,3 +130,5 @@ git push
 ```
 
 GitHub Pages auto-deploys z main branch.
+
+## (c) Dusan Oravsky

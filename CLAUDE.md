@@ -2,14 +2,15 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~11200 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~11300 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v26
+- **Current version**: v33
+- **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
@@ -38,7 +39,7 @@ resetMem();    // MP.isConnected check works
   - `'pvp'` = 2-player only
   - `'solo'` = solo games (Tetris, Racing)
   - `'always'` = always shown (Stats)
-  - `mp:true` = has online multiplayer support (shows 🌐 badge)
+  - `mp:true` = has online multiplayer support (shows globe badge)
 - `welcomeGameMode` — `'pvp'` (default) or `'ai'`
 - `GAME_NAMES` object — display names for each game
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
@@ -47,35 +48,35 @@ resetMem();    // MP.isConnected check works
 ## Games (30 total)
 
 ### 2 Players + vs Computer (mode:'both')
-- Piškvorky (3×3, 4×4, 5×5, 10×10) 🌐
-- Connect 4 🌐
-- Kameň Papier Nožnice 🌐
-- Hádaj Číslo 🌐
-- Pexeso (6 random themes) 🌐
-- Šach 🌐 (AI: easy/medium/hard)
-- Dáma 🌐 (AI: easy/medium/hard)
-- Lodičky (Battleship) 🌐 (AI: easy/medium/hard)
-- Človeče nehnevaj sa 🌐 (AI: easy/medium/hard)
+- Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
+- Connect 4 [MP]
+- Kamen Papier Noznice [MP]
+- Hadaj Cislo [MP]
+- Pexeso (6 random themes) [MP]
+- Sach [MP] (AI: easy/medium/hard)
+- Dama [MP] (AI: easy/medium/hard)
+- Lodicky (Battleship) [MP] (AI: easy/medium/hard)
+- Clovece nehnevaj sa [MP] (AI: easy/medium/hard)
 - Puzzle Scramble
 - Mini Labyrint (AI: easy/medium/hard)
 - Reversi/Othello (AI: easy/medium/hard)
 
 ### 2 Players Only (mode:'pvp')
-- Kvíz (17 tém: vseobecne, jedlo, zvierata, psy, kone, superhrdinovia, zemepis, historia, biologia, veda, sport, filmy, hudba, slovensko, hlavne mesta)
+- Kviz (17 tem)
 - Ghost
-- Reakčný Test
-- Scramble / Jazykový Scramble
-- Flashcards / Doplň písmeno / Prekladaj vety
-- Spam Click, Matika Duel, Emoji Hádanka
-- Obesenec, Vyššie Nižšie
-- Bodky a Krabičky (Dots and Boxes)
+- Reakcny Test
+- Scramble / Jazykovy Scramble
+- Flashcards / Dopln pismeno / Prekladaj vety
+- Spam Click, Matika Duel, Emoji Hadanka
+- Obesenec, Vyssie Nizsie
+- Bodky a Krabicky (Dots and Boxes)
 
 ### Solo (mode:'solo'/'always')
 - Tetris
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v26)
+## Features (v13-v33)
 
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
@@ -83,14 +84,14 @@ resetMem();    // MP.isConnected check works
 - **Offline indicator**: Red banner when device offline, MP button auto-hides
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
-- **Achievement system**: 16 achievements checked after every `addWin()` and `toggleFavorite()`, toast notification on unlock, displayed in Stats page. Stored in `localStorage('hry_achievements')`.
-- **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "▶ Na rade" badge
+- **Achievement system**: 16 achievements checked after every `addWin()` and `toggleFavorite()`, toast notification on unlock, displayed in Stats page
+- **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
-- **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, 🎤 toggle button
-- **MP auto-reconnect**: Heartbeat ping/15s, auto-reconnect with 5 attempts on disconnect, yellow banner
+- **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
+- **MP session persistence**: `sessionStorage` saves roomCode/isHost/myName, auto-reconnect on refresh (8s timeout)
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
-- **Game count + copyright**: "Obsahuje 30 hier!" on welcome, "© Dušan Oravský" at bottom
+- **Game count + copyright**: "Obsahuje 30 hier!" on welcome, "(c) Dusan Oravsky" at bottom
 
 ## Adding a New Game
 
@@ -106,9 +107,10 @@ resetMem();    // MP.isConnected check works
 ## Online Multiplayer
 
 **Architecture:**
-- PeerJS library (CDN: `unpkg.com/peerjs@1.5.2`)
+- PeerJS 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - WebRTC peer-to-peer, cloud broker: `0.peerjs.com`
 - Floating globe button (hidden in AI mode)
+- **REQUIRES same WiFi network** (no TURN server yet — see TODO below)
 
 **MP State:**
 ```javascript
@@ -117,21 +119,25 @@ const MP = {
   isHost: false, isConnected: false,
   roomCode: null, myName: '', opponentName: '',
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
-  dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
-  _heartbeat: null, _reconnecting: false
+  dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0
 };
 ```
 
+**Session Persistence:**
+- `mpSaveSession()` — saves to sessionStorage after handshake
+- `mpClearSession()` — clears on disconnect
+- `mpTryReconnect()` — called on page load, 8s timeout, toast UI
+
 **Games with MP Support (9 games):**
-- Piškvorky — `ttt-move`, alternating start (tttRound)
+- Piskvorky — `ttt-move`, alternating start (tttRound)
 - Connect4 — `c4-move`
-- Kameň Papier Nožnice — `rps-choice`
-- Šach — `ch-move`
-- Dáma — `dk-move`
+- Kamen Papier Noznice — `rps-choice`
+- Sach — `ch-move`
+- Dama — `dk-move`
 - Pexeso — `mem-flip`, `mem-board` (host sends card layout)
-- Lodičky — `bs-shoot`, `bs-result`, `bs-ready`, `bs-gameover`
-- Človeče — `ludo-roll`, `ludo-move`
-- Hádaj Číslo — `gn-setup`, `gn-guess`, `gn-feedback`
+- Lodicky — `bs-shoot`, `bs-result`, `bs-ready`, `bs-gameover`
+- Clovece — `ludo-roll`, `ludo-move`
+- Hadaj Cislo — `gn-setup`, `gn-guess`, `gn-feedback`
 
 **Adding MP to a Game:**
 1. Add `mp:true` to MOBILE_GAMES entry
@@ -144,44 +150,17 @@ const MP = {
 **MP Key Rules:**
 - Guest cannot change game settings (hidden/blocked)
 - Host sends game state (board, settings) to guest
-- Alternating start player via round counter (all games, not just Piškvorky)
+- Alternating start player via round counter (all games)
 - Rematch resets game and syncs via `mp-rematch` message
-- Heartbeat ping every 15s keeps connection alive
-- Auto-reconnect (5 attempts) on connection drop, yellow banner during reconnect
 - Name sync: handshake sets globalP1/globalP2 from MP names, restored on disconnect
 - `getChessColorName(color)` maps chess color to correct player name based on round
 - QR code for room joining: `mpGenerateQR()` / `mpScanQR()`
+- Cleanup old peers: `mpCreateRoom()` and `mpJoinRoom()` destroy previous peer before creating new one
 
-## Pexeso Themes
-
-6 random themes, auto-selected each new game:
-```javascript
-const memThemes = {
-  ovocie: ['🍎','🍌',...],    // Fruit
-  zvierata: ['🐶','🐱',...],  // Animals
-  auta: ['🚗','🚕',...],      // Cars
-  nastroje: ['🎸','🎹',...],  // Instruments
-  sport: ['⚽','🏀',...],     // Sports
-  jedlo: ['🍕','🍔',...],     // Food
-};
-```
-
-## Človeče nehnevaj sa
-
-- 11×11 CSS grid board, 2 players (red vs blue)
-- 4 pieces per player, dice rolling (⚀-⚅)
-- Path: 40 positions clockwise, 4 home positions per player
-- Rules: 6 to leave base, land on opponent = capture, 6 = bonus roll
-- Win: all 4 pieces at position >= 40 (in home)
-- AI: prefers captures > entering home > leaving base
-- MP: host=red (turn 0), guest=blue (turn 1)
-
-## Racing Game (Preteky)
-
-- 5×12 grid road, 3 lanes (cols 1-3)
-- Obstacles: 🚧🛢️🪨🌲, coins: ⭐
-- Speed increases every 20 points
-- Keyboard (←→) and button controls
+**MP Network Requirements:**
+- STUN only (PeerJS defaults) — works on same WiFi / simple NAT
+- Does NOT work across different networks (WiFi vs mobile data) without TURN server
+- See TODO section for TURN server plans
 
 ## Deploy
 
@@ -207,3 +186,18 @@ GitHub Pages auto-deploys from main branch.
 - **Game state desync**: Host MUST send all game settings in handshake. Guest applies via UI functions.
 - **Guest changing settings**: Block or hide setting controls for guest in MP mode.
 - **Duplicate declarations**: Always `grep "const MP" index.html` before changes.
+- **TURN servers replace PeerJS defaults**: When `config: { iceServers: [...] }` is specified in Peer(), it REPLACES (not supplements) PeerJS built-in ICE servers. If custom TURN servers are broken, this makes things WORSE. Only add config if servers are verified working.
+- **MP not connecting across networks**: Without TURN, WebRTC only works on same WiFi. Users must be on same network.
+- **Stale peers on PeerJS broker**: Always destroy old peer before creating new one in mpCreateRoom/mpJoinRoom.
+
+## TODO
+
+### TURN Server for Cross-Network MP
+Currently MP only works on same WiFi. To enable cross-network play (WiFi vs mobile data):
+
+**Free options:**
+1. **Metered.ca** (recommended) — free tier 50GB/month, register at https://www.metered.ca/turn, get API key, add their TURN servers to Peer config
+2. **PeerJS built-in TURN** (`turn:0.peerjs.com:3478`, user: `peerjs`, pass: `peerjsp`) — included in PeerJS defaults but unreliable
+3. **Cloudflare Calls** — has TURN, requires Cloudflare account
+
+**Implementation:** Add `config: { iceServers: [...] }` to BOTH `new Peer()` calls (host and guest) with STUN + verified TURN servers. MUST include STUN servers too since config replaces defaults.
