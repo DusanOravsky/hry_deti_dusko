@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 30;
+const APP_VERSION = 31;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10240,6 +10240,11 @@ function closeMPModalOnOverlay(event) {
 
 // ===== MP PEERJS FUNCTIONS =====
 function mpCreateRoom() {
+  // Cleanup any previous peer
+  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  MP.isConnected = false;
+
   const roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
   MP.roomCode = roomCode;
   MP.isHost = true;
@@ -10253,12 +10258,15 @@ function mpCreateRoom() {
 
   try {
     MP.peer = new Peer(roomCode, {
-      host: '0.peerjs.com', port: 443, secure: true, debug: 0
+      host: '0.peerjs.com', port: 443, secure: true, debug: 2
     });
+
+    const hostStatusEl = document.getElementById('mpHostStatus');
+    hostStatusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam k serveru...</div>';
 
     MP.peer.on('open', (id) => {
       console.log('Host peer opened with ID:', id);
-      document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...</div>';
+      hostStatusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...</div><div style="font-size:0.65em;opacity:0.5;margin-top:4px">Server OK ✓ ID: '+id+'</div>';
     });
 
     MP.peer.on('connection', (conn) => {
@@ -10318,6 +10326,11 @@ function mpJoinRoom() {
     return;
   }
 
+  // Cleanup any previous peer
+  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  MP.isConnected = false;
+
   MP.roomCode = code;
   MP.isHost = false;
 
@@ -10331,19 +10344,28 @@ function mpJoinRoom() {
 
   try {
     MP.peer = new Peer({
-      host: '0.peerjs.com', port: 443, secure: true, debug: 0
+      host: '0.peerjs.com', port: 443, secure: true, debug: 2
     });
 
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
       console.log('Connecting to host:', code);
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Hľadám miestnosť '+code+'...</div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Hľadám miestnosť '+code+'...</div><div style="font-size:0.65em;opacity:0.5;margin-top:4px">Server OK ✓ Moje ID: '+id+'</div>';
 
       MP.connection = MP.peer.connect(code, {
         reliable: true
       });
 
+      // Timeout - if not connected in 15s, show error
+      const joinTimeout = setTimeout(() => {
+        if(!MP.isConnected) {
+          statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⚠️</div><div>Nepodarilo sa pripojiť</div><div style="font-size:0.75em;opacity:0.7;margin-top:6px">Skús to znova alebo vytvor novú miestnosť</div>';
+          try { MP.peer.destroy(); } catch(e) {}
+        }
+      }, 15000);
+
       MP.connection.on('open', () => {
+        clearTimeout(joinTimeout);
         console.log('Connected to host!');
         MP.isConnected = true;
         statusEl.className = 'mp-status connected';
