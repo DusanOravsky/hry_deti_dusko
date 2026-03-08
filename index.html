@@ -3375,7 +3375,10 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 42;
+const APP_VERSION = 43;
+
+// Helper: Short DOM access
+const $ = id => document.getElementById(id);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3984,7 +3987,7 @@ function setTTTMode(m,btn) {
   TTT.mode=m;
   document.querySelectorAll('#ticTacToe .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tttAISel').style.display = m==='ai'?'flex':'none';
+  $('tttAISel').style.display = m==='ai'?'flex':'none';
   resetTTT();
   setP2Card('tttP2Name', m==='ai', 'Počítač');
 }
@@ -4002,23 +4005,23 @@ function setTTTSize(s,btn) {
   parent.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const is15 = s==='15x15';
-  document.getElementById('board').style.display       = is15?'none':'';
-  document.getElementById('psk15Board').style.display  = is15?'':'none';
-  document.getElementById('tttP1Card').closest('.player-info').style.display = is15?'none':'';
-  document.getElementById('psk15Players').style.display = is15?'':'none';
-  document.getElementById('tttTimerWrap').style.display   = 'none';
-  document.getElementById('psk15TimerWrap').style.display = 'none';
-  const tttTimerSettings = document.getElementById('tttTimerSelect').closest('.timer-settings');
-  const p15TimerSettings = document.getElementById('psk15TimerSettingsWrap');
+  $('board').style.display       = is15?'none':'';
+  $('psk15Board').style.display  = is15?'':'none';
+  $('tttP1Card').closest('.player-info').style.display = is15?'none':'';
+  $('psk15Players').style.display = is15?'':'none';
+  $('tttTimerWrap').style.display   = 'none';
+  $('psk15TimerWrap').style.display = 'none';
+  const tttTimerSettings = $('tttTimerSelect').closest('.timer-settings');
+  const p15TimerSettings = $('psk15TimerSettingsWrap');
   tttTimerSettings.style.display = is15?'none':'';
   p15TimerSettings.style.display = is15?'':'none';
-  document.getElementById('tttResetBtn').style.display   = is15?'none':'';
-  document.getElementById('psk15ResetBtn').style.display = is15?'':'none';
-  document.getElementById('tttCelebration').style.display   = 'none';
-  document.getElementById('psk15Celebration').style.display = 'none';
-  document.getElementById('tttRuleN').textContent = '3';
-  document.getElementById('tttRule15').style.display = is15?'':'none';
-  document.getElementById('tttStatus').textContent = 'Hráč 1 na rade!';
+  $('tttResetBtn').style.display   = is15?'none':'';
+  $('psk15ResetBtn').style.display = is15?'':'none';
+  $('tttCelebration').style.display   = 'none';
+  $('psk15Celebration').style.display = 'none';
+  $('tttRuleN').textContent = '3';
+  $('tttRule15').style.display = is15?'':'none';
+  $('tttStatus').textContent = 'Hráč 1 na rade!';
   if(is15) { resetPsk15(); } else { TTT.size=s; TTT.grid=parseInt(s); resetTTT(); }
   // MP: host sends size change to guest
   if(MP.isConnected && MP.isHost && MP.connection && !MP._applyingHostSettings) {
@@ -4026,7 +4029,7 @@ function setTTTSize(s,btn) {
   }
 }
 function initTTTBoard() {
-  const b = document.getElementById('board');
+  const b = $('board');
   b.innerHTML=''; b.className='board-'+TTT.size;
   TTT.board = Array(TTT.grid*TTT.grid).fill('');
   TTT.board.forEach((_,i)=>{ const c=document.createElement('div'); c.className='cell'; c.onclick=()=>clickTTT(i); b.appendChild(c); });
@@ -4099,34 +4102,34 @@ function clickTTT(i) {
     TTT.over=true;
     w.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));
     playSound('win');
-    if(w.w==='X'){TTT.s1++;document.getElementById('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
-    else{TTT.s2++;document.getElementById('tttStatus').textContent='🎉 '+(TTT.mode==='ai'?'Počítač':getTTTPlayerName('O'))+' vyhral!';addWin(2);celebrate('tttCelebration');popScore('p2ScoreTTT');}
-    document.getElementById('p1ScoreTTT').textContent=TTT.s1;
-    document.getElementById('p2ScoreTTT').textContent=TTT.s2;
+    if(w.w==='X'){TTT.s1++;$('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
+    else{TTT.s2++;$('tttStatus').textContent='🎉 '+(TTT.mode==='ai'?'Počítač':getTTTPlayerName('O'))+' vyhral!';addWin(2);celebrate('tttCelebration');popScore('p2ScoreTTT');}
+    $('p1ScoreTTT').textContent=TTT.s1;
+    $('p2ScoreTTT').textContent=TTT.s2;
     renderTTT(); return;
   }
-  if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
+  if(TTT.board.every(v=>v)){TTT.over=true;$('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
   if(TTT.mode==='pvp') {
     TTT.player=TTT.player==='X'?'O':'X';
     const p=TTT.player==='X'?1:2;
-    document.getElementById('tttStatus').textContent=getTTTPlayerName(TTT.player)+' na rade!';
+    $('tttStatus').textContent=getTTTPlayerName(TTT.player)+' na rade!';
     activeTurn('tttP1Card','tttP2Card',p);
-    startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;const otherPlayer=TTT.player==='X'?'O':'X';document.getElementById('tttStatus').textContent='⏰ Čas vypršal! '+getTTTPlayerName(otherPlayer)+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
+    startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;const otherPlayer=TTT.player==='X'?'O':'X';$('tttStatus').textContent='⏰ Čas vypršal! '+getTTTPlayerName(otherPlayer)+' vyhráva!';addWin(p===1?2:1);celebrate('tttCelebration');} });
   } else {
     setTimeout(()=>{
       const ai=getTTTAIMove(); TTT.board[ai]='O'; renderTTT();
       const w2=checkTTTWin();
-      if(w2){TTT.over=true;TTT.s2++;playSound('win');document.getElementById('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);document.getElementById('p2ScoreTTT').textContent=TTT.s2;w2.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));renderTTT();return;}
-      if(TTT.board.every(v=>v)){TTT.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
-      document.getElementById('tttStatus').textContent=getP1Name('ttt')+' na rade!';
-      startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;document.getElementById('tttStatus').textContent='⏰ Čas vypršal! Počítač vyhráva!';addWin(2);celebrate('tttCelebration');} });
+      if(w2){TTT.over=true;TTT.s2++;playSound('win');$('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);$('p2ScoreTTT').textContent=TTT.s2;w2.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));renderTTT();return;}
+      if(TTT.board.every(v=>v)){TTT.over=true;$('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
+      $('tttStatus').textContent=getP1Name('ttt')+' na rade!';
+      startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;$('tttStatus').textContent='⏰ Čas vypršal! Počítač vyhráva!';addWin(2);celebrate('tttCelebration');} });
     },500);
   }
 }
 function resetTTT() {
   stopTurnTimer('ttt');
   TTT.player='X'; TTT.over=false;
-  document.getElementById('tttStatus').textContent='Hráč 1 na rade!';
+  $('tttStatus').textContent='Hráč 1 na rade!';
   activeTurn('tttP1Card','tttP2Card',1);
   initTTTBoard(); renderTTT();
 }
@@ -4143,7 +4146,7 @@ function setPsk15Mode(m,btn) {
   PSK15.mode=m;
   document.querySelectorAll('#ticTacToe .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  const _psk15ai=document.getElementById('psk15AISel'); if(_psk15ai) _psk15ai.style.display=m==='ai'?'flex':'none';
+  const _psk15ai=$('psk15AISel'); if(_psk15ai) _psk15ai.style.display=m==='ai'?'flex':'none';
   resetPsk15();
   setP2Card('psk15P2Name', m==='ai', 'Počítač');
 }
@@ -4156,7 +4159,7 @@ function setPsk15Diff(d,btn) {
 function initPsk15Board() {
   PSK15.size=window.innerWidth<=640?10:15;
   const sz=PSK15.size, total=sz*sz;
-  const b=document.getElementById('psk15Board');
+  const b=$('psk15Board');
   b.innerHTML='';
   b.className='board-15x15';
   b.style.gridTemplateColumns='repeat('+sz+',1fr)';
@@ -4246,32 +4249,32 @@ function clickPsk15(i) {
   const w=checkPsk15Win();
   if(w){
     PSK15.over=true;
-    if(w==='X'){PSK15.s1++;document.getElementById('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Hráč 1':'Hráč 1')+' vyhral!';addWin(1);celebrate('psk15Celebration');}
-    else{PSK15.s2++;document.getElementById('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Počítač':'Hráč 2')+' vyhral!';addWin(2);celebrate('psk15Celebration');}
-    document.getElementById('p1ScorePsk15').textContent=PSK15.s1;
-    document.getElementById('p2ScorePsk15').textContent=PSK15.s2;
+    if(w==='X'){PSK15.s1++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Hráč 1':'Hráč 1')+' vyhral!';addWin(1);celebrate('psk15Celebration');}
+    else{PSK15.s2++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Počítač':'Hráč 2')+' vyhral!';addWin(2);celebrate('psk15Celebration');}
+    $('p1ScorePsk15').textContent=PSK15.s1;
+    $('p2ScorePsk15').textContent=PSK15.s2;
     renderPsk15(); return;
   }
-  if(PSK15.board.every(v=>v)){PSK15.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
+  if(PSK15.board.every(v=>v)){PSK15.over=true;$('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
   if(PSK15.mode==='pvp') {
     PSK15.player=PSK15.player==='X'?'O':'X';
     const p=PSK15.player==='X'?1:2;
-    document.getElementById('tttStatus').textContent='Hráč '+p+' na rade!';
+    $('tttStatus').textContent='Hráč '+p+' na rade!';
     activeTurn('psk15P1Card','psk15P2Card',p);
   } else {
     setTimeout(()=>{
       const ai=getPsk15AIMove();
-      if(ai===null){PSK15.over=true;document.getElementById('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
+      if(ai===null){PSK15.over=true;$('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
       PSK15.board[ai]='O'; renderPsk15();
       const w2=checkPsk15Win();
-      if(w2){PSK15.over=true;PSK15.s2++;document.getElementById('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);document.getElementById('p2ScorePsk15').textContent=PSK15.s2;renderPsk15();return;}
-      document.getElementById('tttStatus').textContent='Hráč 1 na rade!';
+      if(w2){PSK15.over=true;PSK15.s2++;$('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);$('p2ScorePsk15').textContent=PSK15.s2;renderPsk15();return;}
+      $('tttStatus').textContent='Hráč 1 na rade!';
     },300);
   }
 }
 function resetPsk15() {
   PSK15.player='X'; PSK15.over=false;
-  document.getElementById('tttStatus').textContent='Hráč 1 na rade!';
+  $('tttStatus').textContent='Hráč 1 na rade!';
   activeTurn('psk15P1Card','psk15P2Card',1);
   initPsk15Board(); renderPsk15();
 }
