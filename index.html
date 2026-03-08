@@ -2983,10 +2983,6 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <option value="forest">🌲 Les</option>
         <option value="space">🚀 Vesmír</option>
         <option value="city">🏙️ Mesto</option>
-        <option value="safari">🦁 Safari</option>
-        <option value="beach">🏖️ Pláž</option>
-        <option value="rainbow">🌈 Dúha</option>
-        <option value="castle">🏰 Hrad</option>
       </select>
       <label style="margin-left:10px">📊 Obtiažnosť:</label>
       <select class="timer-select" id="pzDiffSelect">
@@ -3492,7 +3488,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 53;
+const APP_VERSION = 52;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9588,55 +9584,6 @@ function pzDrawScene(canvas, theme) {
       }
     });
     ctx.fillStyle='#4a4e69'; ctx.fillRect(0,s*0.88,s,s*0.12);
-  } else if(theme==='safari') {
-    const bg=ctx.createLinearGradient(0,0,0,s); bg.addColorStop(0,'#87ceeb'); bg.addColorStop(0.5,'#ffeb99'); bg.addColorStop(1,'#f4e4c1');
-    ctx.fillStyle=bg; ctx.fillRect(0,0,s,s);
-    ctx.fillStyle='#e8d5a7'; ctx.fillRect(0,s*0.6,s,s*0.4);
-    ctx.fillStyle='#d4a574'; for(let i=0;i<12;i++){ctx.fillRect(Math.random()*s,s*0.6+Math.random()*s*0.4,s*0.02,s*0.08);}
-    ctx.fillStyle='#8b4513'; ctx.fillRect(s*0.75,s*0.4,s*0.05,s*0.3);
-    ctx.fillStyle='#228b22'; ctx.beginPath(); ctx.arc(s*0.775,s*0.35,s*0.08,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#daa520'; ctx.fillRect(s*0.15,s*0.55,s*0.12,s*0.08); ctx.fillRect(s*0.2,s*0.63,s*0.02,s*0.08); ctx.fillRect(s*0.24,s*0.63,s*0.02,s*0.08);
-    ctx.fillStyle='#cd853f'; ctx.beginPath(); ctx.arc(s*0.21,s*0.52,s*0.03,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(s*0.19,s*0.51,s*0.01,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#696969'; ctx.fillRect(s*0.6,s*0.65,s*0.15,s*0.12); ctx.fillRect(s*0.625,s*0.77,s*0.03,s*0.08); ctx.fillRect(s*0.715,s*0.77,s*0.03,s*0.08);
-    ctx.fillStyle='#a9a9a9'; ctx.beginPath(); ctx.arc(s*0.675,s*0.62,s*0.04,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.moveTo(s*0.72,s*0.65); ctx.lineTo(s*0.75,s*0.62); ctx.lineTo(s*0.72,s*0.59); ctx.fill();
-    ctx.fillStyle='#ffdd00'; ctx.beginPath(); ctx.arc(s*0.85,s*0.15,s*0.06,0,Math.PI*2); ctx.fill();
-  } else if(theme==='beach') {
-    const sky=ctx.createLinearGradient(0,0,0,s*0.6); sky.addColorStop(0,'#87ceeb'); sky.addColorStop(1,'#b0e0e6');
-    ctx.fillStyle=sky; ctx.fillRect(0,0,s,s*0.6);
-    const ocean=ctx.createLinearGradient(0,s*0.6,0,s*0.75); ocean.addColorStop(0,'#00bfff'); ocean.addColorStop(1,'#1e90ff');
-    ctx.fillStyle=ocean; ctx.fillRect(0,s*0.6,s,s*0.15);
-    ctx.fillStyle='#f4e4c1'; ctx.fillRect(0,s*0.75,s,s*0.25);
-    ctx.fillStyle='#8b4513'; ctx.fillRect(s*0.75,s*0.55,s*0.03,s*0.3);
-    ctx.fillStyle='#228b22'; for(let i=0;i<6;i++){ctx.beginPath(); ctx.ellipse(s*0.765,s*0.52-i*s*0.02,s*0.04,s*0.02,0,0,Math.PI*2); ctx.fill();}
-    ctx.fillStyle='#ff6347'; ctx.beginPath(); ctx.arc(s*0.3,s*0.72,s*0.06,0,Math.PI); ctx.fill();
-    ctx.fillStyle='#cd5c5c'; ctx.fillRect(s*0.295,s*0.72,s*0.01,s*0.05);
-    ctx.fillStyle='#4682b4'; ctx.fillRect(s*0.5,s*0.8,s*0.08,s*0.05);
-    ctx.fillStyle='#add8e6'; ctx.fillRect(s*0.51,s*0.81,s*0.06,s*0.03);
-    ctx.fillStyle='#ffdd00'; ctx.beginPath(); ctx.arc(s*0.15,s*0.12,s*0.08,0,Math.PI*2); ctx.fill();
-  } else if(theme==='rainbow') {
-    ctx.fillStyle='#87ceeb'; ctx.fillRect(0,0,s,s);
-    const colors=['#ff0000','#ff7f00','#ffff00','#00ff00','#0000ff','#4b0082','#9400d3'];
-    const cx=s*0.5, cy=s*0.95;
-    for(let i=6;i>=0;i--){ctx.strokeStyle=colors[i]; ctx.lineWidth=s*0.08; ctx.beginPath(); ctx.arc(cx,cy,s*(0.3+i*0.08),Math.PI,0); ctx.stroke();}
-    ctx.fillStyle='#fff'; for(let i=0;i<8;i++){ctx.beginPath(); ctx.arc(s*(0.15+Math.random()*0.7),s*(0.1+Math.random()*0.3),s*(0.05+Math.random()*0.05),0,Math.PI*2); ctx.fill();}
-    ctx.fillStyle='#228b22'; ctx.fillRect(0,s*0.85,s,s*0.15);
-    ctx.fillStyle='#32cd32'; for(let i=0;i<20;i++){ctx.fillRect(Math.random()*s,s*0.85+Math.random()*s*0.15,s*0.01,s*0.03);}
-    ctx.fillStyle='#ffdd00'; ctx.beginPath(); ctx.arc(s*0.85,s*0.15,s*0.06,0,Math.PI*2); ctx.fill();
-  } else if(theme==='castle') {
-    const sky=ctx.createLinearGradient(0,0,0,s); sky.addColorStop(0,'#4a5568'); sky.addColorStop(1,'#a0aec0');
-    ctx.fillStyle=sky; ctx.fillRect(0,0,s,s);
-    ctx.fillStyle='#718096'; ctx.fillRect(s*0.3,s*0.4,s*0.4,s*0.6);
-    ctx.fillStyle='#2d3748'; ctx.fillRect(s*0.42,s*0.7,s*0.16,s*0.3);
-    ctx.fillStyle='#4a5568'; for(let i=0;i<3;i++){ctx.fillRect(s*0.35+i*s*0.15,s*0.5,s*0.05,s*0.08);}
-    ctx.fillStyle='#2d3748'; ctx.fillRect(s*0.25,s*0.3,s*0.08,s*0.15); ctx.fillRect(s*0.67,s*0.3,s*0.08,s*0.15);
-    ctx.fillStyle='#cbd5e0'; ctx.beginPath(); ctx.moveTo(s*0.25,s*0.3); ctx.lineTo(s*0.29,s*0.25); ctx.lineTo(s*0.33,s*0.3); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(s*0.67,s*0.3); ctx.lineTo(s*0.71,s*0.25); ctx.lineTo(s*0.75,s*0.3); ctx.fill();
-    ctx.fillStyle='#a0522d'; ctx.fillRect(s*0.44,s*0.72,s*0.12,s*0.18);
-    ctx.fillStyle='#8b4513'; ctx.beginPath(); ctx.arc(s*0.5,s*0.8,s*0.015,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#d4af37'; for(let i=0;i<4;i++){for(let j=0;j<3;j++){ctx.beginPath(); ctx.moveTo(s*0.32+j*s*0.01,s*0.4+i*s*0.03); ctx.lineTo(s*0.32+j*s*0.01,s*0.41+i*s*0.03); ctx.stroke();}}
-    ctx.fillStyle='#228b22'; ctx.fillRect(0,s*0.92,s,s*0.08);
   }
 }
 function resetPuzzle() {
