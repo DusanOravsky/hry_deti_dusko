@@ -1032,6 +1032,7 @@ body.light .timer-select { background:rgba(0,0,0,0.06); border-color:rgba(0,0,0,
 
 /* RULES */
 .rules {
+  display:none; /* Hidden by default, shown in modal */
   margin:12px 0;
   padding:15px;
   background:rgba(255,255,255,0.05);
@@ -1544,6 +1545,107 @@ body.light .mp-input {
   display: none;
 }
 
+/* ===== RULES MODAL ===== */
+.rules-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 9600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.rules-overlay.active {
+  display: flex;
+}
+.rules-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid rgba(102,126,234,0.5);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 50px rgba(102,126,234,0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+body.light .rules-modal {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  color: #222;
+}
+.rules-modal .rules {
+  display: block !important; /* Override hidden rules */
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  animation: none;
+}
+.rules-modal h3 {
+  font-size: 1.4em;
+  margin-bottom: 16px;
+  color: inherit;
+}
+.rules-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.8em;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  padding: 4px 10px;
+  transition: all 0.2s;
+}
+.rules-close:hover {
+  color: rgba(255,255,255,1);
+  transform: scale(1.2);
+}
+body.light .rules-close {
+  color: rgba(0,0,0,0.4);
+}
+body.light .rules-close:hover {
+  color: rgba(0,0,0,0.8);
+}
+.help-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 1.3em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+  z-index: 10;
+}
+.help-btn:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 6px 20px rgba(102,126,234,0.6);
+}
+body.light .help-btn {
+  border-color: rgba(0,0,0,0.1);
+}
+
 /* ===== FLOATING MP BUTTON ===== */
 /* OFFLINE INDICATOR */
 .offline-banner {
@@ -2028,6 +2130,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="mobile-back-btn" onclick="mobileGoTo(2)">‹</button>
       <span class="mobile-topbar-title" id="mobileGameTitle">Hra</span>
       <div class="mobile-topbar-actions">
+        <button class="mobile-topbar-btn" id="mobileHelpBtn" onclick="showRules(currentGameId)" title="Pravidlá">❓</button>
         <button class="mobile-topbar-btn" id="mobileThemeBtn2" onclick="toggleTheme()">🌙</button>
         <button class="mobile-topbar-btn" id="mobileSoundBtn2" onclick="toggleSound()">🔊</button>
       </div>
@@ -3375,7 +3478,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 43;
+const APP_VERSION = 44;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3422,6 +3525,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if(typeof trackRecentGame==='function') trackRecentGame(gId);
       if(gId === 'stats') renderStats();
     });
+  });
+
+  // Add help buttons to all game areas
+  document.querySelectorAll('.game-area').forEach(gameArea => {
+    const gameId = gameArea.id;
+    const rulesDiv = gameArea.querySelector('.rules');
+    if (!rulesDiv || gameId === 'stats') return; // Skip if no rules or stats page
+
+    // Create help button
+    const helpBtn = document.createElement('button');
+    helpBtn.className = 'help-btn';
+    helpBtn.innerHTML = '❓';
+    helpBtn.title = 'Pravidlá hry';
+    helpBtn.onclick = () => showRules(gameId);
+
+    // Make game-area relative positioned for absolute help button
+    gameArea.style.position = 'relative';
+
+    // Insert help button as first child
+    gameArea.insertBefore(helpBtn, gameArea.firstChild);
   });
 });
 
@@ -10693,6 +10816,36 @@ function closeMPModalOnOverlay(event) {
   }
 }
 
+// ===== RULES MODAL FUNCTIONS =====
+function showRules(gameId) {
+  const gameArea = $(gameId);
+  if (!gameArea) return;
+
+  const rulesDiv = gameArea.querySelector('.rules');
+  if (!rulesDiv) return;
+
+  const overlay = $('rulesOverlay');
+  const content = $('rulesModalContent');
+
+  // Clone rules HTML to modal
+  content.innerHTML = rulesDiv.innerHTML;
+
+  // Show modal
+  overlay.classList.add('active');
+  playSound('click');
+}
+
+function closeRules() {
+  $('rulesOverlay').classList.remove('active');
+  playSound('click');
+}
+
+function closeRulesOnOverlay(event) {
+  if(event.target === $('rulesOverlay')) {
+    closeRules();
+  }
+}
+
 // ===== MP PEERJS FUNCTIONS =====
 function mpCheckConnectionType(attempt) {
   attempt = attempt || 1;
@@ -11673,6 +11826,14 @@ if('serviceWorker' in navigator) {
 <!-- Floating MP Button -->
 <div class="floating-mp-btn" id="floatingMpBtn" onclick="openMPModal()" title="Online Multiplayer">
   <span id="floatingMpIcon">🌐</span>
+</div>
+
+<!-- Rules Modal -->
+<div class="rules-overlay" id="rulesOverlay" onclick="closeRulesOnOverlay(event)">
+  <div class="rules-modal" onclick="event.stopPropagation()">
+    <button class="rules-close" onclick="closeRules()">✕</button>
+    <div id="rulesModalContent"></div>
+  </div>
 </div>
 
 </body>
