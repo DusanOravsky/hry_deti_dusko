@@ -3345,12 +3345,16 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <!-- ===== WORDLE ===== -->
   <div class="game-area" id="wordle">
-    <div class="rules"><h3>Wordle po slovensky:</h3><ul>
-      <li>Uhodni 5-pismenove slovenske slovo za 6 pokusov</li>
+    <div class="rules"><h3>Wordle:</h3><ul>
+      <li>Uhodni 5-pismenove slovo za 6 pokusov</li>
       <li><span style="background:#538d4e;color:white;padding:1px 5px;border-radius:3px">Zelena</span> = spravne pismeno na spravnom mieste</li>
       <li><span style="background:#b59f3b;color:white;padding:1px 5px;border-radius:3px">Zlta</span> = pismeno je v slove, ale inde</li>
       <li><span style="background:#3a3a3c;color:white;padding:1px 5px;border-radius:3px">Siva</span> = pismeno nie je v slove</li>
     </ul></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px">
+      <button class="action-btn" id="wdlLangSK" onclick="setWdlLang('sk')" style="padding:6px 16px;font-size:0.85em">&#127480;&#127472; Slovencina</button>
+      <button class="action-btn" id="wdlLangEN" onclick="setWdlLang('en')" style="padding:6px 16px;font-size:0.85em">&#127468;&#127463; English</button>
+    </div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="wdlP1Card"><div class="player-name-display" id="wdlP1Name">Hrac 1</div><div class="player-score" id="p1ScoreWDL">0</div></div>
       <div class="player-card player2" id="wdlP2Card"><div class="player-name-display" id="wdlP2Name">Hrac 2</div><div class="player-score" id="p2ScoreWDL">0</div></div>
@@ -3371,7 +3375,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 40;
+const APP_VERSION = 41;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -9893,7 +9897,7 @@ function dbPlaceLine(type,i,j,player) {
 
 
 // ===== WORDLE =====
-const WORDLE_WORDS = [
+const WORDLE_SK = [
 'KNIHA','MESTO','STROM','SLOVO','CHATA','CESTA','LAMPA','OBRAZ','LOPTA','VRANA',
 'RIEKA','MOSTY','SRDCE','FARBA','HRDLO','JAZYK','OVOCE','PALEC','TANEC','VEDRO',
 'HRNEC','DREVO','HLAVA','HOKEJ','ISKRA','KARTA','KOCKA','KRAVA','DOMOV','DIERA',
@@ -9903,8 +9907,116 @@ const WORDLE_WORDS = [
 'KVETY','KLBKO','PILOT','PLECH','POTOK','ROBOT','SEVER','SLAMA','STENA','TOPOL',
 'TREST','TRUBA','VOLBA','ZEBRA','ZMENA','BOMBA','HARFA','MOTOR','NORMA','OPERA',
 'PASTA','ROLKA','HUDBA','MATKA','VRECE','ZRADA','KEFKA','LINKA','KOLAJ','POLIA',
-'VRCHY','PEKNE','VEDMA','DROZD','PLAZY','HMOTA','BOBOR','BRLOH','BURINA','CETKA'
-].filter(w => w.length === 5);
+'VRCHY','VEDMA','DROZD','PLAZY','HMOTA','BOBOR','BRLOH','PIVKO','CHREN','SITKO',
+'KUPEC','POLKA','RADCA','SUDOK','OBJAV','BUDIK','REVIR','SUSED','VECER','ORGAN',
+'RUBIN','KUFOR','JELEN','METER','DUKAT','ROMAN','PLESO','OTROK','KABEL','MODUL',
+'PLAST','DATEL','KOBRA','MRKVA','KOZEL','KAPOR','MINCA','ODBER','OKRUH','REGAL',
+'SUDCA','BLATO','ODRAZ','SKLAD','VLNKA','PROFI','TOVAR','DROGA','SNAHA','PIRAT',
+'KOBKA','DREVS','BOCKA','DOLKA','DUMKA','ELITA','FORMA','GRAMY','GURKA','HADIK',
+'HOLUB','IHLAN','JALEC','KACER','KAKAO','KELBA','KLASA','KOKOS','KOLKO','KOMIN',
+'KONEC','KOSEC','KOTEL','KUTIL','LASER','LOPAT','MAFIA','MAKAK','MEDIK','MECKA',
+'MINCA','MLEKO','MOTIV','MUCKA','NOHAV','OBJEM','ODPOR','OKREM','OLIVA','OMRVA',
+'OTVOR','PACEL','PAJAC','PANDA','PECKA','PIVKA','PLANO','PLESO','PODAJ','POHAR',
+'POKRM','POLOM','POMOC','PONIK','POTOM','PRUHY','RADLO','RAMEN','RECKA','REMZA',
+'ROLAK','ROSOL','RUBAS','RYBKA','SALAT','SAUNA','SIERC','SKLAD','SKRAT','SLEPC',
+'SRNKA','STOPA','STUPY','SYPEC','TABAK','TANKO','TEPLO','TITUL','TONER','TORZO',
+'TOTAL','TRASA','TROJK','TRPEC','TUBUS','TULAK','UHLIE','ULOHA','UMYTO','USADL',
+'UZLIK','VAFEL','VAPNO','VECKO','VEGET','VENOM','VETVA','VIBRO','VIDEO','VISAL',
+'VNUKA','VODCA','VOLNO','VTEDY','VYLOM','ZAKAZ','ZAPAS','ZARYS','ZELOV','ZHODA',
+'ZIVOT','ZLOBA','ZOBER','ZUBOR','ZVADA','ZVEST','ZVLAK','AKTIV','BALEC','BARON',
+'BICAJ','BOBIK','CESAK','CENTR','CIFRA','CIRKA','DEKEL','DUNAJ','FACKA','FLASA',
+'FUTRO','GARAS','GEMEL','HABAT','HASAK','HAVKO','HUTKA','HRDZA','KATAR','KLIKA',
+'KRASA','KULMA','KUZEL','LYSKA','LSTIV','MAJER','MAKOV','MLHAN','MORKA','MUCEN',
+'OBLOK','OCKOV','OPUCH','PALBA','PAPUC','PASCA','PATOK','PAVUK','PLAHA','POLDR',
+'POPUD','POTEC','POVAL','PRSTY','RADOV','RASCA','RIADK','RUBAT','SACHR','SITOV',
+'SLINA','SMOLA','SOPKA','SRSEC','STISK','SVALY','TESAK','TOPKA','TROSK','TVARY',
+'ULTRA','VALEC','VESLO','VIKYR','VKLAD','VORAK','VRBOK','VTORA','ZAHRA','ZDOLA',
+'ZMYSL','ZNOVA','ZOPAR','ZVRAT','AKCIA','BETLA','BIVAK','BUDKA','BULKA','CABAK',
+'CESNA','CUCAK','DALSI','DOBRO','DRIVY','DUMAJ','DVAJA','EUFRA','FAGAN','FINTA',
+'FOYER','GARNI','GLEJA','GRENA','GUMEN','HABKA','HAMAK','HERAK','HOBOJ','HUDAK',
+'CHALP','IDYLA','JUNAC','KABAL','KONUS','KOZUB','KRBEC','LEGAT','LODEN','MAKAK',
+'MISIT','NADAJ','NAKAL','NAPLV','NAZOR','NUDLA','OBRUS','ODVAR','OPATR','OSTRO',
+'PADAK','PASIK','PECEN','PIJAN','POCEL','POLOM','POZOR','PRHAV','PUDEL','RACEK'
+];
+const WORDLE_EN = [
+'APPLE','BEACH','BRAIN','BREAD','BRUSH','BUILD','CANDY','CHAIN','CHAIR','CHALK',
+'CHASE','CHEAP','CHESS','CHIEF','CHILD','CIVIL','CLAIM','CLASS','CLEAN','CLIMB',
+'CLOCK','CLOSE','CLOUD','COACH','CORAL','COULD','COUNT','COVER','CRAFT','CRANE',
+'CRASH','CRAZY','CREAM','CRIME','CROSS','CROWD','CRUEL','DANCE','DIARY','DIRTY',
+'DOUBT','DRAFT','DRAIN','DRAMA','DRAWN','DREAM','DRESS','DRIFT','DRINK','DRIVE',
+'EAGER','EARLY','EARTH','EIGHT','ELITE','EMPTY','ENEMY','ENJOY','ENTRY','EQUAL',
+'ERROR','EVENT','EVERY','EXACT','EXTRA','FAITH','FALSE','FAULT','FEAST','FENCE',
+'FIBER','FIELD','FIGHT','FINAL','FIRST','FLAME','FLASH','FLESH','FLOAT','FLOOD',
+'FLOOR','FOCUS','FORCE','FORGE','FRAME','FRANK','FRESH','FRONT','FROST','FRUIT',
+'GIANT','GIVEN','GLASS','GLOBE','GLOOM','GLORY','GRAIN','GRAND','GRANT','GRAPE',
+'GRASP','GRASS','GRAVE','GREAT','GREEN','GRIND','GROUP','GROVE','GUARD','GUESS',
+'GUEST','GUIDE','GUILD','HAPPY','HARSH','HEART','HEAVY','HELLO','HERBS','HONOR',
+'HORSE','HOTEL','HOUSE','HUMAN','HUMOR','HURRY','IMAGE','IMPLY','INBOX','INDEX',
+'INNER','INPUT','IRONY','IVORY','JEWEL','JOINT','JOKER','JUDGE','JUICE','KNOCK',
+'KNOWN','LABOR','LARGE','LASER','LATER','LAUGH','LAYER','LEARN','LEGAL','LEVEL',
+'LIGHT','LIMIT','LINEN','LIVER','LOCAL','LOGIC','LOOSE','LOVER','LOWER','LUCKY',
+'LUNCH','MAGIC','MAJOR','MAKER','MARCH','MATCH','MAYOR','MEDIA','MERCY','MERIT',
+'METAL','MINOR','MODEL','MONEY','MONTH','MORAL','MOTOR','MOUNT','MOUSE','MOUTH',
+'MOVIE','MUSIC','NAVAL','NERVE','NEVER','NIGHT','NOBLE','NOISE','NORTH','NOVEL',
+'NURSE','OCEAN','OFFER','OFTEN','ORDER','OTHER','OUTER','OWNER','PAINT','PANEL',
+'PAPER','PARTY','PAUSE','PEACE','PEARL','PENNY','PHASE','PHONE','PHOTO','PIANO',
+'PIECE','PILOT','PITCH','PIXEL','PLACE','PLAIN','PLANE','PLANT','PLATE','PLAZA',
+'PLEAD','PLUMB','POINT','POUND','POWER','PRESS','PRICE','PRIDE','PRIME','PRINT',
+'PRIOR','PRIZE','PROOF','PROUD','PROVE','PROXY','PSALM','PUPIL','QUEEN','QUERY',
+'QUEST','QUICK','QUIET','QUOTE','RADAR','RADIO','RAISE','RANGE','RAPID','RATIO',
+'REACH','REALM','REBEL','REIGN','RELAX','REPLY','RIDER','RIGHT','RIGID','RISKY',
+'RIVAL','RIVER','ROBOT','ROCKY','ROGER','ROUGH','ROUND','ROUTE','ROYAL','RURAL',
+'SADLY','SAINT','SALAD','SAUCE','SCALE','SCARE','SCENE','SCOPE','SCORE','SENSE',
+'SERVE','SEVEN','SHALL','SHAME','SHAPE','SHARE','SHARK','SHARP','SHEEP','SHEER',
+'SHEET','SHELF','SHELL','SHIFT','SHINE','SHIRT','SHOCK','SHORE','SHORT','SHOUT',
+'SIEGE','SIGHT','SIGMA','SINCE','SIXTH','SIXTY','SIZED','SKILL','SKULL','SLATE',
+'SLEEP','SLICE','SLIDE','SMALL','SMART','SMELL','SMILE','SMOKE','SNAKE','SOLID',
+'SOLVE','SORRY','SOUTH','SPACE','SPARE','SPEAK','SPEED','SPELL','SPEND','SPICE',
+'SPILL','SPINE','SPLIT','SPOKE','SPOON','SPORT','SPRAY','STACK','STAFF','STAGE',
+'STAIN','STAIR','STAKE','STALE','STAND','STARK','STATE','STEAL','STEAM','STEEL',
+'STEEP','STEER','STERN','STICK','STILL','STOCK','STONE','STOOD','STORE','STORM',
+'STORY','STOVE','STRIP','STUCK','STUDY','STUFF','STYLE','SUGAR','SUITE','SUNNY',
+'SUPER','SURGE','SWAMP','SWEAR','SWEEP','SWEET','SWEAT','SWIFT','SWING','SWORD',
+'TABLE','TASTE','TEACH','THEFT','THEME','THICK','THING','THINK','THIRD','THORN',
+'THREE','THROW','THUMB','TIGER','TIGHT','TIMER','TITLE','TODAY','TOKEN','TOTAL',
+'TOUCH','TOUGH','TOWER','TOXIC','TRACE','TRACK','TRADE','TRAIL','TRAIN','TRAIT',
+'TRASH','TREAT','TREND','TRIAL','TRIBE','TRICK','TRIED','TROOP','TRUCK','TRULY',
+'TRUNK','TRUST','TRUTH','TUMOR','TWICE','TWIST','ULTRA','UNCLE','UNDER','UNION',
+'UNITY','UNTIL','UPPER','UPSET','URBAN','USAGE','USUAL','VALID','VALUE','VIDEO',
+'VIGOR','VIRAL','VIRUS','VISIT','VITAL','VIVID','VOCAL','VOICE','VOTER','WAGON',
+'WASTE','WATCH','WATER','WEARY','WEIGH','WEIRD','WHALE','WHEAT','WHEEL','WHERE',
+'WHICH','WHILE','WHITE','WHOLE','WHOSE','WOMAN','WORLD','WORRY','WORSE','WORST',
+'WORTH','WOULD','WOUND','WRATH','WRITE','WRONG','WROTE','YIELD','YOUNG','YOUTH',
+'ABOUT','ABOVE','ABUSE','ADAPT','ADDED','ADMIT','ADOPT','AGENT','AGREE','AHEAD',
+'ALARM','ALBUM','ALERT','ALIEN','ALIGN','ALIKE','ALIVE','ALLEY','ALLOW','ALONE',
+'ALONG','ALTER','AMONG','ANGEL','ANGER','ANGLE','ANGRY','ANKLE','APART','ARENA',
+'ARGUE','ARISE','ARMOR','ARRAY','ASIDE','ASSET','AUDIO','AUDIT','AVOID','AWAKE',
+'AWARD','AWARE','BADGE','BADLY','BEGAN','BEGIN','BEING','BELOW','BENCH','BERRY',
+'BIBLE','BLAME','BLAND','BLANK','BLAST','BLAZE','BLEED','BLEND','BLESS','BLIND',
+'BLOCK','BLOOD','BLOWN','BOARD','BONUS','BOOTH','BOUND','BRAVE','BRIEF','BRING',
+'BROAD','BROKE','BROOK','BROWN','BUYER','CABIN','CARGO','CARRY','CATCH','CAUSE',
+'CHAOS','CHARM','CHART','CHECK','CHEEK','CHEER','CHEST','CHILL','CHOSE','CIVIC',
+'CLASH','CLIFF','CLIMB','CLING','CLONE','CLOTH','COLOR','COMET','COMIC','COMMA',
+'COUCH','CREAM','CREEK','CREST','CROWN','CRUSH','CURVE','CYCLE','DAILY','DEALT',
+'DEATH','DEBUT','DECAY','DECOR','DELAY','DELTA','DEMON','DEPOT','DEPTH','DERBY',
+'DEVIL','DOING','DONOR','DOZEN','DRAWN','DROWN','DYING','EATER','EMBED','EQUAL',
+'ESSAY','ETHIC','EVADE','EXACT','EXERT','EXILE','EXIST','EXPEL','FACET','FAIRY',
+'FATAL','FAVOR','FEAST','FEWER','FIFTH','FIFTY','FLAIR','FLEET','FLINT','FLORA',
+'FLOUR','FLUID','FLUTE','FOCAL','FOGGY','FORCE','FORUM','FOUND','FRAIL','FRAUD'
+];
+
+let WORDLE_WORDS = WORDLE_SK;
+let wdlLang = 'sk';
+
+function setWdlLang(lang) {
+  wdlLang = lang;
+  WORDLE_WORDS = lang === 'en' ? WORDLE_EN : WORDLE_SK;
+  document.getElementById('wdlLangSK').style.background = lang === 'sk' ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'rgba(255,255,255,0.1)';
+  document.getElementById('wdlLangEN').style.background = lang === 'en' ? 'linear-gradient(135deg,#667eea,#764ba2)' : 'rgba(255,255,255,0.1)';
+  document.getElementById('wdlLangSK').style.color = 'white';
+  document.getElementById('wdlLangEN').style.color = 'white';
+  resetWordle();
+}
 
 const WDL = {
   secret: '', guesses: [], current: '', row: 0, gameOver: false,
