@@ -10344,6 +10344,16 @@ function mpDisconnect() {
   // Restore hidden selectors (were hidden for guest)
   document.getElementById('tttSizeSel').style.display = '';
   document.getElementById('memSizeSel').style.display='';
+  // Restore original names from before MP
+  if(MP._savedP1) {
+    globalP1 = MP._savedP1; globalP2 = MP._savedP2;
+    document.getElementById('globalP1Input').value = globalP1;
+    document.getElementById('globalP2Input').value = globalP2;
+    document.getElementById('wP1Input').value = globalP1;
+    document.getElementById('wP2Input').value = globalP2;
+    onGlobalNameChange();
+    MP._savedP1 = null; MP._savedP2 = null;
+  }
   console.log('Disconnected');
 }
 
@@ -10351,6 +10361,25 @@ function mpHandleMessage(data) {
   if(data.type === 'handshake') {
     console.log('Handshake from:', data.from, 'name:', data.name);
     MP.opponentName = data.name || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
+
+    // Save original names before MP overrides them
+    if(!MP._savedP1) { MP._savedP1 = globalP1; MP._savedP2 = globalP2; }
+
+    // Sync MP names into global names so all games show correct names
+    if(MP.isHost) {
+      // Host: P1 = my name, P2 = opponent (guest) name
+      globalP1 = MP.myName;
+      globalP2 = MP.opponentName;
+    } else {
+      // Guest: P1 = opponent (host) name, P2 = my name
+      globalP1 = MP.opponentName;
+      globalP2 = MP.myName;
+    }
+    document.getElementById('globalP1Input').value = globalP1;
+    document.getElementById('globalP2Input').value = globalP2;
+    document.getElementById('wP1Input').value = globalP1;
+    document.getElementById('wP2Input').value = globalP2;
+    onGlobalNameChange();
 
     // Guest receives game settings from host
     if(data.from === 'host' && data.tttSize && data.tttGrid) {
