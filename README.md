@@ -83,11 +83,11 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Sachove suradnice**: A-H / 1-8 okolo dosky, otocene pre cierneho v MP
 - **Hlasove prikazy (Sach)**: Web Speech API (sk-SK), povedz "E2 E4" pre tah
 - **QR kody**: Generovanie a skenovanie QR kodu pre MP room code
-- **Kviz**: 17 tematickych kategorii s 200+ otazkami
+- **Kviz**: 17 tematickych kategorii s 1000+ otazkami (v55-v59 expansion)
 
 ## Technologie
 
-- Single HTML file (~11600+ riadkov)
+- Single HTML file (~12700 riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
@@ -128,7 +128,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v42**
+Aktualna verzia: **v63**
 
 ## Deploy
 
