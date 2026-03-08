@@ -3483,7 +3483,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 46;
+const APP_VERSION = 47;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4149,7 +4149,6 @@ function setTTTSize(s,btn) {
   $('psk15Celebration').style.display = 'none';
   $('tttRuleN').textContent = '3';
   $('tttRule15').style.display = is15?'':'none';
-  $('tttStatus').textContent = 'Hráč 1 na rade!';
   if(is15) { resetPsk15(); } else { TTT.size=s; TTT.grid=parseInt(s); resetTTT(); }
   // MP: host sends size change to guest
   if(MP.isConnected && MP.isHost && MP.connection && !MP._applyingHostSettings) {
@@ -4257,7 +4256,7 @@ function clickTTT(i) {
 function resetTTT() {
   stopTurnTimer('ttt');
   TTT.player='X'; TTT.over=false;
-  $('tttStatus').textContent='Hráč 1 na rade!';
+  $('tttStatus').textContent=getTTTPlayerName('X')+' na rade!';
   activeTurn('tttP1Card','tttP2Card',1);
   initTTTBoard(); renderTTT();
 }
@@ -4377,8 +4376,8 @@ function clickPsk15(i) {
   const w=checkPsk15Win();
   if(w){
     PSK15.over=true;
-    if(w==='X'){PSK15.s1++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Hráč 1':'Hráč 1')+' vyhral!';addWin(1);celebrate('psk15Celebration');}
-    else{PSK15.s2++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Počítač':'Hráč 2')+' vyhral!';addWin(2);celebrate('psk15Celebration');}
+    if(w==='X'){PSK15.s1++;$('tttStatus').textContent='🎉 '+getP1Name('ttt')+' vyhral!';addWin(1);celebrate('psk15Celebration');}
+    else{PSK15.s2++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Počítač':getP2Name('ttt'))+' vyhral!';addWin(2);celebrate('psk15Celebration');}
     $('p1ScorePsk15').textContent=PSK15.s1;
     $('p2ScorePsk15').textContent=PSK15.s2;
     renderPsk15(); return;
@@ -4387,7 +4386,8 @@ function clickPsk15(i) {
   if(PSK15.mode==='pvp') {
     PSK15.player=PSK15.player==='X'?'O':'X';
     const p=PSK15.player==='X'?1:2;
-    $('tttStatus').textContent='Hráč '+p+' na rade!';
+    const playerName=PSK15.player==='X'?getP1Name('ttt'):getP2Name('ttt');
+    $('tttStatus').textContent=playerName+' na rade!';
     activeTurn('psk15P1Card','psk15P2Card',p);
   } else {
     setTimeout(()=>{
@@ -4396,13 +4396,13 @@ function clickPsk15(i) {
       PSK15.board[ai]='O'; renderPsk15();
       const w2=checkPsk15Win();
       if(w2){PSK15.over=true;PSK15.s2++;$('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);$('p2ScorePsk15').textContent=PSK15.s2;renderPsk15();return;}
-      $('tttStatus').textContent='Hráč 1 na rade!';
+      $('tttStatus').textContent=getP1Name('ttt')+' na rade!';
     },300);
   }
 }
 function resetPsk15() {
   PSK15.player='X'; PSK15.over=false;
-  $('tttStatus').textContent='Hráč 1 na rade!';
+  $('tttStatus').textContent=getP1Name('ttt')+' na rade!';
   activeTurn('psk15P1Card','psk15P2Card',1);
   initPsk15Board(); renderPsk15();
 }
