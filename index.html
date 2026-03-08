@@ -9707,18 +9707,19 @@ document.addEventListener('keydown',e=>{
   });
 })();
 
-// PeerJS config with TURN servers for NAT traversal
+// PeerJS config with STUN/TURN servers for NAT traversal
 const PEER_CONFIG = {
-  host: '0.peerjs.com', port: 443, secure: true, debug: 2,
+  debug: 2,
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun.relay.metered.ca:80' },
-      { urls: 'turn:a.relay.metered.ca:80', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' },
-      { urls: 'turn:a.relay.metered.ca:80?transport=tcp', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' },
-      { urls: 'turn:a.relay.metered.ca:443', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' },
-      { urls: 'turns:a.relay.metered.ca:443?transport=tcp', username: 'e8dd65b92f6aeb469484', credential: '5qTRBnJFbOitFLFr' }
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
     ]
   }
 };
@@ -10447,12 +10448,22 @@ function mpJoinRoom() {
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
       console.log('Connecting to host:', code);
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Server OK, pripájam k miestnosti...</div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Server OK, pripájam k miestnosti <strong>'+code+'</strong>...</div><div id="mpDebugLog" style="font-size:0.7em;opacity:0.5;margin-top:8px;max-height:80px;overflow-y:auto;text-align:left"></div>';
 
       // Connect to host
       MP.connection = MP.peer.connect(code, {
         reliable: true
       });
+      const dbg=document.getElementById('mpDebugLog');
+      if(dbg) dbg.innerHTML+='<div>→ connect() volaný</div>';
+      if(MP.connection.peerConnection) {
+        MP.connection.peerConnection.onicecandidate = (e) => {
+          if(dbg && e.candidate) dbg.innerHTML+='<div>ICE: '+e.candidate.type+'</div>';
+        };
+        MP.connection.peerConnection.oniceconnectionstatechange = () => {
+          if(dbg) dbg.innerHTML+='<div>ICE stav: '+MP.connection.peerConnection.iceConnectionState+'</div>';
+        };
+      }
 
       MP.connection.on('open', () => {
         console.log('Connected to host!');
