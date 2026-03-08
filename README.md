@@ -57,7 +57,9 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 **Pripojenie:** Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code alebo QR kod
 
-**Funguje aj cez rozne siete** (WiFi vs mobilne data) vdaka TURN serverom (Xirsys).
+**Funguje aj cez rozne siete** (WiFi vs mobilne data) vdaka TURN serverom (Xirsys, 500MB/mesiac zadarmo). Po pripojeni sa zobrazi indikator typu spojenia:
+- **Priame spojenie** — obe zariadenia na rovnakej WiFi (neminaturn kvotu)
+- **Cez server (TURN)** — rozne siete, data idu cez Xirsys relay server (mina 500MB kvotu)
 
 **Session persistence:** Po refreshi stranky sa MP automaticky pokusi znovu pripojit (8s timeout).
 
@@ -74,20 +76,22 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Aktivny hrac**: Vizualny indikator kto je na tahu (dimovanie + "Na rade" badge)
 - **Sachove suradnice**: A-H / 1-8 okolo dosky, otocene pre cierneho v MP
 - **Hlasove prikazy (Sach)**: Web Speech API (sk-SK), povedz "E2 E4" pre tah
+- **TURN server**: Xirsys TURN pre hru cez rozne siete + indikator typu spojenia
 - **QR kody**: Generovanie a skenovanie QR kodu pre MP room code
 - **Kviz**: 17 tematickych kategorii s 200+ otazkami
 
 ## Technologie
 
-- Single HTML file (~11300+ riadkov)
+- Single HTML file (~11400+ riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety)
 - Plne offline funkcna (okrem online multiplayer)
-- WebRTC peer-to-peer cez PeerJS 1.5.5 (ziadny backend)
+- WebRTC peer-to-peer cez PeerJS 1.5.5 + Xirsys TURN servery
 - Responsivny dizajn (mobile + desktop)
 - Web Audio API zvuky s vibraciami
 - Canvas-based Puzzle Scramble + Dots & Boxes
 - DFS generovanie labyrintu, BFS AI solver
 - Web Speech API pre hlasove prikazy
+- RTCPeerConnection.getStats() pre detekciu typu spojenia
 - Statistiky hier + achievementy ulozene v localStorage
 - MP session persistence v sessionStorage
 
@@ -119,7 +123,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v34**
+Aktualna verzia: **v36**
 
 ## Deploy
 

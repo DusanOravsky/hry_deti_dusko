@@ -2,19 +2,19 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~11300 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~11400 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v33
+- **Current version**: v36
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
-- **Online Multiplayer**: WebRTC peer-to-peer via PeerJS
+- **Online Multiplayer**: WebRTC peer-to-peer via PeerJS + Xirsys TURN
 
 ## CRITICAL: MP Declaration Order
 
@@ -76,7 +76,7 @@ resetMem();    // MP.isConnected check works
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v33)
+## Features (v13-v36)
 
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
@@ -88,6 +88,8 @@ resetMem();    // MP.isConnected check works
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
 - **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
+- **MP TURN servers**: Xirsys TURN for cross-network play (WiFi vs mobile data)
+- **MP connection type indicator**: Shows "Cez server (TURN)" or "Priame spojenie" after connecting
 - **MP session persistence**: `sessionStorage` saves roomCode/isHost/myName, auto-reconnect on refresh (8s timeout)
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
@@ -110,7 +112,29 @@ resetMem();    // MP.isConnected check works
 - PeerJS 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - WebRTC peer-to-peer, cloud broker: `0.peerjs.com`
 - Floating globe button (hidden in AI mode)
-- **Works across any network** (Xirsys TURN servers, 500MB/month free)
+- **Works across any network** via Xirsys TURN servers
+
+**PEER_CONFIG (shared constant):**
+```javascript
+const PEER_CONFIG = {
+  host: '0.peerjs.com', port: 443, secure: true, debug: 0,
+  config: { iceServers: [
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun.relay.metered.ca:80'},
+    {urls:'turn:global.relay.metered.ca:80', username:'...', credential:'...'},
+    {urls:'turn:global.relay.metered.ca:80?transport=tcp', ...},
+    {urls:'turn:global.relay.metered.ca:443', ...},
+    {urls:'turns:global.relay.metered.ca:443?transport=tcp', ...}
+  ]}
+};
+```
+All `new Peer()` calls use `PEER_CONFIG`. Credentials are from Xirsys free tier.
+
+**Connection Type Detection:**
+- `mpCheckConnectionType()` — called after connection opens, uses `RTCPeerConnection.getStats()`
+- Checks BOTH local and remote ICE candidates for `candidateType === 'relay'`
+- Shows badge: "Cez server (TURN)" or "Priame spojenie"
+- `MP._isRelay` — boolean flag set after detection
 
 **MP State:**
 ```javascript
@@ -157,12 +181,6 @@ const MP = {
 - QR code for room joining: `mpGenerateQR()` / `mpScanQR()`
 - Cleanup old peers: `mpCreateRoom()` and `mpJoinRoom()` destroy previous peer before creating new one
 
-**MP Network:**
-- STUN (Google + Metered) + TURN (Xirsys) via shared `PEER_CONFIG`
-- Works across any network (WiFi vs mobile data, different locations)
-- Xirsys free tier: 500MB/month, credentials in `PEER_CONFIG`
-- WebRTC auto-selects: direct → STUN → TURN (transparent to user)
-
 ## Deploy
 
 ```bash
@@ -187,13 +205,17 @@ GitHub Pages auto-deploys from main branch.
 - **Game state desync**: Host MUST send all game settings in handshake. Guest applies via UI functions.
 - **Guest changing settings**: Block or hide setting controls for guest in MP mode.
 - **Duplicate declarations**: Always `grep "const MP" index.html` before changes.
-- **TURN servers replace PeerJS defaults**: When `config: { iceServers: [...] }` is specified in Peer(), it REPLACES (not supplements) PeerJS built-in ICE servers. If custom TURN servers are broken, this makes things WORSE. Only add config if servers are verified working.
-- **MP not connecting across networks**: Without TURN, WebRTC only works on same WiFi. Users must be on same network.
+- **TURN servers replace PeerJS defaults**: When `config: { iceServers: [...] }` is specified in Peer(), it REPLACES (not supplements) PeerJS built-in ICE servers. Always include STUN servers alongside TURN.
 - **Stale peers on PeerJS broker**: Always destroy old peer before creating new one in mpCreateRoom/mpJoinRoom.
 
 ## TURN Server (Xirsys)
 
 - **Provider**: Xirsys (https://xirsys.com), free trial 500MB/month
+- **Dashboard**: https://dashboard.xirsys.com — manage credentials, check usage
 - **Config**: Shared `PEER_CONFIG` constant used by all `new Peer()` calls
-- **Servers**: Google STUN + Metered STUN + Xirsys TURN (UDP/TCP/TLS on ports 80 and 443)
-- **If quota exceeded**: Upgrade plan or replace with another provider (metered.ca enterprise, Twilio, self-hosted coturn)
+- **ICE Servers**: Google STUN + Metered STUN + Xirsys TURN (UDP/TCP/TLS on ports 80 and 443)
+- **Connection type detection**: `mpCheckConnectionType()` checks both local+remote ICE candidates
+- **User notification**: Badge shows "Cez server (TURN)" or "Priame spojenie" after connecting
+- **Same WiFi**: Uses direct/STUN connection (no TURN quota used)
+- **Different networks**: Uses TURN relay (counts against 500MB quota)
+- **If quota exceeded**: Upgrade plan at Xirsys, or replace with another provider (Twilio, self-hosted coturn)

@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 36;
+const APP_VERSION = 37;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10239,28 +10239,31 @@ function closeMPModalOnOverlay(event) {
 }
 
 // ===== MP PEERJS FUNCTIONS =====
-function mpCheckConnectionType() {
-  if(!MP.connection || !MP.connection.peerConnection) return;
+function mpCheckConnectionType(attempt) {
+  attempt = attempt || 1;
+  if(!MP.connection) return;
   const pc = MP.connection.peerConnection;
+  if(!pc) { if(attempt < 3) setTimeout(() => mpCheckConnectionType(attempt+1), 2000); return; }
   setTimeout(() => {
     pc.getStats().then(stats => {
+      let found = false;
       stats.forEach(report => {
+        if(found) return;
         if(report.type === 'candidate-pair' && report.state === 'succeeded') {
+          found = true;
           const local = stats.get(report.localCandidateId);
           const remote = stats.get(report.remoteCandidateId);
           const isRelay = (local && local.candidateType === 'relay') || (remote && remote.candidateType === 'relay');
           MP._isRelay = isRelay;
           console.log('Connection type:', isRelay ? 'RELAY (TURN)' : 'DIRECT (P2P)');
-          // Show connection type in status
-          const hostStatus = document.getElementById('mpHostStatus');
-          const joinStatus = document.getElementById('mpJoinStatus');
-          const statusEl = MP.isHost ? hostStatus : joinStatus;
+          const statusEl = document.getElementById(MP.isHost ? 'mpHostStatus' : 'mpJoinStatus');
           if(statusEl && !statusEl.classList.contains('mp-hidden')) {
             const badge = isRelay ? '<div style="font-size:0.65em;opacity:0.6;margin-top:6px">📡 Cez server (TURN)</div>' : '<div style="font-size:0.65em;opacity:0.6;margin-top:6px">⚡ Priame spojenie</div>';
             statusEl.innerHTML += badge;
           }
         }
       });
+      if(!found && attempt < 3) setTimeout(() => mpCheckConnectionType(attempt+1), 2000);
     }).catch(() => {});
   }, 2000);
 }
