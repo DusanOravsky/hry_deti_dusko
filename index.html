@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Hrajme si Lukáško a Natálka</title>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
 <meta name="theme-color" content="#667eea">
@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 31;
+const APP_VERSION = 32;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10269,8 +10269,14 @@ function mpCreateRoom() {
       hostStatusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...</div><div style="font-size:0.65em;opacity:0.5;margin-top:4px">Server OK ✓ ID: '+id+'</div>';
     });
 
+    MP.peer.on('disconnected', () => {
+      console.log('Host disconnected from broker');
+      hostStatusEl.innerHTML += '<div style="font-size:0.65em;color:#f5576c;margin-top:4px">⚠ Odpojený od servera</div>';
+    });
+
     MP.peer.on('connection', (conn) => {
       console.log('Guest is connecting...');
+      hostStatusEl.innerHTML += '<div style="font-size:0.65em;color:#4facfe;margin-top:4px">📡 Hráč sa pripája...</div>';
       MP.connection = conn;
 
       conn.on('open', () => {
@@ -10355,11 +10361,12 @@ function mpJoinRoom() {
       MP.connection = MP.peer.connect(code, {
         reliable: true
       });
+      statusEl.innerHTML += '<div style="font-size:0.65em;opacity:0.5;margin-top:2px">Čakám na WebRTC...</div>';
 
       // Timeout - if not connected in 15s, show error
       const joinTimeout = setTimeout(() => {
         if(!MP.isConnected) {
-          statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⚠️</div><div>Nepodarilo sa pripojiť</div><div style="font-size:0.75em;opacity:0.7;margin-top:6px">Skús to znova alebo vytvor novú miestnosť</div>';
+          statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⚠️</div><div>Nepodarilo sa pripojiť za 15s</div><div style="font-size:0.75em;opacity:0.7;margin-top:6px">Skús znova — obe zariadenia musia byť na internete</div>';
           try { MP.peer.destroy(); } catch(e) {}
         }
       }, 15000);
@@ -10397,10 +10404,15 @@ function mpJoinRoom() {
       });
     });
 
+    MP.peer.on('disconnected', () => {
+      console.log('Guest disconnected from broker');
+      statusEl.innerHTML += '<div style="font-size:0.65em;color:#f5576c;margin-top:2px">⚠ Odpojený od servera</div>';
+    });
+
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
       statusEl.className = 'mp-status error';
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div><div style="font-size:0.7em;opacity:0.7;margin-top:4px">'+err.message+'</div>';
     });
 
   } catch(err) {
