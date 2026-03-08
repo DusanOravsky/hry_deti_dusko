@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Hrajme si Lukáško a Natálka</title>
+<title>Hrajme si</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
@@ -1954,7 +1954,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <div class="welcome-box">
     <div class="welcome-emoji">🎮</div>
     <div class="welcome-title">Hrajme si!</div>
-    <div class="welcome-sub" id="welcomeSub">Lukáško &amp; Natálka — Premium Vydanie</div>
+    <div class="welcome-sub" id="welcomeSub">Premium Vydanie</div>
     <div class="welcome-mode-pick">
       <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
       <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
@@ -1962,11 +1962,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="welcome-names">
       <div class="welcome-name-group">
         <label>🔴 Hráč 1</label>
-        <input class="welcome-name-input" id="wP1Input" value="Lukáško" maxlength="12" placeholder="Meno hráča 1" oninput="updateWelcomeSub()">
+        <input class="welcome-name-input" id="wP1Input" value="" maxlength="12" placeholder="Meno hráča 1" oninput="updateWelcomeSub()">
       </div>
       <div class="welcome-name-group" id="wP2Group">
         <label>🔵 Hráč 2</label>
-        <input class="welcome-name-input" id="wP2Input" value="Natálka" maxlength="12" placeholder="Meno hráča 2" oninput="updateWelcomeSub()">
+        <input class="welcome-name-input" id="wP2Input" value="" maxlength="12" placeholder="Meno hráča 2" oninput="updateWelcomeSub()">
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
@@ -1987,8 +1987,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="welcome-stats-label">📊 Štatistiky</div>
       <div class="welcome-stats-grid">
         <div><div class="welcome-stats-val" id="wStTotal">0</div><div class="welcome-stats-sub">Hier</div></div>
-        <div><div class="welcome-stats-val" style="color:#f5576c" id="wStP1">0</div><div class="welcome-stats-sub" id="wStP1Label">Lukáško</div></div>
-        <div><div class="welcome-stats-val" style="color:#4facfe" id="wStP2">0</div><div class="welcome-stats-sub" id="wStP2Label">Natálka</div></div>
+        <div><div class="welcome-stats-val" style="color:#f5576c" id="wStP1">0</div><div class="welcome-stats-sub" id="wStP1Label">Hráč 1</div></div>
+        <div><div class="welcome-stats-val" style="color:#4facfe" id="wStP2">0</div><div class="welcome-stats-sub" id="wStP2Label">Hráč 2</div></div>
         <div><div class="welcome-stats-val" style="color:#ffd200" id="wStDraws">0</div><div class="welcome-stats-sub">Remízy</div></div>
       </div>
       <div id="welcomeHistory" class="welcome-history"></div>
@@ -2011,8 +2011,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <div class="mobile-player-strip">
-      <div class="mobile-player-chip p1" id="mobileP1Chip">🔴 Lukáško</div>
-      <div class="mobile-player-chip p2" id="mobileP2Chip">🔵 Natálka</div>
+      <div class="mobile-player-chip p1" id="mobileP1Chip">🔴 Hráč 1</div>
+      <div class="mobile-player-chip p2" id="mobileP2Chip">🔵 Hráč 2</div>
     </div>
     <div style="padding:8px 14px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box">
       <button onclick="randomBattle()" style="width:100%;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite;box-shadow:0 4px 16px rgba(255,0,128,0.4);transition:transform 0.2s">🎲 RANDOM BATTLE!</button>
@@ -2045,22 +2045,22 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <div class="sidebar">
     <div class="sidebar-scroll-hint" id="sidebarScrollHint">›</div>
     <div class="sidebar-header">
-      <div class="sidebar-title">🎮 Hrajme si<br>Lukáško & Natálka</div>
+      <div class="sidebar-title">🎮 Hrajme si</div>
       <div id="sidebarVersion" style="font-size:0.65em;opacity:0.35;text-align:center;margin-top:-5px"></div>
       <div class="sidebar-sub">Offline Premium Vydanie</div>
     </div>
     <div class="sidebar-stats">
       <div style="margin-bottom:10px">
         <div style="font-size:0.7em;opacity:0.5;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Hráč 1</div>
-        <input id="globalP1Input" value="Lukáško" oninput="onGlobalNameChange()" style="width:100%;background:rgba(245,87,108,0.15);border:1px solid rgba(245,87,108,0.3);border-radius:8px;color:white;font-weight:700;font-size:0.95em;padding:6px 10px;outline:none;box-sizing:border-box">
+        <input id="globalP1Input" value="" oninput="onGlobalNameChange()" style="width:100%;background:rgba(245,87,108,0.15);border:1px solid rgba(245,87,108,0.3);border-radius:8px;color:white;font-weight:700;font-size:0.95em;padding:6px 10px;outline:none;box-sizing:border-box">
       </div>
       <div style="margin-bottom:12px">
         <div style="font-size:0.7em;opacity:0.5;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Hráč 2</div>
-        <input id="globalP2Input" value="Natálka" oninput="onGlobalNameChange()" style="width:100%;background:rgba(79,172,254,0.15);border:1px solid rgba(79,172,254,0.3);border-radius:8px;color:white;font-weight:700;font-size:0.95em;padding:6px 10px;outline:none;box-sizing:border-box">
+        <input id="globalP2Input" value="" oninput="onGlobalNameChange()" style="width:100%;background:rgba(79,172,254,0.15);border:1px solid rgba(79,172,254,0.3);border-radius:8px;color:white;font-weight:700;font-size:0.95em;padding:6px 10px;outline:none;box-sizing:border-box">
       </div>
       <div class="sidebar-stat"><span class="sidebar-stat-label">Spolu hier</span><span class="sidebar-stat-val" id="totalGames">0</span></div>
-      <div class="sidebar-stat"><span class="sidebar-stat-label" id="sidebarP1Label">Lukáško výhry</span><span class="sidebar-stat-val" id="p1Wins">0</span></div>
-      <div class="sidebar-stat"><span class="sidebar-stat-label" id="sidebarP2Label">Natálka výhry</span><span class="sidebar-stat-val" id="p2Wins">0</span></div>
+      <div class="sidebar-stat"><span class="sidebar-stat-label" id="sidebarP1Label">Hráč 1 výhry</span><span class="sidebar-stat-val" id="p1Wins">0</span></div>
+      <div class="sidebar-stat"><span class="sidebar-stat-label" id="sidebarP2Label">Hráč 2 výhry</span><span class="sidebar-stat-val" id="p2Wins">0</span></div>
     </div>
     <nav class="sidebar-nav">
       <button class="theme-toggle sidebar-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Tmavý</button>
@@ -2125,12 +2125,12 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li id="tttRule15" style="display:none">Väčšia doska — treba viac stratégie! 🧠</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="tttP1Card"><div class="player-name-display" id="tttP1Name">Lukáško</div><div class="player-score" id="p1ScoreTTT">0</div></div>
-      <div class="player-card player2" id="tttP2Card"><div class="player-name-display" id="tttP2Name">Natálka</div><div class="player-score" id="p2ScoreTTT">0</div></div>
+      <div class="player-card player1 active-turn" id="tttP1Card"><div class="player-name-display" id="tttP1Name">Hráč 1</div><div class="player-score" id="p1ScoreTTT">0</div></div>
+      <div class="player-card player2" id="tttP2Card"><div class="player-name-display" id="tttP2Name">Hráč 2</div><div class="player-score" id="p2ScoreTTT">0</div></div>
     </div>
     <div class="player-info" style="display:none" id="psk15Players">
-      <div class="player-card player1 active-turn" id="psk15P1Card"><div class="player-name-display" id="psk15P1Name">Lukáško</div><div class="player-score" id="p1ScorePsk15">0</div></div>
-      <div class="player-card player2" id="psk15P2Card"><div class="player-name-display" id="psk15P2Name">Natálka</div><div class="player-score" id="p2ScorePsk15">0</div></div>
+      <div class="player-card player1 active-turn" id="psk15P1Card"><div class="player-name-display" id="psk15P1Name">Hráč 1</div><div class="player-score" id="p1ScorePsk15">0</div></div>
+      <div class="player-card player2" id="psk15P2Card"><div class="player-name-display" id="psk15P2Name">Hráč 2</div><div class="player-score" id="p2ScorePsk15">0</div></div>
     </div>
     <div class="timer-settings">
       <label>⏱️ Časovač na ťah:</label>
@@ -2189,8 +2189,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>V 2-hráčovom režime: Hráč 1 vyberie tajne, potom Hráč 2</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="rpsP1Card"><div class="player-name-display" id="rpsP1Name">Lukáško</div><div class="player-score" id="p1ScoreRPS">0</div></div>
-      <div class="player-card player2" id="rpsP2Card"><div class="player-name-display" id="rpsP2Name">Natálka</div><div class="player-score" id="p2ScoreRPS">0</div></div>
+      <div class="player-card player1 active-turn" id="rpsP1Card"><div class="player-name-display" id="rpsP1Name">Hráč 1</div><div class="player-score" id="p1ScoreRPS">0</div></div>
+      <div class="player-card player2" id="rpsP2Card"><div class="player-name-display" id="rpsP2Name">Hráč 2</div><div class="player-score" id="p2ScoreRPS">0</div></div>
     </div>
     <div class="status" id="rpsStatus">Vyber svoj tah!</div>
     <!-- PVP cover screen -->
@@ -2236,8 +2236,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Cieľ: uhádnuť číslo na čo najmenej pokusov!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="gnP1Card"><div class="player-name-display" id="gnP1Name">Lukáško</div><div class="player-score" id="p1ScoreGN">0</div></div>
-      <div class="player-card player2" id="gnP2Card"><div class="player-name-display" id="gnP2Name">Natálka</div><div class="player-score" id="p2ScoreGN">0</div></div>
+      <div class="player-card player1 active-turn" id="gnP1Card"><div class="player-name-display" id="gnP1Name">Hráč 1</div><div class="player-score" id="p1ScoreGN">0</div></div>
+      <div class="player-card player2" id="gnP2Card"><div class="player-name-display" id="gnP2Name">Hráč 2</div><div class="player-score" id="p2ScoreGN">0</div></div>
     </div>
     <div class="status" id="gnStatus">Začnime!</div>
 
@@ -2301,8 +2301,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Kto má viac párov, vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="memP1Card"><div class="player-name-display" id="memP1Name">Lukáško</div><div class="player-score" id="p1ScoreMem">0</div></div>
-      <div class="player-card player2" id="memP2Card"><div class="player-name-display" id="memP2Name">Natálka</div><div class="player-score" id="p2ScoreMem">0</div></div>
+      <div class="player-card player1 active-turn" id="memP1Card"><div class="player-name-display" id="memP1Name">Hráč 1</div><div class="player-score" id="p1ScoreMem">0</div></div>
+      <div class="player-card player2" id="memP2Card"><div class="player-name-display" id="memP2Name">Hráč 2</div><div class="player-score" id="p2ScoreMem">0</div></div>
     </div>
     <div class="status" id="memStatus">Hráč 1 na rade!</div>
     <div class="celebration" id="memCelebration">🎉</div>
@@ -2328,8 +2328,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Vytvor 4 v rade (vodorovne, zvisle, diagonálne)</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="c4P1Card"><div class="player-name-display" id="c4P1Name">Lukáško</div><div class="player-score" id="p1ScoreC4">0</div></div>
-      <div class="player-card player2" id="c4P2Card"><div class="player-name-display" id="c4P2Name">Natálka</div><div class="player-score" id="p2ScoreC4">0</div></div>
+      <div class="player-card player1 active-turn" id="c4P1Card"><div class="player-name-display" id="c4P1Name">Hráč 1</div><div class="player-score" id="p1ScoreC4">0</div></div>
+      <div class="player-card player2" id="c4P2Card"><div class="player-name-display" id="c4P2Name">Hráč 2</div><div class="player-score" id="p2ScoreC4">0</div></div>
     </div>
     <div class="timer-settings">
       <label>⏱️ Časovač na ťah:</label>
@@ -2392,8 +2392,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Kto má viac bodov, vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="qP1Card"><div class="player-name-display" id="qP1Name">Lukáško</div><div class="player-score" id="p1ScoreQuiz">0</div></div>
-      <div class="player-card player2" id="qP2Card"><div class="player-name-display" id="qP2Name">Natálka</div><div class="player-score" id="p2ScoreQuiz">0</div></div>
+      <div class="player-card player1 active-turn" id="qP1Card"><div class="player-name-display" id="qP1Name">Hráč 1</div><div class="player-score" id="p1ScoreQuiz">0</div></div>
+      <div class="player-card player2" id="qP2Card"><div class="player-name-display" id="qP2Name">Hráč 2</div><div class="player-score" id="p2ScoreQuiz">0</div></div>
     </div>
     <div id="quizStartBox" class="quiz-start-box">
       <p>Vyber tému a začni Quiz!</p>
@@ -2419,8 +2419,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>🔴 = zásah, 💧 = minul, kto potopí všetky lode súpera vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="bsP1Card"><div class="player-name-display" id="bsP1Name">Lukáško</div><div class="player-score" id="p1ScoreBS">0</div></div>
-      <div class="player-card player2" id="bsP2Card"><div class="player-name-display" id="bsP2Name">Natálka</div><div class="player-score" id="p2ScoreBS">0</div></div>
+      <div class="player-card player1 active-turn" id="bsP1Card"><div class="player-name-display" id="bsP1Name">Hráč 1</div><div class="player-score" id="p1ScoreBS">0</div></div>
+      <div class="player-card player2" id="bsP2Card"><div class="player-name-display" id="bsP2Name">Hráč 2</div><div class="player-score" id="p2ScoreBS">0</div></div>
     </div>
     <div class="difficulty-selector" id="bsAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setBSDiff('easy',this)">Ľahká</button>
@@ -2472,8 +2472,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </select>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="ghostP1Card"><div class="player-name-display" id="ghostP1Name">Lukáško</div><div class="player-score" id="p1ScoreGhost" style="font-size:1.4em;letter-spacing:3px">0</div></div>
-      <div class="player-card player2" id="ghostP2Card"><div class="player-name-display" id="ghostP2Name">Natálka</div><div class="player-score" id="p2ScoreGhost" style="font-size:1.4em;letter-spacing:3px">0</div></div>
+      <div class="player-card player1 active-turn" id="ghostP1Card"><div class="player-name-display" id="ghostP1Name">Hráč 1</div><div class="player-score" id="p1ScoreGhost" style="font-size:1.4em;letter-spacing:3px">0</div></div>
+      <div class="player-card player2" id="ghostP2Card"><div class="player-name-display" id="ghostP2Name">Hráč 2</div><div class="player-score" id="p2ScoreGhost" style="font-size:1.4em;letter-spacing:3px">0</div></div>
     </div>
     <div class="status" id="ghostStatus">Hráč 1 začína — klikni písmeno!</div>
     <div class="ghost-letter-display" id="ghostDisplay">—</div>
@@ -2493,8 +2493,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>3 kolá každý — nižší priemer vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="reacP1Card"><div class="player-name-display" id="reacP1Name">Lukáško</div><div class="player-score" id="p1ScoreReac">—</div></div>
-      <div class="player-card player2" id="reacP2Card"><div class="player-name-display" id="reacP2Name">Natálka</div><div class="player-score" id="p2ScoreReac">—</div></div>
+      <div class="player-card player1 active-turn" id="reacP1Card"><div class="player-name-display" id="reacP1Name">Hráč 1</div><div class="player-score" id="p1ScoreReac">—</div></div>
+      <div class="player-card player2" id="reacP2Card"><div class="player-name-display" id="reacP2Name">Hráč 2</div><div class="player-score" id="p2ScoreReac">—</div></div>
     </div>
     <div class="status" id="reacStatus">Hráč 1 ide prvý — klikni plochu keď bude zelená!</div>
     <div class="reaction-pad" id="reactionPad" onclick="reactionClick()">Klikni pre štart</div>
@@ -2537,8 +2537,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </select>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="scrP1Card"><div class="player-name-display" id="scrP1Name">Lukáško</div><div class="player-score" id="p1ScoreScr">0</div></div>
-      <div class="player-card player2" id="scrP2Card"><div class="player-name-display" id="scrP2Name">Natálka</div><div class="player-score" id="p2ScoreScr">0</div></div>
+      <div class="player-card player1 active-turn" id="scrP1Card"><div class="player-name-display" id="scrP1Name">Hráč 1</div><div class="player-score" id="p1ScoreScr">0</div></div>
+      <div class="player-card player2" id="scrP2Card"><div class="player-name-display" id="scrP2Name">Hráč 2</div><div class="player-score" id="p2ScoreScr">0</div></div>
     </div>
     <div class="status" id="scrStatus">Klikni Štart!</div>
     <div id="scrGameBox" style="display:none">
@@ -2595,8 +2595,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </select>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="lsP1Card"><div class="player-name-display" id="lsP1Name">Lukáško</div><div class="player-score" id="p1ScoreLS">0</div></div>
-      <div class="player-card player2" id="lsP2Card"><div class="player-name-display" id="lsP2Name">Natálka</div><div class="player-score" id="p2ScoreLS">0</div></div>
+      <div class="player-card player1 active-turn" id="lsP1Card"><div class="player-name-display" id="lsP1Name">Hráč 1</div><div class="player-score" id="p1ScoreLS">0</div></div>
+      <div class="player-card player2" id="lsP2Card"><div class="player-name-display" id="lsP2Name">Hráč 2</div><div class="player-score" id="p2ScoreLS">0</div></div>
     </div>
     <div class="progress-panel" id="lsProgressPanel" style="display:none">
       <div class="progress-stat"><div class="progress-stat-val" id="lsProgRound">0</div><div class="progress-stat-lbl">Kolo</div></div>
@@ -2701,8 +2701,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <h3>🏆 Celkové výsledky</h3>
       <div class="stats-grid">
         <div class="stats-tile"><div class="stats-tile-val" id="stTotalGames">0</div><div class="stats-tile-label">Spolu hier</div></div>
-        <div class="stats-tile gold"><div class="stats-tile-val" id="stP1Wins">0</div><div class="stats-tile-label" id="stP1Label">Lukáško výhry</div></div>
-        <div class="stats-tile blue"><div class="stats-tile-val" id="stP2Wins">0</div><div class="stats-tile-label" id="stP2Label">Natálka výhry</div></div>
+        <div class="stats-tile gold"><div class="stats-tile-val" id="stP1Wins">0</div><div class="stats-tile-label" id="stP1Label">Hráč 1 výhry</div></div>
+        <div class="stats-tile blue"><div class="stats-tile-val" id="stP2Wins">0</div><div class="stats-tile-label" id="stP2Label">Hráč 2 výhry</div></div>
         <div class="stats-tile"><div class="stats-tile-val" id="stDraws">0</div><div class="stats-tile-label">Remízy</div></div>
       </div>
       <div class="stats-bar-wrap" id="stWinBars" style="margin-top:18px"></div>
@@ -2776,8 +2776,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </select>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="mlP1Card"><div class="player-name-display" id="mlP1Name">Lukáško</div><div class="player-score" id="p1ScoreML">0</div></div>
-      <div class="player-card player2" id="mlP2Card"><div class="player-name-display" id="mlP2Name">Natálka</div><div class="player-score" id="p2ScoreML">0</div></div>
+      <div class="player-card player1 active-turn" id="mlP1Card"><div class="player-name-display" id="mlP1Name">Hráč 1</div><div class="player-score" id="p1ScoreML">0</div></div>
+      <div class="player-card player2" id="mlP2Card"><div class="player-name-display" id="mlP2Name">Hráč 2</div><div class="player-score" id="p2ScoreML">0</div></div>
     </div>
     <div class="status" id="mlStatus">Klikni Štart!</div>
     <div id="mlGameBox" style="display:none">
@@ -2827,8 +2827,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </select>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="stP1Card"><div class="player-name-display" id="stP1Name">Lukáško</div><div class="player-score" id="p1ScoreST">0</div></div>
-      <div class="player-card player2" id="stP2Card"><div class="player-name-display" id="stP2Name">Natálka</div><div class="player-score" id="p2ScoreST">0</div></div>
+      <div class="player-card player1 active-turn" id="stP1Card"><div class="player-name-display" id="stP1Name">Hráč 1</div><div class="player-score" id="p1ScoreST">0</div></div>
+      <div class="player-card player2" id="stP2Card"><div class="player-name-display" id="stP2Name">Hráč 2</div><div class="player-score" id="p2ScoreST">0</div></div>
     </div>
     <div class="status" id="stStatus">Klikni Štart!</div>
     <div id="stGameBox" style="display:none">
@@ -2858,8 +2858,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Hráči sa striedajú — kto poskladá rýchlejšie, vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="pzP1Card"><div class="player-name-display" id="pzP1Name">Lukáško</div><div class="player-score" id="p1ScorePZ">0</div></div>
-      <div class="player-card player2" id="pzP2Card"><div class="player-name-display" id="pzP2Name">Natálka</div><div class="player-score" id="p2ScorePZ">0</div></div>
+      <div class="player-card player1 active-turn" id="pzP1Card"><div class="player-name-display" id="pzP1Name">Hráč 1</div><div class="player-score" id="p1ScorePZ">0</div></div>
+      <div class="player-card player2" id="pzP2Card"><div class="player-name-display" id="pzP2Name">Hráč 2</div><div class="player-score" id="p2ScorePZ">0</div></div>
     </div>
     <div class="status" id="pzStatus">Vyber motív a klikni Štart!</div>
     <div class="timer-settings">
@@ -2900,8 +2900,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Hráči sa striedajú — kto prejde rýchlejšie, vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="mzP1Card"><div class="player-name-display" id="mzP1Name">Lukáško</div><div class="player-score" id="p1ScoreMZ">0</div></div>
-      <div class="player-card player2" id="mzP2Card"><div class="player-name-display" id="mzP2Name">Natálka</div><div class="player-score" id="p2ScoreMZ">0</div></div>
+      <div class="player-card player1 active-turn" id="mzP1Card"><div class="player-name-display" id="mzP1Name">Hráč 1</div><div class="player-score" id="p1ScoreMZ">0</div></div>
+      <div class="player-card player2" id="mzP2Card"><div class="player-name-display" id="mzP2Name">Hráč 2</div><div class="player-score" id="p2ScoreMZ">0</div></div>
     </div>
     <div class="difficulty-selector" id="mzAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setMZDiff('easy',this)">Ľahká</button>
@@ -2937,8 +2937,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Kto klikne viackrát, vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="scP1Card"><div class="player-name-display" id="scP1Name">Lukáško</div><div class="player-score" id="p1ScoreSC">0</div></div>
-      <div class="player-card player2" id="scP2Card"><div class="player-name-display" id="scP2Name">Natálka</div><div class="player-score" id="p2ScoreSC">0</div></div>
+      <div class="player-card player1 active-turn" id="scP1Card"><div class="player-name-display" id="scP1Name">Hráč 1</div><div class="player-score" id="p1ScoreSC">0</div></div>
+      <div class="player-card player2" id="scP2Card"><div class="player-name-display" id="scP2Name">Hráč 2</div><div class="player-score" id="p2ScoreSC">0</div></div>
     </div>
     <div class="status" id="scStatus">Klikni Štart!</div>
     <div id="scGameBox" style="display:none;text-align:center">
@@ -2968,8 +2968,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="difficulty-btn" onclick="setMDDiff('hard',this)">Ťažká (+−×÷)</button>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="mdP1Card"><div class="player-name-display" id="mdP1Name">Lukáško</div><div class="player-score" id="p1ScoreMD">0</div></div>
-      <div class="player-card player2" id="mdP2Card"><div class="player-name-display" id="mdP2Name">Natálka</div><div class="player-score" id="p2ScoreMD">0</div></div>
+      <div class="player-card player1 active-turn" id="mdP1Card"><div class="player-name-display" id="mdP1Name">Hráč 1</div><div class="player-score" id="p1ScoreMD">0</div></div>
+      <div class="player-card player2" id="mdP2Card"><div class="player-name-display" id="mdP2Name">Hráč 2</div><div class="player-score" id="p2ScoreMD">0</div></div>
     </div>
     <div class="status" id="mdStatus">Klikni Štart!</div>
     <div id="mdGameBox" style="display:none;text-align:center">
@@ -2999,8 +2999,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="quiz-theme-btn" onclick="setEGCat('fairy',this)">🧚 Rozprávky</button>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="egP1Card"><div class="player-name-display" id="egP1Name">Lukáško</div><div class="player-score" id="p1ScoreEG">0</div></div>
-      <div class="player-card player2" id="egP2Card"><div class="player-name-display" id="egP2Name">Natálka</div><div class="player-score" id="p2ScoreEG">0</div></div>
+      <div class="player-card player1 active-turn" id="egP1Card"><div class="player-name-display" id="egP1Name">Hráč 1</div><div class="player-score" id="p1ScoreEG">0</div></div>
+      <div class="player-card player2" id="egP2Card"><div class="player-name-display" id="egP2Name">Hráč 2</div><div class="player-score" id="p2ScoreEG">0</div></div>
     </div>
     <div class="status" id="egStatus">Klikni Štart!</div>
     <div id="egGameBox" style="display:none;text-align:center">
@@ -3030,8 +3030,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="difficulty-btn" onclick="setHMDiff('hard',this)">Ťažká (8+)</button>
     </div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="hmP1Card"><div class="player-name-display" id="hmP1Name">Lukáško</div><div class="player-score" id="p1ScoreHM">0</div></div>
-      <div class="player-card player2" id="hmP2Card"><div class="player-name-display" id="hmP2Name">Natálka</div><div class="player-score" id="p2ScoreHM">0</div></div>
+      <div class="player-card player1 active-turn" id="hmP1Card"><div class="player-name-display" id="hmP1Name">Hráč 1</div><div class="player-score" id="p1ScoreHM">0</div></div>
+      <div class="player-card player2" id="hmP2Card"><div class="player-name-display" id="hmP2Name">Hráč 2</div><div class="player-score" id="p2ScoreHM">0</div></div>
     </div>
     <div class="status" id="hmStatus">Klikni Štart!</div>
     <div id="hmGameBox" style="display:none;text-align:center">
@@ -3058,8 +3058,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Hráči sa striedajú — kto získa viac bodov!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="hlP1Card"><div class="player-name-display" id="hlP1Name">Lukáško</div><div class="player-score" id="p1ScoreHL">0</div></div>
-      <div class="player-card player2" id="hlP2Card"><div class="player-name-display" id="hlP2Name">Natálka</div><div class="player-score" id="p2ScoreHL">0</div></div>
+      <div class="player-card player1 active-turn" id="hlP1Card"><div class="player-name-display" id="hlP1Name">Hráč 1</div><div class="player-score" id="p1ScoreHL">0</div></div>
+      <div class="player-card player2" id="hlP2Card"><div class="player-name-display" id="hlP2Name">Hráč 2</div><div class="player-score" id="p2ScoreHL">0</div></div>
     </div>
     <div class="status" id="hlStatus">Klikni Štart!</div>
     <div id="hlGameBox" style="display:none;text-align:center">
@@ -3090,8 +3090,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Šach mat = výhra!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="chP1Card"><div class="player-name-display" id="chP1Name">Lukáško</div><div class="player-score" id="p1ScoreCH">0</div></div>
-      <div class="player-card player2" id="chP2Card"><div class="player-name-display" id="chP2Name">Natálka</div><div class="player-score" id="p2ScoreCH">0</div></div>
+      <div class="player-card player1 active-turn" id="chP1Card"><div class="player-name-display" id="chP1Name">Hráč 1</div><div class="player-score" id="p1ScoreCH">0</div></div>
+      <div class="player-card player2" id="chP2Card"><div class="player-name-display" id="chP2Name">Hráč 2</div><div class="player-score" id="p2ScoreCH">0</div></div>
     </div>
     <div class="difficulty-selector" id="chAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setCHDiff('easy',this)">Ľahká</button>
@@ -3131,8 +3131,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Kto zoberie všetky súperove figúrky, vyhráva!</li>
     </ul></div>
     <div class="player-info">
-      <div class="player-card player1 active-turn" id="dkP1Card"><div class="player-name-display" id="dkP1Name">Lukáško</div><div class="player-score" id="p1ScoreDK">0</div></div>
-      <div class="player-card player2" id="dkP2Card"><div class="player-name-display" id="dkP2Name">Natálka</div><div class="player-score" id="p2ScoreDK">0</div></div>
+      <div class="player-card player1 active-turn" id="dkP1Card"><div class="player-name-display" id="dkP1Name">Hráč 1</div><div class="player-score" id="p1ScoreDK">0</div></div>
+      <div class="player-card player2" id="dkP2Card"><div class="player-name-display" id="dkP2Name">Hráč 2</div><div class="player-score" id="p2ScoreDK">0</div></div>
     </div>
     <div class="difficulty-selector" id="dkAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setDKDiff('easy',this)">Ľahká</button>
@@ -3347,7 +3347,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 </div><!-- end container -->
 <script>
 // =============================================================================
-// HRAJME SI — Lukáško & Natálka
+// HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
 const APP_VERSION = 38;
@@ -3526,8 +3526,8 @@ function playSound(type) {
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 3: MENÁ HRÁČOV
 // ─────────────────────────────────────────────────────────────────────────────
-let globalP1 = 'Lukáško';
-let globalP2 = 'Natálka';
+let globalP1 = 'Hráč 1';
+let globalP2 = 'Hráč 2';
 
 function getP1Name(game) {
   const el = document.getElementById(game+'P1Name');
@@ -4120,7 +4120,7 @@ function setPsk15Mode(m,btn) {
   btn.classList.add('active');
   const _psk15ai=document.getElementById('psk15AISel'); if(_psk15ai) _psk15ai.style.display=m==='ai'?'flex':'none';
   resetPsk15();
-  setP2Card('psk15P2Name', m==='ai', 'Počítač', 'Natálka');
+  setP2Card('psk15P2Name', m==='ai', 'Počítač');
 }
 function setPsk15Diff(d,btn) {
   PSK15.diff=d;
@@ -4271,7 +4271,7 @@ function setRPSMode(m,btn) {
   btn.classList.add('active');
   document.getElementById('rpsAISel').style.display=m==='ai'?'flex':'none';
   resetRPS();
-  setP2Card('rpsP2Name', m==='ai', 'Počítač', 'Natálka');
+  setP2Card('rpsP2Name', m==='ai', 'Počítač');
 }
 function setRPSDiff(d,btn) {
   RPS.diff=d;
@@ -4497,7 +4497,7 @@ function setMemMode(m,btn) {
   btn.classList.add('active');
   document.getElementById('memAISel').style.display=m==='ai'?'flex':'none';
   resetMem();
-  setP2Card('memP2Name', m==='ai', 'Počítač', 'Natálka');
+  setP2Card('memP2Name', m==='ai', 'Počítač');
 }
 function setMemAIDiff(d,btn) {
   MEM.aiDiff=d;
@@ -4753,7 +4753,7 @@ function setC4Mode(m,btn) {
   document.querySelectorAll('#connect4 .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('c4AISel').style.display=m==='ai'?'flex':'none';
-  setP2Card('c4P2Name', m==='ai', 'Počítač 🔵', 'Natálka 🔵');
+  setP2Card('c4P2Name', m==='ai', 'Počítač 🔵');
   resetC4();
 }
 function setC4Diff(d,btn) {
@@ -9891,6 +9891,7 @@ updateSidebarNames();
 // Load persisted data
 loadStats();
 loadSavedNames();
+updateWelcomeSub();
 loadTheme();
 document.getElementById('appVersion').textContent='v'+APP_VERSION;
 const svEl=document.getElementById('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
@@ -10108,8 +10109,8 @@ function updateWelcomeSub() {
   const p1 = document.getElementById('wP1Input').value.trim() || 'Hráč 1';
   const p2 = document.getElementById('wP2Input').value.trim() || 'Hráč 2';
   const sub = document.getElementById('welcomeSub');
-  if(sub) sub.textContent = p1 + ' & ' + p2 + ' — Premium Vydanie';
-  document.title = 'Hrajme si ' + p1 + ' a ' + p2;
+  if(sub) sub.textContent = (p1 !== 'Hráč 1' && p2 !== 'Hráč 2') ? p1 + ' & ' + p2 + ' — Premium Vydanie' : 'Premium Vydanie';
+  document.title = (p1 !== 'Hráč 1' && p2 !== 'Hráč 2') ? 'Hrajme si ' + p1 + ' a ' + p2 : 'Hrajme si';
 }
 function setWelcomeMode(mode) {
   welcomeGameMode = mode;
