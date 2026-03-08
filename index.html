@@ -1055,6 +1055,9 @@ button.primary-btn { background:linear-gradient(135deg,#667eea,#764ba2); }
 button.primary-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(102,126,234,0.5); }
 button.danger-btn { background:linear-gradient(135deg,#f5576c,#d63d47); }
 button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(245,87,108,0.5); }
+body.light button.action-btn { color:white; }
+body.light button.primary-btn { background:linear-gradient(135deg,#667eea,#764ba2); color:white; }
+body.light button.danger-btn { background:linear-gradient(135deg,#f5576c,#d63d47); color:white; }
 
 /* CELEBRATION */
 .celebration { display:none; text-align:center; font-size:2.5em; margin:10px 0; animation:celebrateBounce 0.5s infinite alternate; }
@@ -3172,7 +3175,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <canvas id="hmCanvas" width="200" height="200"></canvas>
       <div id="hmWord"></div>
       <div id="hmHint"></div>
-      <div style="margin:8px 0"><button class="action-btn" onclick="hmUseHint()" id="hmHintBtn" style="font-size:0.9em;padding:8px 16px">💡 Nápoveda</button></div>
+      <div style="margin:8px 0"><button class="action-btn primary-btn" onclick="hmUseHint()" id="hmHintBtn" style="font-size:0.9em;padding:8px 16px">💡 Nápoveda</button></div>
       <div class="ghost-keyboard" id="hmKeyboard"></div>
     </div>
     <div class="celebration" id="hmCelebration">🎉</div>
@@ -3508,7 +3511,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 62;
+const APP_VERSION = 63;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
