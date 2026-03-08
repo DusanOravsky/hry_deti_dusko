@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 37;
+const APP_VERSION = 38;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10226,6 +10226,46 @@ function openMPModal() {
   const p2 = document.getElementById('mpInfoP2');
   if(p1) p1.textContent = globalP1 || 'Hráč 1';
   if(p2) p2.textContent = globalP2 || 'Hráč 2';
+  mpRenderTurnSection();
+}
+
+function mpRenderTurnSection() {
+  const statusEl = document.getElementById('mpTurnStatus');
+  const unlockEl = document.getElementById('mpTurnUnlock');
+  if(mpIsTurnUnlocked()) {
+    statusEl.innerHTML = '<div style="font-size:0.85em"><span style="color:#43e97b">✅ TURN odomknutý</span> — funguje aj cez rôzne siete</div>';
+    unlockEl.innerHTML = '<button class="mp-button" onclick="mpLockTurn()" style="background:rgba(245,87,108,0.2);font-size:0.8em;padding:6px 14px">🔒 Zamknúť TURN</button>';
+  } else {
+    statusEl.innerHTML = '<div style="font-size:0.85em;opacity:0.8">🔒 Len rovnaká WiFi. Pre rôzne siete zadaj heslo.</div>';
+    unlockEl.innerHTML =
+      '<div style="display:flex;gap:6px;align-items:center;justify-content:center">' +
+      '<input type="password" id="mpTurnPassModal" placeholder="Heslo" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:inherit;font-size:0.85em;width:140px;text-align:center">' +
+      '<button class="mp-button" onclick="mpUnlockTurn()" style="background:linear-gradient(135deg,#667eea,#764ba2);font-size:0.8em;padding:6px 14px">Odomknúť</button>' +
+      '</div>' +
+      '<div id="mpTurnErrorModal" style="color:#f5576c;font-size:0.8em;margin-top:4px;display:none">Nesprávne heslo!</div>';
+    setTimeout(() => {
+      const inp = document.getElementById('mpTurnPassModal');
+      if(inp) inp.onkeydown = (e) => { if(e.key === 'Enter') mpUnlockTurn(); };
+    }, 50);
+  }
+}
+
+function mpUnlockTurn() {
+  const inp = document.getElementById('mpTurnPassModal');
+  if(!inp) return;
+  if(inp.value.trim() === TURN_PASSWORD) {
+    localStorage.setItem('mp_turn_unlocked', 'yes');
+    mpRenderTurnSection();
+  } else {
+    document.getElementById('mpTurnErrorModal').style.display = 'block';
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+function mpLockTurn() {
+  localStorage.removeItem('mp_turn_unlocked');
+  mpRenderTurnSection();
 }
 
 function closeMPModal() {
@@ -10268,7 +10308,14 @@ function mpCheckConnectionType(attempt) {
   }, 2000);
 }
 
-const PEER_CONFIG = {
+const STUN_ONLY_CONFIG = {
+  host: '0.peerjs.com', port: 443, secure: true, debug: 0,
+  config: { iceServers: [
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun.relay.metered.ca:80'}
+  ]}
+};
+const TURN_CONFIG = {
   host: '0.peerjs.com', port: 443, secure: true, debug: 0,
   config: { iceServers: [
     {urls:'stun:stun.l.google.com:19302'},
@@ -10279,6 +10326,13 @@ const PEER_CONFIG = {
     {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'f45a85de1539a10dc89832f0',credential:'TM1l2sIHjJ/of0r9'}
   ]}
 };
+const TURN_PASSWORD = 'lukaskonatalka2026';
+function mpIsTurnUnlocked() {
+  return localStorage.getItem('mp_turn_unlocked') === 'yes';
+}
+function mpGetConfig(forceTurn) {
+  return (forceTurn || mpIsTurnUnlocked()) ? TURN_CONFIG : STUN_ONLY_CONFIG;
+}
 function mpCreateRoom() {
   // Cleanup any previous peer
   if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
@@ -10297,11 +10351,12 @@ function mpCreateRoom() {
   mpGenerateQR(roomCode);
 
   try {
-    MP.peer = new Peer(roomCode, PEER_CONFIG);
+    MP.peer = new Peer(roomCode, mpGetConfig());
 
     MP.peer.on('open', (id) => {
       console.log('Host peer opened with ID:', id);
-      document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...</div>';
+      const turnInfo = mpIsTurnUnlocked() ? ' (TURN povolený)' : '';
+      document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Čaká sa na pripojenie...' + turnInfo + '</div>';
     });
 
     MP.peer.on('connection', (conn) => {
@@ -10378,25 +10433,38 @@ function mpJoinRoom() {
   statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam sa...</div>';
   statusEl.classList.remove('mp-hidden');
 
+  mpJoinWithConfig(code, statusEl, mpGetConfig());
+}
+
+function mpJoinWithConfig(code, statusEl, config) {
+  // Cleanup previous attempt
+  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
+  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  MP.isConnected = false;
+
+  const useTurn = config === TURN_CONFIG;
+  const stunTimeout = useTurn ? 15000 : 8000;
+
   try {
-    MP.peer = new Peer(PEER_CONFIG);
+    MP.peer = new Peer(config);
 
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
-      console.log('Connecting to host:', code);
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Hľadám miestnosť '+code+'...</div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Hľadám miestnosť '+code+'...</div>' + (!useTurn ? '<div style="font-size:0.7em;opacity:0.5;margin-top:4px">Skúšam priame spojenie...</div>' : '<div style="font-size:0.7em;opacity:0.5;margin-top:4px">Pripájam cez TURN server...</div>');
 
-      MP.connection = MP.peer.connect(code, {
-        reliable: true
-      });
+      MP.connection = MP.peer.connect(code, { reliable: true });
 
-      // Timeout - if not connected in 15s, show error
       const joinTimeout = setTimeout(() => {
         if(!MP.isConnected) {
-          statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⚠️</div><div>Nepodarilo sa pripojiť za 15s</div><div style="font-size:0.75em;opacity:0.7;margin-top:6px">Skús znova — obe zariadenia musia byť na internete</div>';
           try { MP.peer.destroy(); } catch(e) {}
+          MP.peer = null; MP.connection = null;
+          if(!useTurn) {
+            mpShowTurnPrompt(code, statusEl);
+          } else {
+            statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⚠️</div><div>Nepodarilo sa pripojiť za 15s</div><div style="font-size:0.75em;opacity:0.7;margin-top:6px">Skús znova — obe zariadenia musia byť na internete</div>';
+          }
         }
-      }, 15000);
+      }, stunTimeout);
 
       MP.connection.on('open', () => {
         clearTimeout(joinTimeout);
@@ -10408,11 +10476,7 @@ function mpJoinRoom() {
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
-        MP.connection.send({
-          type: 'handshake',
-          from: 'guest',
-          name: MP.myName
-        });
+        MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
       });
 
       MP.connection.on('data', (data) => {
@@ -10434,6 +10498,11 @@ function mpJoinRoom() {
 
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
+      if(!MP.isConnected && !useTurn && err.type === 'peer-unavailable') {
+        statusEl.className = 'mp-status error';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Miestnosť '+code+' neexistuje</div>';
+        return;
+      }
       statusEl.className = 'mp-status error';
       statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
     });
@@ -10443,6 +10512,35 @@ function mpJoinRoom() {
     statusEl.className = 'mp-status error';
     statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Nepodarilo sa pripojiť</div>';
   }
+}
+
+function mpShowTurnPrompt(code, statusEl) {
+  statusEl.className = 'mp-status waiting';
+  statusEl.innerHTML =
+    '<div style="font-size:1.5em;margin-bottom:8px">🔒</div>' +
+    '<div style="margin-bottom:8px">Priame spojenie zlyhalo</div>' +
+    '<div style="font-size:0.8em;opacity:0.7;margin-bottom:12px">Ste na rôznych sieťach — treba TURN server</div>' +
+    '<input type="password" id="mpTurnPass" placeholder="Zadaj heslo pre TURN" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:inherit;font-size:0.9em;text-align:center;margin-bottom:8px">' +
+    '<button id="mpTurnBtn" style="padding:8px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;font-size:0.9em">Odomknúť TURN</button>' +
+    '<div id="mpTurnError" style="color:#f5576c;font-size:0.8em;margin-top:6px;display:none">Nesprávne heslo!</div>';
+
+  document.getElementById('mpTurnBtn').onclick = () => {
+    const pass = document.getElementById('mpTurnPass').value.trim();
+    if(pass === TURN_PASSWORD) {
+      localStorage.setItem('mp_turn_unlocked', 'yes');
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>TURN odomknutý! Pripájam...</div>';
+      statusEl.className = 'mp-status waiting';
+      mpJoinWithConfig(code, statusEl, TURN_CONFIG);
+    } else {
+      document.getElementById('mpTurnError').style.display = 'block';
+      document.getElementById('mpTurnPass').value = '';
+      document.getElementById('mpTurnPass').focus();
+    }
+  };
+  document.getElementById('mpTurnPass').onkeydown = (e) => {
+    if(e.key === 'Enter') document.getElementById('mpTurnBtn').click();
+  };
+  setTimeout(() => { const inp = document.getElementById('mpTurnPass'); if(inp) inp.focus(); }, 100);
 }
 
 function mpSaveSession() {
@@ -10533,17 +10631,16 @@ function mpTryReconnect() {
     updateFloatingMPButton(true);
   }
 
+  const reconConfig = mpGetConfig();
   try {
     if(sess.isHost) {
-      MP.peer = new Peer(sess.roomCode, {
-        host: '0.peerjs.com', port: 443, secure: true, debug: 0
-      });
+      MP.peer = new Peer(sess.roomCode, reconConfig);
       MP.peer.on('open', () => { console.log('Reconnect: host peer open'); });
       MP.peer.on('connection', (conn) => {
         MP.connection = conn;
         conn.on('open', () => {
           MP.isConnected = true;
-        mpCheckConnectionType();
+          mpCheckConnectionType();
           onReconnected();
           conn.send({ type: 'handshake', from: 'host', name: MP.myName,
             tttSize: TTT.size, tttGrid: TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
@@ -10553,14 +10650,12 @@ function mpTryReconnect() {
       });
       MP.peer.on('error', () => { clearTimeout(timeout); mpClearSession(); toast.remove(); });
     } else {
-      MP.peer = new Peer({
-        host: '0.peerjs.com', port: 443, secure: true, debug: 0
-      });
+      MP.peer = new Peer(reconConfig);
       MP.peer.on('open', () => {
         MP.connection = MP.peer.connect(sess.roomCode, { reliable: true });
         MP.connection.on('open', () => {
           MP.isConnected = true;
-        mpCheckConnectionType();
+          mpCheckConnectionType();
           onReconnected();
           MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
         });
@@ -11132,6 +11227,13 @@ if('serviceWorker' in navigator) {
         <button class="mp-button" onclick="mpStopScan()" style="margin-top:6px;background:rgba(245,87,108,0.2)">✖ Zavrieť kameru</button>
       </div>
       <div id="mpJoinStatus" class="mp-hidden"></div>
+    </div>
+
+    <!-- TURN Section -->
+    <div class="mp-section" id="mpTurnSection" style="border:1px solid rgba(255,255,255,0.1);margin-top:8px">
+      <div class="mp-section-title">📡 Rôzne siete (TURN)</div>
+      <div id="mpTurnStatus"></div>
+      <div id="mpTurnUnlock" style="margin-top:8px"></div>
     </div>
 
     <!-- Disconnect Button -->
