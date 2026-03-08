@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 29;
+const APP_VERSION = 30;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10253,14 +10253,7 @@ function mpCreateRoom() {
 
   try {
     MP.peer = new Peer(roomCode, {
-      host: '0.peerjs.com', port: 443, secure: true, debug: 0,
-      config: { iceServers: [
-        {urls:'stun:stun.l.google.com:19302'},
-        {urls:'stun:stun1.l.google.com:19302'},
-        {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
-        {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-        {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
-      ]}
+      host: '0.peerjs.com', port: 443, secure: true, debug: 0
     });
 
     MP.peer.on('open', (id) => {
@@ -10338,22 +10331,13 @@ function mpJoinRoom() {
 
   try {
     MP.peer = new Peer({
-      host: '0.peerjs.com', port: 443, secure: true, debug: 0,
-      config: { iceServers: [
-        {urls:'stun:stun.l.google.com:19302'},
-        {urls:'stun:stun1.l.google.com:19302'},
-        {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
-        {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-        {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
-      ]}
+      host: '0.peerjs.com', port: 443, secure: true, debug: 0
     });
-
-    statusEl.innerHTML += '<div style="font-size:0.7em;opacity:0.5;margin-top:4px">1. Pripájam k serveru...</div>';
 
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
       console.log('Connecting to host:', code);
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam sa...</div><div style="font-size:0.75em;opacity:0.7;margin-top:6px;color:white">✓ Server OK<br>Pripájam k miestnosti '+code+'...</div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Hľadám miestnosť '+code+'...</div>';
 
       MP.connection = MP.peer.connect(code, {
         reliable: true
