@@ -3492,7 +3492,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 56;
+const APP_VERSION = 57;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5160,6 +5160,43 @@ quizDB.biology = [
   {q:'Ktory organ riadi cele telo?',a:['Mozog','Srdce','Pečeň','Pľúca'],c:0},
   {q:'Co je chlorofyl?',a:['Zelené farbivo v rastlinách','Typ baktérie','Ľudský hormón','Vitamín'],c:0},
   {q:'Kolko svalov ma ludske telo priblizne?',a:['Okolo 600','Okolo 200','Okolo 1000','Okolo 100'],c:0},
+  {q:'Čo je metabolizmus?',a:['Chemické reakcie v tele','Typ tkaniva','Orgán','Choroba'],c:0},
+  {q:'Ktorý orgán vyrába inzulín?',a:['Pankreas','Pečeň','Žalúdok','Obličky'],c:0},
+  {q:'Čo sú hormóny?',a:['Chemické posly v tele','Bunky','Orgány','Vitamíny'],c:0},
+  {q:'Ako sa nazýva štúdium rastlín?',a:['Botanika','Zoológia','Anatómia','Fyziológia'],c:0},
+  {q:'Čo je mitóza?',a:['Delenie buniek','Typ tkaniva','Orgán','Choroba'],c:0},
+  {q:'Ktorý orgán filtruje krv?',a:['Obličky','Pečeň','Srdce','Pľúca'],c:0},
+  {q:'Čo je hemoglobín?',a:['Proteín v červených krvinkách','Typ bunky','Orgán','Vitamín'],c:0},
+  {q:'Ako sa nazýva štúdium zvierat?',a:['Zoológia','Botanika','Anatómia','Genetika'],c:0},
+  {q:'Čo je evolúcia?',a:['Postupná zmena druhov','Typ choroby','Orgán','Bunka'],c:0},
+  {q:'Ktorý orgán tvorí žlč?',a:['Pečeň','Žalúdok','Pankreas','Obličky'],c:0},
+  {q:'Čo sú enzýmy?',a:['Proteíny urýchľujúce reakcie','Typ buniek','Hormóny','Vitamíny'],c:0},
+  {q:'Ako sa nazýva vonkajšia vrstva kože?',a:['Epidermis','Dermis','Hypodermis','Kutikula'],c:0},
+  {q:'Čo je RNA?',a:['Ribonukleová kyselina','Typ proteínu','Orgán','Vitamín'],c:0},
+  {q:'Ktorý orgán produkuje červené krvinky?',a:['Kostná dreň','Pečeň','Slezina','Pľúca'],c:0},
+  {q:'Čo je imunitný systém?',a:['Obrana tela proti chorobám','Typ orgánu','Bunka','Hormón'],c:0},
+  {q:'Ako sa nazýva štúdium ľudského tela?',a:['Anatómia','Botanika','Zoológia','Genetika'],c:0},
+  {q:'Čo sú protilátky?',a:['Obranné proteíny','Typ buniek','Hormóny','Vitamíny'],c:0},
+  {q:'Ktorý orgán je najväčší vnútorný orgán?',a:['Pečeň','Srdce','Mozog','Žalúdok'],c:0},
+  {q:'Čo je alergia?',a:['Nadmerná reakcia imunitného systému','Choroba','Typ bunky','Orgán'],c:0},
+  {q:'Ako sa nazýva spojenie dvoch buniek?',a:['Synapsap','Tkanivo','Orgán','Systém'],c:0},
+  {q:'Čo je vírus?',a:['Infekčná častica','Baktéria','Bunka','Orgán'],c:0},
+  {q:'Ktorý orgán riadi telestnú teplotu?',a:['Hypotalamus','Srdce','Pečeň','Pľúca'],c:0},
+  {q:'Čo sú vitamíny?',a:['Látky potrebné pre zdravie','Hormóny','Bunky','Orgány'],c:0},
+  {q:'Ako sa nazýva proces dýchania buniek?',a:['Respirácia','Fotosyntéza','Metabolizmus','Difúzia'],c:0},
+  {q:'Čo je baktéria?',a:['Jednobunkový organizmus','Vírus','Bunka živočícha','Rastlina'],c:0},
+  {q:'Ktorý orgán kontroluje rovnováhu?',a:['Vnútorné ucho','Oči','Mozog','Srdce'],c:0},
+  {q:'Čo sú minerály?',a:['Látky potrebné pre telo','Vitamíny','Hormóny','Bunky'],c:0},
+  {q:'Ako sa nazýva proces trávenia?',a:['Digesta','Respirácia','Cirkulácia','Exkrécia'],c:0},
+  {q:'Čo je reflex?',a:['Automatická reakcia','Typ myslenia','Pohyb','Emócia'],c:0},
+  {q:'Ktorý orgán skladuje žlč?',a:['Žlčník','Pečeň','Pankreas','Žalúdok'],c:0},
+  {q:'Čo sú neurony?',a:['Nervové bunky','Svalové bunky','Kostné bunky','Krvné bunky'],c:0},
+  {q:'Ako sa nazýva proces vylučovania?',a:['Exkrécia','Digesta','Respirácia','Cirkulácia'],c:0},
+  {q:'Čo je genetika?',a:['Štúdium dedičnosti','Štúdium rastlín','Štúdium zvierat','Štúdium buniek'],c:0},
+  {q:'Ktorý orgán prenáša kyslík do krvi?',a:['Pľúca','Srdce','Pečeň','Obličky'],c:0},
+  {q:'Čo sú receptory?',a:['Bunky detegujúce podnety','Hormóny','Orgány','Vitamíny'],c:0},
+  {q:'Ako sa nazýva proces rastu buniek?',a:['Proliferácia','Diferenciácia','Apoptóza','Nekróza'],c:0},
+  {q:'Čo je antibiotikum?',a:['Liek proti baktériám','Liek proti vírusom','Vitamín','Hormón'],c:0}
 ];
 
 // Add new themes to quizDB
@@ -5408,6 +5445,31 @@ quizDB.slovakia = [
   {q:'Ktoré mesto je druhé najväčšie na Slovensku?',a:['Košice','Prešov','Žilina','Banská Bystrica'],c:0},
   {q:'Kedy vznikla samostatná Slovenská republika?',a:['1993','1989','1991','1995'],c:0},
   {q:'Aká je najvyššia hora Slovenska?',a:['Gerlachovský štít','Kriváň','Rysy','Ďumbier'],c:0},
+  {q:'Ktoré mesto je sídlom prezidenta?',a:['Bratislava','Košice','Trenčín','Nitra'],c:0},
+  {q:'Ako sa volá najväčšie slovenské jazero?',a:['Zemplínska šírava','Oravská priehrada','Liptovská Mara','Ružín'],c:0},
+  {q:'V ktorom roku Slovensko vstúpilo do EÚ?',a:['2004','2007','2000','2010'],c:0},
+  {q:'Ako sa volá najvýznamnejší slovenský básnik?',a:['Pavol Országh Hviezdoslav','Ján Kollár','Samo Chalupka','Andrej Sládkovič'],c:0},
+  {q:'Ktoré pohorie je na východnom Slovensku?',a:['Nízke Beskydy','Vysoké Tatry','Malá Fatra','Veľká Fatra'],c:0},
+  {q:'Ako sa volá slovenský národný park v Tatrách?',a:['TANAP','NAPANT','Tatra Park','Vysoké Tatry NP'],c:0},
+  {q:'V ktorom roku prijalo Slovensko euro?',a:['2009','2004','2010','2007'],c:0},
+  {q:'Ako sa volá najväčšia jaskyňa na Slovensku?',a:['Demänovská jaskyňa','Dobšinská ľadová','Gombasecká','Ochtinská aragonitová'],c:0},
+  {q:'Ktoré mesto je sídlom arcibiskupstva?',a:['Trnava','Bratislava','Košice','Nitra'],c:0},
+  {q:'Ako sa volá najstarší slovenský univerzita?',a:['Univerzita Komenského','Univerzita P.J. Šafárika','STU','Ekonomická univerzita'],c:0},
+  {q:'V ktorom roku sa konali olympijské hry v Bratislave?',a:['Nikdy','1968','1980','2004'],c:0},
+  {q:'Ako sa volá slovenský národný symbol?',a:['Dvojkríž','Lev','Tatry','Orel'],c:0},
+  {q:'Ktoré mesto je najstarším kráľovským mestom?',a:['Trnava','Bratislava','Košice','Banská Štiavnica'],c:0},
+  {q:'Ako sa volá najvýznamnejší slovenský spisovateľ?',a:['Ľudovít Štúr','Pavol Országh Hviezdoslav','Jozef Cíger Hronský','Martin Kukučín'],c:0},
+  {q:'Ktoré mesto je banícke?',a:['Banská Štiavnica','Bratislava','Košice','Trnava'],c:0},
+  {q:'Ako sa volá slovenská ľudová pieseň?',a:['Horela lipka','Keby som mal pušku','Tancuj, tancuj','Čižmičky'],c:0},
+  {q:'V ktorom roku padol komunizmus na Slovensku?',a:['1989','1993','1968','1990'],c:0},
+  {q:'Ako sa volá slovenský národný tanec?',a:['Čardáš','Polka','Valčík','Tango'],c:0},
+  {q:'Ktoré mesto má najväčšie námestie?',a:['Košice','Bratislava','Prešov','Žilina'],c:0},
+  {q:'Ako sa volá slovenská národná knižnica?',a:['Matica slovenská','Univerzitná knižnica','Národná knižnica','Študijná knižnica'],c:0},
+  {q:'V ktorom roku bola Bratislava hlavným mestom?',a:['Od 1536 do 1783 (Uhorsko)','Od 1918','Od 1993','Od 1945'],c:0},
+  {q:'Ako sa volá slovenský národný hrdinský epos?',a:['Slávy dcéra','Marína','Mor ho!','Matúš Čák'],c:0},
+  {q:'Ktoré mesto má najvyšší počet hradov?',a:['Trenčín','Bratislava','Nitra','Žilina'],c:0},
+  {q:'Ako sa volá slovenský futbalový majster (2024)?',a:['Slovan Bratislava','Spartak Trnava','MŠK Žilina','FK DAC'],c:0},
+  {q:'V ktorom roku sa konala sametová revolúcia?',a:['1989','1968','1993','1990'],c:0}
 ];
 
 // Extra general knowledge
@@ -5554,7 +5616,8 @@ quizDB.history.push(
   {q:'V ktorom roku sa začal holokaust?',a:['1941','1939','1933','1945'],c:0},
   {q:'Kto bol Vikingovia?',a:['Severskí námorníci a bojovníci','Rímski vojaci','Egyptskí kňazi','Grécki obchodníci'],c:0},
   {q:'Kedy bola postavená Eiffelova veža?',a:['1889','1900','1875','1910'],c:0},
-  {q:'Kto vynašiel parný stroj?',a:['James Watt','Thomas Edison','Nikola Tesla','Henry Ford'],c:0}
+  {q:'Kto vynašiel parný stroj?',a:['James Watt','Thomas Edison','Nikola Tesla','Henry Ford'],c:0},
+  {q:'V ktorom roku sa skončil druhá svetová vojna v Európe?',a:['1945','1944','1946','1943'],c:0}
 );
 
 // ===== EXTRA QUESTIONS — ANIMALS =====
