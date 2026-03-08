@@ -2130,8 +2130,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div id="psk15Board" class="board-15x15" style="display:none"></div>
     </div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" id="tttResetBtn" onclick="resetTTT()">🔄 Nová hra</button>
-      <button class="action-btn primary-btn" id="psk15ResetBtn" onclick="resetPsk15()" style="display:none">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" id="tttResetBtn" onclick="MP.isConnected?mpRematch('ticTacToe'):resetTTT()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" id="psk15ResetBtn" onclick="MP.isConnected?mpRematch('ticTacToe'):resetPsk15()" style="display:none">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -2235,7 +2235,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="celebration" id="gnCelebration">🎉</div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetGN()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('guessNum'):resetGN()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -2269,7 +2269,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="memCelebration">🎉</div>
     <div class="memory-board easy" id="memBoard"></div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetMem()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('memory'):resetMem()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -2313,7 +2313,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="board-7x6" id="c4Board"></div>
     </div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetC4()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('connect4'):resetC4()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -2410,7 +2410,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div class="bs-grid-wrap"><div class="bs-grid-label" id="bsMyLabel">Moja doska</div><div class="bs-grid" id="bsMyGrid"></div></div>
       </div>
     </div>
-    <div class="buttons-group"><button class="action-btn primary-btn" onclick="resetBS()">🔄 Nová hra</button></div>
+    <div class="buttons-group"><button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('battleship'):resetBS()">🔄 Nová hra</button></div>
   </div>
 
   <!-- ===== GHOST ===== -->
@@ -3065,7 +3065,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="celebration" id="chCelebration">🎉</div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetChess()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('chess'):resetChess()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -3092,7 +3092,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="celebration" id="dkCelebration">🎉</div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetCheckers()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('checkers'):resetCheckers()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -3228,7 +3228,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div id="ludoBoard" style="display:grid;grid-template-columns:repeat(11,1fr);gap:2px;width:100%;max-width:min(400px,92vw);aspect-ratio:1;box-sizing:border-box;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:4px"></div>
     </div>
     <div class="celebration" id="ludoCelebration">🎉</div>
-    <div class="buttons-group"><button class="action-btn primary-btn" onclick="resetLudo()">🔄 Nová hra</button></div>
+    <div class="buttons-group"><button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('ludo'):resetLudo()">🔄 Nová hra</button></div>
   </div>
 
   <!-- ===== RACING ===== -->
