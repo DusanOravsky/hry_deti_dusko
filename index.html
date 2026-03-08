@@ -3350,7 +3350,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 25;
+const APP_VERSION = 26;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -10298,6 +10298,10 @@ function getTTTPlayerName(symbol) {
 // ===== MP MODAL CONTROLS =====
 function openMPModal() {
   document.getElementById('mpOverlay').classList.add('active');
+  const p1 = document.getElementById('mpInfoP1');
+  const p2 = document.getElementById('mpInfoP2');
+  if(p1) p1.textContent = globalP1 || 'Hráč 1';
+  if(p2) p2.textContent = globalP2 || 'Hráč 2';
 }
 
 function closeMPModal() {
@@ -10353,7 +10357,7 @@ function mpCreateRoom() {
         MP.isConnected = true;
         mpStartHeartbeat();
         document.getElementById('mpHostStatus').className = 'mp-status connected';
-        document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si Hráč 1 🔴 (X)</div>';
+        document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si 🔴 ' + MP.myName + ' (X)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
@@ -10449,7 +10453,7 @@ function mpJoinRoom() {
         if(MP._joinTimeout) { clearTimeout(MP._joinTimeout); MP._joinTimeout = null; }
         mpStartHeartbeat();
         statusEl.className = 'mp-status connected';
-        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si Hráč 2 🔵 (O)</div>';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si 🔵 ' + MP.myName + ' (O)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
@@ -11162,8 +11166,8 @@ if('serviceWorker' in navigator) {
     <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-bottom:20px;font-size:0.85em;line-height:1.5">
       <div style="margin-bottom:8px"><strong>Po pripojení uvidíš svoju rolu:</strong></div>
       <div style="margin-left:12px">
-        <div style="margin-bottom:4px">🔴 <strong>Hráč 1 (X)</strong> - vytvorí miestnosť, hrá prvý</div>
-        <div>🔵 <strong>Hráč 2 (O)</strong> - pripojí sa, hrá druhý</div>
+        <div style="margin-bottom:4px">🔴 <strong id="mpInfoP1">Hráč 1</strong> (X) - vytvorí miestnosť, hrá prvý</div>
+        <div>🔵 <strong id="mpInfoP2">Hráč 2</strong> (O) - pripojí sa, hrá druhý</div>
       </div>
     </div>
 

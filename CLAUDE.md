@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~10100 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~11200 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v24
+- **Current version**: v26
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
@@ -75,7 +75,7 @@ resetMem();    // MP.isConnected check works
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v22)
+## Features (v13-v26)
 
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
@@ -84,6 +84,13 @@ resetMem();    // MP.isConnected check works
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
 - **Achievement system**: 16 achievements checked after every `addWin()` and `toggleFavorite()`, toast notification on unlock, displayed in Stats page. Stored in `localStorage('hry_achievements')`.
+- **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "▶ Na rade" badge
+- **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
+- **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, 🎤 toggle button
+- **MP auto-reconnect**: Heartbeat ping/15s, auto-reconnect with 5 attempts on disconnect, yellow banner
+- **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
+- **MP name sync**: Player names from welcome screen sync to opponent via handshake
+- **Game count + copyright**: "Obsahuje 30 hier!" on welcome, "© Dušan Oravský" at bottom
 
 ## Adding a New Game
 
@@ -109,7 +116,9 @@ const MP = {
   peer: null, connection: null,
   isHost: false, isConnected: false,
   roomCode: null, myName: '', opponentName: '',
-  tttRound: 0  // Alternating start player
+  tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
+  dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
+  _heartbeat: null, _reconnecting: false
 };
 ```
 
@@ -135,8 +144,13 @@ const MP = {
 **MP Key Rules:**
 - Guest cannot change game settings (hidden/blocked)
 - Host sends game state (board, settings) to guest
-- Alternating start player via round counter (Piškvorky)
+- Alternating start player via round counter (all games, not just Piškvorky)
 - Rematch resets game and syncs via `mp-rematch` message
+- Heartbeat ping every 15s keeps connection alive
+- Auto-reconnect (5 attempts) on connection drop, yellow banner during reconnect
+- Name sync: handshake sets globalP1/globalP2 from MP names, restored on disconnect
+- `getChessColorName(color)` maps chess color to correct player name based on round
+- QR code for room joining: `mpGenerateQR()` / `mpScanQR()`
 
 ## Pexeso Themes
 
