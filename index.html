@@ -1645,6 +1645,11 @@ body.light .rules-close:hover {
 body.light .help-btn {
   border-color: rgba(0,0,0,0.1);
 }
+@media (max-width: 768px) {
+  .help-btn {
+    display: none !important; /* Hide on mobile - use topbar button instead */
+  }
+}
 
 /* ===== FLOATING MP BUTTON ===== */
 /* OFFLINE INDICATOR */
@@ -3478,7 +3483,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 44;
+const APP_VERSION = 45;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
