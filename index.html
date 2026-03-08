@@ -10340,9 +10340,12 @@ function mpJoinRoom() {
       debug: 0
     });
 
+    statusEl.innerHTML += '<div style="font-size:0.7em;opacity:0.5;margin-top:4px">1. Pripájam k serveru...</div>';
+
     MP.peer.on('open', (id) => {
       console.log('Guest peer opened with ID:', id);
       console.log('Connecting to host:', code);
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Pripájam sa...</div><div style="font-size:0.7em;opacity:0.5;margin-top:4px">2. Server OK ('+id+'), hľadám miestnosť '+code+'...</div>';
 
       MP.connection = MP.peer.connect(code, {
         reliable: true
@@ -10376,7 +10379,7 @@ function mpJoinRoom() {
       MP.connection.on('error', (err) => {
         console.error('Connection error:', err);
         statusEl.className = 'mp-status error';
-        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia</div>';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia: '+err+'</div>';
       });
     });
 
