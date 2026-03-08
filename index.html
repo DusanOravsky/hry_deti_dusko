@@ -3483,7 +3483,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 48;
+const APP_VERSION = 49;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10412,6 +10412,12 @@ document.addEventListener('keydown', (e) => {
 
 
 let welcomeGameMode = 'pvp';
+// Load persisted data FIRST (before reset functions that use player names)
+loadStats();
+loadSavedNames();
+updateSidebarNames();
+
+// Initialize all games (now with correct player names)
 resetDB();
 resetChess();
 resetCheckers();
@@ -10430,11 +10436,6 @@ resetGhost();
 resetReaction();
 resetLudo();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
-
-// Load persisted data
-loadStats();
-loadSavedNames();
-updateSidebarNames();
 updateWelcomeSub();
 loadTheme();
 document.getElementById('appVersion').textContent='v'+APP_VERSION;
