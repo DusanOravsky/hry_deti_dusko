@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~11600 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v43
+- **Current version**: v44
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -82,8 +82,9 @@ resetWordle(); // welcomeGameMode check works
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing)
 
-## Features (v13-v42)
+## Features (v13-v44)
 
+- **Tutorial/Rules Modal (v44)**: ❓ help button on all 30 games, opens centralized modal with game rules. Rules hidden by default for cleaner UI. Click button or outside modal to close.
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
 - **Sounds**: All games now have sounds on key actions (click, correct, wrong, win, flip, hit, move)
