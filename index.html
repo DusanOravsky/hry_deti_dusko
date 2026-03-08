@@ -1935,6 +1935,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 30 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -1958,6 +1959,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div id="welcomeHistory" class="welcome-history"></div>
     </div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
+    <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
 </div>
 <!-- ===== MOBILE 3-LEVEL NAVIGATION ===== -->
@@ -3299,7 +3301,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 24;
+const APP_VERSION = 25;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -9741,6 +9743,83 @@ document.getElementById('appVersion').textContent='v'+APP_VERSION;
 const svEl=document.getElementById('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
 
+// ===== MP AUTO-RECONNECT =====
+window.addEventListener('beforeunload', () => {
+  if(MP.isConnected && MP.roomCode) {
+    sessionStorage.setItem('mp_session', JSON.stringify({
+      roomCode: MP.roomCode,
+      isHost: MP.isHost,
+      myName: MP.myName,
+      opponentName: MP.opponentName,
+      tttRound: MP.tttRound, memRound: MP.memRound, c4Round: MP.c4Round,
+      chRound: MP.chRound, dkRound: MP.dkRound, bsRound: MP.bsRound,
+      ludoRound: MP.ludoRound, gnRound: MP.gnRound
+    }));
+  }
+});
+function mpAutoReconnect() {
+  const saved = sessionStorage.getItem('mp_session');
+  if(!saved) return;
+  sessionStorage.removeItem('mp_session');
+  try {
+    const s = JSON.parse(saved);
+    MP.roomCode = s.roomCode;
+    MP.isHost = s.isHost;
+    MP.myName = s.myName;
+    MP.opponentName = s.opponentName;
+    MP.tttRound = s.tttRound||0; MP.memRound = s.memRound||0; MP.c4Round = s.c4Round||0;
+    MP.chRound = s.chRound||0; MP.dkRound = s.dkRound||0; MP.bsRound = s.bsRound||0;
+    MP.ludoRound = s.ludoRound||0; MP.gnRound = s.gnRound||0;
+    console.log('Auto-reconnecting as', s.isHost?'host':'guest', 'to', s.roomCode);
+    if(s.isHost) {
+      MP.peer = new Peer(s.roomCode, {host:'0.peerjs.com',port:443,secure:true,debug:0});
+      MP.peer.on('open', () => {
+        console.log('Host peer re-opened');
+        document.getElementById('mpHostStatus').innerHTML='<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>Znovu pripájam... Čakám na súpera.</div>';
+        document.getElementById('mpHostStatus').className='mp-status waiting';
+        document.getElementById('mpRoomCode').textContent=s.roomCode;
+        document.getElementById('mpHostRoom').classList.remove('mp-hidden');
+        mpGenerateQR(s.roomCode);
+      });
+      MP.peer.on('connection', (conn) => {
+        MP.connection = conn;
+        conn.on('open', () => {
+          MP.isConnected = true;
+          document.getElementById('mpHostStatus').className='mp-status connected';
+          document.getElementById('mpHostStatus').innerHTML='<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Znovu pripojený!</div>';
+          document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
+          updateFloatingMPButton(true);
+          conn.send({type:'handshake',from:'host',name:MP.myName,tttSize:TTT.size,tttGrid:TTT.grid,memCards:MEM.cards,memDiff:MEM.diff});
+        });
+        conn.on('data', (data) => mpHandleMessage(data));
+        conn.on('close', () => mpDisconnect());
+      });
+      MP.peer.on('error', (err) => { console.error('Reconnect error:', err); mpDisconnect(); });
+    } else {
+      MP.peer = new Peer({host:'0.peerjs.com',port:443,secure:true,debug:0});
+      MP.peer.on('open', () => {
+        console.log('Guest peer re-opened, connecting to', s.roomCode);
+        MP.connection = MP.peer.connect(s.roomCode, {reliable:true});
+        MP.connection.on('open', () => {
+          MP.isConnected = true;
+          const statusEl=document.getElementById('mpJoinStatus');
+          statusEl.className='mp-status connected';
+          statusEl.innerHTML='<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Znovu pripojený!</div>';
+          statusEl.classList.remove('mp-hidden');
+          document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
+          updateFloatingMPButton(true);
+          MP.connection.send({type:'handshake',from:'guest',name:MP.myName});
+        });
+        MP.connection.on('data', (data) => mpHandleMessage(data));
+        MP.connection.on('close', () => mpDisconnect());
+        MP.connection.on('error', () => mpDisconnect());
+      });
+      MP.peer.on('error', (err) => { console.error('Reconnect error:', err); mpDisconnect(); });
+    }
+  } catch(e) { console.error('Auto-reconnect failed:', e); }
+}
+mpAutoReconnect();
+
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
   const banner = document.getElementById('offlineBanner');
@@ -10088,6 +10167,7 @@ function mpCreateRoom() {
 
   document.getElementById('mpRoomCode').textContent = roomCode;
   document.getElementById('mpHostRoom').classList.remove('mp-hidden');
+  mpGenerateQR(roomCode);
 
   // Create peer with room code as ID
   try {
@@ -10664,6 +10744,50 @@ function mpRematch(gameId) {
   if(gameId === 'guessNum') { MP.gnRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.gnRound }); resetGN(); applyGNMPStart(); }
 }
 
+function mpGenerateQR(code) {
+  const el=document.getElementById('mpQrCode');
+  if(!el) return;
+  el.innerHTML='';
+  try { new QRCode(el, {text:code, width:160, height:160, colorDark:'#333', colorLight:'#fff'}); }
+  catch(e) { console.error('QR generation failed:', e); el.innerHTML='<div style="color:#999;font-size:0.8em">QR nedostupný</div>'; }
+}
+let mpScanStream=null;
+let mpScanInterval=null;
+function mpScanQR() {
+  const scannerDiv=document.getElementById('mpQrScanner');
+  const video=document.getElementById('mpQrVideo');
+  scannerDiv.classList.remove('mp-hidden');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    mpScanStream=stream;
+    video.srcObject=stream;
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    mpScanInterval=setInterval(()=>{
+      if(video.readyState!==video.HAVE_ENOUGH_DATA) return;
+      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+      ctx.drawImage(video,0,0);
+      const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      // Simple QR decode: look for HR code pattern in image using jsQR if available, else use BarcodeDetector
+      if(window.BarcodeDetector) {
+        const detector=new BarcodeDetector({formats:['qr_code']});
+        detector.detect(video).then(codes=>{
+          if(codes.length>0) {
+            const val=codes[0].rawValue.trim().toUpperCase();
+            if(val.startsWith('HR')) { document.getElementById('mpJoinCode').value=val; mpStopScan(); mpJoinRoom(); }
+          }
+        }).catch(()=>{});
+      }
+    }, 500);
+  }).catch(err=>{
+    console.error('Camera error:', err);
+    scannerDiv.innerHTML='<div style="color:#f5576c;font-size:0.9em;padding:10px">❌ Kamera nedostupná</div>';
+  });
+}
+function mpStopScan() {
+  if(mpScanStream) { mpScanStream.getTracks().forEach(t=>t.stop()); mpScanStream=null; }
+  if(mpScanInterval) { clearInterval(mpScanInterval); mpScanInterval=null; }
+  document.getElementById('mpQrScanner').classList.add('mp-hidden');
+}
 function mpCopyCode() {
   const code = document.getElementById('mpRoomCode').textContent;
   navigator.clipboard.writeText(code).then(() => {
@@ -10733,6 +10857,7 @@ if('serviceWorker' in navigator) {
       <div id="mpHostRoom" class="mp-hidden">
         <div class="mp-input" id="mpRoomCode" style="background:rgba(102,126,234,0.2);border-color:#667eea;cursor:text;user-select:all">LOADING...</div>
         <button class="mp-button" onclick="mpCopyCode()" style="background:rgba(102,126,234,0.2)">📋 Kopírovať kód</button>
+        <div id="mpQrCode" style="display:flex;justify-content:center;margin:12px 0;background:white;border-radius:12px;padding:10px;width:fit-content;margin-left:auto;margin-right:auto"></div>
         <div id="mpHostStatus" class="mp-status waiting">
           <div style="font-size:1.5em;margin-bottom:8px">⏳</div>
           <div>Čaká sa na pripojenie...</div>
@@ -10745,7 +10870,14 @@ if('serviceWorker' in navigator) {
       <div class="mp-section-title">🚪 Pripoj sa</div>
       <p style="opacity:0.8;font-size:0.9em;margin-bottom:12px">Zadaj kód od kamaráta</p>
       <input type="text" class="mp-input" id="mpJoinCode" placeholder="Zadaj kód (napr. HR123ABC)" maxlength="12">
-      <button class="mp-button mp-button-primary" onclick="mpJoinRoom()">Pripojiť sa</button>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="mp-button mp-button-primary" onclick="mpJoinRoom()">Pripojiť sa</button>
+        <button class="mp-button" onclick="mpScanQR()" style="background:rgba(102,126,234,0.2)">📷 Skenuj QR</button>
+      </div>
+      <div id="mpQrScanner" class="mp-hidden" style="margin-top:10px">
+        <video id="mpQrVideo" style="width:100%;max-width:280px;border-radius:12px;border:2px solid #667eea" autoplay playsinline></video>
+        <button class="mp-button" onclick="mpStopScan()" style="margin-top:6px;background:rgba(245,87,108,0.2)">✖ Zavrieť kameru</button>
+      </div>
       <div id="mpJoinStatus" class="mp-hidden"></div>
     </div>
 
