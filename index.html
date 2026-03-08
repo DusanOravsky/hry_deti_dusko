@@ -1185,12 +1185,14 @@ body.light .ghost-key { color:#333; border-color:rgba(0,0,0,0.2); background:rgb
 #hmHint { font-size:0.9em; margin:6px 0; font-weight:700; color:rgba(255,255,255,0.85); }
 #hmHint.hm-success { color:#43e97b; }
 #hmHint.hm-error { color:#f5576c; }
+#hmHint.hm-hint { color:#ffd200; }
 body.light #hmRoundInfo { color:rgba(0,0,0,0.7); }
 body.light #hmCanvas { background:rgba(0,0,0,0.03); }
 body.light #hmWord { color:#1a1a1a; }
 body.light #hmHint { color:#1a1a1a; }
 body.light #hmHint.hm-success { color:#2d8659; }
 body.light #hmHint.hm-error { color:#c73849; }
+body.light #hmHint.hm-hint { color:#b8860b; }
 
 /* REACTION TEST */
 .reaction-pad {
@@ -3511,7 +3513,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 63;
+const APP_VERSION = 64;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -8857,8 +8859,9 @@ function hmUseHint() {
   document.getElementById('hmHintBtn').style.opacity='0.4';
   playSound('correct');
   renderHM();
-  document.getElementById('hmHint').textContent='💡 Nápoveda: písmeno '+hint+' (−0.5 bodu)';
-  document.getElementById('hmHint').style.color='#ffd200';
+  const hintEl=document.getElementById('hmHint');
+  hintEl.textContent='💡 Nápoveda: písmeno '+hint+' (−0.5 bodu)';
+  hintEl.className='hm-hint';
   const allRevealed=[...HM.word].every(c=>HM.guessed.has(c));
   if(allRevealed) {
     HM.roundOver=true; playSound('win');
