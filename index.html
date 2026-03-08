@@ -1845,11 +1845,6 @@ body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
   color:rgba(255,255,255,0.6);
 }
 body.light .welcome-game-chip { background:rgba(0,0,0,0.05); border-color:rgba(0,0,0,0.1); color:rgba(0,0,0,0.5); }
-.welcome-skip {
-  font-size:0.78em; color:rgba(255,255,255,0.3); cursor:pointer;
-  margin-top:14px; display:block; background:none; border:none; transition:color 0.2s;
-}
-.welcome-skip:hover { color:rgba(255,255,255,0.6); }
 .welcome-mode-pick {
   display:flex; gap:8px; justify-content:center; margin-bottom:16px;
 }
@@ -1864,8 +1859,6 @@ body.light .welcome-game-chip { background:rgba(0,0,0,0.05); border-color:rgba(0
 }
 body.light .welcome-mode-btn { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.15); color:rgba(0,0,0,0.5); }
 body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-color:transparent; }
-body.light .welcome-skip { color:rgba(0,0,0,0.3); }
-body.light .welcome-skip:hover { color:rgba(0,0,0,0.6); }
 
 /* Welcome stats */
 .welcome-stats {
@@ -1962,7 +1955,6 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
       <div id="welcomeHistory" class="welcome-history"></div>
     </div>
-    <button class="welcome-skip" onclick="startFromWelcome()">Preskočiť →</button>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
   </div>
 </div>
@@ -3305,7 +3297,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI — Lukáško & Natálka
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 22;
+const APP_VERSION = 23;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -3950,6 +3942,10 @@ function setTTTSize(s,btn) {
   document.getElementById('tttRule15').style.display = is15?'':'none';
   document.getElementById('tttStatus').textContent = 'Hráč 1 na rade!';
   if(is15) { resetPsk15(); } else { TTT.size=s; TTT.grid=parseInt(s); resetTTT(); }
+  // MP: host sends size change to guest
+  if(MP.isConnected && MP.isHost && MP.connection && !MP._applyingHostSettings) {
+    MP.connection.send({type:'ttt-size', tttSize:s});
+  }
 }
 function initTTTBoard() {
   const b = document.getElementById('board');
@@ -4353,7 +4349,7 @@ function confirmGNSecret() {
   document.getElementById('gnSecretInput').value='';
   err.textContent='';
   if(MP.isConnected) {
-    // MP: host picks number, send setup to guest
+    // MP: picker sends secret to guesser
     MP.connection.send({type:'gn-setup',secret:val,max:GN.max,maxTries:GN.maxTries});
     gnShowBoxes(false,false,false,true);
     document.getElementById('gnStatus').textContent='Čakám na hádanie súpera...';
@@ -4379,8 +4375,8 @@ function startGN() {
 function makeGuess() {
   const val=parseInt(document.getElementById('gnInput').value);
   if(!val||val<1||val>GN.max) return;
-  // MP mode: guest sends guess to host
-  if(MP.isConnected&&!MP.isHost&&!MP._gnReceiving) {
+  // MP mode: guesser sends guess to picker
+  if(MP.isConnected&&!mpGNIPick()&&!MP._gnReceiving) {
     MP.connection.send({type:'gn-guess',val:val});
   }
   GN.attempts++;
@@ -4457,6 +4453,7 @@ function setMemAIDiff(d,btn) {
   resetMem();
 }
 function setMemDiff(d,btn) {
+  if(MP.isConnected&&!MP.isHost) return; // guest can't change size
   MEM.diff=d;
   document.querySelectorAll('#memSizeSel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -4516,9 +4513,10 @@ function flipMem(i) {
         cards[MEM.flipped[0]].classList.add('glow-correct');
         cards[MEM.flipped[1]].classList.add('glow-correct');
         playSound('correct');
-        MEM.s1++;document.getElementById('p1ScoreMem').textContent=MEM.s1;
+        if(MEM.player===1){MEM.s1++;document.getElementById('p1ScoreMem').textContent=MEM.s1;}
+        else{MEM.s2++;document.getElementById('p2ScoreMem').textContent=MEM.s2;}
         MEM.flipped=[]; MEM.locked=false;
-        if(!memCheckEnd()) document.getElementById('memStatus').textContent='Hráč 1 na rade!';
+        if(!memCheckEnd()){const pName=MEM.player===1?'Hráč 1':(MEM.mode==='ai'?'Počítač':'Hráč 2');document.getElementById('memStatus').textContent=pName+' na rade!';}
       } else {
         playSound('wrong');
         cards[MEM.flipped[0]].textContent='?'; cards[MEM.flipped[0]].classList.remove('flipped');
@@ -4605,6 +4603,80 @@ function resetMem() {
   document.getElementById('memStatus').textContent='Hráč 1 na rade!';
   activeTurn('memP1Card','memP2Card',1);
   initMem();
+}
+function applyMemMPStart() {
+  if(!MP.isConnected) return;
+  const hostFirst = MP.memRound % 2 === 0;
+  MEM.player = hostFirst ? 1 : 2;
+  const iAmFirst = (MP.isHost && hostFirst) || (!MP.isHost && !hostFirst);
+  const pName = iAmFirst ? getP1Name('mem') : getP2Name('mem');
+  document.getElementById('memStatus').textContent = pName + ' na rade!';
+  activeTurn('memP1Card', 'memP2Card', iAmFirst ? 1 : 2);
+}
+function applyMPAlternate(gameKey, round, p1Card, p2Card, statusId, setP1First, setP2First) {
+  if(!MP.isConnected) return;
+  const hostFirst = round % 2 === 0;
+  const iAmFirst = (MP.isHost && hostFirst) || (!MP.isHost && !hostFirst);
+  if(iAmFirst) setP1First(); else setP2First();
+  const pName = iAmFirst ? getP1Name(gameKey) : getP2Name(gameKey);
+  document.getElementById(statusId).textContent = pName + ' na rade!';
+  activeTurn(p1Card, p2Card, iAmFirst ? 1 : 2);
+}
+function mpGetMyChessColor() {
+  const hostIsWhite = MP.chRound % 2 === 0;
+  return (MP.isHost === hostIsWhite) ? 'w' : 'b';
+}
+function applyChessMPStart() {
+  if(!MP.isConnected) return;
+  const myColor = mpGetMyChessColor();
+  CH.turn = 'w'; // white always starts
+  const iAmFirst = myColor === 'w';
+  const pName = iAmFirst ? getP1Name('ch') : getP2Name('ch');
+  document.getElementById('chStatus').textContent = (iAmFirst ? '⬜' : '⬛') + ' ' + pName + ' na ťahu';
+  activeTurn('chP1Card', 'chP2Card', iAmFirst ? 1 : 2);
+  renderChessBoard();
+}
+function mpGetMyDKColor() {
+  const hostIsRed = MP.dkRound % 2 === 0;
+  return (MP.isHost === hostIsRed) ? 'r' : 'b';
+}
+function applyCheckersMPStart() {
+  if(!MP.isConnected) return;
+  const myColor = mpGetMyDKColor();
+  DK.turn = 'r'; // red always starts
+  const iAmFirst = myColor === 'r';
+  const pName = iAmFirst ? getP1Name('dk') : getP2Name('dk');
+  document.getElementById('dkStatus').textContent = pName + (iAmFirst ? ' (🔴)' : ' (⚫)') + ' na ťahu';
+  activeTurn('dkP1Card', 'dkP2Card', iAmFirst ? 1 : 2);
+  renderCheckersBoard();
+}
+function applyLudoMPStart() {
+  if(!MP.isConnected) return;
+  const hostFirst = MP.ludoRound % 2 === 0;
+  LUDO.turn = hostFirst ? 0 : 1;
+  const iAmFirst = (MP.isHost && hostFirst) || (!MP.isHost && !hostFirst);
+  const pName = iAmFirst ? getP1Name('lu') : getP2Name('lu');
+  document.getElementById('ludoStatus').textContent = pName + ' hádže kockou!';
+  activeTurn('ludoP1Card', 'ludoP2Card', iAmFirst ? 1 : 2);
+  renderLudo();
+}
+function mpGetMyLudoTurn() {
+  const hostIsRed = MP.ludoRound % 2 === 0;
+  return (MP.isHost === hostIsRed) ? 0 : 1;
+}
+function mpGNIPick() {
+  const hostPicks = MP.gnRound % 2 === 0;
+  return (MP.isHost && hostPicks) || (!MP.isHost && !hostPicks);
+}
+function applyGNMPStart() {
+  if(!MP.isConnected) return;
+  if(mpGNIPick()) {
+    gnShowBoxes(true,false,false,false);
+    document.getElementById('gnStatus').textContent = 'Zadaj tajné číslo pre súpera!';
+  } else {
+    gnShowBoxes(false,false,false,false);
+    document.getElementById('gnStatus').textContent = '⏳ Súper zadáva tajné číslo...';
+  }
 }
 
 
@@ -6907,6 +6979,12 @@ function fcAnswer(knew) {
   setTimeout(showFCCard,400);
 }
 
+function scrambleWord(w) {
+  const arr=w.split('');
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  const s=arr.join('');
+  return s===w?scrambleWord(w):s;
+}
 function renderFCOptions(entry, target, lang) {
   const allWords=getFCWords();
   // Get 3 wrong answers
@@ -6921,14 +6999,15 @@ function renderFCOptions(entry, target, lang) {
   options.forEach(opt=>{
     const btn=document.createElement('button');
     btn.className='fc-option';
-    btn.textContent=opt;
+    btn.textContent=opt.length>2?scrambleWord(opt):opt;
+    btn.dataset.answer=opt;
     btn.onclick=()=>fcSelectOption(btn,opt,target,container);
     container.appendChild(btn);
   });
 }
 
 function fcSelectOption(btn,chosen,correct,container) {
-  container.querySelectorAll('.fc-option').forEach(b=>b.disabled=true);
+  container.querySelectorAll('.fc-option').forEach(b=>{b.disabled=true;b.textContent=b.dataset.answer||b.textContent;});
   if(chosen===correct){
     btn.classList.add('correct');
     FC.score++; FC.streak++; FC.knew++;
@@ -6941,7 +7020,7 @@ function fcSelectOption(btn,chosen,correct,container) {
     playSound('wrong');
     document.getElementById('fcStatus').textContent=`❌ Správna odpoveď: "${correct}"`;
     container.querySelectorAll('.fc-option').forEach(b=>{
-      if(b.textContent===correct) b.classList.add('correct');
+      if(b.dataset.answer===correct) b.classList.add('correct');
     });
   }
   document.getElementById('fcStreak').textContent=FC.streak>=3?`🔥 Séria: ${FC.streak}x`:'';
@@ -7889,8 +7968,10 @@ function resetChess() {
 }
 function renderChessBoard() {
   const el=document.getElementById('chessBoard'); el.innerHTML='';
-  for(let i=0;i<64;i++){
-    const r=Math.floor(i/8),c=i%8;
+  const flipped = MP.isConnected && mpGetMyChessColor() === 'b';
+  for(let si=0;si<64;si++){
+    const i = flipped ? 63-si : si;
+    const r=Math.floor(si/8),c=si%8;
     const sq=document.createElement('div');
     sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
     if(i===CH.lastFrom||i===CH.lastTo) sq.classList.add('last-move');
@@ -7907,9 +7988,9 @@ function renderChessBoard() {
 function chessClick(i) {
   if(CH.over) return;
   if(welcomeGameMode==='ai'&&CH.turn==='b') return;
-  // MP mode: host=white, guest=black
+  // MP mode: color alternates each round
   if(MP.isConnected) {
-    const myColor = MP.isHost ? 'w' : 'b';
+    const myColor = mpGetMyChessColor();
     if(CH.turn !== myColor) return;
   }
   const piece=CH.board[i];
@@ -8059,8 +8140,10 @@ function resetCheckers() {
 function renderCheckersBoard() {
   const el=document.getElementById('checkersBoard'); el.innerHTML='';
   const jumps=DK.mustJump!==null?getDKJumps(DK.mustJump):[];
-  for(let i=0;i<64;i++){
-    const r=Math.floor(i/8),c=i%8;
+  const flipped = MP.isConnected && mpGetMyDKColor() === 'b';
+  for(let si=0;si<64;si++){
+    const i = flipped ? 63-si : si;
+    const r=Math.floor(si/8),c=si%8;
     const sq=document.createElement('div');
     sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
     if(DK.selected===i) sq.classList.add('selected');
@@ -8081,9 +8164,9 @@ function renderCheckersBoard() {
 function dkClick(i) {
   if(DK.over) return;
   if(welcomeGameMode==='ai'&&DK.turn==='b') return;
-  // MP mode: host=red, guest=black
+  // MP mode: color alternates each round
   if(MP.isConnected) {
-    const myColor = MP.isHost ? 'r' : 'b';
+    const myColor = mpGetMyDKColor();
     if(DK.turn !== myColor) return;
   }
   const p=DK.board[i];
@@ -8736,8 +8819,7 @@ function ludoRoll() {
   if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
   // MP mode: only roll on your turn
   if(MP.isConnected) {
-    const myTurn = MP.isHost ? 0 : 1;
-    if(LUDO.turn !== myTurn) return;
+    if(LUDO.turn !== mpGetMyLudoTurn()) return;
   }
   LUDO.dice=1+Math.floor(Math.random()*6);
   LUDO.rolled=true;
@@ -8839,8 +8921,7 @@ function ludoMove(pieceIdx) {
   if(!LUDO.rolled||LUDO.over) return;
   if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
   if(MP.isConnected) {
-    const myTurn = MP.isHost ? 0 : 1;
-    if(LUDO.turn !== myTurn) return;
+    if(LUDO.turn !== mpGetMyLudoTurn()) return;
     MP.connection.send({type:'ludo-move',piece:pieceIdx});
   }
   ludoDoMove(pieceIdx);
@@ -9441,7 +9522,14 @@ const MP = {
   roomCode: null,
   myName: '',
   opponentName: '',
-  tttRound: 0
+  tttRound: 0,
+  memRound: 0,
+  c4Round: 0,
+  chRound: 0,
+  dkRound: 0,
+  bsRound: 0,
+  ludoRound: 0,
+  gnRound: 0
 };
 
 // =============================================================================
@@ -9994,7 +10082,9 @@ function mpCreateRoom() {
           from: 'host',
           name: MP.myName,
           tttSize: TTT.size,
-          tttGrid: TTT.grid
+          tttGrid: TTT.grid,
+          memCards: MEM.cards,
+          memDiff: MEM.diff
         });
       });
 
@@ -10135,6 +10225,7 @@ function mpDisconnect() {
   // Restore hidden selectors (were hidden for guest)
   const tttSels = document.querySelectorAll('#ticTacToe .difficulty-selector');
   tttSels.forEach(sel => sel.style.display = '');
+  document.getElementById('memSizeSel').style.display='';
   console.log('Disconnected');
 }
 
@@ -10161,7 +10252,23 @@ function mpHandleMessage(data) {
       const sizeSelectors = document.querySelectorAll('#ticTacToe .difficulty-selector');
       sizeSelectors.forEach(sel => sel.style.display = 'none');
     }
+
+    // Guest receives Pexeso board from host handshake
+    if(data.from === 'host' && data.memCards) {
+      mpHandleMessage({type:'mem-board', cards:data.memCards, diff:data.memDiff});
+    }
     return;
+  }
+
+  // Piškvorky size change from host
+  if(data.type === 'ttt-size') {
+    const sizeText = data.tttSize === '15x15' ? '10×10' : data.tttSize.replace('x','×');
+    const allSizeButtons = document.querySelectorAll('#ticTacToe .difficulty-selector:last-of-type .difficulty-btn');
+    MP._applyingHostSettings = true;
+    allSizeButtons.forEach(btn => {
+      if(btn.textContent.trim() === sizeText) setTTTSize(data.tttSize, btn);
+    });
+    MP._applyingHostSettings = false;
   }
 
   // Piškvorky move synchronization
@@ -10318,7 +10425,30 @@ function mpHandleMessage(data) {
   if(data.type === 'mem-board') {
     MEM.cards = data.cards;
     MEM.diff = data.diff;
-    initMem();
+    MEM.flipped=[]; MEM.matched=[]; MEM.s1=0; MEM.s2=0; MEM.locked=false;
+    document.getElementById('p1ScoreMem').textContent='0';
+    document.getElementById('p2ScoreMem').textContent='0';
+    // Apply alternating start
+    const hostFirst = MP.memRound % 2 === 0;
+    MEM.player = hostFirst ? 1 : 2;
+    const iAmFirst = (MP.isHost && hostFirst) || (!MP.isHost && !hostFirst);
+    const pName = iAmFirst ? getP1Name('mem') : getP2Name('mem');
+    document.getElementById('memStatus').textContent = pName + ' na rade!';
+    activeTurn('memP1Card','memP2Card', iAmFirst ? 1 : 2);
+    // Update size selector UI
+    document.querySelectorAll('#memSizeSel .difficulty-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#memSizeSel .difficulty-btn').forEach(b=>{
+      if((data.diff==='easy'&&b.textContent.includes('4×3'))||(data.diff==='medium'&&b.textContent.includes('4×4'))||(data.diff==='hard'&&b.textContent.includes('6×4'))||(data.diff==='expert'&&b.textContent.includes('6×6'))) b.classList.add('active');
+    });
+    // Render board from host's cards (do NOT regenerate)
+    const b=document.getElementById('memBoard');
+    b.innerHTML=''; b.className='memory-board '+MEM.diff;
+    MEM.cards.forEach((_,i)=>{
+      const c=document.createElement('div');
+      c.className='memory-card'; c.textContent='?'; c.onclick=()=>flipMem(i); b.appendChild(c);
+    });
+    // Hide size selector for guest
+    document.getElementById('memSizeSel').style.display='none';
   }
 
   // Človeče dice + move sync
@@ -10349,6 +10479,8 @@ function mpHandleMessage(data) {
     gnShowBoxes(false,false,false,true);
     document.getElementById('gnStatus').textContent=gnStatusText();
     document.getElementById('gnInput').value='';
+    document.getElementById('gnInput').max=GN.max;
+    document.getElementById('gnInput').disabled=false;
     document.getElementById('gnFeedback').textContent='';
   }
   if(data.type === 'gn-guess') {
@@ -10370,6 +10502,8 @@ function mpHandleMessage(data) {
     BS.hits[myBoard][idx] = isHit ? 2 : 1;
     MP.connection.send({ type:'bs-result', index:idx, hit:isHit, sunk:false });
     playSound(isHit ? 'hit' : 'miss');
+    // Only switch turn on miss — hit means opponent shoots again
+    if(!isHit) BS.turn = BS.turn===1?2:1;
     bsRenderGame();
     // Check if all ships sunk
     const allSunk = BS.boards[myBoard].every((v,i) => !v || BS.hits[myBoard][i]===2);
@@ -10386,8 +10520,8 @@ function mpHandleMessage(data) {
     const oppBoard = MP.isHost ? 1 : 0;
     BS.hits[oppBoard][data.index] = data.hit ? 2 : 1;
     playSound(data.hit ? 'hit' : 'miss');
-    document.getElementById('bsStatus').textContent = data.hit ? '💥 Zásah!' : '🌊 Vedľa!';
-    BS.turn = BS.turn===1?2:1;
+    document.getElementById('bsStatus').textContent = data.hit ? '💥 Zásah! Strieľaj znova!' : '🌊 Vedľa!';
+    if(!data.hit) BS.turn = BS.turn===1?2:1;
     bsRenderGame();
   }
   if(data.type === 'bs-gameover') {
@@ -10417,18 +10551,28 @@ function mpHandleMessage(data) {
       const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
       activeTurn('tttP1Card','tttP2Card', iAmFirst ? 1 : 2);
     }
-    if(gameId === 'connect4') { resetC4(); }
-    if(gameId === 'memory') { resetMem(); }
-    if(gameId === 'ludo') { resetLudo(); }
-    if(gameId === 'battleship') { resetBS(); }
-    if(gameId === 'guessNum') { resetGN(); }
+    if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
+    if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; resetMem(); applyMemMPStart(); }
+    if(gameId === 'chess') { if(data.round !== undefined) MP.chRound = data.round; resetChess(); applyChessMPStart(); }
+    if(gameId === 'checkers') { if(data.round !== undefined) MP.dkRound = data.round; resetCheckers(); applyCheckersMPStart(); }
+    if(gameId === 'ludo') { if(data.round !== undefined) MP.ludoRound = data.round; resetLudo(); applyLudoMPStart(); }
+    if(gameId === 'battleship') { if(data.round !== undefined) MP.bsRound = data.round; resetBS(); }
+    if(gameId === 'guessNum') { if(data.round !== undefined) MP.gnRound = data.round; resetGN(); applyGNMPStart(); }
   }
 }
 
 function mpStartBSGame() {
+  // Guest placed ships on boards[0] (currSetup=0) but rendering expects them on boards[1]
+  if(!MP.isHost) {
+    BS.boards[1] = [...BS.boards[0]];
+    BS.boards[0] = Array(100).fill(0);
+    BS.placedShips[1] = [...BS.placedShips[0]];
+    BS.placedShips[0] = [];
+  }
   document.getElementById('bsSetupArea').style.display='none';
   document.getElementById('bsGameArea').style.display='block';
-  BS.turn=MP.isHost?1:2;
+  const hostFirst = MP.bsRound % 2 === 0;
+  BS.turn = hostFirst ? 1 : 2;
   BS.over=false;
   bsRenderGame();
 }
@@ -10446,11 +10590,13 @@ function mpRematch(gameId) {
     const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
     activeTurn('tttP1Card','tttP2Card', iAmFirst ? 1 : 2);
   }
-  if(gameId === 'connect4') { MP.connection.send({ type: 'mp-rematch', game: gameId }); resetC4(); }
-  if(gameId === 'memory') { MP.connection.send({ type: 'mp-rematch', game: gameId }); resetMem(); if(MP.isHost) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
-  if(gameId === 'ludo') { MP.connection.send({ type: 'mp-rematch', game: gameId }); resetLudo(); }
-  if(gameId === 'battleship') { MP.connection.send({ type: 'mp-rematch', game: gameId }); resetBS(); }
-  if(gameId === 'guessNum') { MP.connection.send({ type: 'mp-rematch', game: gameId }); resetGN(); }
+  if(gameId === 'connect4') { MP.c4Round++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
+  if(gameId === 'memory') { MP.memRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.memRound }); resetMem(); applyMemMPStart(); if(MP.isHost) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
+  if(gameId === 'chess') { MP.chRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.chRound }); resetChess(); applyChessMPStart(); }
+  if(gameId === 'checkers') { MP.dkRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.dkRound }); resetCheckers(); applyCheckersMPStart(); }
+  if(gameId === 'ludo') { MP.ludoRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.ludoRound }); resetLudo(); applyLudoMPStart(); }
+  if(gameId === 'battleship') { MP.bsRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.bsRound }); resetBS(); }
+  if(gameId === 'guessNum') { MP.gnRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.gnRound }); resetGN(); applyGNMPStart(); }
 }
 
 function mpCopyCode() {
