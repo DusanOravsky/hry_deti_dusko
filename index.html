@@ -1633,10 +1633,28 @@ body.light .mp-input {
 }
 
 /* CHESS / CHECKERS BOARD */
+.chess-board-wrap {
+  display:inline-grid;
+  grid-template-columns:auto 1fr auto;
+  grid-template-rows:auto 1fr auto;
+  margin:10px auto; max-width:440px; width:100%;
+  user-select:none;
+}
+.chess-coord-corner { width:20px; height:20px; }
+.chess-coord-col {
+  display:grid; grid-template-columns:repeat(8,1fr);
+  text-align:center; font-size:0.7em; font-weight:700; color:rgba(255,255,255,0.5);
+}
+.chess-coord-col span { padding:1px 0; }
+.chess-coord-row {
+  display:grid; grid-template-rows:repeat(8,1fr);
+  align-items:center; text-align:center; font-size:0.7em; font-weight:700; color:rgba(255,255,255,0.5); width:20px;
+}
+body.light .chess-coord-col, body.light .chess-coord-row { color:rgba(0,0,0,0.45); }
 .chess-board {
-  display:inline-grid; grid-template-columns:repeat(8,1fr);
+  display:grid; grid-template-columns:repeat(8,1fr);
   border:3px solid rgba(255,255,255,0.3); border-radius:8px; overflow:hidden;
-  margin:10px auto; max-width:400px; width:100%;
+  width:100%;
 }
 .chess-sq {
   aspect-ratio:1; display:flex; align-items:center; justify-content:center;
@@ -3082,7 +3100,21 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="status" id="chStatus">Biely na ťahu</div>
     <div style="text-align:center;overflow-x:auto">
-      <div id="chessBoard" class="chess-board" style="touch-action:pan-y"></div>
+      <div class="chess-board-wrap" id="chessBoardWrap">
+        <div class="chess-coord-corner"></div>
+        <div class="chess-coord-col" id="chessColTop"></div>
+        <div class="chess-coord-corner"></div>
+        <div class="chess-coord-row" id="chessRowLeft"></div>
+        <div id="chessBoard" class="chess-board" style="touch-action:pan-y"></div>
+        <div class="chess-coord-row" id="chessRowRight"></div>
+        <div class="chess-coord-corner"></div>
+        <div class="chess-coord-col" id="chessColBottom"></div>
+        <div class="chess-coord-corner"></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:6px">
+      <button id="chVoiceBtn" class="action-btn" onclick="chessVoiceToggle()" style="font-size:0.85em;padding:6px 14px;border-radius:20px">🎤 Hlas</button>
+      <span id="chVoiceStatus" style="font-size:0.75em;opacity:0.5;margin-left:6px"></span>
     </div>
     <div class="celebration" id="chCelebration">🎉</div>
     <div class="buttons-group">
@@ -8017,6 +8049,17 @@ function resetChess() {
 function renderChessBoard() {
   const el=document.getElementById('chessBoard'); el.innerHTML='';
   const flipped = MP.isConnected && mpGetMyChessColor() === 'b';
+  const cols = flipped ? ['H','G','F','E','D','C','B','A'] : ['A','B','C','D','E','F','G','H'];
+  const rows = flipped ? ['1','2','3','4','5','6','7','8'] : ['8','7','6','5','4','3','2','1'];
+  // Render coordinates
+  ['chessColTop','chessColBottom'].forEach(id => {
+    const ce=document.getElementById(id); ce.innerHTML='';
+    cols.forEach(l => { const s=document.createElement('span'); s.textContent=l; ce.appendChild(s); });
+  });
+  ['chessRowLeft','chessRowRight'].forEach(id => {
+    const re=document.getElementById(id); re.innerHTML='';
+    rows.forEach(n => { const s=document.createElement('span'); s.textContent=n; re.appendChild(s); });
+  });
   for(let si=0;si<64;si++){
     const i = flipped ? 63-si : si;
     const r=Math.floor(si/8),c=si%8;
@@ -8162,6 +8205,79 @@ function getChessMoves(idx) {
     });
   }
   return moves;
+}
+
+// Chess voice commands
+let chVoiceActive = false;
+let chVoiceRecog = null;
+function chessParseCoord(s) {
+  // Parse "E2" → board index. Accept "e2", "E2", "é2" etc.
+  s = s.trim().toUpperCase().replace(/\s+/g,'');
+  // Handle spoken variants: "é" → "E", "á" → "A"
+  s = s.replace(/[ÁÀ]/g,'A').replace(/[ÉÈ]/g,'E').replace(/[Í]/g,'I');
+  const m = s.match(/^([A-H])([1-8])$/);
+  if(!m) return -1;
+  const col = m[1].charCodeAt(0) - 65; // A=0..H=7
+  const row = 8 - parseInt(m[2]); // 1=row7..8=row0
+  return row * 8 + col;
+}
+function chessVoiceToggle() {
+  if(chVoiceActive) { chessVoiceStop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) { alert('Tvoj prehliadač nepodporuje hlasové príkazy. Použi Chrome alebo Edge.'); return; }
+  chVoiceRecog = new SR();
+  chVoiceRecog.lang = 'sk-SK';
+  chVoiceRecog.continuous = true;
+  chVoiceRecog.interimResults = false;
+  chVoiceRecog.onresult = (e) => {
+    const last = e.results[e.results.length - 1];
+    if(!last.isFinal) return;
+    let text = last[0].transcript.trim().toUpperCase();
+    document.getElementById('chVoiceStatus').textContent = '🗣️ "' + text + '"';
+    // Normalize spoken letters: "Á" → "A", etc.
+    text = text.replace(/[ÁÀ]/g,'A').replace(/[ÉÈ]/g,'E').replace(/[Í]/g,'I');
+    // Remove common filler words
+    text = text.replace(/\b(NA|DO|Z|SA|TAM)\b/g,'').trim();
+    // Try to find two coordinates like "E2 E4" or "E2E4"
+    const coords = text.match(/[A-H]\s?[1-8]/g);
+    if(coords && coords.length >= 2) {
+      const from = chessParseCoord(coords[0].replace(/\s/g,''));
+      const to = chessParseCoord(coords[1].replace(/\s/g,''));
+      if(from >= 0 && to >= 0) {
+        chessClick(from);
+        setTimeout(() => chessClick(to), 200);
+        return;
+      }
+    }
+    // Single coordinate — select or move
+    if(coords && coords.length === 1) {
+      const idx = chessParseCoord(coords[0].replace(/\s/g,''));
+      if(idx >= 0) { chessClick(idx); return; }
+    }
+    // "Nová hra" voice command
+    if(text.includes('NOV')) {
+      if(MP.isConnected) mpRematch('chess'); else resetChess();
+      return;
+    }
+    document.getElementById('chVoiceStatus').textContent = '❓ Nerozumel som: "' + last[0].transcript.trim() + '"';
+  };
+  chVoiceRecog.onerror = (e) => {
+    if(e.error === 'no-speech') return;
+    document.getElementById('chVoiceStatus').textContent = '⚠️ ' + e.error;
+  };
+  chVoiceRecog.onend = () => { if(chVoiceActive) chVoiceRecog.start(); };
+  chVoiceRecog.start();
+  chVoiceActive = true;
+  document.getElementById('chVoiceBtn').style.background = 'rgba(245,87,108,0.5)';
+  document.getElementById('chVoiceBtn').textContent = '🎤 Stop';
+  document.getElementById('chVoiceStatus').textContent = 'Počúvam... (povedz napr. "E2 E4")';
+}
+function chessVoiceStop() {
+  chVoiceActive = false;
+  if(chVoiceRecog) { chVoiceRecog.abort(); chVoiceRecog = null; }
+  document.getElementById('chVoiceBtn').style.background = '';
+  document.getElementById('chVoiceBtn').textContent = '🎤 Hlas';
+  document.getElementById('chVoiceStatus').textContent = '';
 }
 
 // =============================================================================
