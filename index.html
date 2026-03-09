@@ -2097,7 +2097,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 36 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 35 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -3569,8 +3569,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div style="display:flex;gap:30px;justify-content:center;margin-top:10px;flex-wrap:nowrap">
       <div style="display:grid;grid-template-columns:1fr;gap:6px;justify-items:center">
         <div style="font-size:0.7em;opacity:0.5">Hrac 1</div>
-        <button class="action-btn" ontouchstart="PNG.p1dir=-1" ontouchend="PNG.p1dir=0" onmousedown="PNG.p1dir=-1" onmouseup="PNG.p1dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9650;</button>
-        <button class="action-btn" ontouchstart="PNG.p1dir=1" ontouchend="PNG.p1dir=0" onmousedown="PNG.p1dir=1" onmouseup="PNG.p1dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9660;</button>
+        <button class="action-btn" ontouchstart="pngSetDir(-1)" ontouchend="pngSetDir(0)" onmousedown="pngSetDir(-1)" onmouseup="pngSetDir(0)" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9650;</button>
+        <button class="action-btn" ontouchstart="pngSetDir(1)" ontouchend="pngSetDir(0)" onmousedown="pngSetDir(1)" onmouseup="pngSetDir(0)" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9660;</button>
       </div>
       <div id="pngP2Controls" style="display:grid;grid-template-columns:1fr;gap:6px;justify-items:center">
         <div style="font-size:0.7em;opacity:0.5">Hrac 2</div>
@@ -3580,8 +3580,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="celebration" id="pngCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="startPong()">Start</button>
-      <button class="action-btn danger-btn" onclick="resetPong()">Reset</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected&&MP.isHost?startPong():(!MP.isConnected?startPong():null)">Start</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('pong'):resetPong()">Reset</button>
     </div>
   </div>
 
@@ -3610,13 +3610,13 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div style="font-size:0.7em;opacity:0.5">Hrac 1</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
           <div></div>
-          <button class="action-btn" ontouchstart="TNK.p1keys.up=true" ontouchend="TNK.p1keys.up=false" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9650;</button>
+          <button class="action-btn" ontouchstart="tnkSetKey('up',true)" ontouchend="tnkSetKey('up',false)" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9650;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="TNK.p1keys.left=true" ontouchend="TNK.p1keys.left=false" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9664;</button>
+          <button class="action-btn" ontouchstart="tnkSetKey('left',true)" ontouchend="tnkSetKey('left',false)" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9664;</button>
           <button class="action-btn" ontouchstart="tnkShoot(1)" style="width:44px;padding:8px;font-size:1.1em;background:rgba(255,210,0,0.4);border:2px solid rgba(255,210,0,0.6);border-radius:8px">&#128165;</button>
-          <button class="action-btn" ontouchstart="TNK.p1keys.right=true" ontouchend="TNK.p1keys.right=false" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9654;</button>
+          <button class="action-btn" ontouchstart="tnkSetKey('right',true)" ontouchend="tnkSetKey('right',false)" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9654;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="TNK.p1keys.down=true" ontouchend="TNK.p1keys.down=false" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9660;</button>
+          <button class="action-btn" ontouchstart="tnkSetKey('down',true)" ontouchend="tnkSetKey('down',false)" style="width:44px;padding:8px;font-size:1.1em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:8px">&#9660;</button>
           <div></div>
         </div>
       </div>
@@ -3637,8 +3637,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="celebration" id="tnkCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="startTanks()">Start</button>
-      <button class="action-btn danger-btn" onclick="resetTanks()">Reset</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected&&MP.isHost?startTanks():(!MP.isConnected?startTanks():null)">Start</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('tanks'):resetTanks()">Reset</button>
     </div>
   </div>
 
@@ -3663,35 +3663,35 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <div style="font-size:0.7em;opacity:0.5">Hrac 1</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p1next='up'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9650;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(1,'up')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9650;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p1next='left'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9664;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(1,'left')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9664;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p1next='right'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9654;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(1,'right')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9654;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p1next='down'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9660;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(1,'down')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9660;</button>
           <div></div>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+      <div id="sdP2Controls" style="display:flex;flex-direction:column;gap:4px;align-items:center">
         <div style="font-size:0.7em;opacity:0.5">Hrac 2</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p2next='up'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9650;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(2,'up')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9650;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p2next='left'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9664;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(2,'left')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9664;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p2next='right'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9654;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(2,'right')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9654;</button>
           <div></div>
-          <button class="action-btn" ontouchstart="SD.p2next='down'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9660;</button>
+          <button class="action-btn" ontouchstart="sdSetDir(2,'down')" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9660;</button>
           <div></div>
         </div>
       </div>
     </div>
     <div class="celebration" id="sdCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="startSnakeDuel()">Start</button>
-      <button class="action-btn danger-btn" onclick="resetSnakeDuel()">Reset</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpSDStart():startSnakeDuel()">Start</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('snakeDuel'):resetSnakeDuel()">Reset</button>
     </div>
   </div>
 
@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 110;
+const APP_VERSION = 111;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11472,7 +11472,10 @@ const MP = {
   dkRound: 0,
   bsRound: 0,
   ludoRound: 0,
-  gnRound: 0
+  gnRound: 0,
+  sdRound: 0,
+  tnkRound: 0,
+  pngRound: 0
 };
 
 // =============================================================================
@@ -12010,8 +12013,15 @@ function pngRender(){
   ctx.setTransform(1,0,0,1,0,0);
 }
 
+let pngSyncCounter=0;
 function pngStep(){
   if(!PNG.running||PNG.over)return;
+  if(MP.isConnected&&!MP.isHost){
+    // Guest: only render, physics done by host
+    pngRender();
+    PNG.raf=requestAnimationFrame(pngStep);
+    return;
+  }
   // paddle movement
   PNG.p1y+=PNG.p1dir*PNG.pSpeed;
   if(welcomeGameMode==='ai'){
@@ -12069,6 +12079,14 @@ function pngStep(){
     pngResetBall(-1);
   }
   pngRender();
+  // Send state to guest every 3 frames
+  if(MP.isConnected&&MP.isHost){
+    pngSyncCounter++;
+    if(pngSyncCounter%3===0){
+      MP.connection.send({type:'png-state',bx:PNG.bx,by:PNG.by,p1y:PNG.p1y,p2y:PNG.p2y,
+        s1:PNG.s1,s2:PNG.s2,over:false});
+    }
+  }
   PNG.raf=requestAnimationFrame(pngStep);
 }
 
@@ -12085,6 +12103,10 @@ function pngFinish(winner){
   }
   celebrate('pngCelebration');
   playSound('win');
+  if(MP.isConnected&&MP.isHost){
+    MP.connection.send({type:'png-state',bx:PNG.bx,by:PNG.by,p1y:PNG.p1y,p2y:PNG.p2y,
+      s1:PNG.s1,s2:PNG.s2,over:true,winner:winner});
+  }
 }
 
 function startPong(){
@@ -12093,34 +12115,43 @@ function startPong(){
   PNG.running=true;
   $('pngStatus').textContent='Hra!';
   PNG.raf=requestAnimationFrame(pngStep);
+  if(MP.isConnected&&MP.isHost){
+    MP.connection.send({type:'png-start'});
+  }
 }
 
 // Pong keyboard controls
+function pngSetDir(dir){
+  if(MP.isConnected){
+    if(MP.isHost){PNG.p1dir=dir;}
+    else{PNG.p1dir=dir;MP.connection.send({type:'png-input',dir:dir});}
+  } else {
+    PNG.p1dir=dir;
+  }
+}
+function pngSetP2Dir(dir){PNG.p2dir=dir;}
 document.addEventListener('keydown',e=>{
-  if(!PNG.running)return;
-  if(e.key==='w'||e.key==='W'){PNG.p1dir=-1;e.preventDefault();}
-  if(e.key==='s'||e.key==='S'){PNG.p1dir=1;e.preventDefault();}
-  if(currentGameId==='pong'){
-    if(welcomeGameMode==='ai'){
-      if(e.key==='ArrowUp'){PNG.p1dir=-1;e.preventDefault();}
-      if(e.key==='ArrowDown'){PNG.p1dir=1;e.preventDefault();}
-    } else {
-      if(e.key==='ArrowUp'){PNG.p2dir=-1;e.preventDefault();}
-      if(e.key==='ArrowDown'){PNG.p2dir=1;e.preventDefault();}
-    }
+  if(!PNG.running||currentGameId!=='pong')return;
+  if(e.key==='w'||e.key==='W'){pngSetDir(-1);e.preventDefault();}
+  if(e.key==='s'||e.key==='S'){pngSetDir(1);e.preventDefault();}
+  if(welcomeGameMode==='ai'||MP.isConnected){
+    if(e.key==='ArrowUp'){pngSetDir(-1);e.preventDefault();}
+    if(e.key==='ArrowDown'){pngSetDir(1);e.preventDefault();}
+  } else {
+    if(e.key==='ArrowUp'){pngSetP2Dir(-1);e.preventDefault();}
+    if(e.key==='ArrowDown'){pngSetP2Dir(1);e.preventDefault();}
   }
 });
 document.addEventListener('keyup',e=>{
-  if(e.key==='w'||e.key==='W')PNG.p1dir=0;
-  if(e.key==='s'||e.key==='S')PNG.p1dir=0;
-  if(currentGameId==='pong'){
-    if(welcomeGameMode==='ai'){
-      if(e.key==='ArrowUp')PNG.p1dir=0;
-      if(e.key==='ArrowDown')PNG.p1dir=0;
-    } else {
-      if(e.key==='ArrowUp')PNG.p2dir=0;
-      if(e.key==='ArrowDown')PNG.p2dir=0;
-    }
+  if(currentGameId!=='pong')return;
+  if(e.key==='w'||e.key==='W'){pngSetDir(0);}
+  if(e.key==='s'||e.key==='S'){pngSetDir(0);}
+  if(welcomeGameMode==='ai'||MP.isConnected){
+    if(e.key==='ArrowUp')pngSetDir(0);
+    if(e.key==='ArrowDown')pngSetDir(0);
+  } else {
+    if(e.key==='ArrowUp')pngSetP2Dir(0);
+    if(e.key==='ArrowDown')pngSetP2Dir(0);
   }
 });
 
@@ -12140,8 +12171,14 @@ document.addEventListener('keyup',e=>{
       const t=e.touches[i];
       const x=(t.clientX-rect.left)/rect.width;
       const y=(t.clientY-rect.top)/rect.height*PNG.H;
-      if(x<0.5)PNG.p1y=y-PNG.ph/2;
-      else PNG.p2y=y-PNG.ph/2;
+      if(MP.isConnected){
+        // In MP, any touch controls my paddle (P1 locally)
+        PNG.p1y=y-PNG.ph/2;
+        if(!MP.isHost)MP.connection.send({type:'png-input',dir:0,py:PNG.p1y});
+      } else {
+        if(x<0.5)PNG.p1y=y-PNG.ph/2;
+        else PNG.p2y=y-PNG.ph/2;
+      }
     }
     e.preventDefault();
   },{passive:false});
@@ -12292,6 +12329,11 @@ function tnkDrawTank(ctx,t,color,dark){
 
 function tnkShoot(player){
   if(!TNK.running||TNK.over)return;
+  // In MP, guest sends shoot to host
+  if(MP.isConnected&&!MP.isHost){
+    MP.connection.send({type:'tnk-input',keys:TNK.p1keys,shoot:true});
+    return;
+  }
   if(player===1){
     if(TNK.cooldown1>0)return;
     TNK.cooldown1=15;
@@ -12317,6 +12359,7 @@ function tnkMoveTank(t,dir){
 
 function tnkStep(){
   if(!TNK.running||TNK.over)return;
+  if(MP.isConnected&&!MP.isHost)return;
   // P1 movement (speed = move twice per tick)
   const p1moves=TNK.t1.speed>0?2:1;
   for(let m=0;m<p1moves;m++){
@@ -12388,6 +12431,11 @@ function tnkStep(){
     }
   }
   tnkRender();
+  // send state to guest in MP
+  if(MP.isConnected&&MP.isHost){
+    MP.connection.send({type:'tnk-state',t1:TNK.t1,t2:TNK.t2,bullets:TNK.bullets,
+      powerup:TNK.powerup,s1:TNK.s1,s2:TNK.s2,over:false});
+  }
 }
 
 function tnkRespawn(player){
@@ -12430,6 +12478,10 @@ function tnkFinish(winner){
   }
   celebrate('tnkCelebration');
   playSound('win');
+  if(MP.isConnected&&MP.isHost){
+    MP.connection.send({type:'tnk-state',t1:TNK.t1,t2:TNK.t2,bullets:TNK.bullets,
+      powerup:TNK.powerup,s1:TNK.s1,s2:TNK.s2,over:true,winner:winner});
+  }
 }
 
 function startTanks(){
@@ -12438,47 +12490,60 @@ function startTanks(){
   TNK.running=true;
   $('tnkStatus').textContent='Boj!';
   TNK.timer=setInterval(tnkStep, 1000/8);
+  if(MP.isConnected&&MP.isHost){
+    MP.connection.send({type:'tnk-start',walls:TNK.walls,powerup:TNK.powerup});
+  }
 }
 
 // Tank keyboard controls
+function tnkSetKey(key,val){
+  if(MP.isConnected){
+    // In MP, all keys control my tank (P1 locally)
+    TNK.p1keys[key]=val;
+    if(!MP.isHost) MP.connection.send({type:'tnk-input',keys:TNK.p1keys,shoot:false});
+  } else if(key.startsWith('p2_')){
+    TNK.p2keys[key.slice(3)]=val;
+  } else {
+    TNK.p1keys[key]=val;
+  }
+}
 document.addEventListener('keydown',e=>{
   if(!TNK.running||currentGameId!=='tanks')return;
-  if(e.key==='w'||e.key==='W'){TNK.p1keys.up=true;e.preventDefault();}
-  if(e.key==='s'||e.key==='S'){TNK.p1keys.down=true;e.preventDefault();}
-  if(e.key==='a'||e.key==='A'){TNK.p1keys.left=true;e.preventDefault();}
-  if(e.key==='d'||e.key==='D'){TNK.p1keys.right=true;e.preventDefault();}
-  if(e.key===' '){tnkShoot(1);e.preventDefault();}
-  if(welcomeGameMode==='ai'){
-    // In AI mode, arrows also control P1
-    if(e.key==='ArrowUp'){TNK.p1keys.up=true;e.preventDefault();}
-    if(e.key==='ArrowDown'){TNK.p1keys.down=true;e.preventDefault();}
-    if(e.key==='ArrowLeft'){TNK.p1keys.left=true;e.preventDefault();}
-    if(e.key==='ArrowRight'){TNK.p1keys.right=true;e.preventDefault();}
-    if(e.key==='Enter'){tnkShoot(1);e.preventDefault();}
+  if(e.key==='w'||e.key==='W'){tnkSetKey('up',true);e.preventDefault();}
+  if(e.key==='s'||e.key==='S'){tnkSetKey('down',true);e.preventDefault();}
+  if(e.key==='a'||e.key==='A'){tnkSetKey('left',true);e.preventDefault();}
+  if(e.key==='d'||e.key==='D'){tnkSetKey('right',true);e.preventDefault();}
+  if(e.key===' '){tnkShoot(MP.isConnected?1:1);e.preventDefault();}
+  if(welcomeGameMode==='ai'||MP.isConnected){
+    if(e.key==='ArrowUp'){tnkSetKey('up',true);e.preventDefault();}
+    if(e.key==='ArrowDown'){tnkSetKey('down',true);e.preventDefault();}
+    if(e.key==='ArrowLeft'){tnkSetKey('left',true);e.preventDefault();}
+    if(e.key==='ArrowRight'){tnkSetKey('right',true);e.preventDefault();}
+    if(e.key==='Enter'){tnkShoot(MP.isConnected?1:1);e.preventDefault();}
   } else {
-    if(e.key==='ArrowUp'){TNK.p2keys.up=true;e.preventDefault();}
-    if(e.key==='ArrowDown'){TNK.p2keys.down=true;e.preventDefault();}
-    if(e.key==='ArrowLeft'){TNK.p2keys.left=true;e.preventDefault();}
-    if(e.key==='ArrowRight'){TNK.p2keys.right=true;e.preventDefault();}
+    if(e.key==='ArrowUp'){tnkSetKey('p2_up',true);e.preventDefault();}
+    if(e.key==='ArrowDown'){tnkSetKey('p2_down',true);e.preventDefault();}
+    if(e.key==='ArrowLeft'){tnkSetKey('p2_left',true);e.preventDefault();}
+    if(e.key==='ArrowRight'){tnkSetKey('p2_right',true);e.preventDefault();}
     if(e.key==='Enter'){tnkShoot(2);e.preventDefault();}
   }
 });
 document.addEventListener('keyup',e=>{
   if(currentGameId!=='tanks')return;
-  if(e.key==='w'||e.key==='W')TNK.p1keys.up=false;
-  if(e.key==='s'||e.key==='S')TNK.p1keys.down=false;
-  if(e.key==='a'||e.key==='A')TNK.p1keys.left=false;
-  if(e.key==='d'||e.key==='D')TNK.p1keys.right=false;
-  if(welcomeGameMode==='ai'){
-    if(e.key==='ArrowUp')TNK.p1keys.up=false;
-    if(e.key==='ArrowDown')TNK.p1keys.down=false;
-    if(e.key==='ArrowLeft')TNK.p1keys.left=false;
-    if(e.key==='ArrowRight')TNK.p1keys.right=false;
+  if(e.key==='w'||e.key==='W')tnkSetKey('up',false);
+  if(e.key==='s'||e.key==='S')tnkSetKey('down',false);
+  if(e.key==='a'||e.key==='A')tnkSetKey('left',false);
+  if(e.key==='d'||e.key==='D')tnkSetKey('right',false);
+  if(welcomeGameMode==='ai'||MP.isConnected){
+    if(e.key==='ArrowUp')tnkSetKey('up',false);
+    if(e.key==='ArrowDown')tnkSetKey('down',false);
+    if(e.key==='ArrowLeft')tnkSetKey('left',false);
+    if(e.key==='ArrowRight')tnkSetKey('right',false);
   } else {
-    if(e.key==='ArrowUp')TNK.p2keys.up=false;
-    if(e.key==='ArrowDown')TNK.p2keys.down=false;
-    if(e.key==='ArrowLeft')TNK.p2keys.left=false;
-    if(e.key==='ArrowRight')TNK.p2keys.right=false;
+    if(e.key==='ArrowUp')tnkSetKey('p2_up',false);
+    if(e.key==='ArrowDown')tnkSetKey('p2_down',false);
+    if(e.key==='ArrowLeft')tnkSetKey('p2_left',false);
+    if(e.key==='ArrowRight')tnkSetKey('p2_right',false);
   }
 });
 
@@ -12553,6 +12618,8 @@ function sdRender(){
 
 function sdStep(){
   if(!SD.running||SD.over)return;
+  // In MP, only host runs game loop
+  if(MP.isConnected&&!MP.isHost)return;
   // apply directions (prevent reverse)
   if(SD.p1next!==SD_OPP[SD.p1dir])SD.p1dir=SD.p1next;
   if(SD.p2next!==SD_OPP[SD.p2dir])SD.p2dir=SD.p2next;
@@ -12585,7 +12652,6 @@ function sdStep(){
     clearInterval(SD.timer);SD.timer=null;
     playSound('wrong');
     if(SD.dead1&&SD.dead2){
-      // both dead — draw round, no points
       $('sdStatus').textContent='Oba hady spadli! Znovu...';
     } else if(SD.dead1){
       SD.s2++;$('p2ScoreSD').textContent=SD.s2;
@@ -12593,6 +12659,14 @@ function sdStep(){
     } else {
       SD.s1++;$('p1ScoreSD').textContent=SD.s1;
       $('sdStatus').textContent=getP1Name('sd')+' ziskal bod!';
+    }
+    // send state with updated scores
+    if(MP.isConnected&&MP.isHost){
+      const over=SD.s1>=SD.winScore||SD.s2>=SD.winScore;
+      const winner=SD.s1>=SD.winScore?1:(SD.s2>=SD.winScore?2:0);
+      MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
+        s1:SD.s1,s2:SD.s2,dead1:SD.dead1,dead2:SD.dead2,p1dir:SD.p1dir,p2dir:SD.p2dir,
+        over:over,winner:winner});
     }
     // check win
     if(SD.s1>=SD.winScore){
@@ -12614,12 +12688,22 @@ function sdStep(){
       SD.p1dir='right';SD.p2dir='left';SD.p1next='right';SD.p2next='left';
       sdPlaceFood();sdRender();
       $('sdStatus').textContent='Dalsie kolo!';
+      if(MP.isConnected&&MP.isHost){
+        MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
+          s1:SD.s1,s2:SD.s2,dead1:false,dead2:false,p1dir:'right',p2dir:'left'});
+      }
       setTimeout(()=>{
         if(SD.over)return;
         SD.timer=setInterval(sdStep,SD.speed);
         $('sdStatus').textContent='Boj!';
       },1000);
     },1500);
+    return;
+  }
+  // send state to guest in MP (normal frame, no deaths)
+  if(MP.isConnected&&MP.isHost){
+    MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
+      s1:SD.s1,s2:SD.s2,dead1:false,dead2:false,p1dir:SD.p1dir,p2dir:SD.p2dir});
   }
 }
 
@@ -12633,17 +12717,46 @@ function startSnakeDuel(){
   SD.timer=setInterval(sdStep,SD.speed);
 }
 
+function mpSDStart(){
+  if(!MP.isConnected)return;
+  if(MP.isHost){
+    startSnakeDuel();
+    MP.connection.send({type:'sd-start',food:SD.food});
+  }
+}
+
 // Snake Duel keyboard
+function sdSetDir(player, dir){
+  if(MP.isConnected){
+    if(MP.isHost){
+      // Host: WASD/arrows control P1 (host's snake)
+      SD.p1next=dir;
+    } else {
+      // Guest: send direction to host (controls P2)
+      MP.connection.send({type:'sd-dir',dir:dir});
+    }
+  } else {
+    if(player===1)SD.p1next=dir; else SD.p2next=dir;
+  }
+}
 document.addEventListener('keydown',e=>{
   if(!SD.running||currentGameId!=='snakeDuel')return;
-  if(e.key==='w'||e.key==='W'){SD.p1next='up';e.preventDefault();}
-  if(e.key==='s'||e.key==='S'){SD.p1next='down';e.preventDefault();}
-  if(e.key==='a'||e.key==='A'){SD.p1next='left';e.preventDefault();}
-  if(e.key==='d'||e.key==='D'){SD.p1next='right';e.preventDefault();}
-  if(e.key==='ArrowUp'){SD.p2next='up';e.preventDefault();}
-  if(e.key==='ArrowDown'){SD.p2next='down';e.preventDefault();}
-  if(e.key==='ArrowLeft'){SD.p2next='left';e.preventDefault();}
-  if(e.key==='ArrowRight'){SD.p2next='right';e.preventDefault();}
+  if(e.key==='w'||e.key==='W'){sdSetDir(1,'up');e.preventDefault();}
+  if(e.key==='s'||e.key==='S'){sdSetDir(1,'down');e.preventDefault();}
+  if(e.key==='a'||e.key==='A'){sdSetDir(1,'left');e.preventDefault();}
+  if(e.key==='d'||e.key==='D'){sdSetDir(1,'right');e.preventDefault();}
+  if(MP.isConnected){
+    // In MP, arrows also control my snake
+    if(e.key==='ArrowUp'){sdSetDir(1,'up');e.preventDefault();}
+    if(e.key==='ArrowDown'){sdSetDir(1,'down');e.preventDefault();}
+    if(e.key==='ArrowLeft'){sdSetDir(1,'left');e.preventDefault();}
+    if(e.key==='ArrowRight'){sdSetDir(1,'right');e.preventDefault();}
+  } else {
+    if(e.key==='ArrowUp'){sdSetDir(2,'up');e.preventDefault();}
+    if(e.key==='ArrowDown'){sdSetDir(2,'down');e.preventDefault();}
+    if(e.key==='ArrowLeft'){sdSetDir(2,'left');e.preventDefault();}
+    if(e.key==='ArrowRight'){sdSetDir(2,'right');e.preventDefault();}
+  }
 });
 
 
@@ -13172,9 +13285,9 @@ const MOBILE_GAMES = [
   { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
   { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both' },
-  { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both' },
-  { id:'tanks',         label:'Tank Battle',    icon:'💥', grad:'rgba(200,0,0,0.3),rgba(0,100,200,0.3)', mode:'both' },
-  { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp' },
+  { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both', mp:true },
+  { id:'tanks',         label:'Tank Battle',    icon:'💥', grad:'rgba(200,0,0,0.3),rgba(0,100,200,0.3)', mode:'both', mp:true },
+  { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp', mp:true },
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -13423,8 +13536,10 @@ function applyGameMode(mode) {
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });
   // Hide P2 mobile controls in AI mode (AI doesn't need buttons)
-  const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=mode==='ai'?'none':'grid';
-  const pngP2c=$('pngP2Controls');if(pngP2c)pngP2c.style.display=mode==='ai'?'none':'grid';
+  const hideP2=mode==='ai'||MP.isConnected;
+  const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=hideP2?'none':'flex';
+  const pngP2c=$('pngP2Controls');if(pngP2c)pngP2c.style.display=hideP2?'none':'grid';
+  const sdP2c=$('sdP2Controls');if(sdP2c)sdP2c.style.display=hideP2?'none':'flex';
 }
 
 function startFromWelcome() {
@@ -14404,6 +14519,106 @@ function mpHandleMessage(data) {
     if(gameId === 'ludo') { if(data.round !== undefined) MP.ludoRound = data.round; resetLudo(); applyLudoMPStart(); }
     if(gameId === 'battleship') { if(data.round !== undefined) MP.bsRound = data.round; resetBS(); }
     if(gameId === 'guessNum') { if(data.round !== undefined) MP.gnRound = data.round; resetGN(); applyGNMPStart(); }
+    if(gameId === 'snakeDuel') { if(data.round !== undefined) MP.sdRound = data.round; resetSnakeDuel(); SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0'; }
+    if(gameId === 'tanks') { if(data.round !== undefined) MP.tnkRound = data.round; resetTanks(); }
+    if(gameId === 'pong') { if(data.round !== undefined) MP.pngRound = data.round; resetPong(); }
+  }
+
+  // Snake Duel MP
+  if(data.type==='sd-start'){
+    // Guest: host started the game
+    SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0';
+    resetSnakeDuel();
+    SD.food=data.food;
+    SD.running=true;
+    $('sdStatus').textContent='Boj!';
+    sdRender();
+  }
+  if(data.type==='sd-dir'){
+    // Host receives guest's direction
+    SD.p2next=data.dir;
+  }
+  if(data.type==='sd-state'){
+    // Guest receives game state from host
+    SD.snake1=data.snake1;SD.snake2=data.snake2;SD.food=data.food;
+    SD.s1=data.s1;SD.s2=data.s2;SD.dead1=data.dead1;SD.dead2=data.dead2;
+    SD.p1dir=data.p1dir;SD.p2dir=data.p2dir;
+    $('p1ScoreSD').textContent=SD.s1;$('p2ScoreSD').textContent=SD.s2;
+    sdRender();
+    if(data.dead1||data.dead2){
+      playSound('wrong');
+      if(data.over&&data.winner){
+        SD.over=true;SD.running=false;
+        const n1=getP1Name('sd'),n2=getP2Name('sd');
+        if(data.winner===1){
+          $('sdStatus').textContent='🏆 '+n1+' vyhral! ('+SD.s1+':'+SD.s2+')';
+          addWin(1,'snakeDuel');
+        } else {
+          $('sdStatus').textContent='🏆 '+n2+' vyhral! ('+SD.s2+':'+SD.s1+')';
+          addWin(2,'snakeDuel');
+        }
+        celebrate('sdCelebration');playSound('win');
+      }
+    }
+  }
+
+  // Tank Battle MP
+  if(data.type==='tnk-start'){
+    resetTanks();TNK.walls=data.walls;TNK.running=true;
+    if(data.powerup)TNK.powerup=data.powerup;
+    $('tnkStatus').textContent='Boj!';tnkRender();
+  }
+  if(data.type==='tnk-input'){
+    // Host receives guest's keys
+    TNK.p2keys=data.keys;
+    if(data.shoot)tnkShoot(2);
+  }
+  if(data.type==='tnk-state'){
+    TNK.t1=data.t1;TNK.t2=data.t2;TNK.bullets=data.bullets;
+    TNK.powerup=data.powerup;TNK.s1=data.s1;TNK.s2=data.s2;
+    $('p1ScoreTnk').textContent=TNK.s1;$('p2ScoreTnk').textContent=TNK.s2;
+    tnkRender();
+    if(data.over){
+      TNK.over=true;TNK.running=false;
+      const n1=getP1Name('tnk'),n2=getP2Name('tnk');
+      if(data.winner===1){
+        $('tnkStatus').textContent='🏆 '+n1+' vyhral! ('+TNK.s1+':'+TNK.s2+')';
+        addWin(1,'tanks');
+      } else {
+        $('tnkStatus').textContent='🏆 '+n2+' vyhral! ('+TNK.s2+':'+TNK.s1+')';
+        addWin(2,'tanks');
+      }
+      celebrate('tnkCelebration');playSound('win');
+    }
+  }
+
+  // Pong MP
+  if(data.type==='png-start'){
+    resetPong();PNG.running=true;$('pngStatus').textContent='Hraj!';
+    PNG.raf=requestAnimationFrame(pngStep);
+  }
+  if(data.type==='png-input'){
+    // Host receives guest's paddle direction or position
+    PNG.p2dir=data.dir;
+    if(data.py!==undefined)PNG.p2y=data.py;
+  }
+  if(data.type==='png-state'){
+    PNG.bx=data.bx;PNG.by=data.by;PNG.p1y=data.p1y;PNG.p2y=data.p2y;
+    PNG.s1=data.s1;PNG.s2=data.s2;
+    $('p1ScorePng').textContent=PNG.s1;$('p2ScorePng').textContent=PNG.s2;
+    pngRender();
+    if(data.over){
+      PNG.running=false;if(PNG.raf)cancelAnimationFrame(PNG.raf);
+      const n1=getP1Name('png'),n2=getP2Name('png');
+      if(data.winner===1){
+        $('pngStatus').textContent='🏆 '+n1+' vyhral!';
+        addWin(1,'pong');
+      } else {
+        $('pngStatus').textContent='🏆 '+n2+' vyhral!';
+        addWin(2,'pong');
+      }
+      celebrate('pngCelebration');playSound('win');
+    }
   }
 }
 
@@ -14450,6 +14665,9 @@ function mpRematch(gameId) {
   if(gameId === 'ludo') { MP.ludoRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.ludoRound }); resetLudo(); applyLudoMPStart(); }
   if(gameId === 'battleship') { MP.bsRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.bsRound }); resetBS(); }
   if(gameId === 'guessNum') { MP.gnRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.gnRound }); resetGN(); applyGNMPStart(); }
+  if(gameId === 'snakeDuel') { MP.sdRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.sdRound }); resetSnakeDuel(); SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0'; }
+  if(gameId === 'tanks') { MP.tnkRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tnkRound }); resetTanks(); }
+  if(gameId === 'pong') { MP.pngRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.pngRound }); resetPong(); }
 }
 
 function mpGenerateQR(code) {
