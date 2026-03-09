@@ -2879,7 +2879,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="stats-section">
       <div class="stats-header">
         <h3>📋 História posledných hier</h3>
-        <button class="stats-reset-btn" onclick="resetAllStats()">🗑️ Vymazať všetko</button>
+        <button class="stats-reset-btn" onclick="resetGameStats()">🗑️ Vymazať štatistiky</button>
+        <button class="stats-reset-btn" onclick="resetAchievements()">🏅 Vymazať achievementy</button>
       </div>
       <div class="stats-game-history" id="stHistory">
         <div class="stats-empty">Zatiaľ žiadne hry 🎮</div>
@@ -3525,7 +3526,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 68;
+const APP_VERSION = 69;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3975,18 +3976,22 @@ function renderAchievements() {
   }).join('');
 }
 
-function resetAllStats() { document.getElementById('confirmOverlay').classList.add('show'); }
-function doResetAllStats() {
-  document.getElementById('confirmOverlay').classList.remove('show');
+let _confirmAction=null;
+function showConfirm(msg,action){ _confirmAction=action; document.getElementById('confirmMsg').textContent=msg; document.getElementById('confirmOverlay').classList.add('show'); }
+function doConfirm(){ document.getElementById('confirmOverlay').classList.remove('show'); if(_confirmAction)_confirmAction(); _confirmAction=null; }
+function resetGameStats() { showConfirm('🗑️ Naozaj vymazať štatistiky hier? (Achievementy zostanú)',()=>{
   gStats.total=0; gStats.p1=0; gStats.p2=0; gStats.draws=0;
   gStats.perGame={}; gStats.history=[];
   gStats.records={reacP1:null,reacP2:null,fcStreak:0,quizBest:0,scrambleBest:0,ghostWins:0};
-  _unlockedAch=[]; localStorage.removeItem('hry_achievements');
   document.getElementById('totalGames').textContent=0;
   document.getElementById('p1Wins').textContent=0;
   document.getElementById('p2Wins').textContent=0;
   saveStats(); renderStats();
-}
+}); }
+function resetAchievements() { showConfirm('🏅 Naozaj vymazať všetky achievementy?',()=>{
+  _unlockedAch=[]; localStorage.removeItem('hry_achievements');
+  renderStats();
+}); }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 5: ČASOVAČ & KONFETY & ŠTATISTIKY UI
@@ -12679,10 +12684,10 @@ if('serviceWorker' in navigator) {
 </script>
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
-    <p>🗑️ Naozaj vymazať všetky štatistiky?</p>
+    <p id="confirmMsg">Naozaj vymazať?</p>
     <div class="buttons-group">
       <button class="action-btn confirm-no" onclick="document.getElementById('confirmOverlay').classList.remove('show')">Zrušiť</button>
-      <button class="action-btn confirm-yes" onclick="doResetAllStats()">Vymazať</button>
+      <button class="action-btn confirm-yes" onclick="doConfirm()">Vymazať</button>
     </div>
   </div>
 </div>
