@@ -3525,7 +3525,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 67;
+const APP_VERSION = 68;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4744,8 +4744,8 @@ function initMem() {
 function memCheckEnd() {
   if(MEM.matched.length>=MEM.cards.length-(MEM.cards.length%2===1?1:0)) {
     const winner=MEM.s1>MEM.s2?1:(MEM.s2>MEM.s1?2:0);
-    const name2=MEM.mode==='ai'?'Počítač':'Hráč 2';
-    document.getElementById('memStatus').textContent=winner===1?'🎉 Hráč 1 vyhral!':(winner===2?`🎉 ${name2} vyhral!`:'🤝 Remíza!');
+    const name1=getP1Name('mem'), name2=MEM.mode==='ai'?'Počítač':getP2Name('mem');
+    document.getElementById('memStatus').textContent=winner===1?'🎉 '+name1+' vyhral!':(winner===2?'🎉 '+name2+' vyhral!':'🤝 Remíza!');
     if(winner){addWin(winner);celebrate('memCelebration');playSound('win');}
     else{addWin(0);playSound('flip');}
     return true;
