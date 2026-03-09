@@ -3513,7 +3513,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 65;
+const APP_VERSION = 66;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -7079,7 +7079,7 @@ function reactionClick(){
     clearTimeout(REAC.timeout); REAC.phase='idle';
     pad.className='reaction-pad'; pad.textContent='Príliš skoro! +200ms penalta';
     const penaltyIdx=REAC.currPlayer-1;
-    REAC.times[penaltyIdx].push(1000); // big penalty
+    REAC.times[penaltyIdx].push(200); // +200ms penalty as advertised
     setTimeout(()=>reacNextTurn(pad),1500);
   } else if(REAC.phase==='go'){
     const t=Date.now()-REAC.startTime;
@@ -10719,8 +10719,7 @@ function mazeAI() {
   if(!solution){MZ.aiSolving=false;return;}
   let step=0;
   // Difficulty affects AI speed: easy=slow, medium=normal, hard=fast
-  const baseSpeed=MZ.diff==='hard'?60:MZ.diff==='medium'?140:250;
-  const speed=Math.max(baseSpeed/2,baseSpeed-solution.length);
+  const speed=MZ.diff==='hard'?30:MZ.diff==='medium'?80:180;
   function aiStep(){
     if(step>=solution.length){MZ.aiSolving=false;mazeDone();return;}
     const{dx,dy}=solution[step++];
