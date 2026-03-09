@@ -3572,7 +3572,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <button class="action-btn" ontouchstart="PNG.p1dir=-1" ontouchend="PNG.p1dir=0" onmousedown="PNG.p1dir=-1" onmouseup="PNG.p1dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9650;</button>
         <button class="action-btn" ontouchstart="PNG.p1dir=1" ontouchend="PNG.p1dir=0" onmousedown="PNG.p1dir=1" onmouseup="PNG.p1dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9660;</button>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+      <div id="pngP2Controls" style="display:flex;flex-direction:column;gap:6px;align-items:center">
         <div style="font-size:0.7em;opacity:0.5">Hrac 2</div>
         <button class="action-btn" ontouchstart="PNG.p2dir=-1" ontouchend="PNG.p2dir=0" onmousedown="PNG.p2dir=-1" onmouseup="PNG.p2dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:10px">&#9650;</button>
         <button class="action-btn" ontouchstart="PNG.p2dir=1" ontouchend="PNG.p2dir=0" onmousedown="PNG.p2dir=1" onmouseup="PNG.p2dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:10px">&#9660;</button>
@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 106;
+const APP_VERSION = 107;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12100,14 +12100,28 @@ document.addEventListener('keydown',e=>{
   if(!PNG.running)return;
   if(e.key==='w'||e.key==='W'){PNG.p1dir=-1;e.preventDefault();}
   if(e.key==='s'||e.key==='S'){PNG.p1dir=1;e.preventDefault();}
-  if(e.key==='ArrowUp'&&currentGameId==='pong'){PNG.p2dir=-1;e.preventDefault();}
-  if(e.key==='ArrowDown'&&currentGameId==='pong'){PNG.p2dir=1;e.preventDefault();}
+  if(currentGameId==='pong'){
+    if(welcomeGameMode==='ai'){
+      if(e.key==='ArrowUp'){PNG.p1dir=-1;e.preventDefault();}
+      if(e.key==='ArrowDown'){PNG.p1dir=1;e.preventDefault();}
+    } else {
+      if(e.key==='ArrowUp'){PNG.p2dir=-1;e.preventDefault();}
+      if(e.key==='ArrowDown'){PNG.p2dir=1;e.preventDefault();}
+    }
+  }
 });
 document.addEventListener('keyup',e=>{
   if(e.key==='w'||e.key==='W')PNG.p1dir=0;
   if(e.key==='s'||e.key==='S')PNG.p1dir=0;
-  if(e.key==='ArrowUp'&&currentGameId==='pong')PNG.p2dir=0;
-  if(e.key==='ArrowDown'&&currentGameId==='pong')PNG.p2dir=0;
+  if(currentGameId==='pong'){
+    if(welcomeGameMode==='ai'){
+      if(e.key==='ArrowUp')PNG.p1dir=0;
+      if(e.key==='ArrowDown')PNG.p1dir=0;
+    } else {
+      if(e.key==='ArrowUp')PNG.p2dir=0;
+      if(e.key==='ArrowDown')PNG.p2dir=0;
+    }
+  }
 });
 
 // Pong touch controls on canvas
@@ -13409,7 +13423,7 @@ function applyGameMode(mode) {
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });
   // Hide P2 mobile controls in AI mode (AI doesn't need buttons)
-  const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=mode==='ai'?'none':'';
+  ['tnkP2Controls','pngP2Controls'].forEach(id=>{const el=$(id);if(el)el.style.display=mode==='ai'?'none':'';});
 }
 
 function startFromWelcome() {
