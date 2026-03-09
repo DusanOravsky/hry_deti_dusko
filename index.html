@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 103;
+const APP_VERSION = 104;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12391,7 +12391,7 @@ document.addEventListener('keyup',e=>{
 
 // ===== SNAKE DUEL =====
 const SD = {
-  G:20, W:400, H:400, running:false, over:false, timer:null, speed:150,
+  G:20, W:400, H:400, running:false, over:false, timer:null, speed:220,
   s1:0, s2:0, winScore:5,
   snake1:[], snake2:[], food:{x:10,y:10},
   p1dir:'right', p2dir:'left', p1next:'right', p2next:'left',
