@@ -1388,7 +1388,7 @@ body.light .achievement.unlocked .achievement-name { color:#b8860b; }
 .stats-history-winner.draw { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); }
 .stats-history-time { opacity:0.4; font-size:0.8em; min-width:60px; text-align:right; }
 .stats-empty { text-align:center; opacity:0.4; padding:30px; font-size:0.9em; }
-.stats-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.stats-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
 .stats-header h3 { margin:0; }
 .stats-reset-btn { background:transparent; border:1px solid rgba(255,87,108,0.3); color:rgba(255,87,108,0.7); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.8em; white-space:nowrap; }
 .stats-reset-btn:hover { background:rgba(255,87,108,0.1); }
@@ -2880,8 +2880,10 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="stats-section">
       <div class="stats-header">
         <h3>📋 História posledných hier</h3>
-        <button class="stats-reset-btn" onclick="resetGameStats()">🗑️ Vymazať štatistiky</button>
-        <button class="stats-reset-btn" onclick="resetAchievements()">🏅 Vymazať achievementy</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="stats-reset-btn" onclick="resetGameStats()">🗑️ Štatistiky</button>
+          <button class="stats-reset-btn" onclick="resetAchievements()">🏅 Achievementy</button>
+        </div>
       </div>
       <div class="stats-game-history" id="stHistory">
         <div class="stats-empty">Zatiaľ žiadne hry 🎮</div>
@@ -3527,7 +3529,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 71;
+const APP_VERSION = 72;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
