@@ -2448,6 +2448,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="difficulty-selector" id="c4AISel">
       <button class="difficulty-btn active" onclick="setC4Diff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setC4Diff('medium',this)">Stredná</button>
       <button class="difficulty-btn" onclick="setC4Diff('hard',this)">Ťažká</button>
     </div>
     <div class="rules"><h3>📋 Pravidlá:</h3><ul>
@@ -3526,7 +3527,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 69;
+const APP_VERSION = 70;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5014,14 +5015,19 @@ function checkC4Win(p) {
 function getC4AIMove() {
   const valid=[];
   for(let col=0;col<7;col++) if(C4.board[col][0]===0) valid.push(col);
-  if(C4.diff==='hard') {
-    for(let col of valid) {
-      for(let r=5;r>=0;r--) if(C4.board[col][r]===0){C4.board[col][r]=2;if(checkC4Win(2)){C4.board[col][r]=0;return col;}C4.board[col][r]=0;break;}
+  if(C4.diff==='hard'||C4.diff==='medium') {
+    // Hard+Medium: win if possible
+    if(C4.diff==='hard') {
+      for(let col of valid) {
+        for(let r=5;r>=0;r--) if(C4.board[col][r]===0){C4.board[col][r]=2;if(checkC4Win(2)){C4.board[col][r]=0;return col;}C4.board[col][r]=0;break;}
+      }
     }
+    // Hard+Medium: block opponent's win
     for(let col of valid) {
       for(let r=5;r>=0;r--) if(C4.board[col][r]===0){C4.board[col][r]=1;if(checkC4Win(1)){C4.board[col][r]=0;return col;}C4.board[col][r]=0;break;}
     }
-    if(valid.includes(3)) return 3;
+    // Hard: prefer center
+    if(C4.diff==='hard'&&valid.includes(3)) return 3;
   }
   return valid[Math.floor(Math.random()*valid.length)];
 }
