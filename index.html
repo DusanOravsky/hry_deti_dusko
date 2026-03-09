@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 84;
+const APP_VERSION = 85;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10361,8 +10361,11 @@ function doodAddPlatforms() {
 function doodRender() {
   const c = document.getElementById('doodleCanvas'); if(!c) return;
   const ctx = c.getContext('2d');
-  const doodDark = !document.body.classList.contains('light');
-  ctx.fillStyle = doodDark ? '#1a1a2e' : '#e8f0fe'; ctx.fillRect(0, 0, DOOD.W, DOOD.H);
+  // Always dark canvas (like Snake/Tetris) — looks good in both themes
+  ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, DOOD.W, DOOD.H);
+  // Stars background
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  for(let i=0;i<20;i++) ctx.fillRect((i*67+DOOD.cameraY*0.1)%DOOD.W, (i*43+DOOD.cameraY*0.05)%DOOD.H, 2, 2);
 
   // Draw platforms relative to camera
   DOOD.platforms.forEach(p => {
@@ -10372,9 +10375,19 @@ function doodRender() {
     if(p.type === 'normal') ctx.fillStyle = '#43e97b';
     else if(p.type === 'moving') ctx.fillStyle = '#4facfe';
     else ctx.fillStyle = '#f5576c';
-    ctx.fillRect(p.x, sy, p.w, DOOD_PH);
+    ctx.beginPath();
+    ctx.moveTo(p.x + 4, sy);
+    ctx.lineTo(p.x + p.w - 4, sy);
+    ctx.quadraticCurveTo(p.x + p.w, sy, p.x + p.w, sy + 2);
+    ctx.lineTo(p.x + p.w, sy + DOOD_PH - 2);
+    ctx.quadraticCurveTo(p.x + p.w, sy + DOOD_PH, p.x + p.w - 4, sy + DOOD_PH);
+    ctx.lineTo(p.x + 4, sy + DOOD_PH);
+    ctx.quadraticCurveTo(p.x, sy + DOOD_PH, p.x, sy + DOOD_PH - 2);
+    ctx.lineTo(p.x, sy + 2);
+    ctx.quadraticCurveTo(p.x, sy, p.x + 4, sy);
+    ctx.fill();
     // Shine effect
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(p.x + 4, sy + 2, p.w - 8, 3);
     // Power-ups
     if(p.powerup === 'spring') {
@@ -10393,21 +10406,27 @@ function doodRender() {
   // Draw player
   const py = DOOD.y - DOOD.cameraY;
   if(DOOD.rocketFrames > 0) {
-    // Rocket flame
     ctx.fillStyle = '#ff6600';
     ctx.beginPath(); ctx.moveTo(DOOD.x, py+DOOD_PLAYER_R); ctx.lineTo(DOOD.x-6, py+DOOD_PLAYER_R+10+Math.random()*6); ctx.lineTo(DOOD.x+6, py+DOOD_PLAYER_R+10+Math.random()*6); ctx.fill();
   }
+  // Player body with outline
   ctx.fillStyle = DOOD.rocketFrames > 0 ? '#ff3366' : '#ffd200';
   ctx.beginPath(); ctx.arc(DOOD.x, py, DOOD_PLAYER_R, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(DOOD.x, py, DOOD_PLAYER_R, 0, Math.PI * 2); ctx.stroke();
   // Eyes
-  ctx.fillStyle = doodDark ? '#222' : '#fff';
+  ctx.fillStyle = '#222';
   ctx.beginPath(); ctx.arc(DOOD.x - 4, py - 3, 2.5, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(DOOD.x + 4, py - 3, 2.5, 0, Math.PI * 2); ctx.fill();
+  // Pupils
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(DOOD.x - 3.5, py - 3.5, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(DOOD.x + 4.5, py - 3.5, 1, 0, Math.PI * 2); ctx.fill();
 
   // Score overlay
-  ctx.fillStyle = doodDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('Vyska: ' + DOOD.score, 10, 20);
+  ctx.fillText('Výška: ' + DOOD.score, 10, 20);
 }
 
 function doodStep() {
@@ -11988,9 +12007,6 @@ function applyGameMode(mode) {
       if(el) el.textContent = 'Počítač';
     });
   }
-  // Doodle: hide P2 card in solo mode
-  const doodP2 = document.getElementById('doodP2Card');
-  if(doodP2) doodP2.style.display = mode==='ai' ? 'none' : '';
 }
 
 function startFromWelcome() {
