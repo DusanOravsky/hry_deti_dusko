@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 111;
+const APP_VERSION = 112;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12513,13 +12513,13 @@ document.addEventListener('keydown',e=>{
   if(e.key==='s'||e.key==='S'){tnkSetKey('down',true);e.preventDefault();}
   if(e.key==='a'||e.key==='A'){tnkSetKey('left',true);e.preventDefault();}
   if(e.key==='d'||e.key==='D'){tnkSetKey('right',true);e.preventDefault();}
-  if(e.key===' '){tnkShoot(MP.isConnected?1:1);e.preventDefault();}
+  if(e.key===' '){tnkShoot(1);e.preventDefault();}
   if(welcomeGameMode==='ai'||MP.isConnected){
     if(e.key==='ArrowUp'){tnkSetKey('up',true);e.preventDefault();}
     if(e.key==='ArrowDown'){tnkSetKey('down',true);e.preventDefault();}
     if(e.key==='ArrowLeft'){tnkSetKey('left',true);e.preventDefault();}
     if(e.key==='ArrowRight'){tnkSetKey('right',true);e.preventDefault();}
-    if(e.key==='Enter'){tnkShoot(MP.isConnected?1:1);e.preventDefault();}
+    if(e.key==='Enter'){tnkShoot(1);e.preventDefault();}
   } else {
     if(e.key==='ArrowUp'){tnkSetKey('p2_up',true);e.preventDefault();}
     if(e.key==='ArrowDown'){tnkSetKey('p2_down',true);e.preventDefault();}
@@ -12643,7 +12643,8 @@ function sdStep(){
   // food
   let ate1=!SD.dead1&&n1.x===SD.food.x&&n1.y===SD.food.y;
   let ate2=!SD.dead2&&n2.x===SD.food.x&&n2.y===SD.food.y;
-  if(ate1||ate2){playSound('correct');sdPlaceFood();}
+  SD._ate=ate1||ate2;
+  if(SD._ate){playSound('correct');sdPlaceFood();}
   if(!ate1&&!SD.dead1)SD.snake1.pop();
   if(!ate2&&!SD.dead2)SD.snake2.pop();
   sdRender();
@@ -12703,7 +12704,7 @@ function sdStep(){
   // send state to guest in MP (normal frame, no deaths)
   if(MP.isConnected&&MP.isHost){
     MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
-      s1:SD.s1,s2:SD.s2,dead1:false,dead2:false,p1dir:SD.p1dir,p2dir:SD.p2dir});
+      s1:SD.s1,s2:SD.s2,dead1:false,dead2:false,p1dir:SD.p1dir,p2dir:SD.p2dir,ate:SD._ate});
   }
 }
 
@@ -14007,6 +14008,10 @@ function mpDisconnect() {
   // Restore hidden selectors (were hidden for guest)
   $('tttSizeSel').style.display = '';
   $('memSizeSel').style.display='';
+  // Restore P2 controls (were hidden in MP)
+  const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=welcomeGameMode==='ai'?'none':'flex';
+  const pngP2c=$('pngP2Controls');if(pngP2c)pngP2c.style.display=welcomeGameMode==='ai'?'none':'grid';
+  const sdP2c=$('sdP2Controls');if(sdP2c)sdP2c.style.display='flex';
   // Restore original names from before MP
   if(MP._savedP1) {
     globalP1 = MP._savedP1; globalP2 = MP._savedP2;
@@ -14124,6 +14129,11 @@ function mpHandleMessage(data) {
     onGlobalNameChange();
 
     mpSaveSession();
+
+    // Hide P2 controls in MP mode (each player controls their own device)
+    ['tnkP2Controls','pngP2Controls','sdP2Controls'].forEach(id=>{
+      const el=$(id);if(el)el.style.display='none';
+    });
 
     // Guest receives game settings from host
     if(data.from === 'host' && data.tttSize && data.tttGrid) {
@@ -14544,6 +14554,7 @@ function mpHandleMessage(data) {
     SD.s1=data.s1;SD.s2=data.s2;SD.dead1=data.dead1;SD.dead2=data.dead2;
     SD.p1dir=data.p1dir;SD.p2dir=data.p2dir;
     $('p1ScoreSD').textContent=SD.s1;$('p2ScoreSD').textContent=SD.s2;
+    if(data.ate)playSound('correct');
     sdRender();
     if(data.dead1||data.dead2){
       playSound('wrong');
@@ -14574,9 +14585,11 @@ function mpHandleMessage(data) {
     if(data.shoot)tnkShoot(2);
   }
   if(data.type==='tnk-state'){
+    const prevS1=TNK.s1,prevS2=TNK.s2;
     TNK.t1=data.t1;TNK.t2=data.t2;TNK.bullets=data.bullets;
     TNK.powerup=data.powerup;TNK.s1=data.s1;TNK.s2=data.s2;
     $('p1ScoreTnk').textContent=TNK.s1;$('p2ScoreTnk').textContent=TNK.s2;
+    if(data.s1>prevS1||data.s2>prevS2)playSound('hit');
     tnkRender();
     if(data.over){
       TNK.over=true;TNK.running=false;
@@ -14603,9 +14616,11 @@ function mpHandleMessage(data) {
     if(data.py!==undefined)PNG.p2y=data.py;
   }
   if(data.type==='png-state'){
+    const prevS1=PNG.s1,prevS2=PNG.s2;
     PNG.bx=data.bx;PNG.by=data.by;PNG.p1y=data.p1y;PNG.p2y=data.p2y;
     PNG.s1=data.s1;PNG.s2=data.s2;
     $('p1ScorePng').textContent=PNG.s1;$('p2ScorePng').textContent=PNG.s2;
+    if(data.s1>prevS1||data.s2>prevS2)playSound('wrong');
     pngRender();
     if(data.over){
       PNG.running=false;if(PNG.raf)cancelAnimationFrame(PNG.raf);
