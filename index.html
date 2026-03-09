@@ -3564,7 +3564,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 92;
+const APP_VERSION = 93;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12407,12 +12407,13 @@ function mpCreateRoom() {
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
 
+        const _isPsk = $('psk15Board').style.display !== 'none';
         conn.send({
           type: 'handshake',
           from: 'host',
           name: MP.myName,
-          tttSize: TTT.size,
-          tttGrid: TTT.grid,
+          tttSize: _isPsk ? '15x15' : TTT.size,
+          tttGrid: _isPsk ? 15 : TTT.grid,
           memCards: MEM.cards,
           memDiff: MEM.diff
         });
@@ -12677,8 +12678,9 @@ function mpTryReconnect() {
           MP.isConnected = true;
           mpCheckConnectionType();
           onReconnected();
+          const _rPsk = $('psk15Board').style.display !== 'none';
           conn.send({ type: 'handshake', from: 'host', name: MP.myName,
-            tttSize: TTT.size, tttGrid: TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
+            tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
         });
         conn.on('data', (d) => mpHandleMessage(d));
         conn.on('close', () => mpDisconnect());
@@ -13100,23 +13102,26 @@ function mpHandleMessage(data) {
     const gameId = data.game;
     if(gameId === 'ticTacToe') {
       if(data.round !== undefined) MP.tttRound = data.round;
-      const isPsk = $('psk15Board').style.display !== 'none';
+      // Use host's board type info if available, otherwise detect locally
+      const isPsk = data.isPsk15 !== undefined ? data.isPsk15 : ($('psk15Board').style.display !== 'none');
+      // If host says PSK15 but guest isn't on it, switch guest to 10x10
+      if(isPsk && $('psk15Board').style.display === 'none') {
+        const btn10 = document.querySelector('#tttSizeSel .difficulty-btn:last-child');
+        if(btn10) { MP._applyingHostSettings=true; setTTTSize('15x15', btn10); MP._applyingHostSettings=false; }
+      }
       if(isPsk) {
-        resetPsk15();
-        PSK15.s1=0; PSK15.s2=0;
+        resetPsk15(); PSK15.s1=0; PSK15.s2=0;
         $('p1ScorePsk15').textContent='0'; $('p2ScorePsk15').textContent='0';
       } else {
         TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
         $('p1ScoreTTT').textContent='0'; $('p2ScoreTTT').textContent='0';
         renderTTT();
       }
-      $('tttStatus').textContent=(isPsk?getP1Name('ttt'):getTTTPlayerName('X'))+' na rade!';
       const hostIsX = MP.tttRound % 2 === 0;
-      const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
+      const startName = hostIsX ? getP1Name('ttt') : getP2Name('ttt');
+      $('tttStatus').textContent=startName+' na rade!';
       const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
-      activeTurn(p1c, p2c, iAmFirst ? 1 : 2);
-      if(isPsk && !iAmFirst) PSK15.player = 'O';
-      if(!isPsk && !iAmFirst) TTT.player = 'O';
+      activeTurn(p1c, p2c, hostIsX ? 1 : 2);
     }
     if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
     if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; resetMem(); applyMemMPStart(); }
@@ -13148,24 +13153,21 @@ function mpRematch(gameId) {
   if(!MP.isConnected || !MP.connection) return;
   if(gameId === 'ticTacToe') {
     MP.tttRound++;
-    MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tttRound });
     const isPsk = $('psk15Board').style.display !== 'none';
+    MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tttRound, isPsk15: isPsk });
     if(isPsk) {
-      resetPsk15();
-      PSK15.s1=0; PSK15.s2=0;
+      resetPsk15(); PSK15.s1=0; PSK15.s2=0;
       $('p1ScorePsk15').textContent='0'; $('p2ScorePsk15').textContent='0';
     } else {
       TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
       $('p1ScoreTTT').textContent='0'; $('p2ScoreTTT').textContent='0';
       renderTTT();
     }
-    $('tttStatus').textContent=(isPsk?getP1Name('ttt'):getTTTPlayerName('X'))+' na rade!';
     const hostIsX = MP.tttRound % 2 === 0;
-    const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
+    const startName = hostIsX ? getP1Name('ttt') : getP2Name('ttt');
+    $('tttStatus').textContent=startName+' na rade!';
     const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
-    activeTurn(p1c, p2c, iAmFirst ? 1 : 2);
-    if(isPsk && !iAmFirst) PSK15.player = 'O';
-    if(!isPsk && !iAmFirst) TTT.player = 'O';
+    activeTurn(p1c, p2c, hostIsX ? 1 : 2);
   }
   if(gameId === 'connect4') { MP.c4Round++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
   if(gameId === 'memory') { MP.memRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.memRound }); resetMem(); applyMemMPStart(); if(MP.isHost) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
