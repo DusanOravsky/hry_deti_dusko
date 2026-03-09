@@ -3537,7 +3537,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="action-btn" id="wdlLangSK" onclick="setWdlLang('sk')" style="padding:6px 16px;font-size:0.85em">&#127480;&#127472; Slovenčina</button>
       <button class="action-btn" id="wdlLangEN" onclick="setWdlLang('en')" style="padding:6px 16px;font-size:0.85em">&#127468;&#127463; English</button>
     </div>
-    <div class="player-info">
+    <div class="player-info" id="wdlPlayerInfo">
       <div class="player-card player1 active-turn" id="wdlP1Card"><div class="player-name-display" id="wdlP1Name">Hráč 1</div><div class="player-score" id="p1ScoreWDL">0</div></div>
       <div class="player-card player2" id="wdlP2Card"><div class="player-name-display" id="wdlP2Name">Hráč 2</div><div class="player-score" id="p2ScoreWDL">0</div></div>
     </div>
@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 86;
+const APP_VERSION = 87;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12007,9 +12007,11 @@ function applyGameMode(mode) {
       if(el) el.textContent = 'Počítač';
     });
   }
-  // Doodle: hide player cards in solo mode (like Tetris/Snake/Racing)
-  const doodPI = document.getElementById('doodPlayerInfo');
-  if(doodPI) doodPI.style.display = mode==='ai' ? 'none' : '';
+  // Hide player cards for solo games in AI mode (like Tetris/Snake/Racing)
+  ['doodPlayerInfo','wdlPlayerInfo'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = mode==='ai' ? 'none' : '';
+  });
 }
 
 function startFromWelcome() {
