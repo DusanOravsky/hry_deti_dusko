@@ -2097,7 +2097,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 32 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 33 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -3506,6 +3506,46 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== BREAKOUT ===== -->
+  <div class="game-area" id="breakout">
+    <div class="rules"><h3>Breakout:</h3><ul>
+      <li>Odraz lopticku palickou a rozbi vsetky tehly!</li>
+      <li>Ovladanie: sipky / dotyk / mys</li>
+      <li>Lopticka sa zrychluje po kazdom leveli</li>
+      <li>3 zivoty — ked lopticka spadne, stratis zivot</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="brkP1Card"><div class="player-name-display" id="brkP1Name">Hrac 1</div><div class="player-score" id="p1ScoreBrk">0</div></div>
+      <div class="player-card player2" id="brkP2Card"><div class="player-name-display" id="brkP2Name">Hrac 2</div><div class="player-score" id="p2ScoreBrk">0</div></div>
+    </div>
+    <div class="difficulty-selector" id="brkAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setBrkDiff('easy',this)">Lahka</button>
+      <button class="difficulty-btn" onclick="setBrkDiff('medium',this)">Stredna</button>
+      <button class="difficulty-btn" onclick="setBrkDiff('hard',this)">Tazka</button>
+    </div>
+    <div style="text-align:center;margin:10px 0">
+      <div style="display:inline-block;text-align:center">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Skore</div>
+        <div id="brkScore" style="font-size:2.5em;font-weight:900;color:#ffd200">0</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:30px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Level</div>
+        <div id="brkLevel" style="font-size:2.5em;font-weight:900;color:#4facfe">1</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:30px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Zivoty</div>
+        <div id="brkLives" style="font-size:2.5em;font-weight:900;color:#f5576c">3</div>
+      </div>
+    </div>
+    <div class="status" id="brkStatus">Klikni Start!</div>
+    <canvas id="brkCanvas" width="360" height="480" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(128,128,128,0.2);background:rgba(128,128,128,0.1);touch-action:none;max-width:90vw"></canvas>
+    <div class="celebration" id="brkCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startBreakout()">Start</button>
+      <button class="action-btn danger-btn" onclick="resetBreakout()">Reset</button>
+    </div>
+  </div>
+
   <div class="game-area" id="dotsBoxes">
     <div class="rules"><h3>📋 Bodky a Krabičky:</h3><ul>
       <li>Klikni na čiaru medzi dvoma bodkami</li>
@@ -3565,7 +3605,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 98;
+const APP_VERSION = 99;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3581,7 +3621,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', wordle:'wordleBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', wordle:'wordleBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3592,7 +3632,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', wordle:'Wordle'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', wordle:'Wordle'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3821,7 +3861,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3832,7 +3872,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -11429,6 +11469,312 @@ function dbPlaceLine(type,i,j,player) {
 })();
 
 
+// ===== BREAKOUT =====
+// roundRect polyfill for older browsers
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);
+    this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);this.closePath();
+  };
+}
+const BRK_DIFF = {
+  easy:   { pw:80, speed:3.5, lives:3 },
+  medium: { pw:60, speed:4.5, lives:3 },
+  hard:   { pw:45, speed:5.5, lives:2 }
+};
+const BRK = {
+  running:false, over:false, raf:null, diff:'easy',
+  // canvas
+  W:360, H:480,
+  // paddle
+  px:0, pw:80, ph:12, py:0,
+  // ball
+  bx:0, by:0, br:6, bdx:0, bdy:0, speed:3.5,
+  // bricks
+  rows:5, cols:8, brickW:0, brickH:18, brickPad:4, brickTop:40,
+  bricks:[], brickColors:['#f5576c','#ff9a3c','#ffd200','#43e97b','#4facfe'],
+  // state
+  score:0, lives:3, level:1, player:1, s1:0, s2:0,
+  // input
+  moveDir:0, mouseX:-1,
+  // pvp
+  p1Score:0, p2Score:0
+};
+
+function setBrkDiff(d,btn){
+  BRK.diff=d;
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function brkGenBricks(){
+  BRK.brickW=(BRK.W - (BRK.cols+1)*BRK.brickPad) / BRK.cols;
+  BRK.bricks=[];
+  for(let r=0;r<BRK.rows;r++){
+    BRK.bricks[r]=[];
+    for(let c=0;c<BRK.cols;c++){
+      BRK.bricks[r][c]={ alive:true, hits: r<2 ? 2 : 1 };
+    }
+  }
+}
+
+function brkResetBall(){
+  const d=BRK_DIFF[BRK.diff];
+  BRK.pw=d.pw;
+  BRK.speed=d.speed + (BRK.level-1)*0.5;
+  BRK.px=BRK.W/2 - BRK.pw/2;
+  BRK.py=BRK.H - 30;
+  BRK.bx=BRK.W/2;
+  BRK.by=BRK.py - BRK.br - 2;
+  const angle = (Math.random()*0.8+0.6) * (Math.random()<0.5?1:-1);
+  BRK.bdx = BRK.speed * Math.sin(angle);
+  BRK.bdy = -BRK.speed * Math.cos(angle);
+  BRK.moveDir=0; BRK.mouseX=-1;
+}
+
+function resetBreakout(){
+  if(BRK.raf) cancelAnimationFrame(BRK.raf);
+  BRK.running=false; BRK.over=false;
+  const d=BRK_DIFF[BRK.diff];
+  BRK.score=0; BRK.lives=d.lives; BRK.level=1;
+  brkGenBricks();
+  brkResetBall();
+  brkRender();
+  const se=$('brkScore');if(se)se.textContent='0';
+  const le=$('brkLevel');if(le)le.textContent='1';
+  const li=$('brkLives');if(li)li.textContent=BRK.lives;
+  const st=$('brkStatus');if(st)st.textContent='Klikni Start!';
+  activeTurn('brkP1Card','brkP2Card',BRK.player);
+  const bn1=$('brkP1Name');if(bn1)bn1.textContent=getP1Name('brk');
+  const bn2=$('brkP2Name');if(bn2)bn2.textContent=getP2Name('brk');
+}
+
+function brkRender(){
+  const c=$('brkCanvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  const scaleX=c.width/BRK.W, scaleY=c.height/BRK.H;
+  ctx.setTransform(scaleX,0,0,scaleY,0,0);
+  // clear
+  const isLight=document.body.classList.contains('light');
+  ctx.fillStyle=isLight?'#e8e8e8':'#1a1a2e';
+  ctx.fillRect(0,0,BRK.W,BRK.H);
+  // bricks
+  for(let r=0;r<BRK.rows;r++){
+    for(let cc=0;cc<BRK.cols;cc++){
+      const b=BRK.bricks[r][cc];
+      if(!b.alive)continue;
+      const x=BRK.brickPad+(BRK.brickW+BRK.brickPad)*cc;
+      const y=BRK.brickTop+r*(BRK.brickH+BRK.brickPad);
+      ctx.fillStyle=BRK.brickColors[r%BRK.brickColors.length];
+      if(b.hits>=2) ctx.globalAlpha=1; else ctx.globalAlpha=0.7;
+      ctx.beginPath();
+      ctx.roundRect(x,y,BRK.brickW,BRK.brickH,4);
+      ctx.fill();
+      ctx.globalAlpha=1;
+      if(b.hits>=2){
+        ctx.fillStyle='rgba(255,255,255,0.4)';
+        ctx.fillRect(x+2,y+2,BRK.brickW-4,3);
+      }
+    }
+  }
+  // paddle
+  ctx.fillStyle=isLight?'#555':'#e0e0e0';
+  ctx.beginPath();
+  ctx.roundRect(BRK.px, BRK.py, BRK.pw, BRK.ph, 6);
+  ctx.fill();
+  // ball
+  ctx.fillStyle='#ffd200';
+  ctx.beginPath();
+  ctx.arc(BRK.bx,BRK.by,BRK.br,0,Math.PI*2);
+  ctx.fill();
+  // ball glow
+  ctx.shadowColor='#ffd200';ctx.shadowBlur=10;
+  ctx.beginPath();ctx.arc(BRK.bx,BRK.by,BRK.br*0.6,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.setTransform(1,0,0,1,0,0);
+}
+
+function brkStep(){
+  if(!BRK.running||BRK.over)return;
+  // paddle movement
+  if(BRK.mouseX>=0){
+    BRK.px=BRK.mouseX-BRK.pw/2;
+  } else if(BRK.moveDir!==0){
+    BRK.px+=BRK.moveDir*6;
+  }
+  if(BRK.px<0)BRK.px=0;
+  if(BRK.px>BRK.W-BRK.pw)BRK.px=BRK.W-BRK.pw;
+  // ball movement
+  BRK.bx+=BRK.bdx;
+  BRK.by+=BRK.bdy;
+  // wall bounce
+  if(BRK.bx-BRK.br<=0){BRK.bx=BRK.br;BRK.bdx=Math.abs(BRK.bdx);}
+  if(BRK.bx+BRK.br>=BRK.W){BRK.bx=BRK.W-BRK.br;BRK.bdx=-Math.abs(BRK.bdx);}
+  if(BRK.by-BRK.br<=0){BRK.by=BRK.br;BRK.bdy=Math.abs(BRK.bdy);}
+  // paddle bounce
+  if(BRK.bdy>0 && BRK.by+BRK.br>=BRK.py && BRK.by+BRK.br<=BRK.py+BRK.ph+4 &&
+     BRK.bx>=BRK.px-BRK.br && BRK.bx<=BRK.px+BRK.pw+BRK.br){
+    BRK.by=BRK.py-BRK.br;
+    const hitPos=(BRK.bx-(BRK.px+BRK.pw/2))/(BRK.pw/2);
+    const angle=hitPos*Math.PI/3;
+    const spd=Math.sqrt(BRK.bdx*BRK.bdx+BRK.bdy*BRK.bdy);
+    BRK.bdx=spd*Math.sin(angle);
+    BRK.bdy=-spd*Math.cos(angle);
+    if(Math.abs(BRK.bdy)<1)BRK.bdy=-1;
+    playSound('click');
+  }
+  // brick collision
+  for(let r=0;r<BRK.rows;r++){
+    for(let cc=0;cc<BRK.cols;cc++){
+      const b=BRK.bricks[r][cc];
+      if(!b.alive)continue;
+      const bx=BRK.brickPad+(BRK.brickW+BRK.brickPad)*cc;
+      const by=BRK.brickTop+r*(BRK.brickH+BRK.brickPad);
+      if(BRK.bx+BRK.br>bx && BRK.bx-BRK.br<bx+BRK.brickW &&
+         BRK.by+BRK.br>by && BRK.by-BRK.br<by+BRK.brickH){
+        b.hits--;
+        if(b.hits<=0){ b.alive=false; BRK.score+=10; }
+        else BRK.score+=5;
+        // determine bounce direction
+        const cx=BRK.bx, cy=BRK.by;
+        const overlapL=cx+BRK.br-bx, overlapR=bx+BRK.brickW-(cx-BRK.br);
+        const overlapT=cy+BRK.br-by, overlapB=by+BRK.brickH-(cy-BRK.br);
+        const minO=Math.min(overlapL,overlapR,overlapT,overlapB);
+        if(minO===overlapL||minO===overlapR)BRK.bdx=-BRK.bdx;
+        else BRK.bdy=-BRK.bdy;
+        playSound('hit');
+        $('brkScore').textContent=BRK.score;
+        // check level clear
+        if(brkAllCleared()){
+          BRK.level++;
+          $('brkLevel').textContent=BRK.level;
+          brkGenBricks();
+          brkResetBall();
+          playSound('correct');
+        }
+        break;
+      }
+    }
+  }
+  // ball lost
+  if(BRK.by>BRK.H+20){
+    BRK.lives--;
+    $('brkLives').textContent=BRK.lives;
+    playSound('wrong');
+    if(BRK.lives<=0){
+      brkGameOver();
+      return;
+    }
+    brkResetBall();
+  }
+  brkRender();
+  BRK.raf=requestAnimationFrame(brkStep);
+}
+
+function brkAllCleared(){
+  for(let r=0;r<BRK.rows;r++)
+    for(let c=0;c<BRK.cols;c++)
+      if(BRK.bricks[r][c].alive)return false;
+  return true;
+}
+
+function brkGameOver(){
+  BRK.over=true; BRK.running=false;
+  if(BRK.raf)cancelAnimationFrame(BRK.raf);
+  // PvP mode
+  if(welcomeGameMode==='pvp'){
+    if(BRK.player===1){
+      BRK.p1Score=BRK.score;
+      $('p1ScoreBrk').textContent=BRK.score;
+      $('brkStatus').textContent=getP1Name('brk')+': '+BRK.score+' bodov. '+getP2Name('brk')+' je na rade!';
+      BRK.player=2;
+      activeTurn('brkP1Card','brkP2Card',2);
+      BRK.over=false;
+      setTimeout(()=>{
+        BRK.score=0; BRK.lives=BRK_DIFF[BRK.diff].lives; BRK.level=1;
+        brkGenBricks(); brkResetBall(); brkRender();
+        $('brkScore').textContent='0';$('brkLevel').textContent='1';
+        $('brkLives').textContent=BRK.lives;
+        $('brkStatus').textContent=getP2Name('brk')+' — klikni Start!';
+      },2000);
+      return;
+    } else {
+      BRK.p2Score=BRK.score;
+      $('p2ScoreBrk').textContent=BRK.score;
+      const n1=getP1Name('brk'),n2=getP2Name('brk');
+      if(BRK.p1Score>BRK.p2Score){
+        $('brkStatus').textContent='🏆 '+n1+' vyhral! ('+BRK.p1Score+':'+BRK.p2Score+')';
+        addWin(1,'breakout');celebrate('brkCelebration');
+      } else if(BRK.p2Score>BRK.p1Score){
+        $('brkStatus').textContent='🏆 '+n2+' vyhral! ('+BRK.p2Score+':'+BRK.p1Score+')';
+        addWin(2,'breakout');celebrate('brkCelebration');
+      } else {
+        $('brkStatus').textContent='🤝 Remiza! ('+BRK.p1Score+':'+BRK.p2Score+')';
+        addWin(0,'breakout');
+      }
+      playSound('win');
+      return;
+    }
+  }
+  // Solo/AI mode
+  $('brkStatus').textContent='Game Over! Skore: '+BRK.score+' (Level '+BRK.level+')';
+  addWin(1,'breakout');
+  if(BRK.score>=50){celebrate('brkCelebration');playSound('win');}
+}
+
+function startBreakout(){
+  if(BRK.running)return;
+  if(BRK.over && welcomeGameMode==='pvp' && BRK.player===2){
+    // P2 starting their turn
+  } else if(!BRK.over || BRK.player===1){
+    resetBreakout();
+    BRK.player=1; BRK.p1Score=0; BRK.p2Score=0;
+    $('p1ScoreBrk').textContent='0';$('p2ScoreBrk').textContent='0';
+    activeTurn('brkP1Card','brkP2Card',1);
+  }
+  BRK.running=true; BRK.over=false;
+  const pName=BRK.player===1?getP1Name('brk'):getP2Name('brk');
+  $('brkStatus').textContent=pName+' hra!';
+  BRK.raf=requestAnimationFrame(brkStep);
+}
+
+// Keyboard controls for Breakout
+document.addEventListener('keydown',e=>{
+  if(!BRK.running)return;
+  if(e.key==='ArrowLeft'){BRK.moveDir=-1;e.preventDefault();}
+  if(e.key==='ArrowRight'){BRK.moveDir=1;e.preventDefault();}
+});
+document.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'&&BRK.moveDir===-1)BRK.moveDir=0;
+  if(e.key==='ArrowRight'&&BRK.moveDir===1)BRK.moveDir=0;
+});
+
+// Touch + Mouse controls for Breakout paddle
+(function(){
+  const cv=()=>$('brkCanvas');
+  function getX(e,canvas){
+    const rect=canvas.getBoundingClientRect();
+    const clientX=e.touches?e.touches[0].clientX:e.clientX;
+    return (clientX-rect.left)/rect.width*BRK.W;
+  }
+  document.addEventListener('mousemove',e=>{
+    const c=cv();if(!c||!BRK.running)return;
+    const rect=c.getBoundingClientRect();
+    if(e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom){
+      BRK.mouseX=getX(e,c);
+    }
+  });
+  document.addEventListener('touchmove',e=>{
+    const c=cv();if(!c||!BRK.running)return;
+    if(c.contains(e.target)){BRK.mouseX=getX(e,c);e.preventDefault();}
+  },{passive:false});
+  document.addEventListener('touchend',()=>{BRK.mouseX=-1;});
+  document.addEventListener('mouseleave',()=>{BRK.mouseX=-1;});
+})();
+
+
 // ===== WORDLE =====
 const WORDLE_SK = [
 'KNIHA','MESTO','STROM','SLOVO','CHATA','CESTA','LAMPA','OBRAZ','LOPTA','VRANA',
@@ -11889,6 +12235,7 @@ resetGhost();
 resetReaction();
 resetLudo();
 resetDoodle();
+resetBreakout();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -11949,6 +12296,7 @@ const MOBILE_GAMES = [
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
   { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
+  { id:'breakout',      label:'Breakout',       icon:'🧱', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both' },
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -12149,14 +12497,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
