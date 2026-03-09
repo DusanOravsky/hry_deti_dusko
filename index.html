@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 80;
+const APP_VERSION = 81;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10504,7 +10504,7 @@ function doodStep() {
 
 function startDoodle() {
   if(DOOD.running) return;
-  DOOD.player = 1; DOOD.scores = [0, 0]; DOOD.s1 = 0; DOOD.s2 = 0;
+  DOOD.player = 1; DOOD.scores = [0, 0];
   document.getElementById('p1ScoreDood').textContent = '0';
   document.getElementById('p2ScoreDood').textContent = '0';
   doodStartRound();
