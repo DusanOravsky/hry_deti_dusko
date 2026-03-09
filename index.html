@@ -2097,7 +2097,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 33 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 34 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -3546,6 +3546,45 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== PONG ===== -->
+  <div class="game-area" id="pong">
+    <div class="rules"><h3>Pong:</h3><ul>
+      <li>Klasicky Pong! Odraz lopticku palickou.</li>
+      <li>Hrac 1 (vlavo): W/S alebo tlacidla</li>
+      <li>Hrac 2 (vpravo): sipky hore/dole alebo tlacidla</li>
+      <li>Na mobile: tahaj prstom na svojej strane</li>
+      <li>Prvy na 10 bodov vyhrава!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="pngP1Card"><div class="player-name-display" id="pngP1Name">Hrac 1</div><div class="player-score" id="p1ScorePng">0</div></div>
+      <div class="player-card player2" id="pngP2Card"><div class="player-name-display" id="pngP2Name">Hrac 2</div><div class="player-score" id="p2ScorePng">0</div></div>
+    </div>
+    <div class="difficulty-selector" id="pngAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setPngDiff('easy',this)">Lahka</button>
+      <button class="difficulty-btn" onclick="setPngDiff('medium',this)">Stredna</button>
+      <button class="difficulty-btn" onclick="setPngDiff('hard',this)">Tazka</button>
+    </div>
+    <div class="status" id="pngStatus">Klikni Start!</div>
+    <canvas id="pngCanvas" width="400" height="300" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(128,128,128,0.2);background:rgba(128,128,128,0.1);touch-action:none;max-width:90vw"></canvas>
+    <div style="display:flex;gap:20px;justify-content:center;margin-top:10px">
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+        <div style="font-size:0.7em;opacity:0.5">Hrac 1</div>
+        <button class="action-btn" ontouchstart="PNG.p1dir=-1" ontouchend="PNG.p1dir=0" onmousedown="PNG.p1dir=-1" onmouseup="PNG.p1dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9650;</button>
+        <button class="action-btn" ontouchstart="PNG.p1dir=1" ontouchend="PNG.p1dir=0" onmousedown="PNG.p1dir=1" onmouseup="PNG.p1dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(245,87,108,0.3);border:2px solid rgba(245,87,108,0.5);border-radius:10px">&#9660;</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+        <div style="font-size:0.7em;opacity:0.5">Hrac 2</div>
+        <button class="action-btn" ontouchstart="PNG.p2dir=-1" ontouchend="PNG.p2dir=0" onmousedown="PNG.p2dir=-1" onmouseup="PNG.p2dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:10px">&#9650;</button>
+        <button class="action-btn" ontouchstart="PNG.p2dir=1" ontouchend="PNG.p2dir=0" onmousedown="PNG.p2dir=1" onmouseup="PNG.p2dir=0" style="width:55px;padding:10px;font-size:1.3em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:10px">&#9660;</button>
+      </div>
+    </div>
+    <div class="celebration" id="pngCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startPong()">Start</button>
+      <button class="action-btn danger-btn" onclick="resetPong()">Reset</button>
+    </div>
+  </div>
+
   <div class="game-area" id="dotsBoxes">
     <div class="rules"><h3>📋 Bodky a Krabičky:</h3><ul>
       <li>Klikni na čiaru medzi dvoma bodkami</li>
@@ -3605,7 +3644,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 99;
+const APP_VERSION = 100;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3621,7 +3660,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', wordle:'wordleBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', wordle:'wordleBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3632,7 +3671,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', wordle:'Wordle'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', wordle:'Wordle'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3861,7 +3900,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3872,7 +3911,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -11775,6 +11814,214 @@ document.addEventListener('keyup',e=>{
 })();
 
 
+// ===== PONG =====
+const PNG_DIFF = {
+  easy:   { aiSpeed:2.5, ballSpeed:3 },
+  medium: { aiSpeed:3.5, ballSpeed:4 },
+  hard:   { aiSpeed:5, ballSpeed:5.5 }
+};
+const PNG = {
+  W:400, H:300, running:false, over:false, raf:null, diff:'easy',
+  // paddles
+  pw:10, ph:60,
+  p1y:0, p2y:0, p1dir:0, p2dir:0, pSpeed:5,
+  // ball
+  bx:0, by:0, br:6, bdx:0, bdy:0,
+  // score
+  s1:0, s2:0, winScore:10,
+  // touch
+  touch1:null, touch2:null
+};
+
+function setPngDiff(d,btn){
+  PNG.diff=d;
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function pngResetBall(dir){
+  PNG.bx=PNG.W/2; PNG.by=PNG.H/2;
+  const d=PNG_DIFF[PNG.diff];
+  const speed=d.ballSpeed;
+  const angle=(Math.random()*0.8-0.4);
+  PNG.bdx=speed*(dir||1)*Math.cos(angle);
+  PNG.bdy=speed*Math.sin(angle);
+}
+
+function resetPong(){
+  if(PNG.raf)cancelAnimationFrame(PNG.raf);
+  PNG.running=false; PNG.over=false;
+  PNG.s1=0; PNG.s2=0;
+  PNG.p1y=PNG.H/2-PNG.ph/2;
+  PNG.p2y=PNG.H/2-PNG.ph/2;
+  PNG.p1dir=0; PNG.p2dir=0;
+  pngResetBall(1);
+  pngRender();
+  const s1=$('p1ScorePng');if(s1)s1.textContent='0';
+  const s2=$('p2ScorePng');if(s2)s2.textContent='0';
+  const st=$('pngStatus');if(st)st.textContent='Klikni Start!';
+  const n1=$('pngP1Name');if(n1)n1.textContent=getP1Name('png');
+  const n2=$('pngP2Name');if(n2)n2.textContent=getP2Name('png');
+  activeTurn('pngP1Card','pngP2Card',1);
+}
+
+function pngRender(){
+  const c=$('pngCanvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  const sx=c.width/PNG.W, sy=c.height/PNG.H;
+  ctx.setTransform(sx,0,0,sy,0,0);
+  const isLight=document.body.classList.contains('light');
+  // background
+  ctx.fillStyle=isLight?'#e0e0e0':'#1a1a2e';
+  ctx.fillRect(0,0,PNG.W,PNG.H);
+  // center line
+  ctx.setLineDash([5,5]);
+  ctx.strokeStyle='rgba(128,128,128,0.3)';
+  ctx.beginPath();ctx.moveTo(PNG.W/2,0);ctx.lineTo(PNG.W/2,PNG.H);ctx.stroke();
+  ctx.setLineDash([]);
+  // paddles
+  ctx.fillStyle='#f5576c';
+  ctx.beginPath();ctx.roundRect(8,PNG.p1y,PNG.pw,PNG.ph,4);ctx.fill();
+  ctx.fillStyle='#4facfe';
+  ctx.beginPath();ctx.roundRect(PNG.W-8-PNG.pw,PNG.p2y,PNG.pw,PNG.ph,4);ctx.fill();
+  // ball
+  ctx.fillStyle='#ffd200';
+  ctx.beginPath();ctx.arc(PNG.bx,PNG.by,PNG.br,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='#ffd200';ctx.shadowBlur=8;
+  ctx.beginPath();ctx.arc(PNG.bx,PNG.by,PNG.br*0.5,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+  // scores on canvas
+  ctx.fillStyle='rgba(128,128,128,0.3)';
+  ctx.font='bold 40px monospace';ctx.textAlign='center';
+  ctx.fillText(PNG.s1,PNG.W/4,50);
+  ctx.fillText(PNG.s2,PNG.W*3/4,50);
+  ctx.setTransform(1,0,0,1,0,0);
+}
+
+function pngStep(){
+  if(!PNG.running||PNG.over)return;
+  // paddle movement
+  PNG.p1y+=PNG.p1dir*PNG.pSpeed;
+  if(welcomeGameMode==='ai'){
+    // AI for P2
+    const d=PNG_DIFF[PNG.diff];
+    const center=PNG.p2y+PNG.ph/2;
+    const diff=PNG.by-center;
+    if(Math.abs(diff)>10){
+      PNG.p2y+=Math.sign(diff)*d.aiSpeed;
+    }
+  } else {
+    PNG.p2y+=PNG.p2dir*PNG.pSpeed;
+  }
+  // clamp paddles
+  PNG.p1y=Math.max(0,Math.min(PNG.H-PNG.ph,PNG.p1y));
+  PNG.p2y=Math.max(0,Math.min(PNG.H-PNG.ph,PNG.p2y));
+  // ball movement
+  PNG.bx+=PNG.bdx; PNG.by+=PNG.bdy;
+  // top/bottom walls
+  if(PNG.by-PNG.br<=0){PNG.by=PNG.br;PNG.bdy=Math.abs(PNG.bdy);}
+  if(PNG.by+PNG.br>=PNG.H){PNG.by=PNG.H-PNG.br;PNG.bdy=-Math.abs(PNG.bdy);}
+  // left paddle
+  if(PNG.bdx<0 && PNG.bx-PNG.br<=8+PNG.pw && PNG.bx-PNG.br>=4 &&
+     PNG.by>=PNG.p1y-PNG.br && PNG.by<=PNG.p1y+PNG.ph+PNG.br){
+    PNG.bx=8+PNG.pw+PNG.br;
+    const hit=(PNG.by-(PNG.p1y+PNG.ph/2))/(PNG.ph/2);
+    const spd=Math.sqrt(PNG.bdx*PNG.bdx+PNG.bdy*PNG.bdy)*1.02;
+    PNG.bdx=spd*Math.cos(hit*Math.PI/4);
+    PNG.bdy=spd*Math.sin(hit*Math.PI/4);
+    if(PNG.bdx<1)PNG.bdx=1;
+    playSound('click');
+  }
+  // right paddle
+  if(PNG.bdx>0 && PNG.bx+PNG.br>=PNG.W-8-PNG.pw && PNG.bx+PNG.br<=PNG.W-4 &&
+     PNG.by>=PNG.p2y-PNG.br && PNG.by<=PNG.p2y+PNG.ph+PNG.br){
+    PNG.bx=PNG.W-8-PNG.pw-PNG.br;
+    const hit=(PNG.by-(PNG.p2y+PNG.ph/2))/(PNG.ph/2);
+    const spd=Math.sqrt(PNG.bdx*PNG.bdx+PNG.bdy*PNG.bdy)*1.02;
+    PNG.bdx=-spd*Math.cos(hit*Math.PI/4);
+    PNG.bdy=spd*Math.sin(hit*Math.PI/4);
+    if(PNG.bdx>-1)PNG.bdx=-1;
+    playSound('click');
+  }
+  // scoring
+  if(PNG.bx<-10){
+    PNG.s2++;$('p2ScorePng').textContent=PNG.s2;
+    playSound('wrong');
+    if(PNG.s2>=PNG.winScore){pngFinish(2);return;}
+    pngResetBall(1);
+  }
+  if(PNG.bx>PNG.W+10){
+    PNG.s1++;$('p1ScorePng').textContent=PNG.s1;
+    playSound('wrong');
+    if(PNG.s1>=PNG.winScore){pngFinish(1);return;}
+    pngResetBall(-1);
+  }
+  pngRender();
+  PNG.raf=requestAnimationFrame(pngStep);
+}
+
+function pngFinish(winner){
+  PNG.over=true;PNG.running=false;
+  if(PNG.raf)cancelAnimationFrame(PNG.raf);
+  const n1=getP1Name('png'),n2=getP2Name('png');
+  if(winner===1){
+    $('pngStatus').textContent='🏆 '+n1+' vyhral! ('+PNG.s1+':'+PNG.s2+')';
+    addWin(1,'pong');
+  } else {
+    $('pngStatus').textContent='🏆 '+n2+' vyhral! ('+PNG.s2+':'+PNG.s1+')';
+    addWin(2,'pong');
+  }
+  celebrate('pngCelebration');
+  playSound('win');
+}
+
+function startPong(){
+  if(PNG.running)return;
+  resetPong();
+  PNG.running=true;
+  $('pngStatus').textContent='Hra!';
+  PNG.raf=requestAnimationFrame(pngStep);
+}
+
+// Pong keyboard controls
+document.addEventListener('keydown',e=>{
+  if(!PNG.running)return;
+  if(e.key==='w'||e.key==='W'){PNG.p1dir=-1;e.preventDefault();}
+  if(e.key==='s'||e.key==='S'){PNG.p1dir=1;e.preventDefault();}
+  if(e.key==='ArrowUp'&&currentGameId==='pong'){PNG.p2dir=-1;e.preventDefault();}
+  if(e.key==='ArrowDown'&&currentGameId==='pong'){PNG.p2dir=1;e.preventDefault();}
+});
+document.addEventListener('keyup',e=>{
+  if(e.key==='w'||e.key==='W')PNG.p1dir=0;
+  if(e.key==='s'||e.key==='S')PNG.p1dir=0;
+  if(e.key==='ArrowUp'&&currentGameId==='pong')PNG.p2dir=0;
+  if(e.key==='ArrowDown'&&currentGameId==='pong')PNG.p2dir=0;
+});
+
+// Pong touch controls on canvas
+(function(){
+  const cv=()=>$('pngCanvas');
+  function getY(e,canvas){
+    const rect=canvas.getBoundingClientRect();
+    const clientY=e.touches?e.touches[0].clientY:e.clientY;
+    return (clientY-rect.top)/rect.height*PNG.H;
+  }
+  document.addEventListener('touchmove',e=>{
+    const c=cv();if(!c||!PNG.running)return;
+    if(!c.contains(e.target))return;
+    const rect=c.getBoundingClientRect();
+    for(let i=0;i<e.touches.length;i++){
+      const t=e.touches[i];
+      const x=(t.clientX-rect.left)/rect.width;
+      const y=(t.clientY-rect.top)/rect.height*PNG.H;
+      if(x<0.5)PNG.p1y=y-PNG.ph/2;
+      else PNG.p2y=y-PNG.ph/2;
+    }
+    e.preventDefault();
+  },{passive:false});
+})();
+
+
 // ===== WORDLE =====
 const WORDLE_SK = [
 'KNIHA','MESTO','STROM','SLOVO','CHATA','CESTA','LAMPA','OBRAZ','LOPTA','VRANA',
@@ -12236,6 +12483,7 @@ resetReaction();
 resetLudo();
 resetDoodle();
 resetBreakout();
+resetPong();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -12297,6 +12545,7 @@ const MOBILE_GAMES = [
   { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
   { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both' },
+  { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both' },
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -12497,14 +12746,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
