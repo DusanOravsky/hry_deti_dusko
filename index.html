@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 89;
+const APP_VERSION = 90;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9364,7 +9364,8 @@ function dkClick(i) {
   } else {
     const mvs=getDKMoves(DK.selected);
     if(mvs.includes(i)) {
-      const isJump=Math.abs(Math.floor(i/8)-Math.floor(DK.selected/8))===2;
+      const jumps=getDKJumps(DK.selected);
+      const isJump=jumps.includes(i);
       dkDoMove(DK.selected,i,isJump);
     } else if(isOwn) {
       DK.selected=i; renderCheckersBoard();
@@ -9376,11 +9377,17 @@ function dkDoMove(from,to,isJump) {
   if(MP.isConnected && MP.connection && !MP._dkReceiving) {
     MP.connection.send({ type: 'dk-move', from, to, isJump });
   }
-  DK.board[to]=DK.board[from]; DK.board[from]='';
+  const piece=DK.board[from];
+  DK.board[to]=piece; DK.board[from]='';
   if(isJump) {
-    const mr=(Math.floor(from/8)+Math.floor(to/8))/2;
-    const mc=((from%8)+(to%8))/2;
-    DK.board[mr*8+mc]='';
+    // Find captured piece on diagonal between from and to
+    const fr=Math.floor(from/8),fc=from%8,tr2=Math.floor(to/8),tc=to%8;
+    const dr=tr2>fr?1:-1, dc=tc>fc?1:-1;
+    let sr=fr+dr, sc=fc+dc;
+    while(sr!==tr2||sc!==tc) {
+      if(DK.board[sr*8+sc]) { DK.board[sr*8+sc]=''; break; }
+      sr+=dr; sc+=dc;
+    }
     playSound('hit');
   }
   // Promotion
@@ -9423,6 +9430,9 @@ function dkWin(color) {
   addWin(w,'checkers'); celebrate('dkCelebration'); playSound('win');
   renderCheckersBoard();
 }
+function dkIsEnemy(p, mid) {
+  return mid && ((p==='r'||p==='R')?(mid==='b'||mid==='B'):(mid==='r'||mid==='R'));
+}
 function getDKMoves(idx) {
   const p=DK.board[idx]; if(!p) return [];
   const r=Math.floor(idx/8),c=idx%8;
@@ -9431,13 +9441,29 @@ function getDKMoves(idx) {
   const moves=[], jumps=[];
   dirs.forEach(dr=>{
     [-1,1].forEach(dc=>{
-      const nr=r+dr,nc=c+dc;
-      if(nr>=0&&nr<8&&nc>=0&&nc<8&&!DK.board[nr*8+nc]) moves.push(nr*8+nc);
-      // Jump
-      const jr=r+2*dr,jc=c+2*dc,mr=r+dr,mc=c+dc;
-      if(jr>=0&&jr<8&&jc>=0&&jc<8&&!DK.board[jr*8+jc]) {
-        const mid=DK.board[mr*8+mc];
-        if(mid && ((p==='r'||p==='R')?(mid==='b'||mid==='B'):(mid==='r'||mid==='R'))) jumps.push(jr*8+jc);
+      if(isKing) {
+        // King: slide any distance diagonally
+        let nr=r+dr, nc=c+dc, foundEnemy=false, enemyIdx=-1;
+        while(nr>=0&&nr<8&&nc>=0&&nc<8) {
+          const ti=nr*8+nc, mid=DK.board[ti];
+          if(!mid) {
+            if(foundEnemy) jumps.push(ti); // landing after jump
+            else moves.push(ti); // free slide
+          } else if(!foundEnemy && dkIsEnemy(p, mid)) {
+            foundEnemy=true; enemyIdx=ti;
+          } else break; // blocked by own piece or second enemy
+          nr+=dr; nc+=dc;
+        }
+      } else {
+        // Regular: 1 step move
+        const nr=r+dr,nc=c+dc;
+        if(nr>=0&&nr<8&&nc>=0&&nc<8&&!DK.board[nr*8+nc]) moves.push(nr*8+nc);
+        // Regular: 1 step jump
+        const jr=r+2*dr,jc=c+2*dc;
+        if(jr>=0&&jr<8&&jc>=0&&jc<8&&!DK.board[jr*8+jc]) {
+          const mid=DK.board[(r+dr)*8+(c+dc)];
+          if(dkIsEnemy(p, mid)) jumps.push(jr*8+jc);
+        }
       }
     });
   });
@@ -9451,10 +9477,24 @@ function getDKJumps(idx) {
   const jumps=[];
   dirs.forEach(dr=>{
     [-1,1].forEach(dc=>{
-      const jr=r+2*dr,jc=c+2*dc,mr=r+dr,mc=c+dc;
-      if(jr>=0&&jr<8&&jc>=0&&jc<8&&!DK.board[jr*8+jc]) {
-        const mid=DK.board[mr*8+mc];
-        if(mid && ((p==='r'||p==='R')?(mid==='b'||mid==='B'):(mid==='r'||mid==='R'))) jumps.push(jr*8+jc);
+      if(isKing) {
+        // King: scan diag for first enemy, then empty squares behind
+        let nr=r+dr, nc=c+dc, foundEnemy=false;
+        while(nr>=0&&nr<8&&nc>=0&&nc<8) {
+          const ti=nr*8+nc, mid=DK.board[ti];
+          if(!mid) {
+            if(foundEnemy) jumps.push(ti);
+          } else if(!foundEnemy && dkIsEnemy(p, mid)) {
+            foundEnemy=true;
+          } else break;
+          nr+=dr; nc+=dc;
+        }
+      } else {
+        const jr=r+2*dr,jc=c+2*dc;
+        if(jr>=0&&jr<8&&jc>=0&&jc<8&&!DK.board[jr*8+jc]) {
+          const mid=DK.board[(r+dr)*8+(c+dc)];
+          if(dkIsEnemy(p, mid)) jumps.push(jr*8+jc);
+        }
       }
     });
   });
