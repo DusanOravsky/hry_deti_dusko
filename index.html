@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 83;
+const APP_VERSION = 84;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10512,6 +10512,7 @@ function startDoodle() {
   DOOD.player = 1; DOOD.scores = [0, 0];
   document.getElementById('p1ScoreDood').textContent = '0';
   document.getElementById('p2ScoreDood').textContent = '0';
+  DOOD._solo = (welcomeGameMode === 'ai');
   doodStartRound();
 }
 
@@ -10536,12 +10537,16 @@ function doodEndRound() {
     updateRecord('doodleBest', DOOD.best);
   }
   document.getElementById('doodleBest').textContent = DOOD.best;
-  if(DOOD.player === 1) {
+  if(DOOD.player === 1 && !DOOD._solo) {
     document.getElementById('p1ScoreDood').textContent = DOOD.score;
     DOOD.player = 2;
     const p2Name = getP2Name('dood');
-    document.getElementById('doodleStatus').textContent = 'Skore: ' + DOOD.score + ' — ' + p2Name + ' je na rade!';
+    document.getElementById('doodleStatus').textContent = 'Skóre: ' + DOOD.score + ' — ' + p2Name + ' je na rade!';
     setTimeout(doodStartRound, 2000);
+  } else if(DOOD._solo) {
+    document.getElementById('p1ScoreDood').textContent = DOOD.score;
+    document.getElementById('doodleStatus').textContent = '🎮 Skóre: ' + DOOD.score;
+    addWin(1, 'doodle'); if(DOOD.score > 0) { celebrate('doodleCelebration'); playSound('win'); }
   } else {
     document.getElementById('p2ScoreDood').textContent = DOOD.score;
     const s1 = DOOD.scores[0], s2 = DOOD.scores[1];
@@ -11983,6 +11988,9 @@ function applyGameMode(mode) {
       if(el) el.textContent = 'Počítač';
     });
   }
+  // Doodle: hide P2 card in solo mode
+  const doodP2 = document.getElementById('doodP2Card');
+  if(doodP2) doodP2.style.display = mode==='ai' ? 'none' : '';
 }
 
 function startFromWelcome() {
