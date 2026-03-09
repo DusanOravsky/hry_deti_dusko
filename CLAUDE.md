@@ -2,20 +2,21 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~13100 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~14600 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v81
+- **Current version**: v105
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
 - **Online Multiplayer**: WebRTC peer-to-peer via PeerJS + Metered TURN (password-protected)
 - **DOM helper**: `const $ = id => document.getElementById(id);` — shorter syntax for DOM access
+- **Game cleanup**: `stopAllGames()` — stops all running game timers/rafs on navigation
 
 ## CRITICAL: TDZ Declaration Order
 
@@ -50,13 +51,14 @@ resetWordle(); // welcomeGameMode check works
 - `GAME_NAMES` object — display names for each game
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
+- `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (32 total)
+## Games (35 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
 - Connect 4 [MP] (AI: easy/medium/hard)
-- Kamen Papier Noznice [MP]
+- Kamen Papier Noznice [MP] (AI: easy/medium/hard)
 - Hadaj Cislo [MP]
 - Pexeso (6 random themes) [MP]
 - Sach [MP] (AI: easy/medium/hard, stalemate detection)
@@ -67,6 +69,9 @@ resetWordle(); // welcomeGameMode check works
 - Mini Labyrint (AI: easy/medium/hard — hard:30ms, medium:80ms, easy:180ms)
 - Reversi/Othello (AI: easy/medium/hard)
 - Wordle (SK: ~400 slov, EN: ~400 slov, language selector, word validation)
+- Breakout/Arkanoid (AI: easy/medium/hard, canvas, roundRect polyfill)
+- Pong (AI: easy/medium/hard, canvas, W/S + arrows, touch drag, first to 10)
+- Tank Battle (AI: easy/medium/hard, 16x16 grid, power-ups: shield/rapid/speed)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -78,6 +83,7 @@ resetWordle(); // welcomeGameMode check works
 - Obesenec, Vyssie Nizsie
 - Bodky a Krabicky (Dots and Boxes, 5x5 grid)
 - Doodle Jump (2-player turn-based, canvas, touch + arrows)
+- Snake Duel (2 snakes simultaneously, WASD vs arrows, first to 5)
 
 ### Solo (mode:'solo'/'always')
 - Tetris (wall kicks, ghost piece)
@@ -85,7 +91,7 @@ resetWordle(); // welcomeGameMode check works
 - Preteky (Racing, coins +2 bonus)
 - Statistiky + Achievement system (split reset: stats vs achievements)
 
-## Features (v13-v81)
+## Features (v13-v105)
 
 - **Tutorial/Rules Modal**: help button on all games, opens centralized modal with game rules
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
@@ -105,13 +111,19 @@ resetWordle(); // welcomeGameMode check works
 - **Wordle word validation**: Both PVP set phase and guess phase validate against word list
 - **Connect 4 AI**: Medium blocks opponent wins; hard blocks + seeks own wins + center preference
 - **Doodle Jump**: Canvas game with platforms (normal/moving/breaking), power-ups (spring/rocket), 2-player turn-based
+- **Breakout/Arkanoid**: Canvas brick breaker, 3 difficulties, PvP alternating
+- **Pong**: Classic 2-paddle game, canvas, AI mode
+- **Tank Battle**: 16x16 grid arena, WASD+Space vs Arrows+Enter, walls, projectiles, power-ups (shield/rapid/speed)
+- **Snake Duel**: 2 snakes simultaneously, WASD vs arrows, first to 5 rounds
+- **stopAllGames()**: All game loops stop on navigation (no background sounds/vibrations)
+- **AI mode P2 controls hidden**: Tank Battle hides P2 mobile buttons in AI mode, arrows control P1
 - **MP TURN servers**: Metered TURN for cross-network play, password-protected (STUN-first, TURN fallback)
 - **MP connection type indicator**: Shows "Cez server (TURN)" or "Priame spojenie" after connecting
 - **MP session persistence**: `sessionStorage` saves roomCode/isHost/myName, auto-reconnect on refresh (8s timeout)
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "Obsahuje 32 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "Obsahuje 36 hier!" on welcome, "(c) Dusan Oravsky" at bottom
 - **SW auto-reload**: New service worker version triggers automatic page reload
 - **Dark/light theme**: Automatic by time of day + manual toggle
 
@@ -127,6 +139,9 @@ resetWordle(); // welcomeGameMode check works
 8. For AI mode: block player clicks with `if(welcomeGameMode==='ai' && turn===opponent) return;`
 9. **CRITICAL**: Verify your `reset*()` function does NOT reference any `const`/`let` variable declared later in the file. Grep all referenced variables and check line numbers.
 10. For colors: use `color:inherit` instead of `color:white` — supports both dark and light mode
+11. Add timer/raf cleanup to `stopAllGames()` function
+12. For canvas games with keyboard: guard with `if(currentGameId!=='yourGame')return;`
+13. In AI mode: hide P2 mobile controls via `applyGameMode()`, remap arrows to P1
 
 ## Online Multiplayer
 
@@ -238,6 +253,20 @@ Key game state objects and their patterns:
 - `MEM` — Pexeso (cards, flipped, matched)
 - `DB` — Dots and Boxes (rows:5, cols:5, lines, boxes)
 - `RACE` — Racing (lanes, obstacles, coins, score)
+- `BRK` — Breakout (canvas, bricks, ball, paddle, score)
+- `PNG` — Pong (canvas, paddles, ball, scores, first to 10)
+- `TNK` — Tank Battle (16x16 grid, tanks, bullets, walls, powerup, cooldowns, first to 5)
+- `SDUEL` — Snake Duel (2 snakes, directions, scores, first to 5)
+
+## Performance Optimization
+
+### DOM Helper Function
+`const $ = id => document.getElementById(id);` — used throughout codebase.
+
+### stopAllGames()
+Centralized cleanup function that stops all game timers/rafs:
+- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SDUEL.timer, REAC.timeout
+- Called by `mobileGoTo()` and desktop sidebar game switching
 
 ## Deploy
 
@@ -256,6 +285,7 @@ GitHub Pages auto-deploys from main branch.
 - **Text invisible**: Don't hardcode `color:white` — use `color:inherit` to handle both dark/light mode.
 - **Topbar disappearing**: `#mobileGameView` and `#mobileGamePicker` need `position:fixed`.
 - **Mode selectors in games**: Hidden via `applyGameMode()` when mode chosen from welcome screen.
+- **Games running in background**: All game loops must be added to `stopAllGames()` and stopped on navigation.
 
 ### MP-Specific Issues
 

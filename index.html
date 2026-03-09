@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 105;
+const APP_VERSION = 106;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12423,7 +12423,7 @@ function startTanks(){
   resetTanks();
   TNK.running=true;
   $('tnkStatus').textContent='Boj!';
-  TNK.timer=setInterval(tnkStep, 1000/15);
+  TNK.timer=setInterval(tnkStep, 1000/8);
 }
 
 // Tank keyboard controls

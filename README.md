@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA s 32 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA s 35 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (32)
+## Hry (35)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -24,6 +24,9 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Puzzle Scramble (canvas obrazky, 3x3/4x4/5x5) | - | - |
 | Mini Labyrint | - | Yes (easy/medium/hard) |
 | Reversi (Othello) | - | Yes (easy/medium/hard) |
+| Breakout (Arkanoid) | - | Yes (easy/medium/hard) |
+| Pong | - | Yes (easy/medium/hard) |
+| Tank Battle (power-upy: shield/rapid/speed) | - | Yes (easy/medium/hard) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra |
@@ -37,6 +40,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Obesenec, Vyssie Nizsie |
 | Bodky a Krabicky (Dots & Boxes, 5x5 grid) |
 | Doodle Jump (2-player turn-based, power-ups) |
+| Snake Duel (2 hady sucasne, WASD vs sipky) |
 
 ### Solo
 - Tetris (wall kicks, ghost piece, mobilne ovladacie tlacidla)
@@ -74,7 +78,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Wordle**: Slovensky aj anglicky jazyk (~400 slov/jazyk), solo (AI vyberie slovo) + PVP (striedanie zadavanie/hadanie), validacia slov
 - **Animacie**: cellAppear, flipCard, diceRoll, glowCorrect, shakeWrong, pieceMove, rpsReveal
 - **Zvuky**: Web Audio API zvuky (click, move, correct, wrong, flip, shot, hit, win) + vibracie
-- **AI Difficulty**: hry s easy/medium/hard AI (Sach, Dama, Lodicky, Clovece, Labyrint, Reversi, Connect 4)
+- **AI Difficulty**: hry s easy/medium/hard AI (Sach, Dama, Lodicky, Clovece, Labyrint, Reversi, Connect 4, Breakout, Pong, Tank Battle)
 - **Offline indikator**: Cerveny banner ked nie je internet, auto-skrytie MP tlacidla
 - **Favoritne hry**: Hviezdicka na kartach hier, zoradenie na zaciatok gridu
 - **Posledne hrane**: Sekcia s nedavno hranymi hrami + moznost vymazat
@@ -90,16 +94,18 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Tetris**: Wall kicks (5 offset pokusov) + ghost piece (priehladny nahlad dopadu)
 - **Doodle Jump**: Canvas hra s platformami (normalne/pohyblive/lamave), power-upy (pruzina/raketa), 2-player
 - **Scramble kola**: Volitelny pocet kol (5/10/15)
+- **Tank Battle power-upy**: Shield (blokuje 1 zasah), Rapid fire (3x rychlejsie nabijanie), Speed (2x pohyb)
+- **stopAllGames()**: Centralizovany cleanup - vsetky hry sa zastavia pri navigacii prec
 
 ## Technologie
 
-- Single HTML file (~13100 riadkov)
+- Single HTML file (~14600 riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
 - Responsivny dizajn (mobile + desktop)
 - Web Audio API zvuky s vibraciami
-- Canvas-based hry (Snake, Tetris, Doodle Jump, Puzzle Scramble, Dots & Boxes)
+- Canvas-based hry (Snake, Tetris, Doodle Jump, Puzzle Scramble, Dots & Boxes, Breakout, Pong, Tank Battle, Snake Duel)
 - DFS generovanie labyrintu, BFS AI solver
 - Web Speech API pre hlasove prikazy
 - RTCPeerConnection.getStats() pre detekciu typu spojenia
@@ -134,7 +140,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v81**
+Aktualna verzia: **v105**
 
 ## Deploy
 
