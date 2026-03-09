@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 112;
+const APP_VERSION = 113;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12172,9 +12172,12 @@ document.addEventListener('keyup',e=>{
       const x=(t.clientX-rect.left)/rect.width;
       const y=(t.clientY-rect.top)/rect.height*PNG.H;
       if(MP.isConnected){
-        // In MP, any touch controls my paddle (P1 locally)
-        PNG.p1y=y-PNG.ph/2;
-        if(!MP.isHost)MP.connection.send({type:'png-input',dir:0,py:PNG.p1y});
+        if(MP.isHost){
+          PNG.p1y=y-PNG.ph/2;
+        } else {
+          PNG.p2y=y-PNG.ph/2;
+          MP.connection.send({type:'png-input',dir:0,py:PNG.p2y});
+        }
       } else {
         if(x<0.5)PNG.p1y=y-PNG.ph/2;
         else PNG.p2y=y-PNG.ph/2;
