@@ -3701,7 +3701,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 101;
+const APP_VERSION = 102;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3737,6 +3737,8 @@ document.addEventListener('DOMContentLoaded', () => {
   Object.entries(gameKeys).forEach(([gId]) => {
     const btn = $(gameKeys[gId]);
     if(btn) btn.addEventListener('click', () => {
+      // Stop any running game loops
+      if(typeof stopAllGames==='function') stopAllGames();
       // Hide all game areas, deactivate all buttons
       document.querySelectorAll('.game-area').forEach(g => g.classList.remove('active'));
       document.querySelectorAll('.game-btn').forEach(b => b.classList.remove('active'));
@@ -12876,6 +12878,33 @@ function _returnGameToParent() {
   }
   _mobileCurrentGame = null;
 }
+function stopAllGames(){
+  // Snake
+  if(typeof SNK!=='undefined'&&SNK.timer){clearInterval(SNK.timer);SNK.timer=null;SNK.running=false;}
+  // Tetris
+  if(typeof TET!=='undefined'&&TET.dropTimer){clearInterval(TET.dropTimer);TET.dropTimer=null;TET.running=false;}
+  // Racing
+  if(typeof RACE!=='undefined'&&RACE.interval){clearInterval(RACE.interval);RACE.interval=null;RACE.running=false;}
+  // Doodle
+  if(typeof DOOD!=='undefined'&&DOOD.raf){cancelAnimationFrame(DOOD.raf);DOOD.raf=null;DOOD.running=false;}
+  // Breakout
+  if(typeof BRK!=='undefined'&&BRK.raf){cancelAnimationFrame(BRK.raf);BRK.raf=null;BRK.running=false;}
+  // Pong
+  if(typeof PNG!=='undefined'&&PNG.raf){cancelAnimationFrame(PNG.raf);PNG.raf=null;PNG.running=false;}
+  // Tanks
+  if(typeof TNK!=='undefined'&&TNK.timer){clearInterval(TNK.timer);TNK.timer=null;TNK.running=false;}
+  // Puzzle timer
+  if(typeof PZ!=='undefined'&&PZ.timer){clearInterval(PZ.timer);PZ.timer=null;}
+  // Maze timer
+  if(typeof MZ!=='undefined'&&MZ.timer){clearInterval(MZ.timer);MZ.timer=null;}
+  // Spam Click timer
+  if(typeof SC!=='undefined'&&SC.timer){clearInterval(SC.timer);SC.timer=null;SC.running=false;}
+  // Quiz timer
+  if(typeof QUIZ!=='undefined'&&QUIZ.timerInterval){clearTimeout(QUIZ.timerInterval);QUIZ.timerInterval=null;}
+  // Reaction timer
+  if(typeof REAC!=='undefined'&&REAC.timeout){clearTimeout(REAC.timeout);REAC.timeout=null;}
+}
+
 function mobileGoTo(level, gameId) {
   const picker = $('mobileGamePicker');
   const view   = $('mobileGameView');
@@ -12883,6 +12912,7 @@ function mobileGoTo(level, gameId) {
   picker.classList.remove('active');
   view.classList.remove('active');
 
+  stopAllGames();
   if(level === 1) {
     _returnGameToParent();
     ws.style.display = '';
