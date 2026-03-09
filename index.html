@@ -2097,7 +2097,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 35 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 36 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -3642,6 +3642,59 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== SNAKE DUEL ===== -->
+  <div class="game-area" id="snakeDuel">
+    <div class="rules"><h3>Snake Duel:</h3><ul>
+      <li>Dva hady na jednom poli! Kto prezije, vyhrа!</li>
+      <li>Hrac 1 (zeleny): WASD</li>
+      <li>Hrac 2 (modry): sipky</li>
+      <li>Na mobile: tlacidla pod hrou</li>
+      <li>Naraz do steny, do seba alebo do supera = smrt!</li>
+      <li>Jedlo zvysuje dlzku. Prvy na 5 kol vyhrava!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="sdP1Card"><div class="player-name-display" id="sdP1Name">Hrac 1</div><div class="player-score" id="p1ScoreSD">0</div></div>
+      <div class="player-card player2" id="sdP2Card"><div class="player-name-display" id="sdP2Name">Hrac 2</div><div class="player-score" id="p2ScoreSD">0</div></div>
+    </div>
+    <div class="status" id="sdStatus">Klikni Start!</div>
+    <canvas id="sdCanvas" width="400" height="400" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(128,128,128,0.2);background:rgba(128,128,128,0.1);touch-action:none;max-width:90vw"></canvas>
+    <div style="display:flex;gap:20px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+        <div style="font-size:0.7em;opacity:0.5">Hrac 1</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p1next='up'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9650;</button>
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p1next='left'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9664;</button>
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p1next='right'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9654;</button>
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p1next='down'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.5);border-radius:8px">&#9660;</button>
+          <div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+        <div style="font-size:0.7em;opacity:0.5">Hrac 2</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p2next='up'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9650;</button>
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p2next='left'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9664;</button>
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p2next='right'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9654;</button>
+          <div></div>
+          <button class="action-btn" ontouchstart="SD.p2next='down'" style="width:44px;padding:8px;font-size:1.1em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.5);border-radius:8px">&#9660;</button>
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <div class="celebration" id="sdCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startSnakeDuel()">Start</button>
+      <button class="action-btn danger-btn" onclick="resetSnakeDuel()">Reset</button>
+    </div>
+  </div>
+
   <div class="game-area" id="dotsBoxes">
     <div class="rules"><h3>📋 Bodky a Krabičky:</h3><ul>
       <li>Klikni na čiaru medzi dvoma bodkami</li>
@@ -3701,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 102;
+const APP_VERSION = 103;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3717,7 +3770,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', wordle:'wordleBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3728,7 +3781,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', wordle:'Wordle'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3959,7 +4012,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -3970,7 +4023,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -12336,6 +12389,170 @@ document.addEventListener('keyup',e=>{
 });
 
 
+// ===== SNAKE DUEL =====
+const SD = {
+  G:20, W:400, H:400, running:false, over:false, timer:null, speed:150,
+  s1:0, s2:0, winScore:5,
+  snake1:[], snake2:[], food:{x:10,y:10},
+  p1dir:'right', p2dir:'left', p1next:'right', p2next:'left',
+  dead1:false, dead2:false
+};
+const SD_OPP={left:'right',right:'left',up:'down',down:'up'};
+const SD_DX={left:-1,right:1,up:0,down:0};
+const SD_DY={left:0,right:0,up:-1,down:1};
+
+function sdPlaceFood(){
+  const occ=new Set();
+  SD.snake1.forEach(s=>occ.add(s.x+','+s.y));
+  SD.snake2.forEach(s=>occ.add(s.x+','+s.y));
+  let tries=0;
+  do{SD.food={x:Math.floor(Math.random()*SD.G),y:Math.floor(Math.random()*SD.G)};tries++;}
+  while(occ.has(SD.food.x+','+SD.food.y)&&tries<400);
+}
+
+function resetSnakeDuel(){
+  if(SD.timer)clearInterval(SD.timer);
+  SD.running=false;SD.over=false;SD.dead1=false;SD.dead2=false;
+  SD.snake1=[{x:3,y:10},{x:2,y:10},{x:1,y:10}];
+  SD.snake2=[{x:SD.G-4,y:10},{x:SD.G-3,y:10},{x:SD.G-2,y:10}];
+  SD.p1dir='right';SD.p2dir='left';SD.p1next='right';SD.p2next='left';
+  sdPlaceFood();
+  sdRender();
+  const s1=$('p1ScoreSD');if(s1)s1.textContent=SD.s1;
+  const s2=$('p2ScoreSD');if(s2)s2.textContent=SD.s2;
+  const st=$('sdStatus');if(st)st.textContent='Klikni Start!';
+  const n1=$('sdP1Name');if(n1)n1.textContent=getP1Name('sd');
+  const n2=$('sdP2Name');if(n2)n2.textContent=getP2Name('sd');
+  activeTurn('sdP1Card','sdP2Card',1);
+}
+
+function sdRender(){
+  const c=$('sdCanvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  const cs=c.width/SD.G;
+  ctx.setTransform(cs,0,0,cs,0,0);
+  const isLight=document.body.classList.contains('light');
+  ctx.fillStyle=isLight?'#e8e8e8':'#1a1a2e';
+  ctx.fillRect(0,0,SD.G,SD.G);
+  // grid
+  ctx.strokeStyle='rgba(128,128,128,0.08)';ctx.lineWidth=0.02;
+  for(let i=0;i<=SD.G;i++){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,SD.G);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(SD.G,i);ctx.stroke();}
+  // food
+  ctx.fillStyle='#f5576c';
+  ctx.beginPath();ctx.arc(SD.food.x+0.5,SD.food.y+0.5,0.4,0,Math.PI*2);ctx.fill();
+  // snake 1 (green)
+  SD.snake1.forEach((s,i)=>{
+    ctx.fillStyle='#43e97b';ctx.globalAlpha=Math.max(1-i*0.03,0.3);
+    ctx.fillRect(s.x+0.05,s.y+0.05,0.9,0.9);
+    if(i===0){ctx.fillStyle=isLight?'#333':'white';ctx.globalAlpha=1;ctx.beginPath();ctx.arc(s.x+0.5,s.y+0.5,0.2,0,Math.PI*2);ctx.fill();}
+  });
+  ctx.globalAlpha=1;
+  // snake 2 (blue)
+  SD.snake2.forEach((s,i)=>{
+    ctx.fillStyle='#4facfe';ctx.globalAlpha=Math.max(1-i*0.03,0.3);
+    ctx.fillRect(s.x+0.05,s.y+0.05,0.9,0.9);
+    if(i===0){ctx.fillStyle=isLight?'#333':'white';ctx.globalAlpha=1;ctx.beginPath();ctx.arc(s.x+0.5,s.y+0.5,0.2,0,Math.PI*2);ctx.fill();}
+  });
+  ctx.globalAlpha=1;
+  ctx.setTransform(1,0,0,1,0,0);
+}
+
+function sdStep(){
+  if(!SD.running||SD.over)return;
+  // apply directions (prevent reverse)
+  if(SD.p1next!==SD_OPP[SD.p1dir])SD.p1dir=SD.p1next;
+  if(SD.p2next!==SD_OPP[SD.p2dir])SD.p2dir=SD.p2next;
+  // compute new heads
+  const h1=SD.snake1[0], h2=SD.snake2[0];
+  const n1={x:h1.x+SD_DX[SD.p1dir],y:h1.y+SD_DY[SD.p1dir]};
+  const n2={x:h2.x+SD_DX[SD.p2dir],y:h2.y+SD_DY[SD.p2dir]};
+  // build occupied sets (before move, without tails that will be removed)
+  const occ1=new Set(SD.snake1.map(s=>s.x+','+s.y));
+  const occ2=new Set(SD.snake2.map(s=>s.x+','+s.y));
+  // check deaths
+  const d1=n1.x<0||n1.x>=SD.G||n1.y<0||n1.y>=SD.G||occ1.has(n1.x+','+n1.y)||occ2.has(n1.x+','+n1.y);
+  const d2=n2.x<0||n2.x>=SD.G||n2.y<0||n2.y>=SD.G||occ2.has(n2.x+','+n2.y)||occ1.has(n2.x+','+n2.y);
+  // head-on collision
+  const headOn=n1.x===n2.x&&n1.y===n2.y;
+  SD.dead1=d1||headOn;
+  SD.dead2=d2||headOn;
+  // move snakes (even if dead, for visual)
+  if(!d1&&!headOn)SD.snake1.unshift(n1);
+  if(!d2&&!headOn)SD.snake2.unshift(n2);
+  // food
+  let ate1=!SD.dead1&&n1.x===SD.food.x&&n1.y===SD.food.y;
+  let ate2=!SD.dead2&&n2.x===SD.food.x&&n2.y===SD.food.y;
+  if(ate1||ate2){playSound('correct');sdPlaceFood();}
+  if(!ate1&&!SD.dead1)SD.snake1.pop();
+  if(!ate2&&!SD.dead2)SD.snake2.pop();
+  sdRender();
+  // check round end
+  if(SD.dead1||SD.dead2){
+    clearInterval(SD.timer);SD.timer=null;
+    playSound('wrong');
+    if(SD.dead1&&SD.dead2){
+      // both dead — draw round, no points
+      $('sdStatus').textContent='Oba hady spadli! Znovu...';
+    } else if(SD.dead1){
+      SD.s2++;$('p2ScoreSD').textContent=SD.s2;
+      $('sdStatus').textContent=getP2Name('sd')+' ziskal bod!';
+    } else {
+      SD.s1++;$('p1ScoreSD').textContent=SD.s1;
+      $('sdStatus').textContent=getP1Name('sd')+' ziskal bod!';
+    }
+    // check win
+    if(SD.s1>=SD.winScore){
+      SD.over=true;
+      $('sdStatus').textContent='🏆 '+getP1Name('sd')+' vyhral! ('+SD.s1+':'+SD.s2+')';
+      addWin(1,'snakeDuel');celebrate('sdCelebration');playSound('win');return;
+    }
+    if(SD.s2>=SD.winScore){
+      SD.over=true;
+      $('sdStatus').textContent='🏆 '+getP2Name('sd')+' vyhral! ('+SD.s2+':'+SD.s1+')';
+      addWin(2,'snakeDuel');celebrate('sdCelebration');playSound('win');return;
+    }
+    // next round after delay
+    setTimeout(()=>{
+      if(SD.over)return;
+      SD.dead1=false;SD.dead2=false;
+      SD.snake1=[{x:3,y:10},{x:2,y:10},{x:1,y:10}];
+      SD.snake2=[{x:SD.G-4,y:10},{x:SD.G-3,y:10},{x:SD.G-2,y:10}];
+      SD.p1dir='right';SD.p2dir='left';SD.p1next='right';SD.p2next='left';
+      sdPlaceFood();sdRender();
+      $('sdStatus').textContent='Dalsie kolo!';
+      setTimeout(()=>{
+        if(SD.over)return;
+        SD.timer=setInterval(sdStep,SD.speed);
+        $('sdStatus').textContent='Boj!';
+      },1000);
+    },1500);
+  }
+}
+
+function startSnakeDuel(){
+  if(SD.running)return;
+  SD.s1=0;SD.s2=0;
+  $('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0';
+  resetSnakeDuel();
+  SD.running=true;
+  $('sdStatus').textContent='Boj!';
+  SD.timer=setInterval(sdStep,SD.speed);
+}
+
+// Snake Duel keyboard
+document.addEventListener('keydown',e=>{
+  if(!SD.running||currentGameId!=='snakeDuel')return;
+  if(e.key==='w'||e.key==='W'){SD.p1next='up';e.preventDefault();}
+  if(e.key==='s'||e.key==='S'){SD.p1next='down';e.preventDefault();}
+  if(e.key==='a'||e.key==='A'){SD.p1next='left';e.preventDefault();}
+  if(e.key==='d'||e.key==='D'){SD.p1next='right';e.preventDefault();}
+  if(e.key==='ArrowUp'){SD.p2next='up';e.preventDefault();}
+  if(e.key==='ArrowDown'){SD.p2next='down';e.preventDefault();}
+  if(e.key==='ArrowLeft'){SD.p2next='left';e.preventDefault();}
+  if(e.key==='ArrowRight'){SD.p2next='right';e.preventDefault();}
+});
+
+
 // ===== WORDLE =====
 const WORDLE_SK = [
 'KNIHA','MESTO','STROM','SLOVO','CHATA','CESTA','LAMPA','OBRAZ','LOPTA','VRANA',
@@ -12799,6 +13016,7 @@ resetDoodle();
 resetBreakout();
 resetPong();
 resetTanks();
+resetSnakeDuel();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -12862,6 +13080,7 @@ const MOBILE_GAMES = [
   { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both' },
   { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both' },
   { id:'tanks',         label:'Tank Battle',    icon:'💥', grad:'rgba(200,0,0,0.3),rgba(0,100,200,0.3)', mode:'both' },
+  { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp' },
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -12893,6 +13112,8 @@ function stopAllGames(){
   if(typeof PNG!=='undefined'&&PNG.raf){cancelAnimationFrame(PNG.raf);PNG.raf=null;PNG.running=false;}
   // Tanks
   if(typeof TNK!=='undefined'&&TNK.timer){clearInterval(TNK.timer);TNK.timer=null;TNK.running=false;}
+  // Snake Duel
+  if(typeof SD!=='undefined'&&SD.timer){clearInterval(SD.timer);SD.timer=null;SD.running=false;}
   // Puzzle timer
   if(typeof PZ!=='undefined'&&PZ.timer){clearInterval(PZ.timer);PZ.timer=null;}
   // Maze timer
