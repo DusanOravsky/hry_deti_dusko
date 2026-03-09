@@ -3473,7 +3473,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <div class="game-area" id="doodle">
     <div class="rules"><h3>Doodle Jump:</h3><ul>
       <li>Lopticka skace sama — ty ju len posuvaj do stran!</li>
-      <li>Ovladanie: sipky, tlacidla alebo <strong>naklonenie telefonu</strong> (vypni auto-rotate!)</li>
+      <li>Ovladanie: sipky alebo tlacidla dolava/doprava</li>
       <li>Normalna plosinka = odraz, pohybliva = pozor!, krehka = rozpadne sa!</li>
       <li>Padnes dole = koniec! Cim vyssie, tym lepsie skore!</li>
     </ul></div>
@@ -3493,7 +3493,6 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="action-btn" onclick="DOOD.moveDir=-1" ontouchstart="DOOD.moveDir=-1" ontouchend="DOOD.moveDir=0" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9664;</button>
       <button class="action-btn" onclick="DOOD.moveDir=1" ontouchstart="DOOD.moveDir=1" ontouchend="DOOD.moveDir=0" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9654;</button>
     </div>
-    <div id="doodleGyroStatus" style="text-align:center;font-size:0.75em;opacity:0.5;margin-top:4px"></div>
     <div class="celebration" id="doodleCelebration">&#127881;</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startDoodle()">&#9654;&#65039; Start</button>
@@ -3560,7 +3559,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 78;
+const APP_VERSION = 79;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10294,12 +10293,11 @@ const DOOD = {
   W:320, H:480, running:false, over:false, raf:null,
   x:160, y:400, vy:0, vx:0, moveDir:0,
   platforms:[], cameraY:0, score:0, maxHeight:0,
-  best:parseInt(localStorage.getItem('hry_doodleBest')||'0'),
-  gyro:false
+  best:parseInt(localStorage.getItem('hry_doodleBest')||'0')
 };
 const DOOD_GRAVITY = 0.35;
 const DOOD_JUMP = -10;
-const DOOD_SPEED = 3;
+const DOOD_SPEED = 2;
 const DOOD_PW = 60; // platform width
 const DOOD_PH = 10; // platform height
 const DOOD_PLAYER_R = 12;
@@ -10376,8 +10374,7 @@ function doodStep() {
   // Horizontal movement (keyboard/buttons)
   if(DOOD.moveDir !== 0) {
     DOOD.vx = DOOD.moveDir * DOOD_SPEED;
-  } else if(!DOOD.gyro) {
-    // Decelerate when no input
+  } else {
     DOOD.vx *= 0.85;
   }
 
@@ -10451,7 +10448,6 @@ function doodStep() {
     document.getElementById('doodleBest').textContent = DOOD.best;
     document.getElementById('doodleStatus').textContent = 'Game Over! Skore: ' + DOOD.score;
     if(DOOD.score >= 50) { celebrate('doodleCelebration'); playSound('win'); }
-    doodUnlockOrientation();
     doodRender();
     return;
   }
@@ -10460,12 +10456,6 @@ function doodStep() {
   DOOD.raf = requestAnimationFrame(doodStep);
 }
 
-function doodLockOrientation() {
-  try { if(screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(()=>{}); } catch(e) {}
-}
-function doodUnlockOrientation() {
-  try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
-}
 function startDoodle() {
   if(DOOD.running) return;
   resetDoodle();
@@ -10473,14 +10463,11 @@ function startDoodle() {
   document.getElementById('doodleStatus').textContent = 'Skac!';
   DOOD.vy = DOOD_JUMP;
   DOOD.raf = requestAnimationFrame(doodStep);
-  doodRequestGyro();
-  doodLockOrientation();
 }
 
 function resetDoodle() {
   DOOD.running = false; DOOD.over = false;
   if(DOOD.raf) cancelAnimationFrame(DOOD.raf);
-  doodUnlockOrientation();
   DOOD.x = 160; DOOD.y = 400; DOOD.vy = 0; DOOD.vx = 0; DOOD.moveDir = 0;
   DOOD.cameraY = 0; DOOD.score = 0; DOOD.maxHeight = 0;
   doodGenPlatforms();
@@ -10503,27 +10490,6 @@ document.addEventListener('keyup', e => {
   if(e.key === 'ArrowRight' && DOOD.moveDir === 1) DOOD.moveDir = 0;
 });
 
-// Gyroscope / DeviceOrientation
-function doodRequestGyro() {
-  if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    // iOS 13+ requires permission
-    DeviceOrientationEvent.requestPermission().then(state => {
-      if(state === 'granted') doodEnableGyro();
-    }).catch(() => {});
-  } else if('DeviceOrientationEvent' in window) {
-    doodEnableGyro();
-  }
-}
-function doodEnableGyro() {
-  DOOD.gyro = true;
-  const gs = document.getElementById('doodleGyroStatus');
-  if(gs) gs.textContent = 'Gyroskop aktivny — vypni auto-rotate!';
-  window.addEventListener('deviceorientation', e => {
-    if(!DOOD.running || DOOD.over) return;
-    const tilt = Math.max(-25, Math.min(25, e.gamma || 0)); // clamp to ±25°
-    DOOD.vx = tilt / 25 * DOOD_SPEED * 2;
-  });
-}
 
 // =============================================================================
 // SEKCIA 30: PUZZLE SCRAMBLE (canvas-based image puzzle)
