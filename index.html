@@ -3473,7 +3473,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <div class="game-area" id="doodle">
     <div class="rules"><h3>Doodle Jump:</h3><ul>
       <li>Lopticka skace sama — ty ju len posuvaj do stran!</li>
-      <li>Ovladanie: sipky, tlacidla alebo <strong>naklonenie telefonu</strong></li>
+      <li>Ovladanie: sipky, tlacidla alebo <strong>naklonenie telefonu</strong> (vypni auto-rotate!)</li>
       <li>Normalna plosinka = odraz, pohybliva = pozor!, krehka = rozpadne sa!</li>
       <li>Padnes dole = koniec! Cim vyssie, tym lepsie skore!</li>
     </ul></div>
@@ -3560,7 +3560,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 76;
+const APP_VERSION = 77;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10517,11 +10517,11 @@ function doodRequestGyro() {
 function doodEnableGyro() {
   DOOD.gyro = true;
   const gs = document.getElementById('doodleGyroStatus');
-  if(gs) gs.textContent = 'Gyroskop aktivny';
+  if(gs) gs.textContent = 'Gyroskop aktivny — vypni auto-rotate!';
   window.addEventListener('deviceorientation', e => {
     if(!DOOD.running || DOOD.over) return;
-    const tilt = e.gamma || 0; // -90..90 degrees left/right
-    DOOD.vx = tilt / 90 * DOOD_SPEED * 2;
+    const tilt = Math.max(-25, Math.min(25, e.gamma || 0)); // clamp to ±25°
+    DOOD.vx = tilt / 25 * DOOD_SPEED * 2.5;
   });
 }
 
