@@ -3620,7 +3620,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
           <div></div>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+      <div id="tnkP2Controls" style="display:flex;flex-direction:column;gap:4px;align-items:center">
         <div style="font-size:0.7em;opacity:0.5">Hrac 2</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
           <div></div>
@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 104;
+const APP_VERSION = 105;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12136,11 +12136,17 @@ document.addEventListener('keyup',e=>{
 
 // ===== TANK BATTLE =====
 const TNK_DIFF = { easy:{aiSpeed:0.03,aiShoot:0.008}, medium:{aiSpeed:0.05,aiShoot:0.02}, hard:{aiSpeed:0.08,aiShoot:0.04} };
+const TNK_POWERUPS=[
+  {type:'shield',icon:'🛡️',color:'#43e97b',dur:75},
+  {type:'rapid',icon:'⚡',color:'#ffd200',dur:75},
+  {type:'speed',icon:'💨',color:'#4facfe',dur:75}
+];
 const TNK = {
   G:16, W:400, H:400, running:false, over:false, raf:null, timer:null, diff:'easy',
-  walls:[], bullets:[],
+  walls:[], bullets:[], powerup:null, puTimer:0,
   // tanks: x,y in grid coords, dir: 0=up,1=right,2=down,3=left
-  t1:{x:1,y:14,dir:0}, t2:{x:14,y:1,dir:2},
+  t1:{x:1,y:14,dir:0,shield:0,rapid:0,speed:0},
+  t2:{x:14,y:1,dir:2,shield:0,rapid:0,speed:0},
   s1:0, s2:0, winScore:5,
   p1keys:{up:false,down:false,left:false,right:false},
   p2keys:{up:false,down:false,left:false,right:false},
@@ -12175,14 +12181,24 @@ function tnkGenWalls(){
 
 function tnkIsWall(x,y){ return TNK.walls.includes(Math.floor(x)+','+Math.floor(y)); }
 
+function tnkSpawnPowerup(){
+  const g=TNK.G;
+  let x,y,tries=0;
+  do{x=2+Math.floor(Math.random()*(g-4));y=2+Math.floor(Math.random()*(g-4));tries++;}
+  while((tnkIsWall(x,y)||(x===TNK.t1.x&&y===TNK.t1.y)||(x===TNK.t2.x&&y===TNK.t2.y))&&tries<50);
+  const pu=TNK_POWERUPS[Math.floor(Math.random()*TNK_POWERUPS.length)];
+  TNK.powerup={x:x,y:y,type:pu.type,icon:pu.icon,color:pu.color};
+  TNK.puTimer=0;
+}
+
 function resetTanks(){
   if(TNK.raf)cancelAnimationFrame(TNK.raf);
   if(TNK.timer)clearInterval(TNK.timer);
   TNK.running=false; TNK.over=false;
-  TNK.s1=0; TNK.s2=0; TNK.bullets=[];
+  TNK.s1=0; TNK.s2=0; TNK.bullets=[]; TNK.powerup=null; TNK.puTimer=0;
   TNK.cooldown1=0; TNK.cooldown2=0;
-  TNK.t1={x:1,y:TNK.G-2,dir:0};
-  TNK.t2={x:TNK.G-2,y:1,dir:2};
+  TNK.t1={x:1,y:TNK.G-2,dir:0,shield:0,rapid:0,speed:0};
+  TNK.t2={x:TNK.G-2,y:1,dir:2,shield:0,rapid:0,speed:0};
   TNK.p1keys={up:false,down:false,left:false,right:false};
   TNK.p2keys={up:false,down:false,left:false,right:false};
   tnkGenWalls();
@@ -12216,9 +12232,17 @@ function tnkRender(){
   // tanks
   tnkDrawTank(ctx,TNK.t1,'#f5576c','#c0392b');
   tnkDrawTank(ctx,TNK.t2,'#4facfe','#2980b9');
+  // powerup
+  if(TNK.powerup){
+    const pu=TNK.powerup;
+    ctx.fillStyle=pu.color;ctx.globalAlpha=0.3+0.2*Math.sin(Date.now()/200);
+    ctx.beginPath();ctx.arc(pu.x+0.5,pu.y+0.5,0.45,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.font='0.6px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(pu.icon,pu.x+0.5,pu.y+0.55);
+  }
   // bullets
   TNK.bullets.forEach(b=>{
-    ctx.fillStyle=b.owner===1?'#ffd200':'#ffd200';
+    ctx.fillStyle='#ffd200';
     ctx.beginPath();ctx.arc(b.x+0.5,b.y+0.5,0.25,0,Math.PI*2);ctx.fill();
   });
   ctx.setTransform(1,0,0,1,0,0);
@@ -12226,8 +12250,20 @@ function tnkRender(){
 
 function tnkDrawTank(ctx,t,color,dark){
   const x=t.x, y=t.y, d=t.dir;
+  // shield glow
+  if(t.shield>0){
+    ctx.fillStyle='rgba(67,233,123,0.3)';
+    ctx.beginPath();ctx.arc(x+0.5,y+0.5,0.6,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#43e97b';ctx.lineWidth=0.06;
+    ctx.beginPath();ctx.arc(x+0.5,y+0.5,0.6,0,Math.PI*2);ctx.stroke();
+  }
+  // speed indicator
+  if(t.speed>0){
+    ctx.strokeStyle='rgba(79,172,254,0.5)';ctx.lineWidth=0.04;
+    ctx.beginPath();ctx.arc(x+0.5,y+0.5,0.55,0,Math.PI*2);ctx.stroke();
+  }
   // body
-  ctx.fillStyle=color;
+  ctx.fillStyle=t.rapid>0?'#ffd200':color;
   ctx.fillRect(x+0.1,y+0.1,0.8,0.8);
   // turret darker
   ctx.fillStyle=dark;
@@ -12267,23 +12303,49 @@ function tnkMoveTank(t,dir){
 
 function tnkStep(){
   if(!TNK.running||TNK.over)return;
-  // P1 movement
-  if(TNK.p1keys.up)tnkMoveTank(TNK.t1,0);
-  else if(TNK.p1keys.right)tnkMoveTank(TNK.t1,1);
-  else if(TNK.p1keys.down)tnkMoveTank(TNK.t1,2);
-  else if(TNK.p1keys.left)tnkMoveTank(TNK.t1,3);
+  // P1 movement (speed = move twice per tick)
+  const p1moves=TNK.t1.speed>0?2:1;
+  for(let m=0;m<p1moves;m++){
+    if(TNK.p1keys.up)tnkMoveTank(TNK.t1,0);
+    else if(TNK.p1keys.right)tnkMoveTank(TNK.t1,1);
+    else if(TNK.p1keys.down)tnkMoveTank(TNK.t1,2);
+    else if(TNK.p1keys.left)tnkMoveTank(TNK.t1,3);
+  }
   // P2 movement (or AI)
   if(welcomeGameMode==='ai'){
     tnkAI();
   } else {
-    if(TNK.p2keys.up)tnkMoveTank(TNK.t2,0);
-    else if(TNK.p2keys.right)tnkMoveTank(TNK.t2,1);
-    else if(TNK.p2keys.down)tnkMoveTank(TNK.t2,2);
-    else if(TNK.p2keys.left)tnkMoveTank(TNK.t2,3);
+    const p2moves=TNK.t2.speed>0?2:1;
+    for(let m=0;m<p2moves;m++){
+      if(TNK.p2keys.up)tnkMoveTank(TNK.t2,0);
+      else if(TNK.p2keys.right)tnkMoveTank(TNK.t2,1);
+      else if(TNK.p2keys.down)tnkMoveTank(TNK.t2,2);
+      else if(TNK.p2keys.left)tnkMoveTank(TNK.t2,3);
+    }
   }
-  // cooldowns
-  if(TNK.cooldown1>0)TNK.cooldown1--;
-  if(TNK.cooldown2>0)TNK.cooldown2--;
+  // cooldowns (rapid fire = faster cooldown)
+  if(TNK.cooldown1>0)TNK.cooldown1-=(TNK.t1.rapid>0?3:1);
+  if(TNK.cooldown2>0)TNK.cooldown2-=(TNK.t2.rapid>0?3:1);
+  // power-up timers
+  if(TNK.t1.shield>0)TNK.t1.shield--;
+  if(TNK.t1.rapid>0)TNK.t1.rapid--;
+  if(TNK.t1.speed>0)TNK.t1.speed--;
+  if(TNK.t2.shield>0)TNK.t2.shield--;
+  if(TNK.t2.rapid>0)TNK.t2.rapid--;
+  if(TNK.t2.speed>0)TNK.t2.speed--;
+  // spawn power-up every ~90 ticks
+  TNK.puTimer++;
+  if(!TNK.powerup&&TNK.puTimer>=90){tnkSpawnPowerup();TNK.puTimer=0;}
+  // pickup power-up
+  if(TNK.powerup){
+    if(TNK.t1.x===TNK.powerup.x&&TNK.t1.y===TNK.powerup.y){
+      TNK.t1[TNK.powerup.type]=TNK_POWERUPS.find(p=>p.type===TNK.powerup.type).dur;
+      playSound('correct');TNK.powerup=null;TNK.puTimer=0;
+    } else if(TNK.t2.x===TNK.powerup.x&&TNK.t2.y===TNK.powerup.y){
+      TNK.t2[TNK.powerup.type]=TNK_POWERUPS.find(p=>p.type===TNK.powerup.type).dur;
+      playSound('correct');TNK.powerup=null;TNK.puTimer=0;
+    }
+  }
   // bullets
   for(let i=TNK.bullets.length-1;i>=0;i--){
     const b=TNK.bullets[i];
@@ -12295,6 +12357,7 @@ function tnkStep(){
     // hit tank
     const bx=Math.floor(b.x+0.5), by=Math.floor(b.y+0.5);
     if(b.owner===1 && bx===TNK.t2.x && by===TNK.t2.y){
+      if(TNK.t2.shield>0){TNK.t2.shield=0;TNK.bullets.splice(i,1);playSound('wrong');continue;}
       TNK.s1++;$('p1ScoreTnk').textContent=TNK.s1;
       playSound('hit');
       TNK.bullets.splice(i,1);
@@ -12302,6 +12365,7 @@ function tnkStep(){
       tnkRespawn(2);continue;
     }
     if(b.owner===2 && bx===TNK.t1.x && by===TNK.t1.y){
+      if(TNK.t1.shield>0){TNK.t1.shield=0;TNK.bullets.splice(i,1);playSound('wrong');continue;}
       TNK.s2++;$('p2ScoreTnk').textContent=TNK.s2;
       playSound('hit');
       TNK.bullets.splice(i,1);
@@ -12313,8 +12377,8 @@ function tnkStep(){
 }
 
 function tnkRespawn(player){
-  if(player===1){TNK.t1.x=1;TNK.t1.y=TNK.G-2;TNK.t1.dir=0;}
-  else{TNK.t2.x=TNK.G-2;TNK.t2.y=1;TNK.t2.dir=2;}
+  if(player===1){TNK.t1.x=1;TNK.t1.y=TNK.G-2;TNK.t1.dir=0;TNK.t1.shield=0;TNK.t1.rapid=0;TNK.t1.speed=0;}
+  else{TNK.t2.x=TNK.G-2;TNK.t2.y=1;TNK.t2.dir=2;TNK.t2.shield=0;TNK.t2.rapid=0;TNK.t2.speed=0;}
 }
 
 function tnkAI(){
@@ -12370,11 +12434,20 @@ document.addEventListener('keydown',e=>{
   if(e.key==='a'||e.key==='A'){TNK.p1keys.left=true;e.preventDefault();}
   if(e.key==='d'||e.key==='D'){TNK.p1keys.right=true;e.preventDefault();}
   if(e.key===' '){tnkShoot(1);e.preventDefault();}
-  if(e.key==='ArrowUp'){TNK.p2keys.up=true;e.preventDefault();}
-  if(e.key==='ArrowDown'){TNK.p2keys.down=true;e.preventDefault();}
-  if(e.key==='ArrowLeft'){TNK.p2keys.left=true;e.preventDefault();}
-  if(e.key==='ArrowRight'){TNK.p2keys.right=true;e.preventDefault();}
-  if(e.key==='Enter'){tnkShoot(2);e.preventDefault();}
+  if(welcomeGameMode==='ai'){
+    // In AI mode, arrows also control P1
+    if(e.key==='ArrowUp'){TNK.p1keys.up=true;e.preventDefault();}
+    if(e.key==='ArrowDown'){TNK.p1keys.down=true;e.preventDefault();}
+    if(e.key==='ArrowLeft'){TNK.p1keys.left=true;e.preventDefault();}
+    if(e.key==='ArrowRight'){TNK.p1keys.right=true;e.preventDefault();}
+    if(e.key==='Enter'){tnkShoot(1);e.preventDefault();}
+  } else {
+    if(e.key==='ArrowUp'){TNK.p2keys.up=true;e.preventDefault();}
+    if(e.key==='ArrowDown'){TNK.p2keys.down=true;e.preventDefault();}
+    if(e.key==='ArrowLeft'){TNK.p2keys.left=true;e.preventDefault();}
+    if(e.key==='ArrowRight'){TNK.p2keys.right=true;e.preventDefault();}
+    if(e.key==='Enter'){tnkShoot(2);e.preventDefault();}
+  }
 });
 document.addEventListener('keyup',e=>{
   if(currentGameId!=='tanks')return;
@@ -12382,10 +12455,17 @@ document.addEventListener('keyup',e=>{
   if(e.key==='s'||e.key==='S')TNK.p1keys.down=false;
   if(e.key==='a'||e.key==='A')TNK.p1keys.left=false;
   if(e.key==='d'||e.key==='D')TNK.p1keys.right=false;
-  if(e.key==='ArrowUp')TNK.p2keys.up=false;
-  if(e.key==='ArrowDown')TNK.p2keys.down=false;
-  if(e.key==='ArrowLeft')TNK.p2keys.left=false;
-  if(e.key==='ArrowRight')TNK.p2keys.right=false;
+  if(welcomeGameMode==='ai'){
+    if(e.key==='ArrowUp')TNK.p1keys.up=false;
+    if(e.key==='ArrowDown')TNK.p1keys.down=false;
+    if(e.key==='ArrowLeft')TNK.p1keys.left=false;
+    if(e.key==='ArrowRight')TNK.p1keys.right=false;
+  } else {
+    if(e.key==='ArrowUp')TNK.p2keys.up=false;
+    if(e.key==='ArrowDown')TNK.p2keys.down=false;
+    if(e.key==='ArrowLeft')TNK.p2keys.left=false;
+    if(e.key==='ArrowRight')TNK.p2keys.right=false;
+  }
 });
 
 
@@ -13328,6 +13408,8 @@ function applyGameMode(mode) {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });
+  // Hide P2 mobile controls in AI mode (AI doesn't need buttons)
+  const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=mode==='ai'?'none':'';
 }
 
 function startFromWelcome() {
