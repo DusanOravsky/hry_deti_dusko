@@ -2239,7 +2239,13 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div class="difficulty-selector" id="tttAISel">
       <button class="difficulty-btn active" onclick="setTTTDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setTTTDiff('medium',this)">Stredná</button>
       <button class="difficulty-btn" onclick="setTTTDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="difficulty-selector" id="psk15AISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setPsk15Diff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setPsk15Diff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setPsk15Diff('hard',this)">Ťažká</button>
     </div>
     <div class="difficulty-selector" id="tttSizeSel">
       <button class="difficulty-btn active" onclick="setTTTSize('3x3',this)">3×3</button>
@@ -3558,7 +3564,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 91;
+const APP_VERSION = 92;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4195,9 +4201,12 @@ function setTTTMode(m,btn) {
   PSK15.mode=m; // Sync mode for 10x10 grid
   document.querySelectorAll('#ticTacToe .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  $('tttAISel').style.display = m==='ai'?'flex':'none';
+  // Toggle correct AI selector based on active board
+  const isPsk = $('psk15Board').style.display !== 'none';
+  $('tttAISel').style.display = (!isPsk && m==='ai')?'flex':'none';
+  $('psk15AISel').style.display = (isPsk && m==='ai')?'flex':'none';
   // Reset whichever board is currently active
-  if($('psk15Board').style.display !== 'none') {
+  if(isPsk) {
     resetPsk15();
     setP2Card('psk15P2Name', m==='ai', 'Počítač');
   } else {
@@ -4241,6 +4250,10 @@ function setTTTSize(s,btn) {
   $('psk15Celebration').style.display = 'none';
   $('tttRuleN').textContent = is15?'5':'3';
   $('tttRule15').style.display = is15?'':'none';
+  // Toggle AI difficulty selectors based on board size and mode
+  const isAI = TTT.mode==='ai' || PSK15.mode==='ai';
+  $('tttAISel').style.display = (!is15 && isAI)?'flex':'none';
+  $('psk15AISel').style.display = (is15 && isAI)?'flex':'none';
   if(is15) { resetPsk15(); } else { TTT.size=s; TTT.grid=parseInt(s); resetTTT(); }
   // MP: host sends size change to guest
   if(MP.isConnected && MP.isHost && MP.connection && !MP._applyingHostSettings) {
@@ -4280,17 +4293,26 @@ function genWinCombos(s) {
 }
 function getTTTAIMove() {
   const empty = TTT.board.map((v,i)=>v===''?i:null).filter(v=>v!==null);
-  if(TTT.diff==='hard') {
+  if(TTT.diff==='hard' || TTT.diff==='medium') {
+    // Win if possible
     for(let combo of genWinCombos(TTT.grid)) {
       const vals=combo.map(i=>TTT.board[i]);
       if(vals.filter(v=>v==='O').length===2&&vals.includes('')) return combo[vals.indexOf('')];
     }
+    // Block opponent win
     for(let combo of genWinCombos(TTT.grid)) {
       const vals=combo.map(i=>TTT.board[i]);
       if(vals.filter(v=>v==='X').length===2&&vals.includes('')) return combo[vals.indexOf('')];
     }
-    const mid=Math.floor(TTT.grid*TTT.grid/2);
-    if(TTT.board[mid]==='') return mid;
+    if(TTT.diff==='hard') {
+      // Take center
+      const mid=Math.floor(TTT.grid*TTT.grid/2);
+      if(TTT.board[mid]==='') return mid;
+      // Take corners
+      const s=TTT.grid, corners=[0,s-1,(s-1)*s,s*s-1];
+      const freeCorners=corners.filter(i=>TTT.board[i]==='');
+      if(freeCorners.length) return freeCorners[Math.floor(Math.random()*freeCorners.length)];
+    }
   }
   return empty[Math.floor(Math.random()*empty.length)];
 }
@@ -4410,34 +4432,53 @@ function getPsk15AIMove() {
   if(!empty.length) return null;
   if(PSK15.diff==='easy') return empty[Math.floor(Math.random()*empty.length)];
 
+  // Analyze a line of 5 cells in one direction from a position
+  function analyzeLine(row, col, dr, dc, player) {
+    const opp = player==='X'?'O':'X';
+    let count=1, openEnds=0, space=0, blocked=0;
+    // Forward
+    let gap=false;
+    for(let step=1;step<WIN;step++) {
+      const r=row+dr*step, c=col+dc*step;
+      if(r<0||r>=SIZE||c<0||c>=SIZE) { blocked++; break; }
+      const v=PSK15.board[r*SIZE+c];
+      if(v===player) { count++; if(gap) space++; }
+      else if(v==='') { openEnds++; if(!gap) gap=true; else break; break; }
+      else { blocked++; break; }
+    }
+    // Backward
+    gap=false;
+    for(let step=1;step<WIN;step++) {
+      const r=row-dr*step, c=col-dc*step;
+      if(r<0||r>=SIZE||c<0||c>=SIZE) { blocked++; break; }
+      const v=PSK15.board[r*SIZE+c];
+      if(v===player) { count++; if(gap) space++; }
+      else if(v==='') { openEnds++; if(!gap) gap=true; else break; break; }
+      else { blocked++; break; }
+    }
+    return { count, openEnds, blocked, space };
+  }
+
   function scoreCell(idx, player) {
     const row=Math.floor(idx/SIZE), col=idx%SIZE;
     const dirs=[[0,1],[1,0],[1,1],[1,-1]];
     let score=0;
     for(const [dr,dc] of dirs) {
-      let count=1, openEnds=0;
-      for(const sign of [-1,1]) {
-        for(let step=1;step<WIN;step++) {
-          const r=row+dr*sign*step, c=col+dc*sign*step;
-          if(r<0||r>=SIZE||c<0||c>=SIZE) break;
-          const v=PSK15.board[r*SIZE+c];
-          if(v===player) count++;
-          else { if(v==='') openEnds++; break; }
-        }
-      }
-      if(count>=WIN) return 1000000;
-      if(count===4&&openEnds>=1) score+=50000;
-      else if(count===3&&openEnds===2) score+=5000;
-      else if(count===3&&openEnds===1) score+=500;
-      else if(count===2&&openEnds===2) score+=100;
-      else if(count===2&&openEnds===1) score+=10;
+      const l = analyzeLine(row,col,dr,dc,player);
+      if(l.count>=WIN) return 10000000;
+      if(l.count===4 && l.openEnds>=2) score+=500000;  // open 4 = unstoppable
+      else if(l.count===4 && l.openEnds>=1) score+=50000;  // semi-open 4
+      else if(l.count===3 && l.openEnds>=2) score+=10000;  // open 3 = very dangerous
+      else if(l.count===3 && l.openEnds>=1) score+=1000;   // semi-open 3
+      else if(l.count===2 && l.openEnds>=2) score+=200;    // open 2
+      else if(l.count===2 && l.openEnds>=1) score+=20;     // semi-open 2
     }
     return score;
   }
 
-  const hasNeighbour=(idx)=>{
+  const hasNeighbour=(idx,range)=>{
     const row=Math.floor(idx/SIZE), col=idx%SIZE;
-    for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) {
+    for(let dr=-range;dr<=range;dr++) for(let dc=-range;dc<=range;dc++) {
       if(!dr&&!dc) continue;
       const r=row+dr, c=col+dc;
       if(r>=0&&r<SIZE&&c>=0&&c<SIZE&&PSK15.board[r*SIZE+c]!=='') return true;
@@ -4445,26 +4486,56 @@ function getPsk15AIMove() {
     return false;
   };
 
+  const mid=Math.floor(SIZE/2);
   let bestScore=-1, bestMove=empty[Math.floor(Math.random()*empty.length)];
-  const candidates=PSK15.board.some(v=>v!=='')?empty.filter(hasNeighbour):empty;
+  // First move: play center
+  if(empty.length===SIZE*SIZE) return mid*SIZE+mid;
+
+  const range = PSK15.diff==='hard'?2:1;
+  const candidates=empty.filter(i=>hasNeighbour(i,range));
   const pool=candidates.length?candidates:empty;
 
   for(const idx of pool) {
     const atk=scoreCell(idx,'O');
-    if(atk>=1000000) return idx;
+    if(atk>=10000000) return idx; // instant win
     const def=scoreCell(idx,'X');
-    if(def>=1000000) { bestScore=999999; bestMove=idx; continue; }
+    if(def>=10000000) { bestScore=9999999; bestMove=idx; continue; } // must block
+
     const row=Math.floor(idx/SIZE), col=idx%SIZE;
-    const mid=Math.floor(SIZE/2); const centerBonus=10-Math.max(Math.abs(row-mid),Math.abs(col-mid));
-    const total=atk*1.2+def+centerBonus;
+    const centerBonus=15-Math.max(Math.abs(row-mid),Math.abs(col-mid));
+
+    let total;
+    if(PSK15.diff==='hard') {
+      // Hard: stronger attack weight, detect double-threat
+      total = atk*1.5 + def*1.2 + centerBonus;
+      // Bonus for creating double open-3 threat
+      if(atk>=10000) total += atk*0.5;
+    } else {
+      // Medium: balanced attack/defense
+      total = atk*1.1 + def + centerBonus;
+    }
     if(total>bestScore) { bestScore=total; bestMove=idx; }
   }
   return bestMove;
 }
 function clickPsk15(i) {
   if(PSK15.over||PSK15.board[i]) return;
+
+  // MP mode: only allow moves if it's your turn
+  if(MP.isConnected) {
+    const hostIsX = MP.tttRound % 2 === 0;
+    const mySymbol = MP.isHost ? (hostIsX?'X':'O') : (hostIsX?'O':'X');
+    if(PSK15.player !== mySymbol) return;
+  }
+
   playSound('move');
   PSK15.board[i]=PSK15.player; renderPsk15();
+
+  // Send move to other player if MP connected
+  if(MP.isConnected && MP.connection) {
+    MP.connection.send({type:'psk15-move', index:i, player:PSK15.player});
+  }
+
   const w=checkPsk15Win();
   if(w){
     PSK15.over=true;
@@ -12754,6 +12825,38 @@ function mpHandleMessage(data) {
     });
   }
 
+  // Piškvorky 10x10/15x15 move synchronization
+  if(data.type === 'psk15-move') {
+    if(PSK15.over || PSK15.board[data.index]) return;
+    playSound('move');
+    PSK15.board[data.index] = data.player;
+    renderPsk15();
+    const w = checkPsk15Win();
+    if(w) {
+      PSK15.over = true;
+      if(w==='X'){
+        PSK15.s1++;
+        $('tttStatus').textContent='🎉 '+getP1Name('ttt')+' vyhral!';
+        addWin(1); celebrate('psk15Celebration'); popScore('p1ScorePsk15');
+      } else {
+        PSK15.s2++;
+        $('tttStatus').textContent='🎉 '+getP2Name('ttt')+' vyhral!';
+        addWin(2); celebrate('psk15Celebration'); popScore('p2ScorePsk15');
+      }
+      $('p1ScorePsk15').textContent=PSK15.s1;
+      $('p2ScorePsk15').textContent=PSK15.s2;
+      renderPsk15(); return;
+    }
+    if(PSK15.board.every(v=>v)){
+      PSK15.over=true; $('tttStatus').textContent='🤝 Remíza!'; addWin(0); return;
+    }
+    PSK15.player = PSK15.player==='X'?'O':'X';
+    const p = PSK15.player==='X'?1:2;
+    const playerName = PSK15.player==='X'?getP1Name('ttt'):getP2Name('ttt');
+    $('tttStatus').textContent=playerName+' na rade!';
+    activeTurn('psk15P1Card','psk15P2Card',p);
+  }
+
   // Connect4 move synchronization
   if(data.type === 'c4-move') {
     if(C4.over) return;
@@ -12997,13 +13100,23 @@ function mpHandleMessage(data) {
     const gameId = data.game;
     if(gameId === 'ticTacToe') {
       if(data.round !== undefined) MP.tttRound = data.round;
-      TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
-      document.getElementById('p1ScoreTTT').textContent='0'; document.getElementById('p2ScoreTTT').textContent='0';
-      renderTTT();
-      document.getElementById('tttStatus').textContent=getTTTPlayerName('X')+' na rade!';
+      const isPsk = $('psk15Board').style.display !== 'none';
+      if(isPsk) {
+        resetPsk15();
+        PSK15.s1=0; PSK15.s2=0;
+        $('p1ScorePsk15').textContent='0'; $('p2ScorePsk15').textContent='0';
+      } else {
+        TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
+        $('p1ScoreTTT').textContent='0'; $('p2ScoreTTT').textContent='0';
+        renderTTT();
+      }
+      $('tttStatus').textContent=(isPsk?getP1Name('ttt'):getTTTPlayerName('X'))+' na rade!';
       const hostIsX = MP.tttRound % 2 === 0;
       const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
-      activeTurn('tttP1Card','tttP2Card', iAmFirst ? 1 : 2);
+      const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
+      activeTurn(p1c, p2c, iAmFirst ? 1 : 2);
+      if(isPsk && !iAmFirst) PSK15.player = 'O';
+      if(!isPsk && !iAmFirst) TTT.player = 'O';
     }
     if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
     if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; resetMem(); applyMemMPStart(); }
@@ -13036,13 +13149,23 @@ function mpRematch(gameId) {
   if(gameId === 'ticTacToe') {
     MP.tttRound++;
     MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tttRound });
-    TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
-    document.getElementById('p1ScoreTTT').textContent='0'; document.getElementById('p2ScoreTTT').textContent='0';
-    renderTTT();
-    document.getElementById('tttStatus').textContent=getTTTPlayerName('X')+' na rade!';
+    const isPsk = $('psk15Board').style.display !== 'none';
+    if(isPsk) {
+      resetPsk15();
+      PSK15.s1=0; PSK15.s2=0;
+      $('p1ScorePsk15').textContent='0'; $('p2ScorePsk15').textContent='0';
+    } else {
+      TTT.over=false; TTT.board=Array(TTT.grid*TTT.grid).fill(''); TTT.player='X'; TTT.s1=0; TTT.s2=0;
+      $('p1ScoreTTT').textContent='0'; $('p2ScoreTTT').textContent='0';
+      renderTTT();
+    }
+    $('tttStatus').textContent=(isPsk?getP1Name('ttt'):getTTTPlayerName('X'))+' na rade!';
     const hostIsX = MP.tttRound % 2 === 0;
     const iAmFirst = (MP.isHost && hostIsX) || (!MP.isHost && !hostIsX);
-    activeTurn('tttP1Card','tttP2Card', iAmFirst ? 1 : 2);
+    const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
+    activeTurn(p1c, p2c, iAmFirst ? 1 : 2);
+    if(isPsk && !iAmFirst) PSK15.player = 'O';
+    if(!isPsk && !iAmFirst) TTT.player = 'O';
   }
   if(gameId === 'connect4') { MP.c4Round++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
   if(gameId === 'memory') { MP.memRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.memRound }); resetMem(); applyMemMPStart(); if(MP.isHost) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
