@@ -3560,7 +3560,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 73;
+const APP_VERSION = 74;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11793,7 +11793,7 @@ function renderMobileGrid() {
   if(!grid) return;
   const filtered = MOBILE_GAMES.filter(g => {
     if(g.mode==='always') return true;
-    if(g.mode==='solo') return !welcomeGameMode || welcomeGameMode==='' || welcomeGameMode==='ai';
+    if(g.mode==='solo') return true;
     if(welcomeGameMode==='ai') return g.mode==='both';
     if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp';
     return true;
