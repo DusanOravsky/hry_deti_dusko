@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 87;
+const APP_VERSION = 89;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5463,7 +5463,7 @@ quizDB.geography = [
   {q:'Najvyšší vodopád na svete?',a:['Angel Falls','Niagara','Victoria','Iguazu'],c:0},
   {q:'Koľko krajín je v Európskej únii (2024)?',a:['27','25','30','28'],c:0},
   {q:'Hlavné mesto Talianska?',a:['Rím','Miláno','Neapol','Florencia'],c:0},
-  {q:'V ktorej krajine je pyramída Cheopsa?',a:['Egypt','Mexiko','Peru','Sudán'],c:0},
+  {q:'V ktorej krajine je pyramída Cheopsa?',a:['EGYPT','Mexiko','Peru','Sudán'],c:0},
   {q:'Najväčšie jazero na svete?',a:['Kaspické more','Bajkal','Superior','Viktória'],c:0},
   {q:'Koľko kontinentov je na Zemi?',a:['7','6','5','8'],c:0},
   {q:'V ktorej krajine je Eiffelova veža?',a:['Francúzsko','Belgicko','Švajčiarsko','Holandsko'],c:0},
@@ -5478,7 +5478,7 @@ quizDB.geography = [
   {q:'Hlavné mesto Ruska?',a:['Moskva','Petrohrad','Novosibirsk','Kazaň'],c:0},
   {q:'Na ktorom kontinente je Brazília?',a:['Južná Amerika','Severná Amerika','Afrika','Ázia'],c:0},
   {q:'Ktorá rieka je najdlhšia v Európe?',a:['Volga','Dunaj','Rýn','Dneper'],c:0},
-  {q:'V ktorej krajine je Akropolis?',a:['Grécko','Turecko','Egypt','Taliansko'],c:0},
+  {q:'V ktorej krajine je Akropolis?',a:['Grécko','Turecko','EGYPT','Taliansko'],c:0},
   {q:'Hlavné mesto Kanady?',a:['Ottawa','Toronto','Montreal','Vancouver'],c:0},
   {q:'Najväčší ostrov na svete?',a:['Grónsko','Nová Guinea','Borneo','Madagaskar'],c:0},
   {q:'V ktorej krajine je Sydney?',a:['Austrália','Nový Zéland','Kanada','USA'],c:0},
@@ -5874,7 +5874,7 @@ quizDB['extra_sport'] = [
 
 // ===== EXTRA QUESTIONS — GEOGRAPHY =====
 quizDB.geography.push(
-  {q:'Kde leží pyramída Cheops?',a:['Egypt','Mexiko','Peru','Irak'],c:0},
+  {q:'Kde leží pyramída Cheops?',a:['EGYPT','Mexiko','Peru','Irak'],c:0},
   {q:'Ktorý kontinent je najmenší?',a:['Austrália','Európa','Antarktída','Južná Amerika'],c:0},
   {q:'Hlavné mesto Japonska?',a:['Tokio','Kjóto','Osaka','Hirošima'],c:0},
   {q:'Ktorá rieka je najdlhšia na svete?',a:['Níl','Amazonka','Jangtze','Mississippi'],c:0},
@@ -11330,31 +11330,49 @@ const WORDLE_SK = [
 'RUBIN','KUFOR','JELEN','METER','DUKAT','ROMAN','PLESO','OTROK','KABEL','MODUL',
 'PLAST','DATEL','KOBRA','MRKVA','KOZEL','KAPOR','MINCA','ODBER','OKRUH','REGAL',
 'SUDCA','BLATO','ODRAZ','SKLAD','VLNKA','PROFI','TOVAR','DROGA','SNAHA','PIRAT',
-'KOBKA','DREVS','BOCKA','DOLKA','DUMKA','ELITA','FORMA','GRAMY','GURKA','HADIK',
+'KOBKA','DIETA','BOCKA','DOLKA','DUMKA','ELITA','FORMA','GRAMY','GURKA','HADIK',
 'HOLUB','IHLAN','JALEC','KACER','KAKAO','KELBA','KLASA','KOKOS','KOLKO','KOMIN',
 'KONEC','KOSEC','KOTEL','KUTIL','LASER','LOPAT','MAFIA','MAKAK','MEDIK','MECKA',
-'MINCA','MLEKO','MOTIV','MUCKA','NOHAV','OBJEM','ODPOR','OKREM','OLIVA','OMRVA',
-'OTVOR','PACEL','PAJAC','PANDA','PECKA','PIVKA','PLANO','PLESO','PODAJ','POHAR',
+'MISKY','MLEKO','MOTIV','MUCKA','PLESA','OBJEM','ODPOR','OKREM','OLIVA','OMRVA',
+'OTVOR','PACEL','PAJAC','PANDA','PECKA','PIVKA','PLANO','PLAZA','PODAJ','POHAR',
 'POKRM','POLOM','POMOC','PONIK','POTOM','PRUHY','RADLO','RAMEN','RECKA','REMZA',
-'ROLAK','ROSOL','RUBAS','RYBKA','SALAT','SAUNA','SIERC','SKLAD','SKRAT','SLEPC',
+'ROLAK','ROSOL','RUBAS','RYBKA','SALAT','SAUNA','SMREK','SKRAT','SLNKO','SOBOL',
 'SRNKA','STOPA','STUPY','SYPEC','TABAK','TANKO','TEPLO','TITUL','TONER','TORZO',
-'TOTAL','TRASA','TROJK','TRPEC','TUBUS','TULAK','UHLIE','ULOHA','UMYTO','USADL',
-'UZLIK','VAFEL','VAPNO','VECKO','VEGET','VENOM','VETVA','VIBRO','VIDEO','VISAL',
+'TOTAL','TRASA','TROJK','TRPEC','TUBUS','TULAK','UHLIE','ULOHA','UMYTO','UZINA',
+'UZLIK','VAFEL','VAPNO','VECKO','VEGET','VENOM','VETVA','VIBRO','VIDEO','VIETR',
 'VNUKA','VODCA','VOLNO','VTEDY','VYLOM','ZAKAZ','ZAPAS','ZARYS','ZELOV','ZHODA',
-'ZIVOT','ZLOBA','ZOBER','ZUBOR','ZVADA','ZVEST','ZVLAK','AKTIV','BALEC','BARON',
-'BICAJ','BOBIK','CESAK','CENTR','CIFRA','CIRKA','DEKEL','DUNAJ','FACKA','FLASA',
+'ZIVOT','ZLOBA','ZOBER','ZUBOR','ZVADA','ZVEST','ZNAKY','AKTIV','BALEC','BARON',
+'BICAJ','BOBIK','CESAK','CUPKA','CIFRA','CIRKA','DEKEL','DUNAJ','FACKA','FLASA',
 'FUTRO','GARAS','GEMEL','HABAT','HASAK','HAVKO','HUTKA','HRDZA','KATAR','KLIKA',
-'KRASA','KULMA','KUZEL','LYSKA','LSTIV','MAJER','MAKOV','MLHAN','MORKA','MUCEN',
+'KRASA','KULMA','KUZEL','LYSKA','LITER','MAJER','MAKOV','MEDZA','MORKA','MUCEN',
 'OBLOK','OCKOV','OPUCH','PALBA','PAPUC','PASCA','PATOK','PAVUK','PLAHA','POLDR',
-'POPUD','POTEC','POVAL','PRSTY','RADOV','RASCA','RIADK','RUBAT','SACHR','SITOV',
-'SLINA','SMOLA','SOPKA','SRSEC','STISK','SVALY','TESAK','TOPKA','TROSK','TVARY',
+'POPUD','POTEC','POVAL','PRSTY','RADOV','RASCA','RAMPA','RUBAT','SACHR','SILNY',
+'SLINA','SMOLA','SOPKA','SRSEC','STISK','SVALY','TESAK','TOPKA','TEHLA','TVARY',
 'ULTRA','VALEC','VESLO','VIKYR','VKLAD','VORAK','VRBOK','VTORA','ZAHRA','ZDOLA',
 'ZMYSL','ZNOVA','ZOPAR','ZVRAT','AKCIA','BETLA','BIVAK','BUDKA','BULKA','CABAK',
-'CESNA','CUCAK','DALSI','DOBRO','DRIVY','DUMAJ','DVAJA','EUFRA','FAGAN','FINTA',
+'CESNA','CUCAK','DALSI','DOBRO','DRIVY','DUMAJ','DVAJA','EGYPT','FAGAN','FINTA',
 'FOYER','GARNI','GLEJA','GRENA','GUMEN','HABKA','HAMAK','HERAK','HOBOJ','HUDAK',
-'CHALP','IDYLA','JUNAC','KABAL','KONUS','KOZUB','KRBEC','LEGAT','LODEN','MAKAK',
-'MISIT','NADAJ','NAKAL','NAPLV','NAZOR','NUDLA','OBRUS','ODVAR','OPATR','OSTRO',
-'PADAK','PASIK','PECEN','PIJAN','POCEL','POLOM','POZOR','PRHAV','PUDEL','RACEK'
+'CHLAD','IDYLA','JUNAC','KABAL','KONUS','KOZUB','KRBEC','LEGAT','LODEN','LIPKA',
+'MISIT','NADAJ','NAKAL','NEONY','NAZOR','NUDLA','OBRUS','ODVAR','OSIKA','OSTRO',
+'PADAK','PASIK','PECEN','PIJAN','POCEL','POTER','POZOR','PRAHY','PUDEL','RACEK',
+'LASKA','BURKA','BITKA','TYRAN','RYBAR','JASNE','OBAVA','PALMA','RANEC','TICHO',
+'VALKA','BABKA','CIARA','DCERA','ETAPA','HEJNO','MANGO','SATKA','TABOR','VAJCE',
+'KUKLA','POCET','ROVNY','SLUHA','STARY','VIDIM','CHYBA','KAMEN','VODIT','HANBA',
+'JADRO','KAPSA','LAVKA','NOCNY','OSTRA','POKUS','RADNY','SALAM','TLACI','ZMIJA',
+'BOZKA','CHLAP','DRAHY','GARAZ','MASLO','PECKY','VIEST','ZVONY','CHCEL','MLADY',
+'NIZKY','PRAVY','VELKY','BIELY','DLZKA','ZITNY','LUCNY','PLODY','RUCHO','MENEJ',
+'HESLO','BRZDA','PSOTA','VLADA','HRANA','NADEJ','PIATA','CHLEB','SYPKA','TVOJA',
+'AHOJT','BARAN','BUBEN','BYLKA','CISAR','CUKOR','DARCE','DLZNY','DOPIS','DUSNA',
+'DZBAN','ENVIR','FAKIR','FENUS','GESTA','GOBEL','HACIK','HEJSA','HOKUS','HUSLE',
+'JAVOR','JOKEL','JUPIK','KADEC','KAZDY','KLAKY','KOHOS','KUDOL','LATKA','LEVIC',
+'LOSOS','LSTNA','MACKA','MIZOL','MUKAT','NAJMA','NIKDY','OBCAS','OKULA','PAVOL',
+'PLECE','PUSIT','RAZEN','RETAZ','ROSIT','SADRA','SELKA','SIFON','SIKMO','SKRYT',
+'SKALP','SLEPI','SPLAV','SRSEN','SVIST','TAJNE','TESAL','TOKAR','TRIKO','TURAK',
+'USMEV','UZNAL','VAREC','VECNE','VINIC','VLCIK','VOZAR','VYZVA','ZAJST','ZBYVA',
+'ZIACI','ZORNI','ZUBNY','BALET','BYLOT','CEDOK','DIPOL','DOSAH','DUPAT','FUTBO',
+'HASIC','HUSAR','IHNED','JAROK','KELNE','KONVA','KREST','KRTKO','LANAR','LEHKO',
+'LIETA','LOKAJ','MALIR','MURIR','OCAMI','OLEJI','PAMAT','PEKNE','PLSTI','POMLY',
+'REBRO','REZAT','RUSAK','SATIR','SIREN','SPALI','STALE','TAHAT','TOPAS','ZLATY'
 ];
 const WORDLE_EN = [
 'APPLE','BEACH','BRAIN','BREAD','BRUSH','BUILD','CANDY','CHAIN','CHAIR','CHALK',
@@ -11414,13 +11432,24 @@ const WORDLE_EN = [
 'BLOCK','BLOOD','BLOWN','BOARD','BONUS','BOOTH','BOUND','BRAVE','BRIEF','BRING',
 'BROAD','BROKE','BROOK','BROWN','BUYER','CABIN','CARGO','CARRY','CATCH','CAUSE',
 'CHAOS','CHARM','CHART','CHECK','CHEEK','CHEER','CHEST','CHILL','CHOSE','CIVIC',
-'CLASH','CLIFF','CLIMB','CLING','CLONE','CLOTH','COLOR','COMET','COMIC','COMMA',
-'COUCH','CREAM','CREEK','CREST','CROWN','CRUSH','CURVE','CYCLE','DAILY','DEALT',
+'CLASH','CLIFF','CLING','CLONE','CLOTH','COLOR','COMET','COMIC','COMMA','COBRA',
+'COUCH','CREEK','CREST','CROWN','CRUSH','CURVE','CYCLE','DAILY','DEALT','CRISP',
 'DEATH','DEBUT','DECAY','DECOR','DELAY','DELTA','DEMON','DEPOT','DEPTH','DERBY',
-'DEVIL','DOING','DONOR','DOZEN','DRAWN','DROWN','DYING','EATER','EMBED','EQUAL',
-'ESSAY','ETHIC','EVADE','EXACT','EXERT','EXILE','EXIST','EXPEL','FACET','FAIRY',
-'FATAL','FAVOR','FEAST','FEWER','FIFTH','FIFTY','FLAIR','FLEET','FLINT','FLORA',
-'FLOUR','FLUID','FLUTE','FOCAL','FOGGY','FORCE','FORUM','FOUND','FRAIL','FRAUD'
+'DEVIL','DOING','DONOR','DOZEN','DROWN','DYING','EATER','EMBED','ELFIN','EMBER',
+'ESSAY','ETHIC','EVADE','EXERT','EXILE','EXIST','EXPEL','FACET','FAIRY','FAUNA',
+'FATAL','FAVOR','FEWER','FIFTH','FIFTY','FLAIR','FLEET','FLINT','FLORA','FLOSS',
+'FLOUR','FLUID','FLUTE','FOCAL','FOGGY','FORUM','FOUND','FRAIL','FRAUD','FREAK',
+'FULLY','GRACE','GRADE','GROSS','GROWN','GUILT','GYPSY','HASTE','HAVEN','HENCE',
+'HOBBY','HURTS','IDEAL','ISSUE','KARMA','KNIFE','LABEL','LEAST','LEAVE','LUNAR',
+'LYRIC','MANOR','MEANT','METER','MIGHT','MINUS','NEWLY','NOTED','OCCUR','OLIVE',
+'ONSET','ORBIT','OXIDE','PANDA','PANIC','PASTE','PERCH','PETAL','PLANK','PLUMP',
+'POLAR','POPPY','POUCH','POKER','PRISM','PRONE','PROWL','PULSE','PUNCH','QUAIL',
+'QUILT','RALLY','RANCH','RAVEN','REFER','RESIN','RETRO','RIDGE','RINSE','RISEN',
+'ROAST','ROUGE','SALSA','SANDY','SATIN','SAVOR','SCALD','SCARF','SHRUG','SIREN',
+'SLANG','SLICK','SLING','SNACK','SONAR','SPANK','SPEAR','STALK','STING','STOMP',
+'STRAY','STRUM','STUMP','SWIRL','SYRUP','TEMPO','TENSE','THIEF','TIDAL','TONIC',
+'TROUT','TULIP','TUTOR','VAULT','VENUE','VERSE','VIPER','VINYL','WAIST','WALTZ',
+'WHIRL','WITCH','DITTO','LLAMA','DECOY','GUAVA','BRINE','QUIRK','CIGAR','DWARF'
 ];
 
 let WORDLE_WORDS = WORDLE_SK;
