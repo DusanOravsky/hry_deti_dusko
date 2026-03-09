@@ -2097,7 +2097,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 31 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 32 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -3470,6 +3470,37 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <div class="game-area" id="doodle">
+    <div class="rules"><h3>Doodle Jump:</h3><ul>
+      <li>Lopticka skace sama — ty ju len posuvaj do stran!</li>
+      <li>Ovladanie: sipky, tlacidla alebo <strong>naklonenie telefonu</strong></li>
+      <li>Normalna plosinka = odraz, pohybliva = pozor!, krehka = rozpadne sa!</li>
+      <li>Padnes dole = koniec! Cim vyssie, tym lepsie skore!</li>
+    </ul></div>
+    <div style="text-align:center;margin:15px 0">
+      <div style="display:inline-block;text-align:center">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Skore</div>
+        <div id="doodleScore" style="font-size:2.5em;font-weight:900;color:#43e97b">0</div>
+      </div>
+      <div style="display:inline-block;text-align:center;margin-left:40px">
+        <div style="font-size:0.85em;opacity:0.6;margin-bottom:5px">Najlepsie</div>
+        <div id="doodleBest" style="font-size:2.5em;font-weight:900;color:#ffd200">0</div>
+      </div>
+    </div>
+    <div class="status" id="doodleStatus">Pripraveni? Start!</div>
+    <canvas id="doodleCanvas" width="320" height="480" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:#1a1a2e;touch-action:none"></canvas>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+      <button class="action-btn" onclick="DOOD.moveDir=-1" ontouchstart="DOOD.moveDir=-1" ontouchend="DOOD.moveDir=0" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9664;</button>
+      <button class="action-btn" onclick="DOOD.moveDir=1" ontouchstart="DOOD.moveDir=1" ontouchend="DOOD.moveDir=0" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9654;</button>
+    </div>
+    <div id="doodleGyroStatus" style="text-align:center;font-size:0.75em;opacity:0.5;margin-top:4px"></div>
+    <div class="celebration" id="doodleCelebration">&#127881;</div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startDoodle()">&#9654;&#65039; Start</button>
+      <button class="action-btn danger-btn" onclick="resetDoodle()">&#128260; Reset</button>
+    </div>
+  </div>
+
   <div class="game-area" id="dotsBoxes">
     <div class="rules"><h3>Bodky a Krabicky:</h3><ul>
       <li>Klikni na ciaru medzi dvoma bodkami</li>
@@ -3529,7 +3560,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 72;
+const APP_VERSION = 73;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3545,7 +3576,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', wordle:'wordleBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', wordle:'wordleBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3556,7 +3587,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', ludo:'Človeče', dotsBoxes:'Bodky', wordle:'Wordle'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', wordle:'Wordle'
 };
 
 let currentGameId = 'ticTacToe';
@@ -10257,6 +10288,235 @@ document.addEventListener('keydown', function(e) {
 });
 
 // =============================================================================
+// SEKCIA 29.7: DOODLE JUMP — Solo skakalka
+// =============================================================================
+const DOOD = {
+  W:320, H:480, running:false, over:false, raf:null,
+  x:160, y:400, vy:0, vx:0, moveDir:0,
+  platforms:[], cameraY:0, score:0, maxHeight:0,
+  best:parseInt(localStorage.getItem('hry_doodleBest')||'0'),
+  gyro:false
+};
+const DOOD_GRAVITY = 0.35;
+const DOOD_JUMP = -10;
+const DOOD_SPEED = 5;
+const DOOD_PW = 60; // platform width
+const DOOD_PH = 10; // platform height
+const DOOD_PLAYER_R = 12;
+
+function doodGenPlatforms() {
+  DOOD.platforms = [];
+  // Ground platform
+  DOOD.platforms.push({ x:130, y:460, w:DOOD_PW, type:'normal', moveDx:0 });
+  // Generate upwards
+  for(let i=1; i<80; i++) {
+    const y = 460 - i * 60 - Math.random()*20;
+    const x = Math.random() * (DOOD.W - DOOD_PW);
+    let type = 'normal';
+    if(i > 10 && Math.random() < 0.15) type = 'moving';
+    if(i > 15 && Math.random() < 0.1) type = 'breaking';
+    const moveDx = type === 'moving' ? (Math.random() > 0.5 ? 1.5 : -1.5) : 0;
+    DOOD.platforms.push({ x, y, w:DOOD_PW, type, moveDx, broken:false });
+  }
+}
+
+function doodAddPlatforms() {
+  // Add platforms above the topmost visible area
+  const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
+  if(topP - DOOD.cameraY > -DOOD.H) {
+    const y = topP - 50 - Math.random() * 40;
+    const x = Math.random() * (DOOD.W - DOOD_PW);
+    const h = Math.abs(y);
+    let type = 'normal';
+    if(h > 800 && Math.random() < 0.2) type = 'moving';
+    if(h > 1500 && Math.random() < 0.15) type = 'breaking';
+    if(h > 3000 && Math.random() < 0.1) type = 'breaking';
+    const moveDx = type === 'moving' ? (Math.random() > 0.5 ? 1.5 : -1.5) : 0;
+    DOOD.platforms.push({ x, y, w:DOOD_PW, type, moveDx, broken:false });
+  }
+}
+
+function doodRender() {
+  const c = document.getElementById('doodleCanvas'); if(!c) return;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, DOOD.W, DOOD.H);
+
+  // Draw platforms relative to camera
+  DOOD.platforms.forEach(p => {
+    if(p.broken) return;
+    const sy = p.y - DOOD.cameraY;
+    if(sy < -20 || sy > DOOD.H + 20) return;
+    if(p.type === 'normal') ctx.fillStyle = '#43e97b';
+    else if(p.type === 'moving') ctx.fillStyle = '#4facfe';
+    else ctx.fillStyle = '#f5576c';
+    ctx.fillRect(p.x, sy, p.w, DOOD_PH);
+    // Shine effect
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(p.x + 4, sy + 2, p.w - 8, 3);
+  });
+
+  // Draw player
+  const py = DOOD.y - DOOD.cameraY;
+  ctx.fillStyle = '#ffd200';
+  ctx.beginPath(); ctx.arc(DOOD.x, py, DOOD_PLAYER_R, 0, Math.PI * 2); ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.arc(DOOD.x - 4, py - 3, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(DOOD.x + 4, py - 3, 2.5, 0, Math.PI * 2); ctx.fill();
+
+  // Score overlay
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('Vyska: ' + DOOD.score, 10, 20);
+}
+
+function doodStep() {
+  if(!DOOD.running || DOOD.over) return;
+
+  // Horizontal movement (keyboard/buttons)
+  if(DOOD.moveDir !== 0) {
+    DOOD.vx = DOOD.moveDir * DOOD_SPEED;
+  } else if(!DOOD.gyro) {
+    // Decelerate when no input
+    DOOD.vx *= 0.85;
+  }
+
+  DOOD.x += DOOD.vx;
+  // Wrap around screen edges
+  if(DOOD.x < -DOOD_PLAYER_R) DOOD.x = DOOD.W + DOOD_PLAYER_R;
+  if(DOOD.x > DOOD.W + DOOD_PLAYER_R) DOOD.x = -DOOD_PLAYER_R;
+
+  // Gravity
+  DOOD.vy += DOOD_GRAVITY;
+  DOOD.y += DOOD.vy;
+
+  // Platform collision (only when falling)
+  if(DOOD.vy > 0) {
+    for(const p of DOOD.platforms) {
+      if(p.broken) continue;
+      const py = DOOD.y + DOOD_PLAYER_R;
+      const prevY = py - DOOD.vy;
+      if(DOOD.x + DOOD_PLAYER_R > p.x && DOOD.x - DOOD_PLAYER_R < p.x + p.w) {
+        if(prevY <= p.y && py >= p.y) {
+          // Land on platform
+          if(p.type === 'breaking') {
+            p.broken = true;
+            playSound('hit');
+          } else {
+            DOOD.vy = DOOD_JUMP;
+            DOOD.y = p.y - DOOD_PLAYER_R;
+            playSound('click');
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  // Move moving platforms
+  DOOD.platforms.forEach(p => {
+    if(p.type === 'moving' && !p.broken) {
+      p.x += p.moveDx;
+      if(p.x <= 0 || p.x + p.w >= DOOD.W) p.moveDx *= -1;
+    }
+  });
+
+  // Update camera (scroll up to follow player)
+  const targetCam = DOOD.y - DOOD.H * 0.35;
+  if(targetCam < DOOD.cameraY) DOOD.cameraY = targetCam;
+
+  // Update score (based on max height reached)
+  const height = Math.floor(-DOOD.y + 400);
+  if(height > DOOD.maxHeight) {
+    DOOD.maxHeight = height;
+    DOOD.score = Math.floor(DOOD.maxHeight / 10);
+    document.getElementById('doodleScore').textContent = DOOD.score;
+  }
+
+  // Generate more platforms
+  doodAddPlatforms();
+
+  // Remove platforms far below camera
+  DOOD.platforms = DOOD.platforms.filter(p => p.y - DOOD.cameraY < DOOD.H + 100);
+
+  // Death: fell below camera
+  if(DOOD.y - DOOD.cameraY > DOOD.H + 50) {
+    DOOD.over = true; DOOD.running = false;
+    playSound('wrong');
+    if(DOOD.score > DOOD.best) {
+      DOOD.best = DOOD.score;
+      localStorage.setItem('hry_doodleBest', DOOD.best);
+      updateRecord('doodleBest', DOOD.best);
+    }
+    document.getElementById('doodleBest').textContent = DOOD.best;
+    document.getElementById('doodleStatus').textContent = 'Game Over! Skore: ' + DOOD.score;
+    if(DOOD.score >= 50) { celebrate('doodleCelebration'); playSound('win'); }
+    doodRender();
+    return;
+  }
+
+  doodRender();
+  DOOD.raf = requestAnimationFrame(doodStep);
+}
+
+function startDoodle() {
+  if(DOOD.running) return;
+  resetDoodle();
+  DOOD.running = true;
+  document.getElementById('doodleStatus').textContent = 'Skac!';
+  DOOD.vy = DOOD_JUMP;
+  DOOD.raf = requestAnimationFrame(doodStep);
+  doodRequestGyro();
+}
+
+function resetDoodle() {
+  DOOD.running = false; DOOD.over = false;
+  if(DOOD.raf) cancelAnimationFrame(DOOD.raf);
+  DOOD.x = 160; DOOD.y = 400; DOOD.vy = 0; DOOD.vx = 0; DOOD.moveDir = 0;
+  DOOD.cameraY = 0; DOOD.score = 0; DOOD.maxHeight = 0;
+  doodGenPlatforms();
+  doodRender();
+  const el = document.getElementById('doodleScore'); if(el) el.textContent = '0';
+  const be = document.getElementById('doodleBest'); if(be) be.textContent = DOOD.best;
+  document.getElementById('doodleStatus').textContent = 'Pripraveni? Start!';
+}
+
+// Keyboard controls
+document.addEventListener('keydown', e => {
+  if(!DOOD.running || DOOD.over) return;
+  const doodleEl = document.getElementById('doodle');
+  if(!doodleEl || doodleEl.offsetParent === null) return;
+  if(e.key === 'ArrowLeft') { DOOD.moveDir = -1; e.preventDefault(); }
+  if(e.key === 'ArrowRight') { DOOD.moveDir = 1; e.preventDefault(); }
+});
+document.addEventListener('keyup', e => {
+  if(e.key === 'ArrowLeft' && DOOD.moveDir === -1) DOOD.moveDir = 0;
+  if(e.key === 'ArrowRight' && DOOD.moveDir === 1) DOOD.moveDir = 0;
+});
+
+// Gyroscope / DeviceOrientation
+function doodRequestGyro() {
+  if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOS 13+ requires permission
+    DeviceOrientationEvent.requestPermission().then(state => {
+      if(state === 'granted') doodEnableGyro();
+    }).catch(() => {});
+  } else if('DeviceOrientationEvent' in window) {
+    doodEnableGyro();
+  }
+}
+function doodEnableGyro() {
+  DOOD.gyro = true;
+  const gs = document.getElementById('doodleGyroStatus');
+  if(gs) gs.textContent = 'Gyroskop aktivny';
+  window.addEventListener('deviceorientation', e => {
+    if(!DOOD.running || DOOD.over) return;
+    const tilt = e.gamma || 0; // -90..90 degrees left/right
+    DOOD.vx = tilt / 90 * DOOD_SPEED * 2;
+  });
+}
+
+// =============================================================================
 // SEKCIA 30: PUZZLE SCRAMBLE (canvas-based image puzzle)
 // =============================================================================
 const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null };
@@ -11366,6 +11626,7 @@ resetBS();
 resetGhost();
 resetReaction();
 resetLudo();
+resetDoodle();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -11426,6 +11687,7 @@ const MOBILE_GAMES = [
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
   { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
+  { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'solo' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
