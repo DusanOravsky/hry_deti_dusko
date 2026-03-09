@@ -140,7 +140,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v107**
+Aktualna verzia: **v110**
 
 ## Deploy
 
