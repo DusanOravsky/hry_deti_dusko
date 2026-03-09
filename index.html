@@ -3560,7 +3560,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 77;
+const APP_VERSION = 78;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10299,7 +10299,7 @@ const DOOD = {
 };
 const DOOD_GRAVITY = 0.35;
 const DOOD_JUMP = -10;
-const DOOD_SPEED = 5;
+const DOOD_SPEED = 3;
 const DOOD_PW = 60; // platform width
 const DOOD_PH = 10; // platform height
 const DOOD_PLAYER_R = 12;
@@ -10521,7 +10521,7 @@ function doodEnableGyro() {
   window.addEventListener('deviceorientation', e => {
     if(!DOOD.running || DOOD.over) return;
     const tilt = Math.max(-25, Math.min(25, e.gamma || 0)); // clamp to ±25°
-    DOOD.vx = tilt / 25 * DOOD_SPEED * 2.5;
+    DOOD.vx = tilt / 25 * DOOD_SPEED * 2;
   });
 }
 
