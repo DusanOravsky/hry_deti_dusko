@@ -3560,7 +3560,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 75;
+const APP_VERSION = 76;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10451,6 +10451,7 @@ function doodStep() {
     document.getElementById('doodleBest').textContent = DOOD.best;
     document.getElementById('doodleStatus').textContent = 'Game Over! Skore: ' + DOOD.score;
     if(DOOD.score >= 50) { celebrate('doodleCelebration'); playSound('win'); }
+    doodUnlockOrientation();
     doodRender();
     return;
   }
@@ -10459,6 +10460,12 @@ function doodStep() {
   DOOD.raf = requestAnimationFrame(doodStep);
 }
 
+function doodLockOrientation() {
+  try { if(screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(()=>{}); } catch(e) {}
+}
+function doodUnlockOrientation() {
+  try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
+}
 function startDoodle() {
   if(DOOD.running) return;
   resetDoodle();
@@ -10467,11 +10474,13 @@ function startDoodle() {
   DOOD.vy = DOOD_JUMP;
   DOOD.raf = requestAnimationFrame(doodStep);
   doodRequestGyro();
+  doodLockOrientation();
 }
 
 function resetDoodle() {
   DOOD.running = false; DOOD.over = false;
   if(DOOD.raf) cancelAnimationFrame(DOOD.raf);
+  doodUnlockOrientation();
   DOOD.x = 160; DOOD.y = 400; DOOD.vy = 0; DOOD.vx = 0; DOOD.moveDir = 0;
   DOOD.cameraY = 0; DOOD.score = 0; DOOD.maxHeight = 0;
   doodGenPlatforms();
