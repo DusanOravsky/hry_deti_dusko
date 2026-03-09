@@ -2315,8 +2315,9 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="mode-btn" onclick="setRPSMode('ai',this)">👤 vs. Počítač</button>
     </div>
     <div class="difficulty-selector" id="rpsAISel">
-      <button class="difficulty-btn active" onclick="setRPSDiff('easy',this)">Ľahká (náhodne)</button>
-      <button class="difficulty-btn" onclick="setRPSDiff('hard',this)">Ťažká (Počítač sa učí)</button>
+      <button class="difficulty-btn active" onclick="setRPSDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setRPSDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setRPSDiff('hard',this)">Ťažká</button>
     </div>
     <div class="rules"><h3>📋 Pravidlá:</h3><ul>
       <li>Kameň poráža Nožnice, Nožnice porážajú Papier, Papier poráža Kameň</li>
@@ -3564,7 +3565,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 96;
+const APP_VERSION = 97;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4557,7 +4558,7 @@ function clickPsk15(i) {
       PSK15.board[ai]='O'; renderPsk15();
       const w2=checkPsk15Win();
       if(w2){PSK15.over=true;PSK15.s2++;$('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);$('p2ScorePsk15').textContent=PSK15.s2;renderPsk15();return;}
-      $('tttStatus').textContent=getP1Name('ttt')+' na rade!';
+      $('tttStatus').textContent=getTTTPlayerName('X')+' na rade!';
     },300);
   }
 }
@@ -4621,6 +4622,11 @@ function rpsChoose(choice) {
       const most=Object.keys(RPS.playerHist).reduce((a,b)=>RPS.playerHist[a]>RPS.playerHist[b]?a:b);
       ai=Object.keys(rpsBeats).find(k=>rpsBeats[k]===most);
       if(Math.random()<0.3) ai=['rock','paper','scissors'][Math.floor(Math.random()*3)];
+    } else if(RPS.diff==='medium') {
+      RPS.playerHist[choice]++;
+      const most=Object.keys(RPS.playerHist).reduce((a,b)=>RPS.playerHist[a]>RPS.playerHist[b]?a:b);
+      ai=Object.keys(rpsBeats).find(k=>rpsBeats[k]===most);
+      if(Math.random()<0.6) ai=['rock','paper','scissors'][Math.floor(Math.random()*3)];
     } else { ai=['rock','paper','scissors'][Math.floor(Math.random()*3)]; }
     showRPSResult('Hráč 1',choice,'Počítač',ai);
   } else {
@@ -11426,8 +11432,8 @@ function dbPlaceLine(type,i,j,player) {
 // ===== WORDLE =====
 const WORDLE_SK = [
 'KNIHA','MESTO','STROM','SLOVO','CHATA','CESTA','LAMPA','OBRAZ','LOPTA','VRANA',
-'RIEKA','MOSTY','SRDCE','FARBA','HRDLO','JAZYK','OVOCE','PALEC','TANEC','VEDRO',
-'HRNEC','DREVO','HLAVA','HOKEJ','ISKRA','KARTA','KOCKA','KRAVA','DOMOV','DIERA',
+'RIEKA','MOSTY','SRDCE','FARBA','HRDLO','JAZYK','OBLEK','PALEC','TANEC','VEDRO',
+'HRIBY','DREVO','HLAVA','HOKEJ','ISKRA','KARTA','KOCKA','KRAVA','DOMOV','DIERA',
 'BREZA','FAJKA','GAZDA','PRACH','SKALA','SOCHA','TRAVA','TUNEL','ULICA','VOJNA',
 'VLASY','ZAJAC','ZLATO','SEDLO','SIRUP','STUHA','PERLA','PEKLO','OBLAK','OKRAJ',
 'OPICA','MUCHA','MYDLO','MALBA','MASKA','BANKA','BRADA','BUBON','DEBNA','KORBA',
@@ -11441,14 +11447,14 @@ const WORDLE_SK = [
 'SUDCA','BLATO','ODRAZ','SKLAD','VLNKA','PROFI','TOVAR','DROGA','SNAHA','PIRAT',
 'KOBKA','DIETA','BOCKA','DOLKA','DUMKA','ELITA','FORMA','GRAMY','GURKA','HADIK',
 'HOLUB','IHLAN','JALEC','KACER','KAKAO','KELBA','KLASA','KOKOS','KOLKO','KOMIN',
-'KONEC','KOSEC','KOTEL','KUTIL','LASER','LOPAT','MAFIA','MAKAK','MEDIK','MECKA',
-'MISKY','MLEKO','MOTIV','MUCKA','PLESA','OBJEM','ODPOR','OKREM','OLIVA','OMRVA',
+'KONIK','KOSEC','KOTOL','KUTIL','LASER','LUDIA','MAFIA','MAKAK','MEDIK','MECKA',
+'MISKY','MLYNY','MOTIV','MUCKA','PLESA','OBJEM','ODPOR','OKREM','OLIVA','OMRVA',
 'OTVOR','PACEL','PAJAC','PANDA','PECKA','PIVKA','PLANO','PLAZA','PODAJ','POHAR',
 'POKRM','POLOM','POMOC','PONIK','POTOM','PRUHY','RADLO','RAMEN','RECKA','REMZA',
 'ROLAK','ROSOL','RUBAS','RYBKA','SALAT','SAUNA','SMREK','SKRAT','SLNKO','SOBOL',
 'SRNKA','STOPA','STUPY','SYPEC','TABAK','TANKO','TEPLO','TITUL','TONER','TORZO',
-'TOTAL','TRASA','TROJK','TRPEC','TUBUS','TULAK','UHLIE','ULOHA','UMYTO','UZINA',
-'UZLIK','VAFEL','VAPNO','VECKO','VEGET','VENOM','VETVA','VIBRO','VIDEO','VIETR',
+'TOTAL','TRASA','TRHAK','TRPEC','TUBUS','TULAK','UHLIE','ULOHA','UMYTO','UZINA',
+'UZLIK','VAFEL','VAPNO','VECKO','VENOK','VENOM','VETVA','VIBRO','VIDEO','VIETR',
 'VNUKA','VODCA','VOLNO','VTEDY','VYLOM','ZAKAZ','ZAPAS','ZARYS','ZELOV','ZHODA',
 'ZIVOT','ZLOBA','ZOBER','ZUBOR','ZVADA','ZVEST','ZNAKY','AKTIV','BALEC','BARON',
 'BICAJ','BOBIK','CESAK','CUPKA','CIFRA','CIRKA','DEKEL','DUNAJ','FACKA','FLASA',
@@ -11470,17 +11476,17 @@ const WORDLE_SK = [
 'JADRO','KAPSA','LAVKA','NOCNY','OSTRA','POKUS','RADNY','SALAM','TLACI','ZMIJA',
 'BOZKA','CHLAP','DRAHY','GARAZ','MASLO','PECKY','VIEST','ZVONY','CHCEL','MLADY',
 'NIZKY','PRAVY','VELKY','BIELY','DLZKA','ZITNY','LUCNY','PLODY','RUCHO','MENEJ',
-'HESLO','BRZDA','PSOTA','VLADA','HRANA','NADEJ','PIATA','CHLEB','SYPKA','TVOJA',
-'AHOJT','BARAN','BUBEN','BYLKA','CISAR','CUKOR','DARCE','DLZNY','DOPIS','DUSNA',
-'DZBAN','ENVIR','FAKIR','FENUS','GESTA','GOBEL','HACIK','HEJSA','HOKUS','HUSLE',
+'HESLO','BRZDA','PSOTA','VLADA','HRANA','NADEJ','PIATA','CHRUP','SYPKA','TVOJA',
+'ADEPT','BARAN','BUBEN','BYLKA','CISAR','CUKOR','DARCE','DLZNY','DOPIS','DUSNA',
+'DZBAN','EPIKA','FAKIR','FENUS','GESTA','GOBEL','HACIK','HEJSA','HOKUS','HUSLE',
 'JAVOR','JOKEL','JUPIK','KADEC','KAZDY','KLAKY','KOHOS','KUDOL','LATKA','LEVIC',
 'LOSOS','LSTNA','MACKA','MIZOL','MUKAT','NAJMA','NIKDY','OBCAS','OKULA','PAVOL',
 'PLECE','PUSIT','RAZEN','RETAZ','ROSIT','SADRA','SELKA','SIFON','SIKMO','SKRYT',
 'SKALP','SLEPI','SPLAV','SRSEN','SVIST','TAJNE','TESAL','TOKAR','TRIKO','TURAK',
 'USMEV','UZNAL','VAREC','VECNE','VINIC','VLCIK','VOZAR','VYZVA','ZAJST','ZBYVA',
-'ZIACI','ZORNI','ZUBNY','BALET','BYLOT','CEDOK','DIPOL','DOSAH','DUPAT','FUTBO',
-'HASIC','HUSAR','IHNED','JAROK','KELNE','KONVA','KREST','KRTKO','LANAR','LEHKO',
-'LIETA','LOKAJ','MALIR','MURIR','OCAMI','OLEJI','PAMAT','PEKNE','PLSTI','POMLY',
+'ZIACI','ZORNI','ZUBNY','BALET','BORIK','CEDOK','DIPOL','DOSAH','DUPAT','FIKUS',
+'HASIC','HUSAR','IHNED','JAROK','KELNE','KONVA','KREST','KRTKO','LANAR','LESIK',
+'LIETA','LOKAJ','MANKO','MUSEL','OCAMI','OLEJI','PAMAT','PEKNE','PLSTI','POMLY',
 'REBRO','REZAT','RUSAK','SATIR','SIREN','SPALI','STALE','TAHAT','TOPAS','ZLATY',
 'ROZOK','KOCUR','MYSKA','MOBIL','RYSKA','MISKA'
 ];
