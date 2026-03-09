@@ -3754,7 +3754,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 109;
+const APP_VERSION = 110;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -13423,7 +13423,8 @@ function applyGameMode(mode) {
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });
   // Hide P2 mobile controls in AI mode (AI doesn't need buttons)
-  ['tnkP2Controls','pngP2Controls'].forEach(id=>{const el=$(id);if(el)el.style.display=mode==='ai'?'none':'';});
+  const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=mode==='ai'?'none':'grid';
+  const pngP2c=$('pngP2Controls');if(pngP2c)pngP2c.style.display=mode==='ai'?'none':'grid';
 }
 
 function startFromWelcome() {
