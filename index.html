@@ -3478,7 +3478,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Pružina = super skok, raketa = vyletíš hore!</li>
       <li>Hráči sa striedajú — kto skočí vyššie, vyhrá!</li>
     </ul></div>
-    <div class="player-info">
+    <div class="player-info" id="doodPlayerInfo">
       <div class="player-card player1 active-turn" id="doodP1Card"><div class="player-name-display" id="doodP1Name">Hráč 1</div><div class="player-score" id="p1ScoreDood">0</div></div>
       <div class="player-card player2" id="doodP2Card"><div class="player-name-display" id="doodP2Name">Hráč 2</div><div class="player-score" id="p2ScoreDood">0</div></div>
     </div>
@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 85;
+const APP_VERSION = 86;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12007,6 +12007,9 @@ function applyGameMode(mode) {
       if(el) el.textContent = 'Počítač';
     });
   }
+  // Doodle: hide player cards in solo mode (like Tetris/Snake/Racing)
+  const doodPI = document.getElementById('doodPlayerInfo');
+  if(doodPI) doodPI.style.display = mode==='ai' ? 'none' : '';
 }
 
 function startFromWelcome() {
