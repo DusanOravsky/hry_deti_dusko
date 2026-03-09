@@ -3564,7 +3564,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 94;
+const APP_VERSION = 95;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12412,6 +12412,8 @@ function mpCreateRoom() {
         document.getElementById('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si 🔴 ' + MP.myName + ' (X)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
+        // Auto-close modal after connection
+        setTimeout(closeMPModal, 1500);
 
         const _isPsk = $('psk15Board').style.display !== 'none';
         conn.send({
@@ -12517,6 +12519,8 @@ function mpJoinWithConfig(code, statusEl, config) {
         statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si 🔵 ' + MP.myName + ' (O)</div>';
         document.getElementById('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
+        // Auto-close modal after connection
+        setTimeout(closeMPModal, 1500);
 
         MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
       });
