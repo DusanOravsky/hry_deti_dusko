@@ -2642,7 +2642,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>Hráči sa striedajú — každý dostane rozhádzané slovo</li>
       <li>Klikaj na písmená a skladaj správne slovo dole</li>
       <li>Správne slovo = 1 bod, nápoveda = −0.5 bodu</li>
-      <li>Kto má viac bodov po 5 kolách, vyhráva!</li>
+      <li>Kto má viac bodov, vyhráva! (počet kôl si vyber dole)</li>
     </ul></div>
     <div class="timer-settings">
       <label>⏱️ Časový limit:</label>
@@ -2667,6 +2667,12 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <option value="body">🫀 Ľudské telo</option>
         <option value="jobs">💼 Povolania</option>
         <option value="transport">🚗 Doprava</option>
+      </select>
+      <label style="margin-left:10px">🔄 Kolá:</label>
+      <select class="timer-select" id="scrambleRoundsSelect">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
       </select>
     </div>
     <div class="player-info">
@@ -2706,7 +2712,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="rules"><h3>📋 Jazykový Scramble:</h3><ul>
       <li>Dostaneš slovenské slovo — poskladaj jeho preklad z rozhádzaných písmen</li>
       <li>Správna odpoveď = 1 bod, nápoveda = −0.5 bodu</li>
-      <li>Hráči sa striedajú, 5 kôl každý</li>
+      <li>Hráči sa striedajú (počet kôl si vyber dole)</li>
     </ul></div>
     <div class="timer-settings">
       <label>🌐 Jazyk:</label>
@@ -2725,6 +2731,12 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <option value="nature">🌿 Príroda</option>
         <option value="verbs">⚡ Slovesá</option>
         <option value="adjectives">🎨 Prídavné mená</option>
+      </select>
+      <label style="margin-left:10px">🔄 Kolá:</label>
+      <select class="timer-select" id="lsRoundsSelect">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
       </select>
     </div>
     <div class="player-info">
@@ -3513,7 +3525,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 66;
+const APP_VERSION = 67;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -7400,6 +7412,7 @@ function scrambleStr(str) {
 }
 
 function startScramble() {
+  SCR.totalRounds=parseInt(document.getElementById('scrambleRoundsSelect').value||'5');
   SCR.round=0; SCR.s1=0; SCR.s2=0; SCR.player=1; SCR.over=false;
   document.getElementById('p1ScoreScr').textContent='0';
   document.getElementById('p2ScoreScr').textContent='0';
@@ -7757,6 +7770,7 @@ function updateLSProgress() {
 }
 
 function startLS() {
+  LS.totalRounds=parseInt(document.getElementById('lsRoundsSelect').value||'5');
   LS.round=0; LS.s1=0; LS.s2=0; LS.player=1; LS.over=false;
   document.getElementById('p1ScoreLS').textContent='0';
   document.getElementById('p2ScoreLS').textContent='0';
