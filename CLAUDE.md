@@ -2,19 +2,20 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~12700 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~13100 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v63
+- **Current version**: v81
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
 - **Stats**: `addWin(w, gameId)` — w=1 player1 win, w=2 player2 win, w=0 draw
 - **Online Multiplayer**: WebRTC peer-to-peer via PeerJS + Metered TURN (password-protected)
+- **DOM helper**: `const $ = id => document.getElementById(id);` — shorter syntax for DOM access
 
 ## CRITICAL: TDZ Declaration Order
 
@@ -42,7 +43,7 @@ resetWordle(); // welcomeGameMode check works
 - `MOBILE_GAMES` array — defines games with `mode` and optional `mp:true`:
   - `'both'` = AI + PVP (shows in both modes)
   - `'pvp'` = 2-player only
-  - `'solo'` = solo games (Tetris, Racing)
+  - `'solo'` = solo games (Tetris, Snake, Racing) — only visible in AI mode
   - `'always'` = always shown (Stats)
   - `mp:true` = has online multiplayer support (shows globe badge)
 - `welcomeGameMode` — `'pvp'` (default) or `'ai'`
@@ -50,59 +51,69 @@ resetWordle(); // welcomeGameMode check works
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 
-## Games (31 total)
+## Games (32 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
-- Connect 4 [MP]
+- Connect 4 [MP] (AI: easy/medium/hard)
 - Kamen Papier Noznice [MP]
 - Hadaj Cislo [MP]
 - Pexeso (6 random themes) [MP]
-- Sach [MP] (AI: easy/medium/hard)
+- Sach [MP] (AI: easy/medium/hard, stalemate detection)
 - Dama [MP] (AI: easy/medium/hard)
 - Lodicky (Battleship) [MP] (AI: easy/medium/hard)
 - Clovece nehnevaj sa [MP] (AI: easy/medium/hard)
-- Puzzle Scramble
-- Mini Labyrint (AI: easy/medium/hard)
+- Puzzle Scramble (canvas, 3x3/4x4/5x5)
+- Mini Labyrint (AI: easy/medium/hard — hard:30ms, medium:80ms, easy:180ms)
 - Reversi/Othello (AI: easy/medium/hard)
-- Wordle (SK: ~400 slov, EN: ~400 slov, language selector)
+- Wordle (SK: ~400 slov, EN: ~400 slov, language selector, word validation)
 
 ### 2 Players Only (mode:'pvp')
-- Kviz (17 tem)
-- Ghost
-- Reakcny Test
-- Scramble / Jazykovy Scramble
+- Kviz (17 tem, 1000+ otazok)
+- Ghost (EN: 531 slov, SK)
+- Reakcny Test (200ms penalty for early tap)
+- Scramble / Jazykovy Scramble (5/10/15 rounds selector)
 - Flashcards / Dopln pismeno / Prekladaj vety
 - Spam Click, Matika Duel, Emoji Hadanka
 - Obesenec, Vyssie Nizsie
-- Bodky a Krabicky (Dots and Boxes)
+- Bodky a Krabicky (Dots and Boxes, 5x5 grid)
+- Doodle Jump (2-player turn-based, canvas, touch + arrows)
 
 ### Solo (mode:'solo'/'always')
-- Tetris
+- Tetris (wall kicks, ghost piece)
 - Snake (canvas, swipe + arrows + buttons, high score)
-- Preteky (Racing)
+- Preteky (Racing, coins +2 bonus)
+- Statistiky + Achievement system (split reset: stats vs achievements)
 
-## Features (v13-v44)
+## Features (v13-v81)
 
-- **Tutorial/Rules Modal (v44)**: ❓ help button on all 30 games, opens centralized modal with game rules. Rules hidden by default for cleaner UI. Click button or outside modal to close.
+- **Tutorial/Rules Modal**: help button on all games, opens centralized modal with game rules
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
 - **Animations**: cell-appear, flip-card, dice-roll, piece-move, glow-correct, shake-wrong, rps-reveal
-- **Sounds**: All games now have sounds on key actions (click, correct, wrong, win, flip, hit, move)
+- **Sounds**: All games have sounds on key actions (click, correct, wrong, win, flip, hit, move)
 - **Offline indicator**: Red banner when device offline, MP button auto-hides
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
 - **Achievement system**: 16 achievements checked after every `addWin()` and `toggleFavorite()`, toast notification on unlock, displayed in Stats page
+- **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
 - **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
+- **Chess stalemate**: Detected after turn switch — 0 legal moves = draw
+- **Tetris wall kicks**: `tetRotate()` tries kick offsets `[0,-1,1,-2,2]`
+- **Tetris ghost piece**: Semi-transparent preview of where piece will land (0.25 opacity)
+- **Wordle word validation**: Both PVP set phase and guess phase validate against word list
+- **Connect 4 AI**: Medium blocks opponent wins; hard blocks + seeks own wins + center preference
+- **Doodle Jump**: Canvas game with platforms (normal/moving/breaking), power-ups (spring/rocket), 2-player turn-based
 - **MP TURN servers**: Metered TURN for cross-network play, password-protected (STUN-first, TURN fallback)
 - **MP connection type indicator**: Shows "Cez server (TURN)" or "Priame spojenie" after connecting
 - **MP session persistence**: `sessionStorage` saves roomCode/isHost/myName, auto-reconnect on refresh (8s timeout)
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "Obsahuje 31 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "Obsahuje 32 hier!" on welcome, "(c) Dusan Oravsky" at bottom
 - **SW auto-reload**: New service worker version triggers automatic page reload
+- **Dark/light theme**: Automatic by time of day + manual toggle
 
 ## Adding a New Game
 
@@ -212,44 +223,21 @@ const MP = {
 - QR code for room joining: `mpGenerateQR()` / `mpScanQR()`
 - Cleanup old peers: `mpCreateRoom()` and `mpJoinRoom()` destroy previous peer before creating new one
 
-## Performance Optimization (v43+)
+## Game State Objects
 
-### DOM Helper Function
-
-**Added in v43**: `const $ = id => document.getElementById(id);` (line ~3381)
-
-Shorter syntax for DOM access. Used throughout codebase to reduce repetitive `document.getElementById()` calls.
-
-```javascript
-// Before (v42):
-document.getElementById('tttStatus').textContent = '...';
-
-// After (v43+):
-$('tttStatus').textContent = '...';
-```
-
-**Benefits:**
-- Shorter code (882 → reduced by ~300 chars)
-- Better readability
-- Same performance (no caching yet, just syntax sugar)
-- No logic changes — MP and all games work identically
-
-**Implementation Status (v43):**
-- ✅ **Piškvorky (Tic Tac Toe)** — fully optimized (all 4 sizes: 3x3, 4x4, 5x5, 10x10)
-- ⏳ **Connect4, Lodičky, Pexeso, etc.** — pending (waiting for MP test confirmation)
-- 📝 **Next**: Apply to remaining ~800 `document.getElementById()` calls
-
-**MP Testing Required:**
-Before continuing optimization, test MP functionality:
-1. Create room (host) + join (guest) on 2 devices
-2. Play Piškvorky in all modes (3x3, 4x4, 5x5, 10x10/15x15)
-3. Verify turn sync, rematch, score counting
-4. If OK → continue to other games
-
-**TDZ Safety:**
-- `const $` declared at line ~3381 (early in JS section)
-- All `reset*()` calls at ~line 10288+ (safe, no TDZ issues)
-- Always verify declaration order before adding new helper functions
+Key game state objects and their patterns:
+- `TET` — Tetris (W, H, board, piece, ghost, score, best, running)
+- `SNK` — Snake (W, H, snake array, food, dir, score, best, running)
+- `DOOD` — Doodle Jump (W:320, H:480, platforms, score, best, player, s1/s2, phase)
+- `CH` — Chess (board 8x8, turn, selected, castling, enPassant)
+- `C4` — Connect 4 (board 6x7, turn, s1/s2)
+- `BS` — Battleship (grids, ships, phase)
+- `WDL` — Wordle (word, guesses, phase)
+- `SCR` — Scramble (word, scrambled, rounds, totalRounds)
+- `LS` — Lang Scramble
+- `MEM` — Pexeso (cards, flipped, matched)
+- `DB` — Dots and Boxes (rows:5, cols:5, lines, boxes)
+- `RACE` — Racing (lanes, obstacles, coins, score)
 
 ## Deploy
 
