@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~14600 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vN`)
-- **Current version**: v110
+- **Current version**: v114
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -70,8 +70,8 @@ resetWordle(); // welcomeGameMode check works
 - Reversi/Othello (AI: easy/medium/hard)
 - Wordle (SK: ~400 slov, EN: ~400 slov, language selector, word validation)
 - Breakout/Arkanoid (AI: easy/medium/hard, canvas, roundRect polyfill)
-- Pong (AI: easy/medium/hard, canvas, W/S + arrows, touch drag, first to 10)
-- Tank Battle (AI: easy/medium/hard, 16x16 grid, power-ups: shield/rapid/speed)
+- Pong [MP] (AI: easy/medium/hard, canvas, W/S + arrows, touch drag, first to 10)
+- Tank Battle [MP] (AI: easy/medium/hard, 16x16 grid, power-ups: shield/rapid/speed)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -83,7 +83,7 @@ resetWordle(); // welcomeGameMode check works
 - Obesenec, Vyssie Nizsie
 - Bodky a Krabicky (Dots and Boxes, 5x5 grid)
 - Doodle Jump (2-player turn-based, canvas, touch + arrows)
-- Snake Duel (2 snakes simultaneously, WASD vs arrows, first to 5)
+- Snake Duel [MP] (2 snakes simultaneously, WASD vs arrows, first to 5)
 
 ### Solo (mode:'solo'/'always')
 - Tetris (wall kicks, ghost piece)
@@ -91,7 +91,7 @@ resetWordle(); // welcomeGameMode check works
 - Preteky (Racing, coins +2 bonus)
 - Statistiky + Achievement system (split reset: stats vs achievements)
 
-## Features (v13-v105)
+## Features (v13-v114)
 
 - **Tutorial/Rules Modal**: help button on all games, opens centralized modal with game rules
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
@@ -123,7 +123,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "Obsahuje 36 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "Obsahuje 35 hier!" on welcome, "(c) Dusan Oravsky" at bottom
 - **SW auto-reload**: New service worker version triggers automatic page reload
 - **Dark/light theme**: Automatic by time of day + manual toggle
 
@@ -194,7 +194,8 @@ const MP = {
   isHost: false, isConnected: false,
   roomCode: null, myName: '', opponentName: '',
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
-  dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0
+  dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
+  sdRound: 0, tnkRound: 0, pngRound: 0
 };
 ```
 
@@ -209,7 +210,9 @@ const MP = {
 - `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
 - `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
-**Games with MP Support (9 games):**
+**Games with MP Support (12 games):**
+
+*Turn-based (9 games):*
 - Piskvorky — `ttt-move`, alternating start (tttRound)
 - Connect4 — `c4-move`
 - Kamen Papier Noznice — `rps-choice`
@@ -220,6 +223,11 @@ const MP = {
 - Clovece — `ludo-roll`, `ludo-move`
 - Hadaj Cislo — `gn-setup`, `gn-guess`, `gn-feedback`
 
+*Real-time (3 games — host-authoritative architecture):*
+- Snake Duel — `sd-start`, `sd-dir`, `sd-state` (host runs setInterval, guest sends direction only)
+- Tank Battle — `tnk-start`, `tnk-input`, `tnk-state` (host runs setInterval at 8fps, guest sends keys+shoot)
+- Pong — `png-start`, `png-input`, `png-state` (host runs RAF, sends state every 3 frames, guest sends paddle dir/position)
+
 **Adding MP to a Game:**
 1. Add `mp:true` to MOBILE_GAMES entry
 2. In click handler, check turn: `if(MP.isConnected) { if(notMyTurn) return; }`
@@ -227,6 +235,16 @@ const MP = {
 4. Handle in `mpHandleMessage()`: `if(data.type==='game-move') { applyMove(); }`
 5. Add rematch support in `mpRematch()` and `mp-rematch` handler
 6. Guest settings sync: host sends settings in handshake, guest applies
+
+**Real-time MP Pattern (Snake Duel, Tank Battle, Pong):**
+- Host runs game loop (setInterval or RAF), guest does NOT run game logic
+- Guest sends only inputs (direction, keys, shoot) — host applies as P2
+- Host sends full game state every tick (or every N frames for bandwidth)
+- Guest receives state, updates local variables, renders
+- Guest plays sounds based on state changes (score diff, death flags, ate flag)
+- P2 mobile controls hidden in MP (each player uses own P1 controls)
+- Input wrapper functions (sdSetDir, tnkSetKey, pngSetDir) handle MP routing
+- Start button: only host can start; guest click does nothing
 
 **MP Key Rules:**
 - Guest cannot change game settings (hidden/blocked)
@@ -256,7 +274,7 @@ Key game state objects and their patterns:
 - `BRK` — Breakout (canvas, bricks, ball, paddle, score)
 - `PNG` — Pong (canvas, paddles, ball, scores, first to 10)
 - `TNK` — Tank Battle (16x16 grid, tanks, bullets, walls, powerup, cooldowns, first to 5)
-- `SDUEL` — Snake Duel (2 snakes, directions, scores, first to 5)
+- `SD` — Snake Duel (2 snakes, directions, scores, first to 5)
 
 ## Performance Optimization
 
@@ -265,7 +283,7 @@ Key game state objects and their patterns:
 
 ### stopAllGames()
 Centralized cleanup function that stops all game timers/rafs:
-- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SDUEL.timer, REAC.timeout
+- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout
 - Called by `mobileGoTo()` and desktop sidebar game switching
 
 ## Deploy

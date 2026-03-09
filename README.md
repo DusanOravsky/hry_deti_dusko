@@ -25,8 +25,8 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Mini Labyrint | - | Yes (easy/medium/hard) |
 | Reversi (Othello) | - | Yes (easy/medium/hard) |
 | Breakout (Arkanoid) | - | Yes (easy/medium/hard) |
-| Pong | - | Yes (easy/medium/hard) |
-| Tank Battle (power-upy: shield/rapid/speed) | - | Yes (easy/medium/hard) |
+| Pong | Yes | Yes (easy/medium/hard) |
+| Tank Battle (power-upy: shield/rapid/speed) | Yes | Yes (easy/medium/hard) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra |
@@ -40,7 +40,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Obesenec, Vyssie Nizsie |
 | Bodky a Krabicky (Dots & Boxes, 5x5 grid) |
 | Doodle Jump (2-player turn-based, power-ups) |
-| Snake Duel (2 hady sucasne, WASD vs sipky) |
+| Snake Duel (2 hady sucasne, WASD vs sipky) [MP] |
 
 ### Solo
 - Tetris (wall kicks, ghost piece, mobilne ovladacie tlacidla)
@@ -50,7 +50,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ## Online Multiplayer
 
-9 hier podporuje online multiplayer cez WebRTC peer-to-peer (PeerJS 1.5.5):
+12 hier podporuje online multiplayer cez WebRTC peer-to-peer (PeerJS 1.5.5):
 - **Piskvorky** - sync velkosti dosky, striedanie startujuceho hraca
 - **Connect 4** - realtime sync tahov
 - **Kamen Papier Noznice** - sucasne odhalenie volieb
@@ -60,6 +60,9 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Pexeso** - sync otacania kariet + rozlozenia
 - **Clovece** - sync kocky + tahov, farby hracov
 - **Hadaj Cislo** - host posle cislo, guest hada
+- **Snake Duel** - real-time, host runs game loop, guest sends direction
+- **Tank Battle** - real-time, host runs game loop, guest sends keys + shoot
+- **Pong** - real-time, host runs physics, guest sends paddle direction/position
 
 **Pripojenie:** Modra zemegula (floating button) > Vytvor/Pripoj sa > Room code alebo QR kod
 
@@ -140,7 +143,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v110**
+Aktualna verzia: **v114**
 
 ## Deploy
 
