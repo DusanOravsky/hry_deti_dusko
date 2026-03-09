@@ -3513,7 +3513,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 64;
+const APP_VERSION = 65;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9617,8 +9617,12 @@ function tetRenderBoard(){
       const col=TET.board[y][x];
       if(col){c.classList.add('filled');c.style.setProperty('--tet-color',col);}
       if(TET.piece&&!TET.gameOver){
+        let ghostY=TET.y;
+        while(TET.piece.blocks.every(([bx,by])=>{const nx=TET.x+bx,ny=ghostY+by+1;return nx>=0&&nx<10&&ny<20&&(ny<0||!TET.board[ny][nx]);}))ghostY++;
+        const inGhost=TET.piece.blocks.some(([bx,by])=>bx+TET.x===x&&by+ghostY===y);
+        if(inGhost&&ghostY!==TET.y){c.classList.add('filled');c.style.setProperty('--tet-color',TET.piece.color);c.style.opacity='0.25';}
         const inPiece=TET.piece.blocks.some(([bx,by])=>bx+TET.x===x&&by+TET.y===y);
-        if(inPiece){c.classList.add('filled');c.style.setProperty('--tet-color',TET.piece.color);}
+        if(inPiece){c.classList.add('filled');c.style.setProperty('--tet-color',TET.piece.color);c.style.opacity='1';}
       }
       b.appendChild(c);
     }
@@ -9690,7 +9694,10 @@ function tetMove(dx){
 function tetRotate(){
   if(TET.gameOver||!TET.running)return;
   const rotated=TET.piece.blocks.map(([x,y])=>[-y,x]);
-  if(tetCanMove(0,0,rotated)){TET.piece.blocks=rotated;playSound('flip');tetRenderBoard();}
+  const kicks=[0,-1,1,-2,2];
+  for(const kick of kicks){
+    if(tetCanMove(kick,0,rotated)){TET.piece.blocks=rotated;TET.x+=kick;playSound('flip');tetRenderBoard();return;}
+  }
 }
 function tetDrop(){
   if(TET.gameOver||!TET.running)return;
@@ -10156,11 +10163,11 @@ function raceTick() {
     return;
   }
   if(cell === RACE_COIN) {
-    RACE.score += 1;
+    RACE.score += 2;
     playSound('correct');
     if(typeof navigator.vibrate === 'function') navigator.vibrate(15);
+    RACE.grid[RACE_ROWS-2][RACE.lane] = '';
   }
-  RACE.grid[RACE_ROWS-2][RACE.lane] = '';
   RACE.score += 1;
   document.getElementById('raceScore').textContent = RACE.score;
   // Speed up every 20 points
@@ -11122,6 +11129,12 @@ function wdlSubmitGuess() {
 
   // In PVP set phase, the word is being set
   if(WDL.pvpPhase === 'set') {
+    if(!WORDLE_WORDS.includes(WDL.current.toUpperCase())) {
+      wdlShakeRow();
+      document.getElementById('wdlStatus').textContent = 'Slovo nie je v zozname!';
+      playSound('wrong');
+      return;
+    }
     WDL.pvpSecret = WDL.current.toUpperCase();
     WDL.secret = WDL.pvpSecret;
     // Clear the row
@@ -11141,6 +11154,12 @@ function wdlSubmitGuess() {
   }
 
   const guess = WDL.current.toUpperCase();
+  if(!WORDLE_WORDS.includes(guess)) {
+    wdlShakeRow();
+    document.getElementById('wdlStatus').textContent = 'Neplatne slovo!';
+    playSound('wrong');
+    return;
+  }
   WDL.guesses.push(guess);
 
   // Evaluate
