@@ -3472,11 +3472,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <div class="game-area" id="doodle">
     <div class="rules"><h3>📋 Doodle Jump:</h3><ul>
-      <li>Lopticka skace sama — ty ju len posuvaj do stran!</li>
-      <li>Ovladanie: sipky alebo tlacidla dolava/doprava</li>
-      <li>Zelena = odraz, modra = pohybliva, cervena = rozpadne sa!</li>
-      <li>Pruzina = super skok, raketa = vyletis hore!</li>
-      <li>Hraci sa striedaju — kto skoci vyssie, vyhra!</li>
+      <li>Loptička skáče sama — ty ju len posúvaj do strán!</li>
+      <li>Ovládanie: šípky alebo tlačidlá doľava/doprava</li>
+      <li>Zelená = odraz, modrá = pohyblivá, červená = rozpadne sa!</li>
+      <li>Pružina = super skok, raketa = vyletíš hore!</li>
+      <li>Hráči sa striedajú — kto skočí vyššie, vyhrá!</li>
     </ul></div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="doodP1Card"><div class="player-name-display" id="doodP1Name">Hráč 1</div><div class="player-score" id="p1ScoreDood">0</div></div>
@@ -3501,9 +3501,9 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <div class="game-area" id="dotsBoxes">
     <div class="rules"><h3>📋 Bodky a Krabičky:</h3><ul>
-      <li>Klikni na ciaru medzi dvoma bodkami</li>
-      <li>Kto uzavrie krabicku, ziska bod a hra dalej</li>
-      <li>Kto ma viac krabiciek, vyhra!</li>
+      <li>Klikni na čiaru medzi dvoma bodkami</li>
+      <li>Kto uzavrie krabičku, získa bod a hrá ďalej</li>
+      <li>Kto má viac krabičiek, vyhrá!</li>
     </ul></div>
     <div class="player-cards">
       <div class="player-card" id="dbP1Card">
@@ -3558,7 +3558,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = 82;
+const APP_VERSION = 83;
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -7197,7 +7197,7 @@ const SCR = {
 // ===== SCRAMBLE =====
 const scrambleDB = {
   animals: [
-    {w:'SLON',h:'Veľké zviera s choботom'},{w:'TIGER',h:'Pruhovaná veľká mačka'},
+    {w:'SLON',h:'Veľké zviera s chobotom'},{w:'TIGER',h:'Pruhovaná veľká mačka'},
     {w:'ZEBRA',h:'Čiernobiele pruhy'},{w:'DELFIN',h:'Inteligentný morský cicavec'},
     {w:'PINGVIN',h:'Nelietajúci vták z Antarktídy'},{w:'ZIRAFA',h:'Najvyššie zviera na svete'},
     {w:'GORILA',h:'Najväčší primát'},{w:'PAPAGAJ',h:'Vták ktorý opakuje slová'},
@@ -9832,7 +9832,7 @@ function renderSnake(){
   SNK.body.forEach((b,j)=>{
     ctx.fillStyle='#43e97b';ctx.globalAlpha=Math.max(1-j*0.02,0.3);
     ctx.fillRect(b.x*cs+1,b.y*cs+1,cs-2,cs-2);
-    if(j===0){ctx.fillStyle='white';ctx.globalAlpha=1;ctx.beginPath();ctx.arc((b.x+0.5)*cs,(b.y+0.5)*cs,cs*0.2,0,Math.PI*2);ctx.fill();}
+    if(j===0){ctx.fillStyle=document.body.classList.contains('light')?'#333':'white';ctx.globalAlpha=1;ctx.beginPath();ctx.arc((b.x+0.5)*cs,(b.y+0.5)*cs,cs*0.2,0,Math.PI*2);ctx.fill();}
   });
   ctx.globalAlpha=1;
 }
@@ -10361,7 +10361,8 @@ function doodAddPlatforms() {
 function doodRender() {
   const c = document.getElementById('doodleCanvas'); if(!c) return;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, DOOD.W, DOOD.H);
+  const doodDark = !document.body.classList.contains('light');
+  ctx.fillStyle = doodDark ? '#1a1a2e' : '#e8f0fe'; ctx.fillRect(0, 0, DOOD.W, DOOD.H);
 
   // Draw platforms relative to camera
   DOOD.platforms.forEach(p => {
@@ -10399,12 +10400,12 @@ function doodRender() {
   ctx.fillStyle = DOOD.rocketFrames > 0 ? '#ff3366' : '#ffd200';
   ctx.beginPath(); ctx.arc(DOOD.x, py, DOOD_PLAYER_R, 0, Math.PI * 2); ctx.fill();
   // Eyes
-  ctx.fillStyle = '#222';
+  ctx.fillStyle = doodDark ? '#222' : '#fff';
   ctx.beginPath(); ctx.arc(DOOD.x - 4, py - 3, 2.5, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(DOOD.x + 4, py - 3, 2.5, 0, Math.PI * 2); ctx.fill();
 
   // Score overlay
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillStyle = doodDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
   ctx.font = 'bold 14px sans-serif';
   ctx.fillText('Vyska: ' + DOOD.score, 10, 20);
 }
@@ -11173,7 +11174,7 @@ function renderDB() {
   const r=DB.rows, c=DB.cols;
   const pad=25, dotR=5;
   const cellW=(canvas.width-2*pad)/c, cellH=(canvas.height-2*pad)/r;
-  const isDark=document.body.classList.contains('dark');
+  const isDark=!document.body.classList.contains('light');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   // filled boxes
   for(let i=0;i<r;i++) for(let j=0;j<c;j++) {
@@ -11770,7 +11771,7 @@ const MOBILE_GAMES = [
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
   { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
-  { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'pvp' },
+  { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
