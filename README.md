@@ -146,9 +146,20 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v4.7**
+Aktualna verzia: **v5.0**
 
 ### Changelog
+
+**v5.0** (2026-03-10) - Major Feature Release
+- 🏆 **Multi-Game Tournament Mode** - compete across 3-5 games
+  - Manual game selection or random selection by computer
+  - Point system: 1 for win, 0.5 for draw
+  - Live leaderboard with progress tracker
+  - Auto-progression between games (3-sec delay)
+  - Victory screen with final results + confetti
+- 📳 Vibration toggle - on/off control next to sound button
+- Integrated tournament tracking with existing stats system
+- New sidebar buttons: 🏆 TURNAJ and 🎲 RANDOM BATTLE
 
 **v4.7** (2026-03-10)
 - Fix: Turn timer memory leak - timers sa zastavuju pri navigacii
