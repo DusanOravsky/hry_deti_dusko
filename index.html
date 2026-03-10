@@ -2914,17 +2914,17 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <!-- ===== TURNAJ ===== -->
   <div class="game-area" id="tournament" style="display:none">
     <div class="rules"><h3>🏆 Multi-Game Turnaj:</h3><ul>
-      <li><b>Cieľ:</b> Súťaž v 3-5 hrách a získaj najviac bodov!</li>
+      <li><b>Cieľ:</b> Súťaž v 2-6 hrách a získaj najviac bodov!</li>
       <li><b>Body:</b> 1 bod za výhru, 0.5 bodu za remízu, 0 bodov za prehru</li>
       <li><b>AI vs PvP:</b> V AI móde (👤 vs Počítač) sú dostupné len hry s AI supportom (10 hier). V PvP móde (👥 2 Hráči) sú všetky hry (15 hier).</li>
-      <li><b>Výber hier:</b> Zaklikni 3-5 hier manuálne ALEBO klikni "🎲 Náhodný výber" (počítač vyberie za teba)</li>
+      <li><b>Výber hier:</b> Zaklikni 2-6 hier manuálne ALEBO klikni "🎲 Náhodný výber" (počítač vyberie za teba)</li>
       <li><b>Priebeh:</b> Hry sa hrajú jedna po druhej. Po každej hre sa zobrazí skóre a o 3 sekundy začne ďalšia hra.</li>
       <li><b>Live skóre:</b> Počas hier je hore zlatý banner so živým skóre - môžeš ho použiť aj na zrušenie turnaja (tlačidlo ✕)</li>
       <li><b>Víťaz:</b> Po poslednej hre sa zobrazí konečné vyhodnotenie s kompletným výsledkom všetkých hier</li>
     </ul></div>
     <div id="tourSetup">
       <h2 style="text-align:center;margin-bottom:20px">🏆 Multi-Game Turnaj</h2>
-      <p style="text-align:center;opacity:0.7;margin-bottom:20px">Vyber 3-5 hier alebo nechaj počítač vybrať náhodne!</p>
+      <p style="text-align:center;opacity:0.7;margin-bottom:20px">Vyber 2-6 hier alebo nechaj počítač vybrať náhodne!</p>
 
       <div style="display:flex;gap:10px;justify-content:center;margin-bottom:25px">
         <button class="action-btn primary-btn" onclick="tourRandomSelect()">🎲 Náhodný výber</button>
@@ -4357,8 +4357,20 @@ function tourRenderSetup() {
 function tourUpdateCount() {
   const checks = document.querySelectorAll('.tour-game-check:checked');
   const count = checks.length;
-  $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':count<5?'hry':'hier'}`;
-  $('tourStartBtn').disabled = count < 3 || count > 5;
+
+  // Update count text with status
+  if(count < 2) {
+    $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':'hier'} (minimum: 2)`;
+    $('tourSelCount').style.color = 'rgba(245,87,108,0.8)';
+  } else if(count > 6) {
+    $('tourSelCount').textContent = `Vybrané: ${count} hier (maximum: 6)`;
+    $('tourSelCount').style.color = 'rgba(245,87,108,0.8)';
+  } else {
+    $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':count<5?'hry':'hier'} ✓`;
+    $('tourSelCount').style.color = 'rgba(67,233,123,0.8)';
+  }
+
+  $('tourStartBtn').disabled = count < 2 || count > 6;
 }
 
 function tourRandomSelect() {
@@ -4372,7 +4384,7 @@ function tourRandomSelect() {
     return true;
   });
 
-  const count = Math.min(3 + Math.floor(Math.random() * 3), availableGames.length); // 3-5 or max available
+  const count = Math.min(2 + Math.floor(Math.random() * 5), availableGames.length); // 2-6 or max available
   const shuffled = [...availableGames].sort(() => Math.random() - 0.5);
   shuffled.slice(0, count).forEach(g => {
     const check = document.querySelector(`.tour-game-check[data-game="${g.id}"]`);
@@ -4388,7 +4400,7 @@ function tourClearSelection() {
 
 function tourStart() {
   const checks = document.querySelectorAll('.tour-game-check:checked');
-  if(checks.length < 3 || checks.length > 5) return;
+  if(checks.length < 2 || checks.length > 6) return;
 
   TOUR.games = Array.from(checks).map(c => c.dataset.game);
   TOUR.currentIndex = 0;
