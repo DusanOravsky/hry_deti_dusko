@@ -10904,7 +10904,6 @@ function resetDoodle() {
 
 // Keyboard controls
 document.addEventListener('keydown', e => {
-  if(e.repeat) return;
   if(!DOOD.running || DOOD.over) return;
   const doodleEl = $('doodle');
   if(!doodleEl || doodleEl.offsetParent === null) return;
