@@ -2155,7 +2155,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 35 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 36 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -2261,7 +2261,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="guessNumBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.2),rgba(56,249,215,0.2))"><span class="game-btn-icon">🎲</span><span class="game-btn-label">Hádaj Číslo</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="memoryBtn" style="background:linear-gradient(135deg,rgba(250,112,154,0.2),rgba(254,225,64,0.2))"><span class="game-btn-icon">🧠</span><span class="game-btn-label">Pexeso</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="connect4Btn" style="background:linear-gradient(135deg,rgba(48,207,208,0.2),rgba(51,8,103,0.2))"><span class="game-btn-icon">🔴</span><span class="game-btn-label">Connect 4</span><span class="game-btn-dot"></span></button>
-      <button class="game-btn" id="quizBtn" style="background:linear-gradient(135deg,rgba(161,140,209,0.2),rgba(251,194,235,0.2))"><span class="game-btn-icon">❓</span><span class="game-btn-label">Quiz</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="quizBtn" style="background:linear-gradient(135deg,rgba(161,140,209,0.2),rgba(251,194,235,0.2))"><span class="game-btn-icon">🧪</span><span class="game-btn-label">Quiz</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="battleshipBtn" style="background:linear-gradient(135deg,rgba(0,92,151,0.25),rgba(54,55,149,0.25))"><span class="game-btn-icon">🚢</span><span class="game-btn-label">Lodičky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="ghostBtn" style="background:linear-gradient(135deg,rgba(142,68,173,0.2),rgba(192,57,43,0.2))"><span class="game-btn-icon">👻</span><span class="game-btn-label">Ghost</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="reactionBtn" style="background:linear-gradient(135deg,rgba(247,151,30,0.2),rgba(255,210,0,0.2))"><span class="game-btn-icon">⚡</span><span class="game-btn-label">Reakcia</span><span class="game-btn-dot"></span></button>
@@ -2278,6 +2278,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="emojiGuessBtn" style="background:linear-gradient(135deg,rgba(255,200,0,0.25),rgba(255,100,200,0.25))"><span class="game-btn-icon">😂</span><span class="game-btn-label">Emoji Hádanka</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="hangmanBtn" style="background:linear-gradient(135deg,rgba(120,80,200,0.25),rgba(200,100,150,0.25))"><span class="game-btn-icon">💀</span><span class="game-btn-label">Obesenec</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="higherLowerBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.2),rgba(0,0,0,0.2))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vyššie Nižšie</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="beeCountBtn" style="background:linear-gradient(135deg,rgba(255,193,7,0.25),rgba(255,152,0,0.25))"><span class="game-btn-icon">🐝</span><span class="game-btn-label">Včely</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
@@ -2972,6 +2973,15 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <!-- ===== ŠTATISTIKY ===== -->
   <div class="game-area" id="stats">
+    <div class="rules"><h3>📊 Štatistiky:</h3><ul>
+      <li>Sleduj výhry a prehry pre každého hráča</li>
+      <li>Výhry podľa jednotlivých hier s grafom</li>
+      <li>Osobné rekordy: reakcia, snake, quiz a ďalšie</li>
+      <li>Achievementy: odomkni 16 úspechov hraním</li>
+      <li>Turnajové štatistiky: koľko turnajov ste odohrali</li>
+      <li>História posledných hier</li>
+      <li>Štatistiky aj achievementy sa dajú vymazať samostatne</li>
+    </ul></div>
     <div class="stats-section">
       <h3>🏆 Celkové výsledky</h3>
       <div class="stats-grid">
@@ -3906,6 +3916,32 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== BEE COUNTING ===== -->
+  <div class="game-area" id="beeCount">
+    <div class="rules"><h3>🐝 Včely:</h3><ul>
+      <li>Sleduj včely — letia do 3 úľov</li>
+      <li>Po 30 sekundách uhádni, do ktorého úľa vletelo najviac</li>
+      <li>Klikni na správny úľ!</li>
+    </ul></div>
+    <div class="ai-difficulty" id="beeDiffWrap" style="display:none;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setBeeDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setBeeDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setBeeDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="beeP1Card"><div class="player-name-display" id="beeP1Name">Hráč 1</div><div class="player-score" id="p1ScoreBee">0</div></div>
+      <div class="player-card player2" id="beeP2Card"><div class="player-name-display" id="beeP2Name">Hráč 2</div><div class="player-score" id="p2ScoreBee">0</div></div>
+    </div>
+    <div class="status" id="beeStatus">Klikni Štart!</div>
+    <div style="text-align:center;font-size:1.5em;margin:4px 0" id="beeTimer"></div>
+    <canvas id="beeCanvas" width="340" height="400" style="display:block;margin:0 auto;max-width:min(340px,90vw);border-radius:12px;background:linear-gradient(180deg,#87CEEB 0%,#E0F7FA 70%,#A5D6A7 100%)"></canvas>
+    <div class="celebration" id="beeCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" id="beeStartBtn" onclick="beeStart()">Štart 🐝</button>
+      <button class="action-btn danger-btn" onclick="resetBee()">Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -3929,7 +3965,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3940,7 +3976,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -3982,7 +4018,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.game-area').forEach(gameArea => {
     const gameId = gameArea.id;
     const rulesDiv = gameArea.querySelector('.rules');
-    if (!rulesDiv || gameId === 'stats') return; // Skip if no rules or stats page
+    if (!rulesDiv) return; // Skip if no rules
 
     // Create help button
     const helpBtn = document.createElement('button');
@@ -4205,7 +4241,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4216,7 +4252,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4330,7 +4366,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'reaction', name:'Reakcný test', icon:'⚡', mode:'pvp'},
   {id:'scramble', name:'Scramble', icon:'🔤', mode:'pvp'},
   {id:'higherLower', name:'Vyššie Nižšie', icon:'🎰', mode:'pvp'},
-  {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦', mode:'pvp'}
+  {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦', mode:'pvp'},
+  {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'}
 ];
 
 function showTournament() {
@@ -13875,6 +13912,413 @@ function setWdlLang(lang) {
   resetWordle();
 }
 
+// =============================================================================
+// SEKCIA 36: VČELY (BEE COUNTING GAME)
+// =============================================================================
+const BEE_DIFF = {
+  easy:   {interval:800, maxActive:3, counts:[18,10,6]},
+  medium: {interval:500, maxActive:5, counts:[15,12,8]},
+  hard:   {interval:350, maxActive:7, counts:[14,13,11]}
+};
+const BEE = {
+  canvas:null, ctx:null, W:340, H:400,
+  diff:'easy',
+  hives:[ {x:50,y:340,count:0}, {x:170,y:340,count:0}, {x:290,y:340,count:0} ],
+  bees:[], // {x,y,tx,ty,hive,progress,speed,wobble,wobbleOff}
+  spawnQueue:[], // which hive each bee targets
+  spawnTimer:null,
+  raf:null,
+  phase:'idle', // idle, watching, p1guess, p2guess, result
+  timeLeft:30,
+  countdown:null,
+  s1:0, s2:0,
+  round:0,
+  maxRounds:5,
+  p1Choice:-1, p2Choice:-1,
+  running:false
+};
+
+function setBeeDiff(d,btn){
+  BEE.diff=d;
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function resetBee(){
+  if(BEE.raf){cancelAnimationFrame(BEE.raf);BEE.raf=null;}
+  if(BEE.spawnTimer){clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;}
+  if(BEE.countdown){clearInterval(BEE.countdown);BEE.countdown=null;}
+  BEE.bees=[]; BEE.spawnQueue=[]; BEE.phase='idle'; BEE.running=false;
+  BEE.timeLeft=30; BEE.p1Choice=-1; BEE.p2Choice=-1; BEE.round=0;
+  BEE.s1=0; BEE.s2=0;
+  BEE.hives.forEach(h=>h.count=0);
+  const c=$('beeCanvas');
+  if(c){BEE.canvas=c;BEE.ctx=c.getContext('2d');BEE.W=c.width;BEE.H=c.height;}
+  $('p1ScoreBee').textContent='0'; $('p2ScoreBee').textContent='0';
+  $('beeStatus').textContent='Klikni Štart!';
+  $('beeTimer').textContent='';
+  $('beeStartBtn').disabled=false;
+  const bn1=$('beeP1Name');if(bn1)bn1.textContent=getP1Name('bee');
+  const bn2=$('beeP2Name');if(bn2)bn2.textContent=getP2Name('bee');
+  activeTurn('beeP1Card','beeP2Card',1);
+  if(welcomeGameMode==='ai'){
+    $('beeDiffWrap').style.display='flex';
+  } else {
+    $('beeDiffWrap').style.display='none';
+  }
+  beeRender();
+}
+
+function beeStart(){
+  if(BEE.running) return;
+  BEE.running=true;
+  BEE.phase='watching';
+  BEE.bees=[];
+  BEE.hives.forEach(h=>h.count=0);
+  BEE.p1Choice=-1; BEE.p2Choice=-1;
+  $('beeStartBtn').disabled=true;
+  $('beeCelebration').textContent='';
+
+  // Build spawn queue based on difficulty
+  const d = BEE_DIFF[BEE.diff];
+  const counts = [...d.counts];
+  // Shuffle which hive gets most bees
+  const order = [0,1,2].sort(()=>Math.random()-0.5);
+  BEE.spawnQueue=[];
+  order.forEach((hive,i)=>{
+    for(let j=0;j<counts[i];j++) BEE.spawnQueue.push(hive);
+  });
+  // Shuffle spawn order
+  for(let i=BEE.spawnQueue.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [BEE.spawnQueue[i],BEE.spawnQueue[j]]=[BEE.spawnQueue[j],BEE.spawnQueue[i]];
+  }
+
+  BEE.timeLeft=30;
+  $('beeTimer').textContent='⏱️ 30';
+  $('beeStatus').textContent='👀 Sleduj včely!';
+
+  // Spawn bees at intervals
+  let spawnIdx=0;
+  BEE.spawnTimer=setInterval(()=>{
+    if(spawnIdx>=BEE.spawnQueue.length) return;
+    if(BEE.bees.length<d.maxActive){
+      beeSpawn(BEE.spawnQueue[spawnIdx]);
+      spawnIdx++;
+    }
+  }, d.interval);
+
+  // Countdown
+  BEE.countdown=setInterval(()=>{
+    BEE.timeLeft--;
+    $('beeTimer').textContent='⏱️ '+BEE.timeLeft;
+    if(BEE.timeLeft<=5) $('beeTimer').style.color='#f5576c';
+    if(BEE.timeLeft<=0){
+      clearInterval(BEE.countdown);BEE.countdown=null;
+      clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;
+      // Wait for remaining bees to arrive
+      setTimeout(()=>{
+        BEE.bees=[];
+        BEE.phase='p1guess';
+        $('beeTimer').textContent='';
+        $('beeTimer').style.color='';
+        $('beeStatus').textContent='🐝 '+getP1Name('bee')+': Ktorý úľ dostal najviac včiel?';
+        activeTurn('beeP1Card','beeP2Card',1);
+        playSound('click');
+      }, 1500);
+    }
+  },1000);
+
+  // Start animation
+  beeAnimate();
+}
+
+function beeSpawn(hiveIdx){
+  const hive=BEE.hives[hiveIdx];
+  // Spawn from random position at top
+  const startX=Math.random()*BEE.W;
+  const startY=-10-Math.random()*30;
+  BEE.bees.push({
+    x:startX, y:startY,
+    tx:hive.x, ty:hive.y-10,
+    hive:hiveIdx,
+    progress:0,
+    speed:0.008+Math.random()*0.006,
+    wobble:8+Math.random()*12,
+    wobbleOff:Math.random()*Math.PI*2
+  });
+}
+
+function beeAnimate(){
+  if(!BEE.running){BEE.raf=null;return;}
+  beeUpdate();
+  beeRender();
+  BEE.raf=requestAnimationFrame(beeAnimate);
+}
+
+function beeUpdate(){
+  for(let i=BEE.bees.length-1;i>=0;i--){
+    const b=BEE.bees[i];
+    b.progress+=b.speed;
+    if(b.progress>=1){
+      BEE.hives[b.hive].count++;
+      BEE.bees.splice(i,1);
+      continue;
+    }
+    // Bezier-like path with wobble
+    const t=b.progress;
+    const midX=(b.x+b.tx)/2 + Math.sin(t*Math.PI*3+b.wobbleOff)*b.wobble;
+    const midY=b.y+(b.ty-b.y)*0.3;
+    // Quadratic bezier
+    const u=1-t;
+    b._dx = u*u*b.x + 2*u*t*midX + t*t*b.tx;
+    b._dy = u*u*b.y + 2*u*t*midY + t*t*b.ty;
+  }
+}
+
+function beeRender(){
+  const ctx=BEE.ctx;
+  if(!ctx) return;
+  const W=BEE.W, H=BEE.H;
+  ctx.clearRect(0,0,W,H);
+
+  // Draw grass
+  ctx.fillStyle='#66BB6A';
+  ctx.fillRect(0,H-70,W,70);
+  ctx.fillStyle='#4CAF50';
+  ctx.fillRect(0,H-70,W,5);
+
+  // Draw hives
+  BEE.hives.forEach((h,i)=>{
+    const hx=h.x, hy=h.y;
+    // Hive body (beehive shape)
+    ctx.fillStyle='#FFC107';
+    ctx.beginPath();
+    ctx.ellipse(hx,hy,28,22,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#FF8F00';
+    ctx.beginPath();
+    ctx.ellipse(hx,hy-15,22,15,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#FFD54F';
+    ctx.beginPath();
+    ctx.ellipse(hx,hy-28,16,10,0,0,Math.PI*2);
+    ctx.fill();
+    // Entrance
+    ctx.fillStyle='#5D4037';
+    ctx.beginPath();
+    ctx.arc(hx,hy+8,7,0,Math.PI*2);
+    ctx.fill();
+    // Label
+    ctx.fillStyle='#5D4037';
+    ctx.font='bold 14px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('Úľ '+(i+1), hx, hy+48);
+
+    // Highlight if in guessing phase
+    if(BEE.phase==='p1guess'||BEE.phase==='p2guess'){
+      ctx.strokeStyle='rgba(255,235,59,0.8)';
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(hx,hy,38,0,Math.PI*2);
+      ctx.stroke();
+    }
+    // Show choice markers
+    if(BEE.phase==='p2guess'&&BEE.p1Choice===i){
+      ctx.fillStyle='rgba(79,172,254,0.5)';
+      ctx.beginPath();
+      ctx.arc(hx-12,hy-40,8,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';
+      ctx.fillText('P1',hx-12,hy-37);
+    }
+    if(BEE.phase==='result'){
+      ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';
+      ctx.fillText(h.count+'×',hx,hy-45);
+    }
+  });
+
+  // Draw bees
+  BEE.bees.forEach(b=>{
+    const bx=b._dx||b.x, by=b._dy||b.y;
+    // Body
+    ctx.fillStyle='#FDD835';
+    ctx.beginPath();
+    ctx.ellipse(bx,by,7,5,0,0,Math.PI*2);
+    ctx.fill();
+    // Stripes
+    ctx.fillStyle='#212121';
+    ctx.fillRect(bx-2,by-5,2,10);
+    ctx.fillRect(bx+2,by-5,2,10);
+    // Wings
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.ellipse(bx-5,by-5,4,6,-.3,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(bx+5,by-5,4,6,.3,0,Math.PI*2);
+    ctx.fill();
+  });
+
+  // Draw flowers on grass
+  const flowers=['🌼','🌻','🌸'];
+  ctx.font='16px sans-serif';
+  ctx.textAlign='center';
+  [40,120,200,280,320].forEach((fx,i)=>{
+    ctx.fillText(flowers[i%3],fx,H-25);
+  });
+}
+
+function beeCanvasClick(e){
+  if(BEE.phase!=='p1guess'&&BEE.phase!=='p2guess') return;
+  const rect=BEE.canvas.getBoundingClientRect();
+  const scaleX=BEE.W/rect.width;
+  const cx=(e.clientX-rect.left)*scaleX;
+  const cy=(e.clientY-rect.top)*(BEE.H/rect.height);
+
+  // Find clicked hive
+  let clicked=-1;
+  BEE.hives.forEach((h,i)=>{
+    const dx=cx-h.x, dy=cy-h.y;
+    if(Math.sqrt(dx*dx+dy*dy)<45) clicked=i;
+  });
+  if(clicked<0) return;
+  playSound('click');
+
+  if(BEE.phase==='p1guess'){
+    BEE.p1Choice=clicked;
+    if(welcomeGameMode==='ai'){
+      // AI guesses
+      BEE.p2Choice=beeAIGuess();
+      beeShowResult();
+    } else {
+      BEE.phase='p2guess';
+      $('beeStatus').textContent='🐝 '+getP2Name('bee')+': Ktorý úľ dostal najviac včiel?';
+      activeTurn('beeP1Card','beeP2Card',2);
+      beeRender();
+    }
+  } else if(BEE.phase==='p2guess'){
+    BEE.p2Choice=clicked;
+    beeShowResult();
+  }
+}
+
+function beeAIGuess(){
+  const d=BEE.diff;
+  const maxH=BEE.hives.reduce((best,h,i)=>h.count>BEE.hives[best].count?i:best,0);
+  if(d==='easy') return [0,1,2][Math.floor(Math.random()*3)]; // random
+  if(d==='medium') return Math.random()<0.6 ? maxH : [0,1,2][Math.floor(Math.random()*3)]; // 60% correct
+  return maxH; // hard: always correct
+}
+
+function beeShowResult(){
+  BEE.phase='result';
+  const maxCount=Math.max(...BEE.hives.map(h=>h.count));
+  const correctHives=BEE.hives.map((h,i)=>h.count===maxCount?i:-1).filter(i=>i>=0);
+  const p1Correct=correctHives.includes(BEE.p1Choice);
+  const p2Correct=correctHives.includes(BEE.p2Choice);
+
+  const counts=BEE.hives.map((h,i)=>'Úľ '+(i+1)+': '+h.count).join(', ');
+
+  if(p1Correct&&!p2Correct){ BEE.s1++; $('p1ScoreBee').textContent=BEE.s1; }
+  else if(!p1Correct&&p2Correct){ BEE.s2++; $('p2ScoreBee').textContent=BEE.s2; }
+  // both correct or both wrong = no points
+
+  let msg='📊 '+counts+'\n';
+  if(p1Correct&&!p2Correct) msg+=getP1Name('bee')+' uhádol správne! 🎉';
+  else if(!p1Correct&&p2Correct) msg+=getP2Name('bee')+' uhádol správne! 🎉';
+  else if(p1Correct&&p2Correct) msg+='Obaja uhádli správne! 👏';
+  else msg+='Nikto neuhádol! Správny bol Úľ '+(correctHives[0]+1)+' 🤔';
+
+  $('beeStatus').textContent=msg;
+  beeRender();
+  playSound(p1Correct||p2Correct?'correct':'wrong');
+
+  BEE.round++;
+  if(BEE.round>=BEE.maxRounds){
+    // Game over
+    setTimeout(()=>{
+      let w=0;
+      if(BEE.s1>BEE.s2) w=1;
+      else if(BEE.s2>BEE.s1) w=2;
+      addWin(w,'beeCount');
+      const winner = w===1?getP1Name('bee'):w===2?getP2Name('bee'):'Remíza';
+      $('beeStatus').textContent='🏆 '+winner+(w?(' vyhráva '+BEE.s1+':'+BEE.s2):'! '+BEE.s1+':'+BEE.s2);
+      if(w) $('beeCelebration').textContent='🎉🐝🎉';
+      $('beeStartBtn').disabled=false;
+      BEE.running=false;
+      playSound('win');
+    }, 2500);
+  } else {
+    // Next round
+    setTimeout(()=>{
+      if(!BEE.running) return;
+      $('beeStatus').textContent='Kolo '+(BEE.round+1)+'/'+BEE.maxRounds+' — priprav sa!';
+      setTimeout(()=>{ if(BEE.running) beeStartRound(); }, 1500);
+    }, 2500);
+  }
+}
+
+function beeStartRound(){
+  BEE.bees=[];
+  BEE.hives.forEach(h=>h.count=0);
+  BEE.p1Choice=-1; BEE.p2Choice=-1;
+  BEE.phase='watching';
+
+  const d = BEE_DIFF[BEE.diff];
+  const counts = [...d.counts];
+  const order = [0,1,2].sort(()=>Math.random()-0.5);
+  BEE.spawnQueue=[];
+  order.forEach((hive,i)=>{
+    for(let j=0;j<counts[i];j++) BEE.spawnQueue.push(hive);
+  });
+  for(let i=BEE.spawnQueue.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [BEE.spawnQueue[i],BEE.spawnQueue[j]]=[BEE.spawnQueue[j],BEE.spawnQueue[i]];
+  }
+
+  BEE.timeLeft=30;
+  $('beeTimer').textContent='⏱️ 30';
+  $('beeTimer').style.color='';
+  $('beeStatus').textContent='👀 Sleduj včely! (Kolo '+(BEE.round+1)+'/'+BEE.maxRounds+')';
+
+  let spawnIdx=0;
+  BEE.spawnTimer=setInterval(()=>{
+    if(spawnIdx>=BEE.spawnQueue.length) return;
+    if(BEE.bees.length<d.maxActive){
+      beeSpawn(BEE.spawnQueue[spawnIdx]);
+      spawnIdx++;
+    }
+  }, d.interval);
+
+  BEE.countdown=setInterval(()=>{
+    BEE.timeLeft--;
+    $('beeTimer').textContent='⏱️ '+BEE.timeLeft;
+    if(BEE.timeLeft<=5) $('beeTimer').style.color='#f5576c';
+    if(BEE.timeLeft<=0){
+      clearInterval(BEE.countdown);BEE.countdown=null;
+      clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;
+      setTimeout(()=>{
+        BEE.bees=[];
+        BEE.phase='p1guess';
+        $('beeTimer').textContent='';
+        $('beeTimer').style.color='';
+        $('beeStatus').textContent='🐝 '+getP1Name('bee')+': Ktorý úľ dostal najviac včiel?';
+        activeTurn('beeP1Card','beeP2Card',1);
+        playSound('click');
+      }, 1500);
+    }
+  },1000);
+
+  if(!BEE.raf) beeAnimate();
+}
+
+// Canvas click handler
+document.addEventListener('DOMContentLoaded',()=>{
+  const bc=$('beeCanvas');
+  if(bc) bc.addEventListener('click', beeCanvasClick);
+});
+
 const WDL = {
   secret: '', guesses: [], current: '', row: 0, gameOver: false,
   p1Score: 0, p2Score: 0, turn: 1,
@@ -14194,6 +14638,7 @@ resetBreakout();
 resetPong();
 resetTanks();
 resetSnakeDuel();
+resetBee();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -14232,7 +14677,7 @@ const MOBILE_GAMES = [
   { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both', mp:true },
   { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both', mp:true },
   { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both', mp:true },
-  { id:'quiz',          label:'Kvíz',           icon:'❓', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp' },
+  { id:'quiz',          label:'Kvíz',           icon:'🧪', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp' },
   { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both', mp:true },
   { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp' },
   { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
@@ -14260,6 +14705,7 @@ const MOBILE_GAMES = [
   { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp', mp:true },
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
+  { id:'beeCount',     label:'Včely',          icon:'🐝', grad:'rgba(255,193,7,0.3),rgba(255,152,0,0.3)', mode:'both' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -14314,6 +14760,8 @@ function stopAllGames(){
   stopTurnTimer('ttt');
   stopTurnTimer('c4');
   stopTurnTimer('scr');
+  // Bee Counting
+  if(typeof BEE!=='undefined'){if(BEE.raf){cancelAnimationFrame(BEE.raf);BEE.raf=null;}if(BEE.spawnTimer){clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;}if(BEE.countdown){clearInterval(BEE.countdown);BEE.countdown=null;}BEE.running=false;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
