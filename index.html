@@ -2155,7 +2155,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 38 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 39 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -2286,6 +2286,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="wordleBtn" style="background:linear-gradient(135deg,rgba(83,141,78,0.3),rgba(181,159,59,0.3))"><span class="game-btn-icon">🟩</span><span class="game-btn-label">Wordle</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="beeCountBtn" style="background:linear-gradient(135deg,rgba(255,193,7,0.25),rgba(255,152,0,0.25))"><span class="game-btn-icon">🐝</span><span class="game-btn-label">Včely</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="soccerBtn" style="background:linear-gradient(135deg,rgba(76,175,80,0.3),rgba(255,235,59,0.3))"><span class="game-btn-icon">⚽</span><span class="game-btn-label">Futbal</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="minesweeperBtn" style="background:linear-gradient(135deg,rgba(100,100,100,0.3),rgba(244,67,54,0.3))"><span class="game-btn-icon">💣</span><span class="game-btn-label">Míny</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="gravityRunBtn" style="background:linear-gradient(135deg,rgba(26,26,46,0.4),rgba(108,92,231,0.3))"><span class="game-btn-icon">🌀</span><span class="game-btn-label">Gravity Run</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="breakoutBtn" style="background:linear-gradient(135deg,rgba(245,87,108,0.3),rgba(255,210,0,0.3))"><span class="game-btn-icon">🏓</span><span class="game-btn-label">Breakout</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="pongBtn" style="background:linear-gradient(135deg,rgba(245,87,108,0.25),rgba(79,172,254,0.25))"><span class="game-btn-icon">🏸</span><span class="game-btn-label">Pong</span><span class="game-btn-dot"></span></button>
@@ -3958,6 +3959,32 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== MINESWEEPER ===== -->
+  <div class="game-area" id="minesweeper">
+    <div class="rules"><h3>💣 Míny:</h3><ul>
+      <li>Klikni na políčko — odkryje sa</li>
+      <li>Číslo = počet mín okolo</li>
+      <li>Prepni na 🚩 režim a označ míny</li>
+      <li>Odkry všetky bezpečné políčka!</li>
+    </ul></div>
+    <div class="ai-difficulty" id="msDiffWrap" style="display:flex;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setMsDiff('easy',this)">8×8 (10 mín)</button>
+      <button class="difficulty-btn" onclick="setMsDiff('medium',this)">10×10 (20)</button>
+      <button class="difficulty-btn" onclick="setMsDiff('hard',this)">12×12 (35)</button>
+    </div>
+    <div id="msInfoBar" style="display:flex;justify-content:space-between;align-items:center;max-width:min(340px,90vw);margin:0 auto 6px;font-weight:bold;font-size:1.1em">
+      <span>💣 <span id="msMineCount">10</span></span>
+      <button id="msFlagToggle" onclick="msToggleFlag()" style="padding:4px 12px;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);font-size:1.1em;cursor:pointer">🔍 Odkryť</button>
+      <span>⏱ <span id="msTime">0</span></span>
+    </div>
+    <div class="status" id="msStatus">Klikni Štart!</div>
+    <div id="msGrid" style="display:grid;max-width:min(340px,90vw);margin:0 auto;gap:1px;user-select:none"></div>
+    <div class="celebration" id="msCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" id="msStartBtn" onclick="msStart()">Štart 💣</button>
+    </div>
+  </div>
+
   <!-- ===== SOCCER / FUTBAL ===== -->
   <div class="game-area" id="soccer">
     <div class="rules"><h3>⚽ Futbal — Penalty:</h3><ul>
@@ -4008,7 +4035,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '6.4';
+const APP_VERSION = '6.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4024,7 +4051,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', gravityRun:'gravityRunBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4035,7 +4062,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', gravityRun:'Gravity Run', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4300,7 +4327,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',gravityRun:'grav'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4311,7 +4338,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',gravityRun:'grav'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -15128,6 +15155,198 @@ document.addEventListener('keydown',function(e){
 });
 resetGravity();
 
+// =============================================================================
+// SEKCIA 39: MINESWEEPER (MÍNY)
+// =============================================================================
+const MS_DIFF={easy:{rows:8,cols:8,mines:10},medium:{rows:10,cols:10,mines:20},hard:{rows:12,cols:12,mines:35}};
+const MS_COLORS=['','#2196F3','#4CAF50','#f44336','#1a237e','#b71c1c','#00897b','#333','#888'];
+const MS={
+  grid:[],rows:8,cols:8,mines:10,
+  diff:'easy',revealed:0,flagged:0,totalSafe:0,
+  gameOver:false,won:false,firstClick:true,
+  timer:null,time:0,flagMode:false
+};
+function setMsDiff(d,btn){
+  MS.diff=d;
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function resetMinesweeper(){
+  if(MS.timer){clearInterval(MS.timer);MS.timer=null;}
+  const d=MS_DIFF[MS.diff];
+  MS.rows=d.rows;MS.cols=d.cols;MS.mines=d.mines;
+  MS.grid=[];MS.revealed=0;MS.flagged=0;MS.totalSafe=d.rows*d.cols-d.mines;
+  MS.gameOver=false;MS.won=false;MS.firstClick=true;MS.time=0;MS.flagMode=false;
+  for(let r=0;r<MS.rows;r++){
+    MS.grid[r]=[];
+    for(let c=0;c<MS.cols;c++) MS.grid[r][c]={mine:false,revealed:false,flagged:false,count:0};
+  }
+  $('msMineCount').textContent=MS.mines;
+  $('msTime').textContent='0';
+  $('msStatus').textContent='Klikni Štart!';
+  $('msStartBtn').disabled=false;
+  $('msCelebration').textContent='';
+  const tog=$('msFlagToggle');
+  if(tog){tog.textContent='🔍 Odkryť';tog.style.background='rgba(255,255,255,0.1)';}
+  msRenderGrid();
+}
+function msStart(){
+  resetMinesweeper();
+  MS.firstClick=true;
+  $('msStartBtn').disabled=true;
+  $('msStatus').textContent='Odkrývaj políčka! Prepni na 🚩 pre vlajky.';
+  msRenderGrid();
+}
+function msGenerate(safeR,safeC){
+  // Place mines avoiding safe cell and its neighbors
+  const safe=new Set();
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=safeR+dr,nc=safeC+dc;
+    if(nr>=0&&nr<MS.rows&&nc>=0&&nc<MS.cols) safe.add(nr*MS.cols+nc);
+  }
+  let placed=0;
+  while(placed<MS.mines){
+    const r=Math.floor(Math.random()*MS.rows);
+    const c=Math.floor(Math.random()*MS.cols);
+    if(!MS.grid[r][c].mine&&!safe.has(r*MS.cols+c)){
+      MS.grid[r][c].mine=true;placed++;
+    }
+  }
+  // Calculate neighbor counts
+  for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
+    if(MS.grid[r][c].mine)continue;
+    let cnt=0;
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<MS.rows&&nc>=0&&nc<MS.cols&&MS.grid[nr][nc].mine)cnt++;
+    }
+    MS.grid[r][c].count=cnt;
+  }
+}
+function msReveal(r,c){
+  if(r<0||r>=MS.rows||c<0||c>=MS.cols)return;
+  const cell=MS.grid[r][c];
+  if(cell.revealed||cell.flagged)return;
+  cell.revealed=true;MS.revealed++;
+  if(cell.mine){msGameOver(r,c);return;}
+  if(cell.count===0){
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      if(dr===0&&dc===0)continue;
+      msReveal(r+dr,c+dc);
+    }
+  }
+}
+function msFlag(r,c){
+  const cell=MS.grid[r][c];
+  if(cell.revealed)return;
+  cell.flagged=!cell.flagged;
+  MS.flagged+=cell.flagged?1:-1;
+  $('msMineCount').textContent=MS.mines-MS.flagged;
+  playSound('click');
+}
+function msToggleFlag(){
+  MS.flagMode=!MS.flagMode;
+  const tog=$('msFlagToggle');
+  if(MS.flagMode){
+    tog.textContent='🚩 Vlajka';tog.style.background='rgba(244,67,54,0.3)';
+  } else {
+    tog.textContent='🔍 Odkryť';tog.style.background='rgba(255,255,255,0.1)';
+  }
+}
+function msCellClick(r,c){
+  if(MS.gameOver||MS.won)return;
+  if(MS.firstClick){
+    MS.firstClick=false;
+    msGenerate(r,c);
+    MS.timer=setInterval(()=>{MS.time++;$('msTime').textContent=MS.time;},1000);
+  }
+  if(MS.flagMode){
+    msFlag(r,c);
+  } else {
+    const cell=MS.grid[r][c];
+    if(cell.flagged)return;
+    msReveal(r,c);
+    if(!MS.gameOver) playSound('click');
+  }
+  msRenderGrid();
+  msCheckWin();
+}
+function msCheckWin(){
+  if(MS.gameOver)return;
+  if(MS.revealed>=MS.totalSafe){
+    MS.won=true;MS.gameOver=true;
+    if(MS.timer){clearInterval(MS.timer);MS.timer=null;}
+    // Auto-flag remaining mines
+    for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
+      if(MS.grid[r][c].mine&&!MS.grid[r][c].flagged){MS.grid[r][c].flagged=true;MS.flagged++;}
+    }
+    $('msMineCount').textContent='0';
+    $('msStatus').textContent='🏆 Výborne! Všetky míny nájdené za '+MS.time+'s!';
+    $('msCelebration').textContent='🎉💣🎉';
+    celebrate('msCelebration');
+    addWin(1,'minesweeper');
+    $('msStartBtn').disabled=false;
+    playSound('win');
+    msRenderGrid();
+  }
+}
+function msGameOver(hitR,hitC){
+  MS.gameOver=true;
+  if(MS.timer){clearInterval(MS.timer);MS.timer=null;}
+  // Reveal all mines
+  for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
+    if(MS.grid[r][c].mine) MS.grid[r][c].revealed=true;
+  }
+  $('msStatus').textContent='💥 BOOM! Mína! Čas: '+MS.time+'s';
+  addWin(1,'minesweeper');
+  $('msStartBtn').disabled=false;
+  playSound('wrong');
+  msRenderGrid();
+  // Highlight the clicked mine
+  const hitEl=document.querySelector('#msGrid [data-r="'+hitR+'"][data-c="'+hitC+'"]');
+  if(hitEl) hitEl.style.background='#f44336';
+}
+function msRenderGrid(){
+  const grid=$('msGrid');
+  const cellSize=Math.floor(Math.min(340,window.innerWidth*0.9)/MS.cols);
+  grid.style.gridTemplateColumns='repeat('+MS.cols+','+cellSize+'px)';
+  grid.style.width=(cellSize*MS.cols+MS.cols)+'px';
+  // Build or update cells
+  if(grid.children.length!==MS.rows*MS.cols){
+    grid.innerHTML='';
+    for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
+      const d=document.createElement('div');
+      d.dataset.r=r;d.dataset.c=c;
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;';
+      d.addEventListener('click',()=>msCellClick(r,c));
+      d.addEventListener('contextmenu',(e)=>{e.preventDefault();if(!MS.gameOver&&!MS.won&&!MS.firstClick){msFlag(r,c);msRenderGrid();}});
+      grid.appendChild(d);
+    }
+  }
+  // Update cell visuals
+  const cells=grid.children;
+  for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
+    const cell=MS.grid[r][c];
+    const el=cells[r*MS.cols+c];
+    el.style.width=cellSize+'px';el.style.height=cellSize+'px';
+    el.style.fontSize=(cellSize>28?'14':'11')+'px';
+    if(cell.revealed){
+      if(cell.mine){
+        el.textContent='💣';el.style.background='rgba(0,0,0,0.3)';el.style.color='#fff';
+      } else if(cell.count>0){
+        el.textContent=cell.count;el.style.background='rgba(255,255,255,0.15)';el.style.color=MS_COLORS[cell.count];
+      } else {
+        el.textContent='';el.style.background='rgba(255,255,255,0.08)';el.style.color='';
+      }
+    } else if(cell.flagged){
+      el.textContent='🚩';el.style.background='rgba(255,193,7,0.25)';el.style.color='';
+    } else {
+      el.textContent='';el.style.background='rgba(255,255,255,0.22)';el.style.color='';
+    }
+  }
+}
+resetMinesweeper();
+
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
   const banner = $('offlineBanner');
@@ -15186,6 +15405,7 @@ const MOBILE_GAMES = [
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'beeCount',     label:'Včely',          icon:'🐝', grad:'rgba(255,193,7,0.3),rgba(255,152,0,0.3)', mode:'both' },
   { id:'soccer',       label:'Futbal',         icon:'⚽', grad:'rgba(76,175,80,0.3),rgba(255,235,59,0.3)', mode:'both' },
+  { id:'minesweeper',  label:'Míny',           icon:'💣', grad:'rgba(100,100,100,0.3),rgba(244,67,54,0.3)', mode:'solo' },
   { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -15247,6 +15467,8 @@ function stopAllGames(){
   if(typeof SOC!=='undefined'){if(SOC.raf){cancelAnimationFrame(SOC.raf);SOC.raf=null;}if(SOC._resultTimeout){clearTimeout(SOC._resultTimeout);SOC._resultTimeout=null;}SOC.running=false;}
   // Gravity Run
   if(typeof GRAV!=='undefined'){if(GRAV.raf){cancelAnimationFrame(GRAV.raf);GRAV.raf=null;}GRAV.running=false;}
+  // Minesweeper
+  if(typeof MS!=='undefined'&&MS.timer){clearInterval(MS.timer);MS.timer=null;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
