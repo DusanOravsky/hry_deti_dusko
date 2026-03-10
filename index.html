@@ -2121,6 +2121,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 <body class="light">
 <button class="theme-toggle" id="themeToggleDesktop" onclick="toggleTheme()" style="display:none">🌙 Tmavý</button>
 <button class="sound-toggle" id="soundToggleDesktop" onclick="toggleSound()" style="display:none">🔊</button>
+<button class="sound-toggle" id="vibrationToggleDesktop" onclick="toggleVibration()" style="display:none">📳</button>
 <canvas id="confettiCanvas"></canvas>
 
 <!-- ===== WELCOME SCREEN ===== -->
@@ -2183,6 +2184,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <div class="mobile-topbar-actions">
         <button class="mobile-topbar-btn" id="mobileThemeBtn" onclick="toggleTheme()">🌙</button>
         <button class="mobile-topbar-btn" id="mobileSoundBtn" onclick="toggleSound()">🔊</button>
+        <button class="mobile-topbar-btn" id="mobileVibrationBtn" onclick="toggleVibration()">📳</button>
       </div>
     </div>
     <div class="mobile-player-strip">
@@ -2206,6 +2208,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
         <button class="mobile-topbar-btn" id="mobileHelpBtn" onclick="showRules(currentGameId)" title="Pravidlá">❓</button>
         <button class="mobile-topbar-btn" id="mobileThemeBtn2" onclick="toggleTheme()">🌙</button>
         <button class="mobile-topbar-btn" id="mobileSoundBtn2" onclick="toggleSound()">🔊</button>
+        <button class="mobile-topbar-btn" id="mobileVibrationBtn2" onclick="toggleVibration()">📳</button>
       </div>
     </div>
     <div id="mobileGameContent">
@@ -2241,6 +2244,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <nav class="sidebar-nav">
       <button class="theme-toggle sidebar-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Tmavý</button>
       <button class="sound-toggle sidebar-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+      <button class="sound-toggle sidebar-toggle" id="vibrationToggle" onclick="toggleVibration()">📳</button>
       <button onclick="randomBattle()" style="width:100%;padding:10px;margin-bottom:8px;border:none;border-radius:10px;font-size:0.85em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite">🎲 RANDOM BATTLE!</button>
       <button class="game-btn active" id="ticTacToeBtn" style="background:linear-gradient(135deg,rgba(240,147,251,0.25),rgba(245,87,108,0.25))"><span class="game-btn-icon">🔶</span><span class="game-btn-label">Piškvorky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="rockPaperBtn" style="background:linear-gradient(135deg,rgba(79,172,254,0.2),rgba(0,242,254,0.2))"><span class="game-btn-icon">🪨</span><span class="game-btn-label">Kameň Papier</span><span class="game-btn-dot"></span></button>
@@ -3905,6 +3909,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // SEKCIA 2: TÉMA & ZVUK
 // ─────────────────────────────────────────────────────────────────────────────
 let soundEnabled = true;
+let vibrationEnabled = true;
 
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
@@ -3936,11 +3941,18 @@ function toggleSound() {
   document.querySelectorAll('#soundToggle, #soundToggleDesktop').forEach(el => { if(el) { el.textContent = label; el.style.opacity = opacity; } });
 }
 
+function toggleVibration() {
+  vibrationEnabled = !vibrationEnabled;
+  const label = vibrationEnabled ? '📳' : '📴';
+  const opacity = vibrationEnabled ? '1' : '0.5';
+  document.querySelectorAll('#vibrationToggle, #vibrationToggleDesktop').forEach(el => { if(el) { el.textContent = label; el.style.opacity = opacity; } });
+}
+
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 function getAudioCtx() { if(!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
 
-function vibrate(ms) { try { if(navigator.vibrate) navigator.vibrate(ms); } catch(e) {} }
+function vibrate(ms) { try { if(vibrationEnabled && navigator.vibrate) navigator.vibrate(ms); } catch(e) {} }
 
 function playSound(type) {
   // Vibrations
@@ -14026,11 +14038,15 @@ function _updateMobileToggles() {
   ['mobileSoundBtn','mobileSoundBtn2'].forEach(id => {
     const el = $(id); if(el) el.textContent = soundEnabled ? '🔊' : '🔇';
   });
+  ['mobileVibrationBtn','mobileVibrationBtn2'].forEach(id => {
+    const el = $(id); if(el) el.textContent = vibrationEnabled ? '📳' : '📴';
+  });
 }
 
-// Patch toggleTheme / toggleSound to keep mobile buttons in sync
+// Patch toggleTheme / toggleSound / toggleVibration to keep mobile buttons in sync
 const _origTT = toggleTheme; toggleTheme = function(){ _origTT(); _updateMobileToggles(); };
 const _origTS = toggleSound; toggleSound = function(){ _origTS(); _updateMobileToggles(); };
+const _origTV = toggleVibration; toggleVibration = function(){ _origTV(); _updateMobileToggles(); };
 
 // Resize handler — no longer needed since 3-level nav is always active
 
