@@ -13929,21 +13929,22 @@ function setWdlLang(lang) {
 // SEKCIA 36: VČELY (BEE COUNTING GAME)
 // =============================================================================
 const BEE_DIFF = {
-  easy:   {interval:800, maxActive:3, counts:[18,10,6]},
-  medium: {interval:500, maxActive:5, counts:[15,12,8]},
-  hard:   {interval:350, maxActive:7, counts:[14,13,11]}
+  easy:   {interval:800, maxActive:4, counts:[18,10,6]},
+  medium: {interval:500, maxActive:6, counts:[15,12,8]},
+  hard:   {interval:350, maxActive:8, counts:[14,13,11]}
 };
 const BEE = {
   canvas:null, ctx:null, W:340, H:400,
   diff:'easy',
   hives:[ {x:50,y:340,count:0}, {x:170,y:340,count:0}, {x:290,y:340,count:0} ],
-  bees:[], // {x,y,tx,ty,hive,progress,speed,wobble,wobbleOff}
-  spawnQueue:[], // which hive each bee targets
+  bees:[],
+  spawnQueue:[],
   spawnTimer:null,
   raf:null,
-  phase:'idle', // idle, watching, p1guess, p2guess, result
+  phase:'idle',
   timeLeft:30,
   countdown:null,
+  _resultTimeout:null,
   s1:0, s2:0,
   round:0,
   maxRounds:5,
@@ -13957,10 +13958,14 @@ function setBeeDiff(d,btn){
   btn.classList.add('active');
 }
 
-function resetBee(){
+function beeCleanupTimers(){
   if(BEE.raf){cancelAnimationFrame(BEE.raf);BEE.raf=null;}
   if(BEE.spawnTimer){clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;}
   if(BEE.countdown){clearInterval(BEE.countdown);BEE.countdown=null;}
+  if(BEE._resultTimeout){clearTimeout(BEE._resultTimeout);BEE._resultTimeout=null;}
+}
+function resetBee(){
+  beeCleanupTimers();
   BEE.bees=[]; BEE.spawnQueue=[]; BEE.phase='idle'; BEE.running=false;
   BEE.timeLeft=30; BEE.p1Choice=-1; BEE.p2Choice=-1; BEE.round=0;
   BEE.s1=0; BEE.s2=0;
@@ -13970,6 +13975,7 @@ function resetBee(){
   $('p1ScoreBee').textContent='0'; $('p2ScoreBee').textContent='0';
   $('beeStatus').textContent='Klikni Štart!';
   $('beeTimer').textContent='';
+  $('beeTimer').style.color='';
   $('beeStartBtn').disabled=false;
   const bn1=$('beeP1Name');if(bn1)bn1.textContent=getP1Name('bee');
   const bn2=$('beeP2Name');if(bn2)bn2.textContent=getP2Name('bee');
@@ -13982,67 +13988,65 @@ function resetBee(){
   beeRender();
 }
 
-function beeStart(){
-  if(BEE.running) return;
-  BEE.running=true;
-  BEE.phase='watching';
-  BEE.bees=[];
-  BEE.hives.forEach(h=>h.count=0);
-  BEE.p1Choice=-1; BEE.p2Choice=-1;
-  $('beeStartBtn').disabled=true;
-  $('beeCelebration').textContent='';
-
-  // Build spawn queue based on difficulty
-  const d = BEE_DIFF[BEE.diff];
-  const counts = [...d.counts];
-  // Shuffle which hive gets most bees
-  const order = [0,1,2].sort(()=>Math.random()-0.5);
+function beeBuildQueue(){
+  const d=BEE_DIFF[BEE.diff];
+  const counts=[...d.counts];
+  const order=[0,1,2].sort(()=>Math.random()-0.5);
   BEE.spawnQueue=[];
-  order.forEach((hive,i)=>{
-    for(let j=0;j<counts[i];j++) BEE.spawnQueue.push(hive);
-  });
-  // Shuffle spawn order
-  for(let i=BEE.spawnQueue.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [BEE.spawnQueue[i],BEE.spawnQueue[j]]=[BEE.spawnQueue[j],BEE.spawnQueue[i]];
-  }
-
-  BEE.timeLeft=30;
-  $('beeTimer').textContent='⏱️ 30';
-  $('beeStatus').textContent='👀 Sleduj včely!';
-
-  // Spawn bees at intervals
+  order.forEach((hive,i)=>{for(let j=0;j<counts[i];j++) BEE.spawnQueue.push(hive);});
+  for(let i=BEE.spawnQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[BEE.spawnQueue[i],BEE.spawnQueue[j]]=[BEE.spawnQueue[j],BEE.spawnQueue[i]];}
+}
+function beeStartSpawning(){
+  const d=BEE_DIFF[BEE.diff];
   let spawnIdx=0;
   BEE.spawnTimer=setInterval(()=>{
-    if(spawnIdx>=BEE.spawnQueue.length) return;
-    if(BEE.bees.length<d.maxActive){
-      beeSpawn(BEE.spawnQueue[spawnIdx]);
-      spawnIdx++;
-    }
+    if(spawnIdx>=BEE.spawnQueue.length){clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;return;}
+    if(BEE.bees.length<d.maxActive){beeSpawn(BEE.spawnQueue[spawnIdx]);spawnIdx++;}
   }, d.interval);
-
-  // Countdown
+}
+function beeStartCountdown(){
+  BEE.timeLeft=30;
+  $('beeTimer').textContent='⏱️ 30';
+  $('beeTimer').style.color='';
   BEE.countdown=setInterval(()=>{
     BEE.timeLeft--;
     $('beeTimer').textContent='⏱️ '+BEE.timeLeft;
     if(BEE.timeLeft<=5) $('beeTimer').style.color='#f5576c';
     if(BEE.timeLeft<=0){
       clearInterval(BEE.countdown);BEE.countdown=null;
-      clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;
-      // Wait for remaining bees to arrive
-      setTimeout(()=>{
+      if(BEE.spawnTimer){clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;}
+      BEE._resultTimeout=setTimeout(()=>{
+        if(!BEE.running) return;
+        BEE._resultTimeout=null;
         BEE.bees=[];
         BEE.phase='p1guess';
         $('beeTimer').textContent='';
         $('beeTimer').style.color='';
         $('beeStatus').textContent='🐝 '+getP1Name('bee')+': Ktorý úľ dostal najviac včiel?';
         activeTurn('beeP1Card','beeP2Card',1);
+        beeRender();
         playSound('click');
       }, 1500);
     }
   },1000);
+}
+function beeStart(){
+  if(BEE.running) return;
+  beeCleanupTimers();
+  BEE.running=true;
+  BEE.phase='watching';
+  BEE.bees=[];
+  BEE.hives.forEach(h=>h.count=0);
+  BEE.p1Choice=-1; BEE.p2Choice=-1;
+  BEE.round=0; BEE.s1=0; BEE.s2=0;
+  $('p1ScoreBee').textContent='0'; $('p2ScoreBee').textContent='0';
+  $('beeStartBtn').disabled=true;
+  $('beeCelebration').textContent='';
 
-  // Start animation
+  beeBuildQueue();
+  $('beeStatus').textContent='👀 Sleduj včely!';
+  beeStartSpawning();
+  beeStartCountdown();
   beeAnimate();
 }
 
@@ -14136,18 +14140,18 @@ function beeRender(){
       ctx.arc(hx,hy,38,0,Math.PI*2);
       ctx.stroke();
     }
-    // Show choice markers
-    if(BEE.phase==='p2guess'&&BEE.p1Choice===i){
-      ctx.fillStyle='rgba(79,172,254,0.5)';
-      ctx.beginPath();
-      ctx.arc(hx-12,hy-40,8,0,Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';
-      ctx.fillText('P1',hx-12,hy-37);
-    }
+    // Show counts and choice markers only in result
     if(BEE.phase==='result'){
       ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';
-      ctx.fillText(h.count+'×',hx,hy-45);
+      ctx.fillText(h.count+'\u00D7',hx,hy-45);
+      if(BEE.p1Choice===i){
+        ctx.fillStyle='rgba(79,172,254,0.7)';ctx.beginPath();ctx.arc(hx-14,hy-40,9,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.fillText('P1',hx-14,hy-37);
+      }
+      if(BEE.p2Choice===i){
+        ctx.fillStyle='rgba(245,87,108,0.7)';ctx.beginPath();ctx.arc(hx+14,hy-40,9,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.fillText('P2',hx+14,hy-37);
+      }
     }
   });
 
@@ -14237,11 +14241,11 @@ function beeShowResult(){
   else if(!p1Correct&&p2Correct){ BEE.s2++; $('p2ScoreBee').textContent=BEE.s2; }
   // both correct or both wrong = no points
 
-  let msg='📊 '+counts+'\n';
-  if(p1Correct&&!p2Correct) msg+=getP1Name('bee')+' uhádol správne! 🎉';
-  else if(!p1Correct&&p2Correct) msg+=getP2Name('bee')+' uhádol správne! 🎉';
-  else if(p1Correct&&p2Correct) msg+='Obaja uhádli správne! 👏';
-  else msg+='Nikto neuhádol! Správny bol Úľ '+(correctHives[0]+1)+' 🤔';
+  let msg='📊 '+counts;
+  if(p1Correct&&!p2Correct) msg+=' — '+getP1Name('bee')+' uhádol správne! 🎉';
+  else if(!p1Correct&&p2Correct) msg+=' — '+getP2Name('bee')+' uhádol správne! 🎉';
+  else if(p1Correct&&p2Correct) msg+=' — Obaja uhádli správne! 👏';
+  else msg+=' — Nikto neuhádol! Správny bol Úľ '+(correctHives[0]+1)+' 🤔';
 
   $('beeStatus').textContent=msg;
   beeRender();
@@ -14249,8 +14253,9 @@ function beeShowResult(){
 
   BEE.round++;
   if(BEE.round>=BEE.maxRounds){
-    // Game over
-    setTimeout(()=>{
+    BEE._resultTimeout=setTimeout(()=>{
+      if(!BEE.running) return;
+      BEE._resultTimeout=null;
       let w=0;
       if(BEE.s1>BEE.s2) w=1;
       else if(BEE.s2>BEE.s1) w=2;
@@ -14263,11 +14268,11 @@ function beeShowResult(){
       playSound('win');
     }, 2500);
   } else {
-    // Next round
-    setTimeout(()=>{
+    BEE._resultTimeout=setTimeout(()=>{
       if(!BEE.running) return;
+      BEE._resultTimeout=null;
       $('beeStatus').textContent='Kolo '+(BEE.round+1)+'/'+BEE.maxRounds+' — priprav sa!';
-      setTimeout(()=>{ if(BEE.running) beeStartRound(); }, 1500);
+      BEE._resultTimeout=setTimeout(()=>{ if(!BEE.running) return; BEE._resultTimeout=null; beeStartRound(); }, 1500);
     }, 2500);
   }
 }
@@ -14277,52 +14282,10 @@ function beeStartRound(){
   BEE.hives.forEach(h=>h.count=0);
   BEE.p1Choice=-1; BEE.p2Choice=-1;
   BEE.phase='watching';
-
-  const d = BEE_DIFF[BEE.diff];
-  const counts = [...d.counts];
-  const order = [0,1,2].sort(()=>Math.random()-0.5);
-  BEE.spawnQueue=[];
-  order.forEach((hive,i)=>{
-    for(let j=0;j<counts[i];j++) BEE.spawnQueue.push(hive);
-  });
-  for(let i=BEE.spawnQueue.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [BEE.spawnQueue[i],BEE.spawnQueue[j]]=[BEE.spawnQueue[j],BEE.spawnQueue[i]];
-  }
-
-  BEE.timeLeft=30;
-  $('beeTimer').textContent='⏱️ 30';
-  $('beeTimer').style.color='';
+  beeBuildQueue();
   $('beeStatus').textContent='👀 Sleduj včely! (Kolo '+(BEE.round+1)+'/'+BEE.maxRounds+')';
-
-  let spawnIdx=0;
-  BEE.spawnTimer=setInterval(()=>{
-    if(spawnIdx>=BEE.spawnQueue.length) return;
-    if(BEE.bees.length<d.maxActive){
-      beeSpawn(BEE.spawnQueue[spawnIdx]);
-      spawnIdx++;
-    }
-  }, d.interval);
-
-  BEE.countdown=setInterval(()=>{
-    BEE.timeLeft--;
-    $('beeTimer').textContent='⏱️ '+BEE.timeLeft;
-    if(BEE.timeLeft<=5) $('beeTimer').style.color='#f5576c';
-    if(BEE.timeLeft<=0){
-      clearInterval(BEE.countdown);BEE.countdown=null;
-      clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;
-      setTimeout(()=>{
-        BEE.bees=[];
-        BEE.phase='p1guess';
-        $('beeTimer').textContent='';
-        $('beeTimer').style.color='';
-        $('beeStatus').textContent='🐝 '+getP1Name('bee')+': Ktorý úľ dostal najviac včiel?';
-        activeTurn('beeP1Card','beeP2Card',1);
-        playSound('click');
-      }, 1500);
-    }
-  },1000);
-
+  beeStartSpawning();
+  beeStartCountdown();
   if(!BEE.raf) beeAnimate();
 }
 
@@ -14774,7 +14737,7 @@ function stopAllGames(){
   stopTurnTimer('c4');
   stopTurnTimer('scr');
   // Bee Counting
-  if(typeof BEE!=='undefined'){if(BEE.raf){cancelAnimationFrame(BEE.raf);BEE.raf=null;}if(BEE.spawnTimer){clearInterval(BEE.spawnTimer);BEE.spawnTimer=null;}if(BEE.countdown){clearInterval(BEE.countdown);BEE.countdown=null;}BEE.running=false;}
+  if(typeof beeCleanupTimers==='function'){beeCleanupTimers();BEE.running=false;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
