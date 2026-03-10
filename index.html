@@ -3246,11 +3246,12 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <!-- ===== ŠACH (CHESS) ===== -->
   <div class="game-area" id="chess">
     <div class="rules"><h3>📋 Šach:</h3><ul>
-      <li>Klasický šach — biely začína</li>
+      <li>Klasický šach — biely začína, všetky oficiálne pravidlá</li>
       <li>Klikni na figúrku a potom na cieľové políčko</li>
       <li>Šach — kráľ je ohrozený (červené zvýraznenie)</li>
       <li>Musíš sa brániť šachu — iné ťahy nie sú povolené</li>
-      <li>Šach mat = výhra! Pat (žiadne ťahy) = remíza</li>
+      <li>Rošáda (0-0, 0-0-0), En passant, Pawn promotion</li>
+      <li>Šach mat = výhra! Pat = remíza. 50 ťahov = remíza</li>
     </ul></div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="chP1Card"><div class="player-name-display" id="chP1Name">Hráč 1</div><div class="player-score" id="p1ScoreCH">0</div></div>
@@ -9292,7 +9293,13 @@ function randomBattle() {
 // =============================================================================
 // SEKCIA 28: ŠACH (CHESS)
 // =============================================================================
-const CH = { board:[], selected:null, turn:'w', s1:0, s2:0, over:false, lastFrom:-1, lastTo:-1, diff:'easy' };
+const CH = {
+  board:[], selected:null, turn:'w', s1:0, s2:0, over:false, lastFrom:-1, lastTo:-1, diff:'easy',
+  castling: { wK:true, wQ:true, bK:true, bQ:true },
+  enPassant: -1,
+  halfMoveClock: 0,
+  promotionPending: null
+};
 function setCHDiff(d,btn) { CH.diff=d; document.querySelectorAll('#chAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 const CH_START = [
   'bR','bN','bB','bQ','bK','bB','bN','bR',
@@ -9309,6 +9316,10 @@ const CH_ICONS = {wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚'
 function resetChess() {
   CH.board=[...CH_START]; CH.selected=null; CH.turn='w'; CH.over=false;
   CH.lastFrom=-1; CH.lastTo=-1;
+  CH.castling = { wK:true, wQ:true, bK:true, bQ:true };
+  CH.enPassant = -1;
+  CH.halfMoveClock = 0;
+  CH.promotionPending = null;
   $('chStatus').textContent='Biely na ťahu';
   activeTurn('chP1Card','chP2Card',1);
   renderChessBoard();
@@ -9367,21 +9378,83 @@ function chessClick(i) {
     } else { CH.selected=null; renderChessBoard(); }
   }
 }
-function chessMove(from,to) {
+function chessMove(from,to,promoteTo) {
   // Send move in MP
   if(MP.isConnected && MP.connection && !MP._chReceiving) {
-    MP.connection.send({ type: 'ch-move', from, to });
+    MP.connection.send({ type: 'ch-move', from, to, promoteTo });
   }
+  const piece = CH.board[from];
+  const color = piece[0], type = piece[1];
   const captured=CH.board[to];
+  const fromR=Math.floor(from/8), toR=Math.floor(to/8);
+
+  // Castling: move rook too
+  if(type==='K' && Math.abs(to-from)===2) {
+    if(to===62) { CH.board[61]=CH.board[63]; CH.board[63]=''; } // wK
+    if(to===6)  { CH.board[5]=CH.board[7];   CH.board[7]='';  } // bK
+    if(to===58) { CH.board[59]=CH.board[56]; CH.board[56]=''; } // wQ
+    if(to===2)  { CH.board[3]=CH.board[0];   CH.board[0]='';  } // bQ
+  }
+
+  // En passant: remove captured pawn
+  if(type==='P' && to===CH.enPassant) {
+    const capturedPawnSq = color==='w' ? to+8 : to-8;
+    CH.board[capturedPawnSq] = '';
+  }
+
   CH.board[to]=CH.board[from]; CH.board[from]='';
+
   // Pawn promotion
-  const r=Math.floor(to/8);
-  if(CH.board[to]==='wP'&&r===0) CH.board[to]='wQ';
-  if(CH.board[to]==='bP'&&r===7) CH.board[to]='bQ';
+  if(type==='P' && (toR===0 || toR===7)) {
+    if(promoteTo) {
+      CH.board[to] = color + promoteTo;
+    } else {
+      // Pause and show promotion dialog
+      CH.promotionPending = { square: to, color };
+      CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
+      renderChessBoard();
+      chShowPromotionDialog(color);
+      return; // wait for user choice
+    }
+  }
+
+  // Update en passant target
+  if(type==='P' && Math.abs(toR-fromR)===2) {
+    CH.enPassant = color==='w' ? from-8 : from+8;
+  } else {
+    CH.enPassant = -1;
+  }
+
+  // Update castling rights
+  if(type==='K') { CH.castling[color+'K']=false; CH.castling[color+'Q']=false; }
+  if(type==='R') {
+    if(from===56) CH.castling.wQ=false;
+    if(from===63) CH.castling.wK=false;
+    if(from===0)  CH.castling.bQ=false;
+    if(from===7)  CH.castling.bK=false;
+  }
+
+  // Update halfmove clock
+  if(type==='P' || captured) {
+    CH.halfMoveClock = 0;
+  } else {
+    CH.halfMoveClock++;
+  }
+
   CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
   playSound('move'); vibrate(20);
   if(captured) playSound('hit');
   CH.turn=CH.turn==='w'?'b':'w';
+
+  // Check for 50-move rule
+  if(CH.halfMoveClock >= 100) {
+    CH.over=true;
+    $('chStatus').textContent='🤝 Remiza — 50 ťahov bez pohybu pešiaka/bития!';
+    addWin(0,'chess'); playSound('flip');
+    renderChessBoard();
+    return;
+  }
+
   // Check for legal moves of the next player
   const allMoves=[];
   for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]===CH.turn) allMoves.push(...chGetLegalMoves(i));
@@ -9442,7 +9515,11 @@ function chessAI() {
       pick=top[Math.floor(Math.random()*top.length)];
     }
   }
-  chessMove(pick.from,pick.to);
+  // AI always promotes to Queen
+  const piece=CH.board[pick.from];
+  const toR=Math.floor(pick.to/8);
+  const promoteTo = (piece==='bP' && toR===7) ? 'Q' : undefined;
+  chessMove(pick.from,pick.to,promoteTo);
 }
 function chessWin(color) {
   CH.over=true;
@@ -9479,6 +9556,11 @@ function getChessMoves(idx) {
     if(canGo(r+dir,c)) { moves.push((r+dir)*8+c); if(r===start&&canGo(r+2*dir,c)) moves.push((r+2*dir)*8+c); }
     if(canCap(r+dir,c-1)) moves.push((r+dir)*8+(c-1));
     if(canCap(r+dir,c+1)) moves.push((r+dir)*8+(c+1));
+    // En passant
+    if(CH.enPassant !== -1) {
+      if((r+dir)*8+(c-1) === CH.enPassant) moves.push(CH.enPassant);
+      if((r+dir)*8+(c+1) === CH.enPassant) moves.push(CH.enPassant);
+    }
   } else if(type==='N') {
     [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc])=>{
       if(inB(r+dr,c+dc)&&(!at(r+dr,c+dc)||at(r+dr,c+dc)[0]===enemy)) moves.push((r+dr)*8+(c+dc));
@@ -9488,6 +9570,12 @@ function getChessMoves(idx) {
       if(dr===0&&dc===0) continue;
       if(inB(r+dr,c+dc)&&(!at(r+dr,c+dc)||at(r+dr,c+dc)[0]===enemy)) moves.push((r+dr)*8+(c+dc));
     }
+    // Castling - kingside
+    if(color==='w' && CH.castling.wK && !at(7,5) && !at(7,6) && CH.board[63]==='wR') moves.push(62);
+    if(color==='b' && CH.castling.bK && !at(0,5) && !at(0,6) && CH.board[7]==='bR') moves.push(6);
+    // Castling - queenside
+    if(color==='w' && CH.castling.wQ && !at(7,1) && !at(7,2) && !at(7,3) && CH.board[56]==='wR') moves.push(58);
+    if(color==='b' && CH.castling.bQ && !at(0,1) && !at(0,2) && !at(0,3) && CH.board[0]==='bR') moves.push(2);
   } else {
     const dirs=type==='R'?[[0,1],[0,-1],[1,0],[-1,0]]:type==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
     dirs.forEach(([dr,dc])=>{
@@ -9516,9 +9604,19 @@ function chIsInCheck(color) {
 }
 function chGetLegalMoves(idx) {
   const piece=CH.board[idx]; if(!piece) return [];
-  const color=piece[0];
+  const color=piece[0], type=piece[1];
   const raw=getChessMoves(idx);
   return raw.filter(to=>{
+    // Special castling check: can't castle from/through/into check
+    if(type==='K' && Math.abs(to-idx)===2) {
+      if(chIsInCheck(color)) return false; // can't castle from check
+      const between = (to+idx)/2;
+      const saved=CH.board[between];
+      CH.board[between]=CH.board[idx]; CH.board[idx]='';
+      const throughCheck=chIsInCheck(color);
+      CH.board[idx]=CH.board[between]; CH.board[between]=saved;
+      if(throughCheck) return false; // can't castle through check
+    }
     const saved=CH.board[to];
     CH.board[to]=CH.board[idx]; CH.board[idx]='';
     const inCheck=chIsInCheck(color);
@@ -9598,6 +9696,60 @@ function chessVoiceStop() {
   $('chVoiceBtn').style.background = '';
   $('chVoiceBtn').textContent = '🎤 Hlas';
   $('chVoiceStatus').textContent = '';
+}
+
+// Pawn promotion dialog
+function chShowPromotionDialog(color) {
+  const icons = {Q:CH_ICONS[color+'Q'], R:CH_ICONS[color+'R'], B:CH_ICONS[color+'B'], N:CH_ICONS[color+'N']};
+  const html = `
+    <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center" id="chPromotionOverlay">
+      <div style="background:var(--bg-primary);padding:20px;border-radius:12px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)">
+        <h3 style="margin:0 0 16px 0;color:inherit">Povýš pešiaka</h3>
+        <div style="display:flex;gap:12px">
+          <button class="action-btn primary-btn" style="font-size:2em;width:60px;height:60px" onclick="chPromote('Q')">${icons.Q}</button>
+          <button class="action-btn primary-btn" style="font-size:2em;width:60px;height:60px" onclick="chPromote('R')">${icons.R}</button>
+          <button class="action-btn primary-btn" style="font-size:2em;width:60px;height:60px" onclick="chPromote('B')">${icons.B}</button>
+          <button class="action-btn primary-btn" style="font-size:2em;width:60px;height:60px" onclick="chPromote('N')">${icons.N}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+function chPromote(pieceType) {
+  const overlay = $('chPromotionOverlay');
+  if(overlay) overlay.remove();
+  if(!CH.promotionPending) return;
+  const {square, color} = CH.promotionPending;
+  CH.board[square] = color + pieceType;
+  CH.promotionPending = null;
+  // Send promotion choice in MP
+  if(MP.isConnected && MP.connection && !MP._chReceiving) {
+    MP.connection.send({ type: 'ch-promote', piece: color+pieceType });
+  }
+  // Continue with turn switch
+  CH.turn = CH.turn==='w'?'b':'w';
+  const allMoves=[];
+  for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]===CH.turn) allMoves.push(...chGetLegalMoves(i));
+  const inCheck=chIsInCheck(CH.turn);
+  if(allMoves.length===0) {
+    if(inCheck) { chessWin(CH.turn==='w'?'b':'w'); return; }
+    else { chessDraw(); return; }
+  }
+  const turnName=getChessColorName(CH.turn);
+  const checkText=inCheck?' — Šach!':'';
+  $('chStatus').textContent=(CH.turn==='w'?'⬜':'⬛')+' '+turnName+' na ťahu'+checkText;
+  if(MP.isConnected) {
+    const hostIsWhite = MP.chRound % 2 === 0;
+    const turnIsHost = (CH.turn === 'w') === hostIsWhite;
+    activeTurn('chP1Card','chP2Card', turnIsHost ? 1 : 2);
+  } else {
+    activeTurn('chP1Card','chP2Card',CH.turn==='w'?1:2);
+  }
+  renderChessBoard();
+  if(welcomeGameMode==='ai'&&CH.turn==='b'&&!CH.over) {
+    setTimeout(chessAI,500);
+  }
 }
 
 // =============================================================================
@@ -14365,9 +14517,21 @@ function mpHandleMessage(data) {
   // Chess move synchronization
   if(data.type === 'ch-move') {
     MP._chReceiving = true;
-    chessMove(data.from, data.to);
+    chessMove(data.from, data.to, data.promoteTo);
     renderChessBoard();
     MP._chReceiving = false;
+  }
+
+  // Chess promotion synchronization
+  if(data.type === 'ch-promote') {
+    if(CH.promotionPending) {
+      const {square} = CH.promotionPending;
+      CH.board[square] = data.piece;
+      CH.promotionPending = null;
+      const overlay = $('chPromotionOverlay');
+      if(overlay) overlay.remove();
+      renderChessBoard();
+    }
   }
 
   // Pexeso (Memory) flip synchronization
