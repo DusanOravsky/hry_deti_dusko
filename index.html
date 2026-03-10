@@ -1472,6 +1472,25 @@ body.light .mp-close:hover {
   text-align: center;
   color: #667eea;
 }
+.mp-role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.5em;
+  font-weight: 700;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.mp-role-badge.host {
+  background: rgba(102,126,234,0.3);
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+.mp-role-badge.guest {
+  background: rgba(86,204,242,0.3);
+  color: #56ccf2;
+  border: 2px solid #56ccf2;
+}
 .mp-section {
   margin-bottom: 24px;
   padding: 20px;
@@ -14008,6 +14027,7 @@ function mpCreateRoom() {
         console.log('Guest connected!');
         MP.isConnected = true;
         mpCheckConnectionType();
+        mpUpdateRoleBadge();
         $('mpHostStatus').className = 'mp-status connected';
         $('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si 🔴 ' + MP.myName + ' (X)</div>';
         $('mpDisconnectBtn').classList.remove('mp-hidden');
@@ -14115,6 +14135,7 @@ function mpJoinWithConfig(code, statusEl, config) {
         console.log('Connected to host!');
         MP.isConnected = true;
         mpCheckConnectionType();
+        mpUpdateRoleBadge();
         statusEl.className = 'mp-status connected';
         statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si 🔵 ' + MP.myName + ' (O)</div>';
         $('mpDisconnectBtn').classList.remove('mp-hidden');
@@ -14197,6 +14218,22 @@ function mpSaveSession() {
   }
 }
 
+function mpUpdateRoleBadge() {
+  const badge = $('mpRoleBadge');
+  if(!badge) return;
+  if(MP.isConnected) {
+    badge.style.display = 'inline-block';
+    if(MP.isHost) {
+      badge.className = 'mp-role-badge host';
+      badge.textContent = 'HOST';
+    } else {
+      badge.className = 'mp-role-badge guest';
+      badge.textContent = 'GUEST';
+    }
+  } else {
+    badge.style.display = 'none';
+  }
+}
 function mpClearSession() {
   sessionStorage.removeItem('mp_session');
 }
@@ -14217,6 +14254,7 @@ function mpDisconnect() {
   MP.isHost = false;
   MP.isConnected = false;
   MP.roomCode = null;
+  mpUpdateRoleBadge();
   // Clean up chess promotion dialog and state
   if(CH.promotionPending) {
     CH.promotionPending = null;
@@ -14297,6 +14335,7 @@ function mpTryReconnect() {
         conn.on('open', () => {
           MP.isConnected = true;
           mpCheckConnectionType();
+          mpUpdateRoleBadge();
           onReconnected();
           const _rPsk = $('psk15Board').style.display !== 'none';
           conn.send({ type: 'handshake', from: 'host', name: MP.myName,
@@ -14313,6 +14352,7 @@ function mpTryReconnect() {
         MP.connection.on('open', () => {
           MP.isConnected = true;
           mpCheckConnectionType();
+          mpUpdateRoleBadge();
           onReconnected();
           MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
         });
@@ -15025,7 +15065,7 @@ if('serviceWorker' in navigator) {
 <div class="mp-overlay" id="mpOverlay" onclick="closeMPModalOnOverlay(event)">
   <div class="mp-modal" onclick="event.stopPropagation()">
     <button class="mp-close" onclick="closeMPModal()">✕</button>
-    <h2 class="mp-title">🌐 Online Multiplayer</h2>
+    <h2 class="mp-title">🌐 Online Multiplayer<span id="mpRoleBadge" class="mp-role-badge" style="display:none"></span></h2>
 
     <!-- Info -->
     <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-bottom:20px;font-size:0.85em;line-height:1.5">
