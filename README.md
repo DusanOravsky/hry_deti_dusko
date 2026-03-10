@@ -150,7 +150,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v6.6**
+Aktualna verzia: **v7.0**
 
 ### Changelog
 
