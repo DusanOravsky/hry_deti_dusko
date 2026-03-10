@@ -4311,7 +4311,8 @@ const TOUR = {
   games: [],
   currentIndex: 0,
   scores: { p1: 0, p2: 0 },
-  results: []
+  results: [],
+  _timeout: null
 };
 
 const TOUR_AVAILABLE_GAMES = [
@@ -4597,10 +4598,11 @@ function addWin(w, gameId) {
 
     // Move to next game after delay
     TOUR.currentIndex++;
-    setTimeout(() => {
+    TOUR._timeout = setTimeout(() => {
+      if(!TOUR.active) return;
       if(TOUR.currentIndex < TOUR.games.length) {
         showToast(`✅ Body započítané! Ďalšia hra za 3 sekundy...`, 3000, 'rgba(67,233,123,0.9)');
-        setTimeout(() => tourNextGame(), 3000);
+        TOUR._timeout = setTimeout(() => { if(TOUR.active) tourNextGame(); }, 3000);
       } else {
         tourNextGame(); // Shows victory screen
       }
@@ -4650,7 +4652,7 @@ const ACHIEVEMENTS = [
   { id:'tourWin10',icon:'💎', name:'Turnajovy kral',  desc:'Vyhraj 10 turnajov',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=10 },
 ];
 
-let _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]');
+let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
 
 function _getWinStreak() {
   let streak=0;
@@ -4667,7 +4669,7 @@ function checkAchievements() {
     if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); }
   }
   if(newlyUnlocked.length>0) {
-    localStorage.setItem('hry_achievements', JSON.stringify(_unlockedAch));
+    try{localStorage.setItem('hry_achievements', JSON.stringify(_unlockedAch));}catch(e){}
     showAchievementToast(newlyUnlocked[0]);
   }
 }
@@ -4707,7 +4709,7 @@ function resetGameStats() { showConfirm('🗑️ Naozaj vymazať štatistiky hie
   saveStats(); renderStats();
 }); }
 function resetAchievements() { showConfirm('🏅 Naozaj vymazať všetky achievementy?',()=>{
-  _unlockedAch=[]; localStorage.removeItem('hry_achievements');
+  _unlockedAch=[]; try{localStorage.removeItem('hry_achievements');}catch(e){}
   renderStats();
 }); }
 
@@ -4945,7 +4947,7 @@ function setTTTSize(s,btn) {
   if(is15) { resetPsk15(); } else { TTT.size=s; TTT.grid=parseInt(s); resetTTT(); }
   // MP: host sends size change to guest
   if(MP.isConnected && MP.isHost && MP.connection && !MP._applyingHostSettings) {
-    MP.connection.send({type:'ttt-size', tttSize:s});
+    mpSend({type:'ttt-size', tttSize:s});
   }
 }
 function initTTTBoard() {
@@ -5019,7 +5021,7 @@ function clickTTT(i) {
 
   // Send move to other player if MP connected
   if(MP.isConnected && MP.connection) {
-    MP.connection.send({
+    mpSend({
       type: 'ttt-move',
       index: i,
       player: TTT.player
@@ -5221,7 +5223,7 @@ function clickPsk15(i) {
 
   // Send move to other player if MP connected
   if(MP.isConnected && MP.connection) {
-    MP.connection.send({type:'psk15-move', index:i, player:PSK15.player});
+    mpSend({type:'psk15-move', index:i, player:PSK15.player});
   }
 
   const w=checkPsk15Win();
@@ -5287,7 +5289,7 @@ function rpsChoose(choice) {
   playSound('click');
   // MP mode: send choice and wait for opponent
   if(MP.isConnected) {
-    MP.connection.send({ type: 'rps-choice', choice: choice });
+    mpSend({ type: 'rps-choice', choice: choice });
     MP._rpsMyChoice = choice;
     $('rpsStatus').textContent='⏳ Čakám na súpera...';
     document.querySelectorAll('.choice-btn').forEach(b=>b.style.pointerEvents='none');
@@ -5413,7 +5415,7 @@ function confirmGNSecret() {
   err.textContent='';
   if(MP.isConnected) {
     // MP: picker sends secret to guesser
-    MP.connection.send({type:'gn-setup',secret:val,max:GN.max,maxTries:GN.maxTries});
+    mpSend({type:'gn-setup',secret:val,max:GN.max,maxTries:GN.maxTries});
     gnShowBoxes(false,false,false,true);
     $('gnStatus').textContent='Čakám na hádanie súpera...';
     $('gnInput').disabled=true;
@@ -5440,7 +5442,7 @@ function makeGuess() {
   if(!val||val<1||val>GN.max) return;
   // MP mode: guesser sends guess to picker
   if(MP.isConnected&&!mpGNIPick()&&!MP._gnReceiving) {
-    MP.connection.send({type:'gn-guess',val:val});
+    mpSend({type:'gn-guess',val:val});
   }
   GN.attempts++;
   const fb=$('gnFeedback');
@@ -5538,7 +5540,7 @@ function initMem() {
     c.className='memory-card'; c.textContent='?'; c.onclick=()=>flipMem(i); b.appendChild(c);
   });
   // MP: host sends board to guest
-  if(MP.isConnected&&MP.isHost&&MP.connection) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff});
+  if(MP.isConnected&&MP.isHost&&MP.connection) mpSend({type:'mem-board',cards:MEM.cards,diff:MEM.diff});
 }
 function memCheckEnd() {
   if(MEM.matched.length>=MEM.cards.length-(MEM.cards.length%2===1?1:0)) {
@@ -5558,7 +5560,7 @@ function flipMem(i) {
   if(MP.isConnected) {
     const myPlayer = MP.isHost ? 1 : 2;
     if(MEM.player !== myPlayer) return;
-    MP.connection.send({type:'mem-flip', index:i});
+    mpSend({type:'mem-flip', index:i});
   }
   MEM.flipped.push(i);
   const cards=document.querySelectorAll('#memBoard .memory-card');
@@ -5847,7 +5849,7 @@ function dropC4(col) {
       C4.board[col][r]=C4.player; renderC4(); playSound('move');
       // Send move to opponent in MP
       if(MP.isConnected && MP.connection) {
-        MP.connection.send({ type: 'c4-move', col: col, player: C4.player });
+        mpSend({ type: 'c4-move', col: col, player: C4.player });
       }
       // Drop animation on the filled slot
       const slot=$(`c4-${col}-${r}`);
@@ -7418,7 +7420,7 @@ function bsPlayerReady() {
       MP._meReady = true;
       $('bsReadyBtn').style.display='none';
       $('bsStatus').textContent='⏳ Čakám na súpera...';
-      MP.connection.send({type:'bs-ready'});
+      mpSend({type:'bs-ready'});
       if(MP._opponentReady) mpStartBSGame();
       return;
     }
@@ -7517,7 +7519,7 @@ function bsShoot(idx) {
     if(BS.turn !== myTurn) return;
     const oppBoard = MP.isHost ? 1 : 0;
     if(BS.hits[oppBoard][idx]) return;
-    MP.connection.send({type:'bs-shoot',index:idx});
+    mpSend({type:'bs-shoot',index:idx});
     return; // Wait for result from opponent
   }
   const defender=BS.turn===1?1:0;
@@ -9962,7 +9964,7 @@ function chessClick(i) {
 function chessMove(from,to,promoteTo) {
   // Send move in MP
   if(MP.isConnected && MP.connection && !MP._chReceiving) {
-    MP.connection.send({ type: 'ch-move', from, to, promoteTo });
+    mpSend({ type: 'ch-move', from, to, promoteTo });
   }
   const piece = CH.board[from];
   const color = piece[0], type = piece[1];
@@ -10332,7 +10334,7 @@ function chessVoiceToggle() {
     if(e.error === 'no-speech') return;
     $('chVoiceStatus').textContent = '⚠️ ' + e.error;
   };
-  chVoiceRecog.onend = () => { if(chVoiceActive) chVoiceRecog.start(); };
+  chVoiceRecog.onend = () => { if(chVoiceActive&&chVoiceRecog) try{chVoiceRecog.start();}catch(e){} };
   chVoiceRecog.start();
   chVoiceActive = true;
   $('chVoiceBtn').style.background = 'rgba(245,87,108,0.5)';
@@ -10341,7 +10343,7 @@ function chessVoiceToggle() {
 }
 function chessVoiceStop() {
   chVoiceActive = false;
-  if(chVoiceRecog) { chVoiceRecog.abort(); chVoiceRecog = null; }
+  if(chVoiceRecog) { const r=chVoiceRecog; chVoiceRecog=null; r.abort(); }
   $('chVoiceBtn').style.background = '';
   $('chVoiceBtn').textContent = '🎤 Hlas';
   $('chVoiceStatus').textContent = '';
@@ -10399,7 +10401,7 @@ function chPromote(pieceType) {
   CH.promotionPending = null;
   // Send promotion choice in MP
   if(MP.isConnected && MP.connection && !MP._chReceiving) {
-    MP.connection.send({ type: 'ch-promote', piece: color+pieceType });
+    mpSend({ type: 'ch-promote', piece: color+pieceType });
   }
   chFinishTurn();
 }
@@ -10483,7 +10485,7 @@ function dkClick(i) {
 function dkDoMove(from,to,isJump) {
   // Send move in MP
   if(MP.isConnected && MP.connection && !MP._dkReceiving) {
-    MP.connection.send({ type: 'dk-move', from, to, isJump });
+    mpSend({ type: 'dk-move', from, to, isJump });
   }
   const piece=DK.board[from];
   DK.board[to]=piece; DK.board[from]='';
@@ -11069,7 +11071,7 @@ function snakeStep(){
   if(dead){
     SNK.over=true;SNK.running=false;clearInterval(SNK.timer);
     playSound('wrong');
-    if(SNK.score>SNK.best){SNK.best=SNK.score;localStorage.setItem('hry_snakeBest',SNK.best);updateRecord('recSnakeBest',SNK.best);}
+    if(SNK.score>SNK.best){SNK.best=SNK.score;try{localStorage.setItem('hry_snakeBest',SNK.best);}catch(e){}updateRecord('recSnakeBest',SNK.best);}
     $('snakeBest').textContent=SNK.best;
     $('snakeStatus').textContent='Game Over! Skóre: '+SNK.score;
     addWin(1,'snake');
@@ -11255,7 +11257,7 @@ function ludoRoll() {
   btn.classList.remove('dice-roll'); void btn.offsetWidth; btn.classList.add('dice-roll');
   playSound('click');
   // Send dice to opponent
-  if(MP.isConnected&&MP.connection) MP.connection.send({type:'ludo-roll',dice:LUDO.dice});
+  if(MP.isConnected&&MP.connection) mpSend({type:'ludo-roll',dice:LUDO.dice});
   const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
   const movable=ludoGetMovable();
   if(movable.length===0){
@@ -11352,7 +11354,7 @@ function ludoMove(pieceIdx) {
   if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
   if(MP.isConnected) {
     if(LUDO.turn !== mpGetMyLudoTurn()) return;
-    MP.connection.send({type:'ludo-move',piece:pieceIdx});
+    mpSend({type:'ludo-move',piece:pieceIdx});
   }
   ludoDoMove(pieceIdx);
 }
@@ -11795,7 +11797,7 @@ function doodEndRound() {
   DOOD.scores[DOOD.player - 1] = DOOD.score;
   if(DOOD.score > DOOD.best) {
     DOOD.best = DOOD.score;
-    localStorage.setItem('hry_doodleBest', DOOD.best);
+    try{localStorage.setItem('hry_doodleBest', DOOD.best);}catch(e){}
     updateRecord('doodleBest', DOOD.best);
   }
   $('doodleBest').textContent = DOOD.best;
@@ -12418,6 +12420,7 @@ const MP = {
   _maxReconnectAttempts: 3,
   _reconnectTimeout: null
 };
+function mpSend(data){if(MP.isConnected&&MP.connection)try{MP.connection.send(data);}catch(e){console.warn('mpSend:',e);}}
 
 // =============================================================================
 // SEKCIA 33: BODKY A KRABICKY (DOTS AND BOXES)
@@ -13024,7 +13027,7 @@ function pngStep(){
   if(MP.isConnected&&MP.isHost){
     pngSyncCounter++;
     if(pngSyncCounter%3===0){
-      MP.connection.send({type:'png-state',bx:PNG.bx,by:PNG.by,p1y:PNG.p1y,p2y:PNG.p2y,
+      mpSend({type:'png-state',bx:PNG.bx,by:PNG.by,p1y:PNG.p1y,p2y:PNG.p2y,
         s1:PNG.s1,s2:PNG.s2,over:false});
     }
   }
@@ -13045,7 +13048,7 @@ function pngFinish(winner){
   celebrate('pngCelebration');
   playSound('win');
   if(MP.isConnected&&MP.isHost){
-    MP.connection.send({type:'png-state',bx:PNG.bx,by:PNG.by,p1y:PNG.p1y,p2y:PNG.p2y,
+    mpSend({type:'png-state',bx:PNG.bx,by:PNG.by,p1y:PNG.p1y,p2y:PNG.p2y,
       s1:PNG.s1,s2:PNG.s2,over:true,winner:winner});
   }
 }
@@ -13057,7 +13060,7 @@ function startPong(){
   $('pngStatus').textContent='Hra!';
   PNG.raf=requestAnimationFrame(pngStep);
   if(MP.isConnected&&MP.isHost){
-    MP.connection.send({type:'png-start'});
+    mpSend({type:'png-start'});
   }
 }
 
@@ -13065,7 +13068,7 @@ function startPong(){
 function pngSetDir(dir){
   if(MP.isConnected){
     if(MP.isHost){PNG.p1dir=dir;}
-    else{PNG.p1dir=dir;MP.connection.send({type:'png-input',dir:dir});}
+    else{PNG.p1dir=dir;mpSend({type:'png-input',dir:dir});}
   } else {
     PNG.p1dir=dir;
   }
@@ -13117,7 +13120,7 @@ document.addEventListener('keyup',e=>{
           PNG.p1y=y-PNG.ph/2;
         } else {
           PNG.p2y=y-PNG.ph/2;
-          MP.connection.send({type:'png-input',dir:0,py:PNG.p2y});
+          mpSend({type:'png-input',dir:0,py:PNG.p2y});
         }
       } else {
         if(x<0.5)PNG.p1y=y-PNG.ph/2;
@@ -13275,7 +13278,7 @@ function tnkShoot(player){
   if(!TNK.running||TNK.over)return;
   // In MP, guest sends shoot to host
   if(MP.isConnected&&!MP.isHost){
-    MP.connection.send({type:'tnk-input',keys:TNK.p1keys,shoot:true});
+    mpSend({type:'tnk-input',keys:TNK.p1keys,shoot:true});
     return;
   }
   if(player===1){
@@ -13377,7 +13380,7 @@ function tnkStep(){
   tnkRender();
   // send state to guest in MP
   if(MP.isConnected&&MP.isHost){
-    MP.connection.send({type:'tnk-state',t1:TNK.t1,t2:TNK.t2,bullets:TNK.bullets,
+    mpSend({type:'tnk-state',t1:TNK.t1,t2:TNK.t2,bullets:TNK.bullets,
       powerup:TNK.powerup,s1:TNK.s1,s2:TNK.s2,over:false});
   }
 }
@@ -13423,7 +13426,7 @@ function tnkFinish(winner){
   celebrate('tnkCelebration');
   playSound('win');
   if(MP.isConnected&&MP.isHost){
-    MP.connection.send({type:'tnk-state',t1:TNK.t1,t2:TNK.t2,bullets:TNK.bullets,
+    mpSend({type:'tnk-state',t1:TNK.t1,t2:TNK.t2,bullets:TNK.bullets,
       powerup:TNK.powerup,s1:TNK.s1,s2:TNK.s2,over:true,winner:winner});
   }
 }
@@ -13435,7 +13438,7 @@ function startTanks(){
   $('tnkStatus').textContent='Boj!';
   TNK.timer=setInterval(tnkStep, 1000/8);
   if(MP.isConnected&&MP.isHost){
-    MP.connection.send({type:'tnk-start',walls:TNK.walls,powerup:TNK.powerup});
+    mpSend({type:'tnk-start',walls:TNK.walls,powerup:TNK.powerup});
   }
 }
 
@@ -13444,7 +13447,7 @@ function tnkSetKey(key,val){
   if(MP.isConnected){
     // In MP, all keys control my tank (P1 locally)
     TNK.p1keys[key]=val;
-    if(!MP.isHost) MP.connection.send({type:'tnk-input',keys:TNK.p1keys,shoot:false});
+    if(!MP.isHost) mpSend({type:'tnk-input',keys:TNK.p1keys,shoot:false});
   } else if(key.startsWith('p2_')){
     TNK.p2keys[key.slice(3)]=val;
   } else {
@@ -13609,7 +13612,7 @@ function sdStep(){
     if(MP.isConnected&&MP.isHost){
       const over=SD.s1>=SD.winScore||SD.s2>=SD.winScore;
       const winner=SD.s1>=SD.winScore?1:(SD.s2>=SD.winScore?2:0);
-      MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
+      mpSend({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
         s1:SD.s1,s2:SD.s2,dead1:SD.dead1,dead2:SD.dead2,p1dir:SD.p1dir,p2dir:SD.p2dir,
         over:over,winner:winner});
     }
@@ -13634,7 +13637,7 @@ function sdStep(){
       sdPlaceFood();sdRender();
       $('sdStatus').textContent='Dalsie kolo!';
       if(MP.isConnected&&MP.isHost){
-        MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
+        mpSend({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
           s1:SD.s1,s2:SD.s2,dead1:false,dead2:false,p1dir:'right',p2dir:'left'});
       }
       setTimeout(()=>{
@@ -13647,7 +13650,7 @@ function sdStep(){
   }
   // send state to guest in MP (normal frame, no deaths)
   if(MP.isConnected&&MP.isHost){
-    MP.connection.send({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
+    mpSend({type:'sd-state',snake1:SD.snake1,snake2:SD.snake2,food:SD.food,
       s1:SD.s1,s2:SD.s2,dead1:false,dead2:false,p1dir:SD.p1dir,p2dir:SD.p2dir,ate:SD._ate});
   }
 }
@@ -13666,7 +13669,7 @@ function mpSDStart(){
   if(!MP.isConnected)return;
   if(MP.isHost){
     startSnakeDuel();
-    MP.connection.send({type:'sd-start',food:SD.food});
+    mpSend({type:'sd-start',food:SD.food});
   }
 }
 
@@ -13678,7 +13681,7 @@ function sdSetDir(player, dir){
       SD.p1next=dir;
     } else {
       // Guest: send direction to host (controls P2)
-      MP.connection.send({type:'sd-dir',dir:dir});
+      mpSend({type:'sd-dir',dir:dir});
     }
   } else {
     if(player===1)SD.p1next=dir; else SD.p2next=dir;
@@ -14199,7 +14202,7 @@ const svEl=$('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
 
 // Clear any stale MP session data
-sessionStorage.removeItem('mp_session');
+try{sessionStorage.removeItem('mp_session');}catch(e){}
 
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
@@ -14311,6 +14314,10 @@ function stopAllGames(){
   stopTurnTimer('ttt');
   stopTurnTimer('c4');
   stopTurnTimer('scr');
+  // Tournament timeout
+  if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
+  // QR scanner
+  if(typeof mpStopScan==='function') mpStopScan();
 }
 
 function mobileBackWithTournamentCheck(targetLevel) {
@@ -14375,14 +14382,14 @@ function mobileGoTo(level, gameId) {
 }
 
 // ===== FAVORITES & RECENTLY PLAYED =====
-let _favorites = JSON.parse(localStorage.getItem('hry_favorites')||'[]');
-let _recentGames = JSON.parse(localStorage.getItem('hry_recent')||'[]');
+let _favorites; try { _favorites = JSON.parse(localStorage.getItem('hry_favorites')||'[]'); } catch(e) { _favorites = []; }
+let _recentGames; try { _recentGames = JSON.parse(localStorage.getItem('hry_recent')||'[]'); } catch(e) { _recentGames = []; }
 
 function toggleFavorite(gId, e) {
   e.stopPropagation();
   const idx = _favorites.indexOf(gId);
   if(idx>=0) _favorites.splice(idx,1); else _favorites.push(gId);
-  localStorage.setItem('hry_favorites', JSON.stringify(_favorites));
+  try{localStorage.setItem('hry_favorites', JSON.stringify(_favorites));}catch(e){}
   playSound('click');
   renderMobileGrid();
   checkAchievements();
@@ -14390,7 +14397,7 @@ function toggleFavorite(gId, e) {
 
 function clearRecentGames() {
   _recentGames = [];
-  localStorage.removeItem('hry_recent');
+  try{localStorage.removeItem('hry_recent');}catch(e){}
   playSound('click');
   renderMobileGrid();
 }
@@ -14400,7 +14407,7 @@ function trackRecentGame(gId) {
   _recentGames = _recentGames.filter(id=>id!==gId);
   _recentGames.unshift(gId);
   if(_recentGames.length>5) _recentGames.length=5;
-  localStorage.setItem('hry_recent', JSON.stringify(_recentGames));
+  try{localStorage.setItem('hry_recent', JSON.stringify(_recentGames));}catch(e){}
 }
 
 function _renderGameCard(g) {
@@ -14645,7 +14652,7 @@ function mpUnlockTurn() {
   const inp = $('mpTurnPassModal');
   if(!inp) return;
   if(inp.value.trim() === TURN_PASSWORD) {
-    localStorage.setItem('mp_turn_unlocked', 'yes');
+    try{localStorage.setItem('mp_turn_unlocked', 'yes');}catch(e){}
     mpRenderTurnSection();
   } else {
     $('mpTurnErrorModal').style.display = 'block';
@@ -14655,7 +14662,7 @@ function mpUnlockTurn() {
 }
 
 function mpLockTurn() {
-  localStorage.removeItem('mp_turn_unlocked');
+  try{localStorage.removeItem('mp_turn_unlocked');}catch(e){}
   mpRenderTurnSection();
 }
 
@@ -14913,7 +14920,7 @@ function mpJoinWithConfig(code, statusEl, config) {
         // Auto-close modal after connection
         setTimeout(closeMPModal, 1500);
 
-        MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
+        mpSend({ type: 'handshake', from: 'guest', name: MP.myName });
       });
 
       MP.connection.on('data', (data) => {
@@ -14964,7 +14971,7 @@ function mpShowTurnPrompt(code, statusEl) {
   $('mpTurnBtn').onclick = () => {
     const pass = $('mpTurnPass').value.trim();
     if(pass === TURN_PASSWORD) {
-      localStorage.setItem('mp_turn_unlocked', 'yes');
+      try{localStorage.setItem('mp_turn_unlocked', 'yes');}catch(e){}
       statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">⏳</div><div>TURN odomknutý! Pripájam...</div>';
       statusEl.className = 'mp-status waiting';
       mpJoinWithConfig(code, statusEl, TURN_CONFIG);
@@ -14982,9 +14989,9 @@ function mpShowTurnPrompt(code, statusEl) {
 
 function mpSaveSession() {
   if(MP.isConnected && MP.roomCode) {
-    sessionStorage.setItem('mp_session', JSON.stringify({
+    try{sessionStorage.setItem('mp_session', JSON.stringify({
       roomCode: MP.roomCode, isHost: MP.isHost, myName: MP.myName
-    }));
+    }));}catch(e){}
   }
 }
 
@@ -15005,7 +15012,7 @@ function mpUpdateRoleBadge() {
   }
 }
 function mpClearSession() {
-  sessionStorage.removeItem('mp_session');
+  try{sessionStorage.removeItem('mp_session');}catch(e){}
   MP._reconnectAttempts = 0;
   MP._intentionalDisconnect = false;
   if(MP._reconnectTimeout) {
@@ -15134,7 +15141,7 @@ function mpAutoReconnect() {
   // Wait 2 seconds before attempting
   MP._reconnectTimeout = setTimeout(() => {
     MP._reconnectTimeout = null;
-    MP._intentionalDisconnect = false; // Allow next reconnect
+    if(MP._intentionalDisconnect) return; // User disconnected while waiting
     mpTryReconnect();
   }, 2000);
 }
@@ -15227,7 +15234,7 @@ function mpTryReconnect() {
           mpCheckConnectionType();
           mpUpdateRoleBadge();
           onReconnected();
-          MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
+          mpSend({ type: 'handshake', from: 'guest', name: MP.myName });
         });
         MP.connection.on('data', (d) => mpHandleMessage(d));
         MP.connection.on('close', mpHandleDisconnect);
@@ -15592,7 +15599,7 @@ function mpHandleMessage(data) {
       for(let j=0;j<100;j++) if(BS.boards[myBoard][j]===shipId) cells.push(j);
       if(cells.every(j=>BS.hits[myBoard][j]===2)) sunkCells = cells;
     }
-    MP.connection.send({ type:'bs-result', index:idx, hit:isHit, sunkCells: sunkCells });
+    mpSend({ type:'bs-result', index:idx, hit:isHit, sunkCells: sunkCells });
     playSound(isHit ? 'hit' : 'miss');
     // Only switch turn on miss — hit means opponent shoots again
     if(!isHit) BS.turn = BS.turn===1?2:1;
@@ -15612,7 +15619,7 @@ function mpHandleMessage(data) {
       $('bsStatus').textContent='🎉 '+winnerName+' vyhral!';
       addWin(MP.isHost?2:1,'battleship');
       playSound('win'); celebrate('bsCelebration');
-      MP.connection.send({ type:'bs-gameover', winner: MP.isHost?'guest':'host' });
+      mpSend({ type:'bs-gameover', winner: MP.isHost?'guest':'host' });
     }
   }
   if(data.type === 'bs-result') {
@@ -15808,7 +15815,7 @@ function mpRematch(gameId) {
   if(gameId === 'ticTacToe') {
     MP.tttRound++;
     const isPsk = $('psk15Board').style.display !== 'none';
-    MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tttRound, isPsk15: isPsk });
+    mpSend({ type: 'mp-rematch', game: gameId, round: MP.tttRound, isPsk15: isPsk });
     if(isPsk) {
       resetPsk15(); PSK15.s1=0; PSK15.s2=0;
       $('p1ScorePsk15').textContent='0'; $('p2ScorePsk15').textContent='0';
@@ -15823,16 +15830,16 @@ function mpRematch(gameId) {
     const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
     activeTurn(p1c, p2c, hostIsX ? 1 : 2);
   }
-  if(gameId === 'connect4') { MP.c4Round++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
-  if(gameId === 'memory') { MP.memRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.memRound }); resetMem(); applyMemMPStart(); if(MP.isHost) MP.connection.send({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
-  if(gameId === 'chess') { MP.chRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.chRound }); resetChess(); applyChessMPStart(); }
-  if(gameId === 'checkers') { MP.dkRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.dkRound }); resetCheckers(); applyCheckersMPStart(); }
-  if(gameId === 'ludo') { MP.ludoRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.ludoRound }); resetLudo(); applyLudoMPStart(); }
-  if(gameId === 'battleship') { MP.bsRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.bsRound }); resetBS(); }
-  if(gameId === 'guessNum') { MP.gnRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.gnRound }); resetGN(); applyGNMPStart(); }
-  if(gameId === 'snakeDuel') { MP.sdRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.sdRound }); resetSnakeDuel(); SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0'; }
-  if(gameId === 'tanks') { MP.tnkRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.tnkRound }); resetTanks(); }
-  if(gameId === 'pong') { MP.pngRound++; MP.connection.send({ type: 'mp-rematch', game: gameId, round: MP.pngRound }); resetPong(); }
+  if(gameId === 'connect4') { MP.c4Round++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
+  if(gameId === 'memory') { MP.memRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.memRound }); resetMem(); applyMemMPStart(); if(MP.isHost) mpSend({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
+  if(gameId === 'chess') { MP.chRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.chRound }); resetChess(); applyChessMPStart(); }
+  if(gameId === 'checkers') { MP.dkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dkRound }); resetCheckers(); applyCheckersMPStart(); }
+  if(gameId === 'ludo') { MP.ludoRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ludoRound }); resetLudo(); applyLudoMPStart(); }
+  if(gameId === 'battleship') { MP.bsRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.bsRound }); resetBS(); }
+  if(gameId === 'guessNum') { MP.gnRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.gnRound }); resetGN(); applyGNMPStart(); }
+  if(gameId === 'snakeDuel') { MP.sdRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sdRound }); resetSnakeDuel(); SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0'; }
+  if(gameId === 'tanks') { MP.tnkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.tnkRound }); resetTanks(); }
+  if(gameId === 'pong') { MP.pngRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.pngRound }); resetPong(); }
 }
 
 function mpGenerateQR(code) {
@@ -15979,10 +15986,10 @@ if('serviceWorker' in navigator) {
     // Version changed - show toast
     showUpdateToast();
     // Save new version immediately (don't wait for button click)
-    localStorage.setItem(LAST_VERSION_KEY, currentVersion);
+    try{localStorage.setItem(LAST_VERSION_KEY, currentVersion);}catch(e){}
   } else if(!lastVersion) {
     // First load - save current version
-    localStorage.setItem(LAST_VERSION_KEY, currentVersion);
+    try{localStorage.setItem(LAST_VERSION_KEY, currentVersion);}catch(e){}
   }
   // If same version (lastVersion === currentVersion), do nothing
 
