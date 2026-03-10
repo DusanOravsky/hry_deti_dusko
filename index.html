@@ -2155,7 +2155,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 36 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 38 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -2285,6 +2285,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="dotsBoxesBtn" style="background:linear-gradient(135deg,rgba(156,39,176,0.25),rgba(233,30,99,0.25))"><span class="game-btn-icon">⬜</span><span class="game-btn-label">Bodky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="wordleBtn" style="background:linear-gradient(135deg,rgba(83,141,78,0.3),rgba(181,159,59,0.3))"><span class="game-btn-icon">🟩</span><span class="game-btn-label">Wordle</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="beeCountBtn" style="background:linear-gradient(135deg,rgba(255,193,7,0.25),rgba(255,152,0,0.25))"><span class="game-btn-icon">🐝</span><span class="game-btn-label">Včely</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="soccerBtn" style="background:linear-gradient(135deg,rgba(76,175,80,0.3),rgba(255,235,59,0.3))"><span class="game-btn-icon">⚽</span><span class="game-btn-label">Futbal</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="gravityRunBtn" style="background:linear-gradient(135deg,rgba(26,26,46,0.4),rgba(108,92,231,0.3))"><span class="game-btn-icon">🌀</span><span class="game-btn-label">Gravity Run</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="breakoutBtn" style="background:linear-gradient(135deg,rgba(245,87,108,0.3),rgba(255,210,0,0.3))"><span class="game-btn-icon">🏓</span><span class="game-btn-label">Breakout</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="pongBtn" style="background:linear-gradient(135deg,rgba(245,87,108,0.25),rgba(79,172,254,0.25))"><span class="game-btn-icon">🏸</span><span class="game-btn-label">Pong</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tanksBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.3),rgba(0,100,200,0.3))"><span class="game-btn-icon">💥</span><span class="game-btn-label">Tank Battle</span><span class="game-btn-dot"></span></button>
@@ -3956,6 +3958,49 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
   </div>
 
+  <!-- ===== SOCCER / FUTBAL ===== -->
+  <div class="game-area" id="soccer">
+    <div class="rules"><h3>⚽ Futbal — Penalty:</h3><ul>
+      <li>Šípka sa kýve — klikni pre smer strely</li>
+      <li>Potom klikni pre silu (zelená zóna = ideálna)</li>
+      <li>Brankár sa pokúsi chytiť loptu!</li>
+      <li>Máš 5 penált — koľko gólov dáš?</li>
+    </ul></div>
+    <div class="ai-difficulty" id="socDiffWrap" style="display:none;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setSocDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setSocDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setSocDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info" id="socPlayerInfo">
+      <div class="player-card player1 active-turn" id="socP1Card"><div class="player-name-display" id="socP1Name">Hráč 1</div><div class="player-score" id="p1ScoreSoc">0</div></div>
+      <div class="player-card player2" id="socP2Card"><div class="player-name-display" id="socP2Name">Hráč 2</div><div class="player-score" id="p2ScoreSoc">0</div></div>
+    </div>
+    <div id="socSoloScore" style="display:none;text-align:center;font-size:1.3em;font-weight:bold;margin:8px 0">Góly: <span id="socSoloVal">0</span> / 5</div>
+    <div class="status" id="socStatus">Klikni Štart!</div>
+    <canvas id="socCanvas" width="340" height="400" style="display:block;margin:0 auto;max-width:min(340px,90vw);border-radius:12px;background:linear-gradient(180deg,#4CAF50 0%,#66BB6A 50%,#388E3C 100%)"></canvas>
+    <div class="celebration" id="socCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" id="socStartBtn" onclick="socStart()">Štart ⚽</button>
+      <button class="action-btn danger-btn" onclick="resetSoccer()">Nová hra</button>
+    </div>
+  </div>
+
+  <!-- ===== GRAVITY RUN ===== -->
+  <div class="game-area" id="gravityRun">
+    <div class="rules"><h3>🌀 Gravity Run:</h3><ul>
+      <li>Bežíš automaticky — vyhýbaj sa prekážkam!</li>
+      <li>Klikni, ťukni alebo stlač medzerník pre zmenu gravitácie</li>
+      <li>Bež po podlahe alebo strope!</li>
+      <li>Čím ďalej zájdeš, tým rýchlejšie to ide</li>
+    </ul></div>
+    <div id="gravScoreDisp" style="text-align:center;font-size:1.3em;font-weight:bold;margin:8px 0">Skóre: <span id="gravScoreVal">0</span> | Najlepšie: <span id="gravBestVal">0</span></div>
+    <div class="status" id="gravStatus">Klikni Štart!</div>
+    <canvas id="gravCanvas" width="340" height="300" style="display:block;margin:0 auto;max-width:min(340px,90vw);border-radius:12px;background:#1a1a2e"></canvas>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" id="gravStartBtn" onclick="gravStart()">Štart 🌀</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -3963,7 +4008,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '6.2';
+const APP_VERSION = '6.3';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -3979,7 +4024,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', gravityRun:'gravityRunBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3990,7 +4035,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', gravityRun:'Gravity Run', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4255,7 +4300,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',gravityRun:'grav'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4266,7 +4311,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',gravityRun:'grav'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4381,7 +4426,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'scramble', name:'Scramble', icon:'🔤', mode:'pvp'},
   {id:'higherLower', name:'Vyššie Nižšie', icon:'🎰', mode:'pvp'},
   {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦', mode:'pvp'},
-  {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'}
+  {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'},
+  {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'}
 ];
 
 function showTournament() {
@@ -14621,6 +14667,8 @@ resetPong();
 resetTanks();
 resetSnakeDuel();
 resetBee();
+resetSoccer();
+resetGravity();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -14630,6 +14678,457 @@ updateWelcomeStats();
 
 // Clear any stale MP session data
 try{sessionStorage.removeItem('mp_session');}catch(e){}
+
+// =============================================================================
+// SEKCIA 37: FUTBAL (PENALTY SHOOTOUT)
+// =============================================================================
+const SOC={
+  canvas:null,ctx:null,W:340,H:400,
+  phase:'idle', // idle,aiming,power,shooting,result
+  angle:0,angleDir:1,
+  power:50,powerDir:1,
+  ballX:170,ballY:340,targetX:170,targetY:70,
+  keeperX:170,keeperDiveX:170,
+  animProgress:0,
+  s1:0,s2:0,round:0,maxRounds:5,turn:1,
+  diff:'medium',raf:null,running:false,_resultTimeout:null,
+  goalX:70,goalY:30,goalW:200,goalH:90
+};
+function setSocDiff(d,btn){
+  SOC.diff=d;
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function resetSoccer(){
+  SOC.s1=0;SOC.s2=0;SOC.round=0;SOC.phase='idle';SOC.running=false;SOC.turn=1;
+  SOC.angle=0;SOC.angleDir=1;SOC.power=50;SOC.powerDir=1;
+  if(SOC.raf){cancelAnimationFrame(SOC.raf);SOC.raf=null;}
+  if(SOC._resultTimeout){clearTimeout(SOC._resultTimeout);SOC._resultTimeout=null;}
+  const c=$('socCanvas');
+  if(c){SOC.canvas=c;SOC.ctx=c.getContext('2d');SOC.W=c.width;SOC.H=c.height;}
+  $('p1ScoreSoc').textContent='0';$('p2ScoreSoc').textContent='0';
+  $('socStatus').textContent='Klikni Štart!';
+  $('socStartBtn').disabled=false;
+  $('socCelebration').textContent='';
+  const bn1=$('socP1Name');if(bn1)bn1.textContent=getP1Name('soc');
+  const bn2=$('socP2Name');if(bn2)bn2.textContent=getP2Name('soc');
+  const solo=welcomeGameMode==='ai';
+  $('socDiffWrap').style.display=solo?'flex':'none';
+  $('socPlayerInfo').style.display=solo?'none':'';
+  $('socSoloScore').style.display=solo?'block':'none';
+  if(solo)$('socSoloVal').textContent='0';
+  socRender();
+}
+function socStart(){
+  SOC.s1=0;SOC.s2=0;SOC.round=0;SOC.turn=1;SOC.running=true;
+  $('socStartBtn').disabled=true;
+  $('socCelebration').textContent='';
+  $('p1ScoreSoc').textContent='0';$('p2ScoreSoc').textContent='0';
+  if(welcomeGameMode==='ai')$('socSoloVal').textContent='0';
+  socStartRound();
+}
+function socStartRound(){
+  SOC.phase='aiming';
+  SOC.angle=0;SOC.angleDir=1;SOC.power=50;SOC.powerDir=1;
+  SOC.ballX=SOC.W/2;SOC.ballY=340;
+  SOC.keeperX=SOC.W/2;SOC.keeperDiveX=SOC.W/2;
+  SOC.animProgress=0;
+  const solo=welcomeGameMode==='ai';
+  const shotNum=solo?SOC.round+1:Math.floor(SOC.round/2)+1;
+  const totalShots=SOC.maxRounds;
+  if(solo){
+    $('socStatus').textContent='Penalta '+shotNum+'/'+totalShots+' — Klikni pre smer!';
+  } else {
+    const name=SOC.turn===1?getActiveP1Name('soccer'):getActiveP2Name('soccer');
+    $('socStatus').textContent=shotNum+'/'+totalShots+' — '+name+' strieľa! Klikni pre smer!';
+    activeTurn('socP1Card','socP2Card',SOC.turn);
+  }
+  if(SOC.raf)cancelAnimationFrame(SOC.raf);
+  socLoop();
+}
+function socLoop(){
+  if(!SOC.running)return;
+  SOC.raf=requestAnimationFrame(socLoop);
+  if(SOC.phase==='aiming'){
+    SOC.angle+=SOC.angleDir*0.025;
+    if(SOC.angle>0.65||SOC.angle<-0.65)SOC.angleDir*=-1;
+  }
+  if(SOC.phase==='power'){
+    SOC.power+=SOC.powerDir*1.8;
+    if(SOC.power>=100){SOC.power=100;SOC.powerDir=-1;}
+    if(SOC.power<=0){SOC.power=0;SOC.powerDir=1;}
+  }
+  if(SOC.phase==='shooting'){
+    SOC.animProgress+=0.035;
+    if(SOC.animProgress>=1){
+      SOC.animProgress=1;
+      SOC.phase='result';
+      socCheckGoal();
+    }
+    const startX=SOC.W/2,startY=340;
+    SOC.ballX=startX+(SOC.targetX-startX)*SOC.animProgress;
+    SOC.ballY=startY+(SOC.targetY-startY)*SOC.animProgress;
+    SOC.keeperX+=(SOC.keeperDiveX-SOC.keeperX)*0.1;
+  }
+  socRender();
+}
+function socCanvasClick(){
+  if(!SOC.running)return;
+  if(SOC.phase==='aiming'){
+    SOC.phase='power';SOC.power=50;SOC.powerDir=1;
+    $('socStatus').textContent='Sila! Klikni znova!';
+    playSound('click');return;
+  }
+  if(SOC.phase==='power'){
+    SOC.phase='shooting';SOC.animProgress=0;
+    const gcx=SOC.W/2,gcy=SOC.goalY+SOC.goalH/2;
+    SOC.targetX=gcx+Math.sin(SOC.angle)*(SOC.goalW/2)*0.85;
+    SOC.targetY=gcy;
+    if(SOC.power<15){SOC.targetY=340-(340-gcy)*(SOC.power/15)*0.6;}
+    if(SOC.power>88){SOC.targetY=SOC.goalY-15-(SOC.power-88)*3;}
+    socKeeperDecide();
+    $('socStatus').textContent='Strela!';
+    playSound('click');return;
+  }
+}
+function socKeeperDecide(){
+  const prob=SOC.diff==='easy'?0.2:SOC.diff==='medium'?0.45:0.7;
+  if(Math.random()<prob){
+    SOC.keeperDiveX=SOC.targetX+(Math.random()-0.5)*30;
+  } else {
+    const wrong=SOC.targetX>SOC.W/2?SOC.W/2-50:SOC.W/2+50;
+    SOC.keeperDiveX=wrong+(Math.random()-0.5)*40;
+  }
+  SOC.keeperDiveX=Math.max(SOC.goalX+15,Math.min(SOC.goalX+SOC.goalW-15,SOC.keeperDiveX));
+}
+function socCheckGoal(){
+  const inGoalY=SOC.targetY>=SOC.goalY&&SOC.targetY<=SOC.goalY+SOC.goalH;
+  const inGoalX=SOC.targetX>=SOC.goalX&&SOC.targetX<=SOC.goalX+SOC.goalW;
+  const keeperClose=Math.abs(SOC.keeperX-SOC.targetX)<35&&inGoalY;
+  const isGoal=inGoalY&&inGoalX&&!keeperClose;
+  const solo=welcomeGameMode==='ai';
+  if(!inGoalY||!inGoalX){
+    $('socStatus').textContent='Vedľa! 😞';playSound('wrong');
+  } else if(keeperClose){
+    $('socStatus').textContent='Chytené! 🧤';playSound('wrong');
+  } else {
+    if(solo){SOC.s1++;$('socSoloVal').textContent=SOC.s1;}
+    else{if(SOC.turn===1){SOC.s1++;$('p1ScoreSoc').textContent=SOC.s1;}else{SOC.s2++;$('p2ScoreSoc').textContent=SOC.s2;}}
+    $('socStatus').textContent='GÓÓÓL! ⚽🎉';playSound('correct');
+  }
+  SOC.round++;
+  SOC._resultTimeout=setTimeout(()=>{
+    if(!SOC.running)return;SOC._resultTimeout=null;
+    if(solo){
+      if(SOC.round>=SOC.maxRounds){
+        addWin(SOC.s1>=3?1:0,'soccer');
+        $('socStatus').textContent='🏆 Výsledok: '+SOC.s1+'/'+SOC.maxRounds+(SOC.s1===SOC.maxRounds?' — Perfektné! 🌟':SOC.s1>=3?' — Super! 🎉':' — Skús znova! 💪');
+        if(SOC.s1>=3)$('socCelebration').textContent='🎉⚽🎉';
+        $('socStartBtn').disabled=false;SOC.running=false;playSound('win');
+      } else socStartRound();
+    } else {
+      SOC.turn=SOC.turn===1?2:1;
+      if(SOC.round>=SOC.maxRounds*2){
+        let w=0;if(SOC.s1>SOC.s2)w=1;else if(SOC.s2>SOC.s1)w=2;
+        addWin(w,'soccer');
+        const winner=w===1?getActiveP1Name('soccer'):w===2?getActiveP2Name('soccer'):'Remíza';
+        $('socStatus').textContent='🏆 '+winner+(w?(' vyhráva '+SOC.s1+':'+SOC.s2):'! '+SOC.s1+':'+SOC.s2);
+        if(w)$('socCelebration').textContent='🎉⚽🎉';
+        $('socStartBtn').disabled=false;SOC.running=false;playSound('win');
+      } else socStartRound();
+    }
+  },1800);
+}
+function socRender(){
+  const c=SOC.ctx;if(!c)return;
+  const W=SOC.W,H=SOC.H;
+  c.clearRect(0,0,W,H);
+  // Grass
+  c.fillStyle='#4CAF50';c.fillRect(0,0,W,H);
+  c.fillStyle='#43A047';
+  for(let i=0;i<H;i+=40)c.fillRect(0,i,W,20);
+  // Center line
+  c.strokeStyle='rgba(255,255,255,0.2)';c.lineWidth=2;c.setLineDash([8,8]);
+  c.beginPath();c.moveTo(0,H/2);c.lineTo(W,H/2);c.stroke();c.setLineDash([]);
+  // Goal net background
+  c.fillStyle='rgba(255,255,255,0.12)';
+  c.fillRect(SOC.goalX,SOC.goalY-10,SOC.goalW,SOC.goalH+10);
+  c.strokeStyle='rgba(255,255,255,0.25)';c.lineWidth=1;
+  for(let x=SOC.goalX;x<=SOC.goalX+SOC.goalW;x+=15){c.beginPath();c.moveTo(x,SOC.goalY-10);c.lineTo(x,SOC.goalY+SOC.goalH);c.stroke();}
+  for(let y=SOC.goalY-10;y<=SOC.goalY+SOC.goalH;y+=15){c.beginPath();c.moveTo(SOC.goalX,y);c.lineTo(SOC.goalX+SOC.goalW,y);c.stroke();}
+  // Goal posts
+  c.fillStyle='#fff';
+  c.fillRect(SOC.goalX-4,SOC.goalY-4,8,SOC.goalH+8);
+  c.fillRect(SOC.goalX+SOC.goalW-4,SOC.goalY-4,8,SOC.goalH+8);
+  c.fillRect(SOC.goalX-4,SOC.goalY-4,SOC.goalW+8,8);
+  // Keeper
+  const kx=SOC.keeperX,ky=SOC.goalY+SOC.goalH-35;
+  c.fillStyle='#FF9800';
+  c.fillRect(kx-12,ky+10,24,28);
+  c.beginPath();c.arc(kx,ky+5,10,0,Math.PI*2);c.fill();
+  if(SOC.phase==='shooting'||SOC.phase==='result'){
+    const armDir=SOC.keeperDiveX>kx?1:SOC.keeperDiveX<kx?-1:0;
+    c.strokeStyle='#FF9800';c.lineWidth=4;
+    c.beginPath();c.moveTo(kx,ky+18);c.lineTo(kx+armDir*22,ky+5);c.stroke();
+    c.beginPath();c.moveTo(kx,ky+18);c.lineTo(kx+armDir*18,ky+28);c.stroke();
+  } else {
+    c.strokeStyle='#FF9800';c.lineWidth=4;
+    c.beginPath();c.moveTo(kx,ky+15);c.lineTo(kx-15,ky+8);c.stroke();
+    c.beginPath();c.moveTo(kx,ky+15);c.lineTo(kx+15,ky+8);c.stroke();
+  }
+  // Ball
+  c.fillStyle='#fff';c.beginPath();c.arc(SOC.ballX,SOC.ballY,10,0,Math.PI*2);c.fill();
+  c.strokeStyle='#555';c.lineWidth=1.5;c.beginPath();c.arc(SOC.ballX,SOC.ballY,10,0,Math.PI*2);c.stroke();
+  c.fillStyle='#555';
+  for(let i=0;i<5;i++){const a=i*Math.PI*2/5-Math.PI/2;c.beginPath();c.arc(SOC.ballX+Math.cos(a)*5,SOC.ballY+Math.sin(a)*5,2,0,Math.PI*2);c.fill();}
+  // Penalty spot
+  c.fillStyle='#fff';c.beginPath();c.arc(W/2,355,3,0,Math.PI*2);c.fill();
+  // Arrow (aiming)
+  if(SOC.phase==='aiming'){
+    const len=130;
+    const ex=W/2+Math.sin(SOC.angle)*len,ey=SOC.ballY-Math.cos(SOC.angle)*len;
+    c.strokeStyle='rgba(255,50,50,0.85)';c.lineWidth=3;
+    c.beginPath();c.moveTo(W/2,SOC.ballY-12);c.lineTo(ex,ey);c.stroke();
+    const ang=Math.atan2(ey-(SOC.ballY-12),ex-W/2);
+    c.beginPath();c.moveTo(ex,ey);c.lineTo(ex-12*Math.cos(ang-0.4),ey-12*Math.sin(ang-0.4));c.stroke();
+    c.beginPath();c.moveTo(ex,ey);c.lineTo(ex-12*Math.cos(ang+0.4),ey-12*Math.sin(ang+0.4));c.stroke();
+  }
+  // Power bar
+  if(SOC.phase==='power'){
+    const bx=W-28,by=80,bw=16,bh=240;
+    c.fillStyle='rgba(0,0,0,0.35)';c.fillRect(bx,by,bw,bh);
+    const fh=bh*(SOC.power/100);
+    const bad=SOC.power<15||SOC.power>88;
+    c.fillStyle=bad?'#f44336':'#4CAF50';
+    c.fillRect(bx,by+bh-fh,bw,fh);
+    c.strokeStyle='#fff';c.lineWidth=1;c.strokeRect(bx,by,bw,bh);
+    c.fillStyle='#fff';c.font='bold 11px sans-serif';c.textAlign='center';
+    c.fillText('SILA',bx+bw/2,by-6);c.textAlign='left';
+    // Sweet spot markers
+    c.strokeStyle='rgba(255,255,255,0.4)';c.setLineDash([3,3]);
+    c.beginPath();c.moveTo(bx-2,by+bh*(1-0.88));c.lineTo(bx+bw+2,by+bh*(1-0.88));c.stroke();
+    c.beginPath();c.moveTo(bx-2,by+bh*(1-0.15));c.lineTo(bx+bw+2,by+bh*(1-0.15));c.stroke();
+    c.setLineDash([]);
+  }
+  // Result indicators
+  if(SOC.phase==='result'){
+    const inGoalY=SOC.targetY>=SOC.goalY&&SOC.targetY<=SOC.goalY+SOC.goalH;
+    const inGoalX=SOC.targetX>=SOC.goalX&&SOC.targetX<=SOC.goalX+SOC.goalW;
+    const keeperClose=Math.abs(SOC.keeperX-SOC.targetX)<35&&inGoalY;
+    if(inGoalY&&inGoalX&&!keeperClose){
+      c.fillStyle='rgba(76,175,80,0.3)';c.fillRect(0,0,W,H);
+      c.fillStyle='#fff';c.font='bold 40px sans-serif';c.textAlign='center';
+      c.fillText('GÓL!',W/2,H/2);c.textAlign='left';
+    }
+  }
+}
+$('socCanvas').addEventListener('click',socCanvasClick);
+$('socCanvas').addEventListener('touchstart',function(e){e.preventDefault();socCanvasClick();},{passive:false});
+
+// =============================================================================
+// SEKCIA 38: GRAVITY RUN
+// =============================================================================
+const GRAV={
+  canvas:null,ctx:null,W:340,H:300,
+  player:{x:60,y:0,w:18,h:18,vy:0},
+  gravDir:1, // 1=down, -1=up
+  obstacles:[],
+  particles:[],
+  score:0,best:0,speed:3,baseSpeed:3,
+  running:false,raf:null,
+  spawnDist:0,nextSpawn:200,
+  floorY:280,ceilY:20,
+  frameCount:0
+};
+function resetGravity(){
+  GRAV.score=0;GRAV.speed=GRAV.baseSpeed;GRAV.running=false;GRAV.gravDir=1;
+  GRAV.obstacles=[];GRAV.particles=[];GRAV.spawnDist=0;GRAV.nextSpawn=200;GRAV.frameCount=0;
+  GRAV.player.x=60;GRAV.player.y=GRAV.floorY-GRAV.player.h;GRAV.player.vy=0;
+  if(GRAV.raf){cancelAnimationFrame(GRAV.raf);GRAV.raf=null;}
+  const c=$('gravCanvas');
+  if(c){GRAV.canvas=c;GRAV.ctx=c.getContext('2d');GRAV.W=c.width;GRAV.H=c.height;}
+  try{const b=localStorage.getItem('hry_grav_best');if(b)GRAV.best=parseInt(b)||0;}catch(e){}
+  $('gravScoreVal').textContent='0';
+  $('gravBestVal').textContent=GRAV.best;
+  $('gravStatus').textContent='Klikni Štart!';
+  $('gravStartBtn').disabled=false;
+  gravRender();
+}
+function gravStart(){
+  GRAV.score=0;GRAV.speed=GRAV.baseSpeed;GRAV.gravDir=1;
+  GRAV.obstacles=[];GRAV.particles=[];GRAV.spawnDist=0;GRAV.nextSpawn=200;GRAV.frameCount=0;
+  GRAV.player.y=GRAV.floorY-GRAV.player.h;GRAV.player.vy=0;
+  GRAV.running=true;
+  $('gravStartBtn').disabled=true;
+  $('gravStatus').textContent='Klikni alebo medzerník pre preklop!';
+  $('gravScoreVal').textContent='0';
+  if(GRAV.raf)cancelAnimationFrame(GRAV.raf);
+  gravLoop();
+}
+function gravFlip(){
+  if(!GRAV.running)return;
+  GRAV.gravDir*=-1;
+  GRAV.player.vy=GRAV.gravDir*3;
+  playSound('click');
+  // Flip particles
+  for(let i=0;i<5;i++){
+    GRAV.particles.push({x:GRAV.player.x,y:GRAV.player.y+GRAV.player.h/2,vx:-Math.random()*2-1,vy:(Math.random()-0.5)*3,life:20,color:'#6c5ce7'});
+  }
+}
+function gravLoop(){
+  if(!GRAV.running)return;
+  GRAV.raf=requestAnimationFrame(gravLoop);
+  GRAV.frameCount++;
+  // Increase speed over time
+  GRAV.speed=GRAV.baseSpeed+GRAV.frameCount*0.001;
+  // Gravity
+  GRAV.player.vy+=GRAV.gravDir*0.5;
+  GRAV.player.vy=Math.max(-8,Math.min(8,GRAV.player.vy));
+  GRAV.player.y+=GRAV.player.vy;
+  // Clamp to floor/ceiling
+  if(GRAV.gravDir===1&&GRAV.player.y>=GRAV.floorY-GRAV.player.h){
+    GRAV.player.y=GRAV.floorY-GRAV.player.h;GRAV.player.vy=0;
+  }
+  if(GRAV.gravDir===-1&&GRAV.player.y<=GRAV.ceilY){
+    GRAV.player.y=GRAV.ceilY;GRAV.player.vy=0;
+  }
+  // Spawn obstacles
+  GRAV.spawnDist+=GRAV.speed;
+  if(GRAV.spawnDist>=GRAV.nextSpawn){
+    GRAV.spawnDist=0;
+    GRAV.nextSpawn=140+Math.random()*80;
+    const side=Math.random()<0.5?'floor':'ceil';
+    const h=30+Math.random()*50;
+    if(side==='floor'){
+      GRAV.obstacles.push({x:GRAV.W+10,y:GRAV.floorY-h,w:25+Math.random()*15,h:h,side:'floor'});
+    } else {
+      GRAV.obstacles.push({x:GRAV.W+10,y:GRAV.ceilY,w:25+Math.random()*15,h:h,side:'ceil'});
+    }
+    // Sometimes add obstacle on both sides (gap in middle)
+    if(GRAV.speed>4.5&&Math.random()<0.3){
+      const h2=25+Math.random()*35;
+      if(side==='floor'){
+        GRAV.obstacles.push({x:GRAV.W+10,y:GRAV.ceilY,w:25+Math.random()*15,h:h2,side:'ceil'});
+      } else {
+        GRAV.obstacles.push({x:GRAV.W+10,y:GRAV.floorY-h2,w:25+Math.random()*15,h:h2,side:'floor'});
+      }
+    }
+  }
+  // Move obstacles
+  for(let i=GRAV.obstacles.length-1;i>=0;i--){
+    GRAV.obstacles[i].x-=GRAV.speed;
+    if(GRAV.obstacles[i].x+GRAV.obstacles[i].w<0)GRAV.obstacles.splice(i,1);
+  }
+  // Collision detection
+  const p=GRAV.player;
+  for(const o of GRAV.obstacles){
+    if(p.x+p.w>o.x&&p.x<o.x+o.w&&p.y+p.h>o.y&&p.y<o.y+o.h){
+      gravGameOver();return;
+    }
+  }
+  // Update particles
+  for(let i=GRAV.particles.length-1;i>=0;i--){
+    const pt=GRAV.particles[i];
+    pt.x+=pt.vx;pt.y+=pt.vy;pt.life--;
+    if(pt.life<=0)GRAV.particles.splice(i,1);
+  }
+  // Score
+  GRAV.score=Math.floor(GRAV.frameCount/3);
+  $('gravScoreVal').textContent=GRAV.score;
+  gravRender();
+}
+function gravGameOver(){
+  GRAV.running=false;
+  if(GRAV.raf){cancelAnimationFrame(GRAV.raf);GRAV.raf=null;}
+  if(GRAV.score>GRAV.best){
+    GRAV.best=GRAV.score;
+    try{localStorage.setItem('hry_grav_best',GRAV.best);}catch(e){}
+    $('gravBestVal').textContent=GRAV.best;
+    $('gravStatus').textContent='💀 Game Over! Nový rekord: '+GRAV.score+'!';
+  } else {
+    $('gravStatus').textContent='💀 Game Over! Skóre: '+GRAV.score;
+  }
+  addWin(GRAV.score>=50?1:0,'gravityRun');
+  $('gravStartBtn').disabled=false;
+  playSound('wrong');
+  // Death particles
+  for(let i=0;i<15;i++){
+    GRAV.particles.push({x:GRAV.player.x+GRAV.player.w/2,y:GRAV.player.y+GRAV.player.h/2,
+      vx:(Math.random()-0.5)*6,vy:(Math.random()-0.5)*6,life:30,color:['#e74c3c','#f39c12','#e67e22'][Math.floor(Math.random()*3)]});
+  }
+  gravRender();
+}
+function gravRender(){
+  const c=GRAV.ctx;if(!c)return;
+  const W=GRAV.W,H=GRAV.H;
+  c.clearRect(0,0,W,H);
+  // Background
+  c.fillStyle='#1a1a2e';c.fillRect(0,0,W,H);
+  // Stars
+  c.fillStyle='rgba(255,255,255,0.3)';
+  for(let i=0;i<30;i++){
+    const sx=((i*97+GRAV.frameCount*0.3)%W);
+    const sy=((i*53+7)%H);
+    c.fillRect(sx,sy,1.5,1.5);
+  }
+  // Floor and ceiling
+  c.fillStyle='#16213e';
+  c.fillRect(0,0,W,GRAV.ceilY);
+  c.fillRect(0,GRAV.floorY,W,H-GRAV.floorY);
+  // Floor/ceiling glow
+  c.strokeStyle='#6c5ce7';c.lineWidth=2;
+  c.beginPath();c.moveTo(0,GRAV.ceilY);c.lineTo(W,GRAV.ceilY);c.stroke();
+  c.beginPath();c.moveTo(0,GRAV.floorY);c.lineTo(W,GRAV.floorY);c.stroke();
+  // Grid lines (subtle)
+  c.strokeStyle='rgba(108,92,231,0.1)';c.lineWidth=1;
+  for(let x=((GRAV.frameCount*GRAV.speed)%40);x<W;x+=40){c.beginPath();c.moveTo(W-x,GRAV.ceilY);c.lineTo(W-x,GRAV.floorY);c.stroke();}
+  // Obstacles
+  for(const o of GRAV.obstacles){
+    const grad=c.createLinearGradient(o.x,o.y,o.x,o.y+o.h);
+    if(o.side==='floor'){grad.addColorStop(0,'#e74c3c');grad.addColorStop(1,'#c0392b');}
+    else{grad.addColorStop(0,'#c0392b');grad.addColorStop(1,'#e74c3c');}
+    c.fillStyle=grad;c.fillRect(o.x,o.y,o.w,o.h);
+    // Danger stripes
+    c.strokeStyle='rgba(0,0,0,0.3)';c.lineWidth=2;
+    for(let s=0;s<o.h;s+=8){c.beginPath();c.moveTo(o.x,o.y+s);c.lineTo(o.x+o.w,o.y+s);c.stroke();}
+    // Glow
+    c.shadowColor='#e74c3c';c.shadowBlur=8;
+    c.fillStyle='rgba(231,76,60,0.3)';c.fillRect(o.x-2,o.y-2,o.w+4,o.h+4);
+    c.shadowBlur=0;
+  }
+  // Particles
+  for(const pt of GRAV.particles){
+    c.globalAlpha=pt.life/30;
+    c.fillStyle=pt.color;
+    c.fillRect(pt.x-2,pt.y-2,4,4);
+  }
+  c.globalAlpha=1;
+  // Player
+  const p=GRAV.player;
+  if(GRAV.running||GRAV.frameCount===0){
+    c.fillStyle='#00cec9';c.fillRect(p.x,p.y,p.w,p.h);
+    c.strokeStyle='#81ecec';c.lineWidth=1.5;c.strokeRect(p.x,p.y,p.w,p.h);
+    // Eyes
+    const eyeY=GRAV.gravDir===1?p.y+5:p.y+p.h-7;
+    c.fillStyle='#fff';
+    c.fillRect(p.x+4,eyeY,4,4);c.fillRect(p.x+10,eyeY,4,4);
+    c.fillStyle='#1a1a2e';
+    c.fillRect(p.x+5,eyeY+1,2,2);c.fillRect(p.x+11,eyeY+1,2,2);
+    // Trail
+    c.fillStyle='rgba(0,206,201,0.15)';
+    for(let t=1;t<=4;t++){c.fillRect(p.x-t*8,p.y+2,6,p.h-4);}
+  }
+  // Score on canvas
+  c.fillStyle='rgba(255,255,255,0.6)';c.font='bold 14px monospace';c.textAlign='right';
+  c.fillText('Score: '+GRAV.score,W-10,H-8);c.textAlign='left';
+}
+// Gravity Run input handlers
+$('gravCanvas').addEventListener('click',function(){if(GRAV.running)gravFlip();});
+$('gravCanvas').addEventListener('touchstart',function(e){e.preventDefault();if(GRAV.running)gravFlip();},{passive:false});
+document.addEventListener('keydown',function(e){
+  if(currentGameId!=='gravityRun')return;
+  if(e.code==='Space'||e.key===' '){e.preventDefault();if(GRAV.running)gravFlip();}
+});
 
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
@@ -14688,6 +15187,8 @@ const MOBILE_GAMES = [
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
   { id:'beeCount',     label:'Včely',          icon:'🐝', grad:'rgba(255,193,7,0.3),rgba(255,152,0,0.3)', mode:'both' },
+  { id:'soccer',       label:'Futbal',         icon:'⚽', grad:'rgba(76,175,80,0.3),rgba(255,235,59,0.3)', mode:'both' },
+  { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -14744,6 +15245,10 @@ function stopAllGames(){
   stopTurnTimer('scr');
   // Bee Counting
   if(typeof beeCleanupTimers==='function'){beeCleanupTimers();BEE.running=false;}
+  // Soccer
+  if(typeof SOC!=='undefined'){if(SOC.raf){cancelAnimationFrame(SOC.raf);SOC.raf=null;}if(SOC._resultTimeout){clearTimeout(SOC._resultTimeout);SOC._resultTimeout=null;}SOC.running=false;}
+  // Gravity Run
+  if(typeof GRAV!=='undefined'){if(GRAV.raf){cancelAnimationFrame(GRAV.raf);GRAV.raf=null;}GRAV.running=false;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
@@ -14954,7 +15459,7 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','socDiffWrap'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
@@ -14967,10 +15472,13 @@ function applyGameMode(mode) {
     });
   }
   // Hide player cards for solo games in AI mode (like Tetris/Snake/Racing)
-  ['doodPlayerInfo','wdlPlayerInfo'].forEach(id => {
+  ['doodPlayerInfo','wdlPlayerInfo','beePlayerInfo','socPlayerInfo'].forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });
+  // Solo score displays (Bee, Soccer)
+  ['beeSoloScore','socSoloScore'].forEach(id=>{const el=$(id);if(el)el.style.display=mode==='ai'?'block':'none';});
+  ['beeSoloVal','socSoloVal'].forEach(id=>{const el=$(id);if(el&&mode==='ai')el.textContent='0';});
   // Hide P2 mobile controls in AI mode (AI doesn't need buttons)
   const hideP2=mode==='ai'||MP.isConnected;
   const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=hideP2?'none':'flex';
