@@ -2124,6 +2124,15 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 <button class="sound-toggle" id="vibrationToggleDesktop" onclick="toggleVibration()" style="display:none">📳</button>
 <canvas id="confettiCanvas"></canvas>
 
+<!-- Tournament Floating Banner -->
+<div id="tourFloatingBanner" style="display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(255,215,0,0.95),rgba(255,140,0,0.95));color:white;padding:8px 16px;border-radius:20px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:0.85em;font-weight:700;max-width:90vw;text-align:center">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap">
+    <span id="tourBannerScore">0 : 0</span>
+    <span style="opacity:0.7;font-size:0.9em" id="tourBannerProgress">Hra 1/5</span>
+    <button onclick="tourCancel()" style="background:rgba(220,53,69,0.9);border:none;color:white;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:0.85em;font-weight:600">✕</button>
+  </div>
+</div>
+
 <!-- ===== WELCOME SCREEN ===== -->
 <div id="welcomeScreen">
   <div class="welcome-box">
@@ -2179,7 +2188,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <!-- LEVEL 2: Game picker -->
   <div id="mobileGamePicker">
     <div class="mobile-topbar">
-      <button class="mobile-back-btn" onclick="mobileGoTo(1)">‹</button>
+      <button class="mobile-back-btn" onclick="mobileBackWithTournamentCheck(1)">‹</button>
       <span class="mobile-topbar-title">🎮 Vyber hru</span>
       <div class="mobile-topbar-actions">
         <button class="mobile-topbar-btn" id="mobileThemeBtn" onclick="toggleTheme()">🌙</button>
@@ -2202,7 +2211,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
   <!-- LEVEL 3: Game view -->
   <div id="mobileGameView">
     <div class="mobile-topbar">
-      <button class="mobile-back-btn" onclick="mobileGoTo(2)">‹</button>
+      <button class="mobile-back-btn" onclick="mobileBackWithTournamentCheck(2)">‹</button>
       <span class="mobile-topbar-title" id="mobileGameTitle">Hra</span>
       <div class="mobile-topbar-actions">
         <button class="mobile-topbar-btn" id="mobileHelpBtn" onclick="showRules(currentGameId)" title="Pravidlá">❓</button>
@@ -4390,13 +4399,27 @@ function tourUpdateLeaderboard() {
   $('tourP1Score').textContent = TOUR.scores.p1.toFixed(1);
   $('tourP2Score').textContent = TOUR.scores.p2.toFixed(1);
   $('tourProgress').textContent = `Hra ${TOUR.currentIndex + 1} z ${TOUR.games.length}`;
+
+  // Update floating banner
+  const banner = $('tourFloatingBanner');
+  if(banner && TOUR.active) {
+    $('tourBannerScore').textContent = `${TOUR.scores.p1.toFixed(1)} : ${TOUR.scores.p2.toFixed(1)}`;
+    $('tourBannerProgress').textContent = `Hra ${TOUR.currentIndex + 1}/${TOUR.games.length}`;
+    banner.style.display = 'block';
+  }
+}
+
+function tourHideBanner() {
+  const banner = $('tourFloatingBanner');
+  if(banner) banner.style.display = 'none';
 }
 
 function tourShowVictory() {
   TOUR.active = false;
+  tourHideBanner();
 
-  // Check if mobile
-  const isMobile = $('mobileGameView').classList.contains('active') || $('mobileGamePicker').classList.contains('active');
+  // Check if mobile - use window width as primary indicator
+  const isMobile = window.innerWidth <= 640;
   if(isMobile) {
     mobileGoTo(3, 'tournament');
   } else {
@@ -4428,14 +4451,35 @@ function tourShowVictory() {
   }).join('');
   $('tourResultsList').innerHTML = resultsList;
 
-  celebrate('tourVictory');
+  // Show celebration in victory div
+  const victoryDiv = $('tourVictory');
+  if(victoryDiv) {
+    const existingCelebration = victoryDiv.querySelector('.celebration');
+    if(existingCelebration) existingCelebration.remove();
+    const cel = document.createElement('div');
+    cel.className = 'celebration show';
+    cel.textContent = '🎉🏆🎊';
+    victoryDiv.appendChild(cel);
+    setTimeout(() => cel.remove(), 3000);
+  }
   playSound('win');
 }
 
 function tourCancel() {
-  if(!confirm('Naozaj chceš zrušiť turnaj?')) return;
-  TOUR.active = false;
-  tourReset();
+  showConfirm('🏆 Naozaj chceš zrušiť turnaj?', () => {
+    TOUR.active = false;
+    tourHideBanner();
+
+    // Return to tournament setup screen
+    const isMobile = window.innerWidth <= 640;
+    if(isMobile) {
+      mobileGoTo(3, 'tournament');
+    } else {
+      switchGame('tournament');
+    }
+
+    tourReset();
+  });
 }
 
 function tourReset() {
@@ -4444,6 +4488,7 @@ function tourReset() {
   TOUR.currentIndex = 0;
   TOUR.scores = { p1: 0, p2: 0 };
   TOUR.results = [];
+  tourHideBanner();
   $('tourSetup').style.display = 'block';
   $('tourActive').style.display = 'none';
   $('tourVictory').style.display = 'none';
@@ -4472,15 +4517,20 @@ function addWin(w, gameId) {
 
   // Tournament mode integration
   if(TOUR.active) {
+    // Update scores immediately
     if(w === 1) TOUR.scores.p1 += 1;
     else if(w === 2) TOUR.scores.p2 += 1;
     else { TOUR.scores.p1 += 0.5; TOUR.scores.p2 += 0.5; }
     TOUR.results.push({ game: gId, winner: w });
-    TOUR.currentIndex++;
 
+    // Update leaderboard display immediately
+    tourUpdateLeaderboard();
+
+    // Move to next game after delay
+    TOUR.currentIndex++;
     setTimeout(() => {
       if(TOUR.currentIndex < TOUR.games.length) {
-        showToast(`Ďalšia hra za 3 sekundy...`, 3000);
+        showToast(`✅ Body započítané! Ďalšia hra za 3 sekundy...`, 3000, 'rgba(67,233,123,0.9)');
         setTimeout(() => tourNextGame(), 3000);
       } else {
         tourNextGame(); // Shows victory screen
@@ -14180,6 +14230,20 @@ function stopAllGames(){
   stopTurnTimer('ttt');
   stopTurnTimer('c4');
   stopTurnTimer('scr');
+}
+
+function mobileBackWithTournamentCheck(targetLevel) {
+  // If tournament is active and user tries to leave game, show warning
+  if(TOUR.active && targetLevel !== 3) {
+    showConfirm('🏆 Turnaj stále beží. Chceš ho zrušiť?', () => {
+      TOUR.active = false;
+      tourHideBanner();
+      tourReset();
+      mobileGoTo(targetLevel);
+    });
+    return;
+  }
+  mobileGoTo(targetLevel);
 }
 
 function mobileGoTo(level, gameId) {
