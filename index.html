@@ -3982,6 +3982,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="msCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
       <button class="action-btn primary-btn" id="msStartBtn" onclick="msStart()">Štart 💣</button>
+      <button class="action-btn danger-btn" onclick="resetMinesweeper()">Nová hra</button>
     </div>
   </div>
 
@@ -15163,20 +15164,21 @@ const MS_COLORS=['','#2196F3','#4CAF50','#f44336','#1a237e','#b71c1c','#00897b',
 const MS={
   grid:[],rows:8,cols:8,mines:10,
   diff:'easy',revealed:0,flagged:0,totalSafe:0,
-  gameOver:false,won:false,firstClick:true,
+  gameOver:false,won:false,firstClick:true,started:false,
   timer:null,time:0,flagMode:false
 };
 function setMsDiff(d,btn){
   MS.diff=d;
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  resetMinesweeper();
 }
 function resetMinesweeper(){
   if(MS.timer){clearInterval(MS.timer);MS.timer=null;}
   const d=MS_DIFF[MS.diff];
   MS.rows=d.rows;MS.cols=d.cols;MS.mines=d.mines;
   MS.grid=[];MS.revealed=0;MS.flagged=0;MS.totalSafe=d.rows*d.cols-d.mines;
-  MS.gameOver=false;MS.won=false;MS.firstClick=true;MS.time=0;MS.flagMode=false;
+  MS.gameOver=false;MS.won=false;MS.firstClick=true;MS.started=false;MS.time=0;MS.flagMode=false;
   for(let r=0;r<MS.rows;r++){
     MS.grid[r]=[];
     for(let c=0;c<MS.cols;c++) MS.grid[r][c]={mine:false,revealed:false,flagged:false,count:0};
@@ -15192,7 +15194,7 @@ function resetMinesweeper(){
 }
 function msStart(){
   resetMinesweeper();
-  MS.firstClick=true;
+  MS.firstClick=true;MS.started=true;
   $('msStartBtn').disabled=true;
   $('msStatus').textContent='Odkrývaj políčka! Prepni na 🚩 pre vlajky.';
   msRenderGrid();
@@ -15224,15 +15226,20 @@ function msGenerate(safeR,safeC){
   }
 }
 function msReveal(r,c){
-  if(r<0||r>=MS.rows||c<0||c>=MS.cols)return;
-  const cell=MS.grid[r][c];
-  if(cell.revealed||cell.flagged)return;
-  cell.revealed=true;MS.revealed++;
-  if(cell.mine){msGameOver(r,c);return;}
-  if(cell.count===0){
-    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-      if(dr===0&&dc===0)continue;
-      msReveal(r+dr,c+dc);
+  // Iterative flood-fill to avoid stack overflow on large boards
+  const stack=[[r,c]];
+  while(stack.length>0){
+    const[cr,cc]=stack.pop();
+    if(cr<0||cr>=MS.rows||cc<0||cc>=MS.cols)continue;
+    const cell=MS.grid[cr][cc];
+    if(cell.revealed||cell.flagged)continue;
+    cell.revealed=true;MS.revealed++;
+    if(cell.mine){msGameOver(cr,cc);return;}
+    if(cell.count===0){
+      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+        if(dr===0&&dc===0)continue;
+        stack.push([cr+dr,cc+dc]);
+      }
     }
   }
 }
@@ -15254,7 +15261,7 @@ function msToggleFlag(){
   }
 }
 function msCellClick(r,c){
-  if(MS.gameOver||MS.won)return;
+  if(!MS.started||MS.gameOver||MS.won)return;
   if(MS.firstClick){
     MS.firstClick=false;
     msGenerate(r,c);
@@ -15319,7 +15326,7 @@ function msRenderGrid(){
       d.dataset.r=r;d.dataset.c=c;
       d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;';
       d.addEventListener('click',()=>msCellClick(r,c));
-      d.addEventListener('contextmenu',(e)=>{e.preventDefault();if(!MS.gameOver&&!MS.won&&!MS.firstClick){msFlag(r,c);msRenderGrid();}});
+      d.addEventListener('contextmenu',(e)=>{e.preventDefault();if(MS.started&&!MS.gameOver&&!MS.won&&!MS.firstClick){msFlag(r,c);msRenderGrid();}});
       grid.appendChild(d);
     }
   }
