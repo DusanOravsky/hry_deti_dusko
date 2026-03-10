@@ -12824,7 +12824,13 @@ const WORDLE_SK = [
 'HASIC','HUSAR','IHNED','JAROK','KELNE','KONVA','KREST','KRTKO','LANAR','LESIK',
 'LIETA','LOKAJ','MANKO','MUSEL','OCAMI','OLEJI','PAMAT','PEKNE','PLSTI','POMLY',
 'REBRO','REZAT','RUSAK','SATIR','SIREN','SPALI','STALE','TAHAT','TOPAS','ZLATY',
-'ROZOK','KOCUR','MYSKA','MOBIL','RYSKA','MISKA'
+'ROZOK','KOCUR','MYSKA','MOBIL','RYSKA','MISKA',
+'LALIA','VYDRA','SOKOL','LABUT','LISKA','VCELA','MOTYL','SUMEC','KACKA','ORECH',
+'VISNA','BANAN','REPKA','PRASA','STADO','SKOLA','POSTA','BRANA','STROP','SCHOD',
+'KOPEC','DVERE','TASKA','FARMA','PRACA','JAZDA','ZBRAN','OBSAH','HRUZA','HLINA',
+'CISLO','DIELO','ODPAD','ZOSIT','SPINA','ZAPAD','KOLAC','MELON','GULAS','TORTA',
+'LEKAR','NAROD','SPORT','TENKY','MOKRY','TVRDY','TUCNY','SUCHY','HLUPY','OSTRY',
+'DOBRE','TREBA','ROBIL','JEDEN','LACNY','SMELY','MUDRY'
 ];
 const WORDLE_EN = [
 'APPLE','BEACH','BRAIN','BREAD','BRUSH','BUILD','CANDY','CHAIN','CHAIR','CHALK',
@@ -13760,6 +13766,13 @@ function mpIsTurnUnlocked() {
 function mpGetConfig(forceTurn) {
   return (forceTurn || mpIsTurnUnlocked()) ? TURN_CONFIG : STUN_ONLY_CONFIG;
 }
+function mpAlert(msg, duration) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:10px 20px;border-radius:8px;z-index:99999;font-size:0.9em;text-align:center;max-width:90vw';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), duration || 3000);
+}
 function mpCreateRoom() {
   // Cleanup any previous peer
   if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
@@ -13825,25 +13838,25 @@ function mpCreateRoom() {
 
       conn.on('error', (err) => {
         console.error('Connection error:', err);
-        alert('❌ Chyba pripojenia');
+        mpAlert('❌ Chyba pripojenia');
       });
     });
 
     MP.peer.on('error', (err) => {
       console.error('Peer error:', err);
-      alert('❌ Chyba vytvorenia miestnosti: ' + err.type);
+      mpAlert('❌ Chyba vytvorenia miestnosti: ' + err.type);
     });
 
   } catch(err) {
     console.error('Failed to create peer:', err);
-    alert('❌ Nepodarilo sa vytvoriť miestnosť');
+    mpAlert('❌ Nepodarilo sa vytvoriť miestnosť');
   }
 }
 
 function mpJoinRoom() {
   const code = $('mpJoinCode').value.trim().toUpperCase();
   if(!code) {
-    alert('Zadaj kód miestnosti!');
+    mpAlert('Zadaj kód miestnosti!');
     return;
   }
 
@@ -14736,7 +14749,7 @@ function mpStopScan() {
 function mpCopyCode() {
   const code = $('mpRoomCode').textContent;
   navigator.clipboard.writeText(code).then(() => {
-    alert('✅ Kód skopírovaný: ' + code);
+    mpAlert('✅ Kód skopírovaný: ' + code, 2000);
   }).catch(() => {
     // Fallback for older browsers
     const textArea = document.createElement('textarea');
@@ -14745,7 +14758,7 @@ function mpCopyCode() {
     textArea.select();
     document.execCommand('copy');
     document.body.removeChild(textArea);
-    alert('✅ Kód skopírovaný: ' + code);
+    mpAlert('✅ Kód skopírovaný: ' + code, 2000);
   });
 }
 
