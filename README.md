@@ -146,7 +146,27 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v4.6**
+Aktualna verzia: **v4.7**
+
+### Changelog
+
+**v4.7** (2026-03-10)
+- Fix: Turn timer memory leak - timers sa zastavuju pri navigacii
+- Fix: MP reconnect cleanup - reset counter pri manuálnom odpojení
+- Fix: Player name preservation - "Počítač" sa neukladá do localStorage v AI mode
+- Fix: Empty name validation - trim() a fallback na default mená
+- Optimization: playSound('win') - rýchlejšia generácia tónov
+- UX: Turn timer expire animation - blink efekt + timeout sound
+- UX: MP connection type tooltips - vysvetlenie TURN vs P2P
+- UX: Pause button visibility - oranžový gradient pre lepšiu viditeľnosť
+- Optimization: Wordle board - reuse DOM tiles namiesto rebuild
+
+**v4.6** (predchádzajúca)
+- Version-tracked SW update - localStorage tracking pre update toast
+- Session persistence - MP auto-reconnect po refresh
+- Chess timer + complete rules (check/checkmate/castling/en passant)
+- AI pre-thinking - Chess & Checkers hard mode
+- PWA install prompt
 
 ## Deploy
 
