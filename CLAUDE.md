@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~16200 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~17300 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v6.4
+- **Current version**: v6.6
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -53,7 +53,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (38 total)
+## Games (39 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -92,6 +92,7 @@ resetWordle(); // welcomeGameMode check works
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing, coins +2 bonus)
 - Gravity Run (canvas, endless runner with gravity flip, high score, space/click/tap to flip)
+- Minesweeper / Míny (8x8/10x10/12x12, iterative flood-fill, flag mode, timer, tournament-compatible in AI mode)
 - Statistiky + Achievement system (split reset: stats vs achievements)
 
 ## Features (v13-v114, v4.0+)
@@ -132,7 +133,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "Obsahuje 38 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "Obsahuje 39 hier!" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -299,6 +300,7 @@ Key game state objects and their patterns:
 - `BEE` — Bee Counting (canvas, hives, bees, phase, timers, scores, solo X/5)
 - `SOC` — Soccer (canvas, arrow angle, power, keeper, ball, penalty shootout)
 - `GRAV` — Gravity Run (canvas, player, obstacles, particles, gravDir, score, best)
+- `MS` — Minesweeper (grid[][], rows, cols, mines, diff, revealed, flagged, totalSafe, gameOver, won, firstClick, started, timer, flagMode)
 
 ## Performance Optimization
 

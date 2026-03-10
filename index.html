@@ -2282,7 +2282,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="checkersBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.3))"><span class="game-btn-icon">⬤</span><span class="game-btn-label">Dáma</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="reversiBtn" style="background:linear-gradient(135deg,rgba(100,100,100,0.25),rgba(200,200,200,0.25))"><span class="game-btn-icon">🔄</span><span class="game-btn-label">Reversi</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="ludoBtn" style="background:linear-gradient(135deg,rgba(239,83,80,0.25),rgba(66,165,245,0.25))"><span class="game-btn-icon">🎲</span><span class="game-btn-label">Človeče</span><span class="game-btn-dot"></span></button>
-      <button class="game-btn" id="dotsBoxesBtn" style="background:linear-gradient(135deg,rgba(156,39,176,0.25),rgba(233,30,99,0.25))"><span class="game-btn-icon">⬜</span><span class="game-btn-label">Bodky</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="dotsBoxesBtn" style="background:linear-gradient(135deg,rgba(156,39,176,0.25),rgba(233,30,99,0.25))"><span class="game-btn-icon">🔲</span><span class="game-btn-label">Bodky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="wordleBtn" style="background:linear-gradient(135deg,rgba(83,141,78,0.3),rgba(181,159,59,0.3))"><span class="game-btn-icon">🟩</span><span class="game-btn-label">Wordle</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="beeCountBtn" style="background:linear-gradient(135deg,rgba(255,193,7,0.25),rgba(255,152,0,0.25))"><span class="game-btn-icon">🐝</span><span class="game-btn-label">Včely</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="soccerBtn" style="background:linear-gradient(135deg,rgba(76,175,80,0.3),rgba(255,235,59,0.3))"><span class="game-btn-icon">⚽</span><span class="game-btn-label">Futbal</span><span class="game-btn-dot"></span></button>
@@ -4039,7 +4039,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '6.5';
+const APP_VERSION = '6.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -15412,7 +15412,7 @@ const MOBILE_GAMES = [
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
   { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
-  { id:'dotsBoxes',     label:'Bodky',          icon:'⬜', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
+  { id:'dotsBoxes',     label:'Bodky',          icon:'🔲', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
   { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both' },
   { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both', mp:true },

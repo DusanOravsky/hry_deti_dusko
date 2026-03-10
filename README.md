@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA s 38 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA s 39 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (38)
+## Hry (39)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -49,6 +49,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - Snake (canvas, swipe + sipky + tlacidla, high score)
 - Preteky (Racing) (5x12 grid, 3 drahy, prekazky + mince)
 - Gravity Run (canvas, endless runner, preklop gravitacie, high score)
+- Minesweeper / Míny (8x8/10x10/12x12, flood-fill, vlajky, casovac)
 - Statistiky + Achievement system (oddeleny reset statistik a achievementov)
 
 ## Online Multiplayer
@@ -108,7 +109,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ## Technologie
 
-- Single HTML file (~16200 riadkov)
+- Single HTML file (~17300 riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
@@ -149,9 +150,18 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v6.4**
+Aktualna verzia: **v6.6**
 
 ### Changelog
+
+**v6.6** (2026-03-10) - Minesweeper + UI Polish
+- 💣 **Minesweeper (Míny)** — klasická hra, 3 obťažnosti (8×8/10×10/12×12)
+  - Iteratívny flood-fill, vlajkovanie mín, časovač
+  - Prvý klik vždy bezpečný (9 políčok okolo)
+  - Režim Kopať/Vlajka pre mobilné zariadenia
+  - Pridaný do turnaja (len AI mode, výhra=1 bod, boom=0.5 bodu)
+- 🔄 Reversi ikona zmenená z ⚫ na 🔄 (lepšia rozlíšiteľnosť)
+- 🎨 Minesweeper grid: viditeľné okraje, modré neodkryté bunky, kontrastné farby
 
 **v6.4** (2026-03-10) - New Games + Bugfixes
 - 🐝 **Vcely (Bee Counting)** — canvas hra, vcely letia do 3 ulov, hadaj ktory dostal najviac
