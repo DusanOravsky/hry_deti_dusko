@@ -3961,16 +3961,19 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 
   <!-- ===== MINESWEEPER ===== -->
   <div class="game-area" id="minesweeper">
-    <div class="rules"><h3>💣 Míny:</h3><ul>
-      <li>Klikni na políčko — odkryje sa</li>
-      <li>Číslo = počet mín okolo</li>
-      <li>Prepni na 🚩 režim a označ míny</li>
-      <li>Odkry všetky bezpečné políčka!</li>
+    <div class="rules"><h3>💣 Míny (Minesweeper):</h3><ul>
+      <li>V mriežke sú ukryté míny — nesmieš na ne kliknúť!</li>
+      <li>Klikni na políčko — odkryje sa. Číslo ukazuje koľko mín je v 8 susedných políčkach</li>
+      <li>Podľa čísel zisti, kde sú míny, a označ ich vlajkou 🚩</li>
+      <li>Prepni tlačidlom medzi odkrývaním (🔍) a vlajkovaním (🚩)</li>
+      <li>Pravý klik na PC = vlajka</li>
+      <li>Vyhráš keď odkryješ všetky bezpečné políčka!</li>
+      <li><b>Ľahká:</b> 8×8, 10 mín | <b>Stredná:</b> 10×10, 20 mín | <b>Ťažká:</b> 12×12, 35 mín</li>
     </ul></div>
     <div class="ai-difficulty" id="msDiffWrap" style="display:flex;margin-bottom:10px">
-      <button class="difficulty-btn active" onclick="setMsDiff('easy',this)">8×8 (10 mín)</button>
-      <button class="difficulty-btn" onclick="setMsDiff('medium',this)">10×10 (20)</button>
-      <button class="difficulty-btn" onclick="setMsDiff('hard',this)">12×12 (35)</button>
+      <button class="difficulty-btn active" onclick="setMsDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setMsDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setMsDiff('hard',this)">Ťažká</button>
     </div>
     <div id="msInfoBar" style="display:flex;justify-content:space-between;align-items:center;max-width:min(340px,90vw);margin:0 auto 6px;font-weight:bold;font-size:1.1em">
       <span>💣 <span id="msMineCount">10</span></span>
@@ -15185,7 +15188,7 @@ function resetMinesweeper(){
   }
   $('msMineCount').textContent=MS.mines;
   $('msTime').textContent='0';
-  $('msStatus').textContent='Klikni Štart!';
+  $('msStatus').textContent=MS.rows+'×'+MS.cols+' — '+MS.mines+' mín. Klikni Štart!';
   $('msStartBtn').disabled=false;
   $('msCelebration').textContent='';
   const tog=$('msFlagToggle');
