@@ -75,6 +75,8 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 **Session persistence:** Po refreshi stranky sa MP automaticky pokusi znovu pripojit (8s timeout).
 
+**Auto-reconnect:** Pri strate spojenia (napr. vypla sa WiFi) sa automaticky pokusi znovu pripojit — max 3 pokusy po 2s, zobrazuje status toastom.
+
 ## Features
 
 - **Mena hracov**: Prazdne na zaciatku, deti si nastavia vlastne mena, ulozia sa v localStorage per zariadenie
@@ -91,6 +93,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - **Aktivny hrac**: Vizualny indikator kto je na tahu (dimovanie + "Na rade" badge)
 - **Sachove suradnice**: A-H / 1-8 okolo dosky, otocene pre cierneho v MP
 - **Sachovy pat**: Detekcia patu (0 legalnych tahov = remiza)
+- **Sachovy casovac**: Volitelny casovac na hru (5/10/15 min), odpocitavanie per hrac, automaticky vypnuty v MP mode
 - **Hlasove prikazy (Sach)**: Web Speech API (sk-SK), povedz "E2 E4" pre tah
 - **QR kody**: Generovanie a skenovanie QR kodu pre MP room code
 - **Kviz**: 17 tematickych kategorii s 1000+ otazkami
@@ -143,7 +146,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v114**
+Aktualna verzia: **v4.0**
 
 ## Deploy
 

@@ -106,6 +106,7 @@ resetWordle(); // welcomeGameMode check works
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
 - **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
 - **Chess complete rules**: Legal move filtering (can't move into check or ignore check), check detection with red king highlight, checkmate (0 legal moves + in check = win), stalemate (0 legal moves + not in check = draw), castling (kingside/queenside with through-check validation), en passant capture, pawn promotion dialog (Q/R/B/N choice), 50-move rule draw
+- **Chess timer**: Optional game timer with 5/10/15 min modes, per-player countdown, automatically disabled in MP mode (not supported), time loss detection
 - **Tetris wall kicks**: `tetRotate()` tries kick offsets `[0,-1,1,-2,2]`
 - **Tetris ghost piece**: Semi-transparent preview of where piece will land (0.25 opacity)
 - **Wordle word validation**: Both PVP set phase and guess phase validate against word list
@@ -124,6 +125,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP TURN servers**: Metered TURN for cross-network play, password-protected (STUN-first, TURN fallback)
 - **MP connection type indicator**: Shows "Cez server (TURN)" or "Priame spojenie" after connecting
 - **MP session persistence**: `sessionStorage` saves roomCode/isHost/myName, auto-reconnect on refresh (8s timeout)
+- **MP auto-reconnect**: Automatic reconnection after unexpected disconnect (WiFi drop), max 3 attempts with 2s delay, toast notifications showing reconnect status, session preserved during attempts
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
@@ -199,14 +201,21 @@ const MP = {
   roomCode: null, myName: '', opponentName: '',
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
   dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
-  sdRound: 0, tnkRound: 0, pngRound: 0
+  sdRound: 0, tnkRound: 0, pngRound: 0,
+  _intentionalDisconnect: false,
+  _reconnectAttempts: 0,
+  _maxReconnectAttempts: 3,
+  _reconnectTimeout: null
 };
 ```
 
-**Session Persistence:**
+**Session Persistence & Auto-Reconnect:**
 - `mpSaveSession()` — saves to sessionStorage after handshake
 - `mpClearSession()` — clears on disconnect
 - `mpTryReconnect()` — called on page load, 8s timeout, toast UI
+- `mpHandleDisconnect()` — distinguishes intentional vs unintentional disconnect, triggers auto-reconnect
+- `mpAutoReconnect()` — max 3 attempts with 2s delay, preserves session, shows toast notifications
+- `showToast()` — utility for reconnect status messages
 
 **Player Names in MP:**
 - Both host and guest use `wP1Input` (device owner's name) as their MP name
