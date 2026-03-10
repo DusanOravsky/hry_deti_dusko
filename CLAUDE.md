@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~14600 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v4.0
+- **Current version**: v4.1
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -130,7 +130,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
 - **Game count + copyright**: "Obsahuje 35 hier!" on welcome, "(c) Dusan Oravsky" at bottom
-- **SW auto-reload**: New service worker version triggers automatic page reload
+- **Manual SW update**: User-controlled service worker update with toast notification, prevents blank page during GitHub outage
 - **Dark/light theme**: Automatic by time of day + manual toggle
 
 ## Adding a New Game
