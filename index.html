@@ -14667,8 +14667,6 @@ resetPong();
 resetTanks();
 resetSnakeDuel();
 resetBee();
-resetSoccer();
-resetGravity();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -14773,7 +14771,7 @@ function socLoop(){
   socRender();
 }
 function socCanvasClick(){
-  if(!SOC.running)return;
+  if(!SOC.running||SOC.phase==='shooting'||SOC.phase==='result')return;
   if(SOC.phase==='aiming'){
     SOC.phase='power';SOC.power=50;SOC.powerDir=1;
     $('socStatus').textContent='Sila! Klikni znova!';
@@ -14822,7 +14820,7 @@ function socCheckGoal(){
       if(SOC.round>=SOC.maxRounds){
         addWin(SOC.s1>=3?1:0,'soccer');
         $('socStatus').textContent='🏆 Výsledok: '+SOC.s1+'/'+SOC.maxRounds+(SOC.s1===SOC.maxRounds?' — Perfektné! 🌟':SOC.s1>=3?' — Super! 🎉':' — Skús znova! 💪');
-        if(SOC.s1>=3)$('socCelebration').textContent='🎉⚽🎉';
+        if(SOC.s1>=3){$('socCelebration').textContent='🎉⚽🎉';celebrate('socCelebration');}
         $('socStartBtn').disabled=false;SOC.running=false;playSound('win');
       } else socStartRound();
     } else {
@@ -14832,7 +14830,7 @@ function socCheckGoal(){
         addWin(w,'soccer');
         const winner=w===1?getActiveP1Name('soccer'):w===2?getActiveP2Name('soccer'):'Remíza';
         $('socStatus').textContent='🏆 '+winner+(w?(' vyhráva '+SOC.s1+':'+SOC.s2):'! '+SOC.s1+':'+SOC.s2);
-        if(w)$('socCelebration').textContent='🎉⚽🎉';
+        if(w){$('socCelebration').textContent='🎉⚽🎉';celebrate('socCelebration');}
         $('socStartBtn').disabled=false;SOC.running=false;playSound('win');
       } else socStartRound();
     }
@@ -14923,6 +14921,7 @@ function socRender(){
 }
 $('socCanvas').addEventListener('click',socCanvasClick);
 $('socCanvas').addEventListener('touchstart',function(e){e.preventDefault();socCanvasClick();},{passive:false});
+resetSoccer();
 
 // =============================================================================
 // SEKCIA 38: GRAVITY RUN
@@ -15127,6 +15126,7 @@ document.addEventListener('keydown',function(e){
   if(currentGameId!=='gravityRun')return;
   if(e.code==='Space'||e.key===' '){e.preventDefault();if(GRAV.running)gravFlip();}
 });
+resetGravity();
 
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
@@ -15457,7 +15457,7 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','socDiffWrap'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
