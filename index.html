@@ -1050,12 +1050,14 @@ body.light .timer-select { background:rgba(0,0,0,0.06); border-color:rgba(0,0,0,
 button.action-btn {
   padding:12px 28px; font-size:0.95em; font-weight:700;
   border:none; border-radius:12px; cursor:pointer; transition:all 0.3s; color:white;
+  background:linear-gradient(135deg,#4a5568,#2d3748);
 }
+button.action-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(74,85,104,0.5); }
 button.primary-btn { background:linear-gradient(135deg,#667eea,#764ba2); }
 button.primary-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(102,126,234,0.5); }
 button.danger-btn { background:linear-gradient(135deg,#f5576c,#d63d47); }
 button.danger-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(245,87,108,0.5); }
-body.light button.action-btn { color:white; }
+body.light button.action-btn { color:white; background:linear-gradient(135deg,#5a6c7d,#475569); }
 body.light button.primary-btn { background:linear-gradient(135deg,#667eea,#764ba2); color:white; }
 body.light button.danger-btn { background:linear-gradient(135deg,#f5576c,#d63d47); color:white; }
 
@@ -13849,6 +13851,10 @@ function stopAllGames(){
   if(typeof chessVoiceStop==='function'&&chVoiceActive){chessVoiceStop();}
   // Chess timer
   if(typeof CH!=='undefined'&&CH.timerInterval){clearInterval(CH.timerInterval);CH.timerInterval=null;}
+  // Chess AI pre-thinking
+  if(typeof CH!=='undefined'&&CH.aiThinkTimer){clearTimeout(CH.aiThinkTimer);CH.aiThinkTimer=null;CH.aiPremove=null;}
+  // Checkers AI pre-thinking
+  if(typeof DK!=='undefined'&&DK.aiThinkTimer){clearTimeout(DK.aiThinkTimer);DK.aiThinkTimer=null;DK.aiPremove=null;}
 }
 
 function mobileGoTo(level, gameId) {
@@ -14523,6 +14529,12 @@ function mpUpdateRoleBadge() {
 }
 function mpClearSession() {
   sessionStorage.removeItem('mp_session');
+  MP._reconnectAttempts = 0;
+  MP._intentionalDisconnect = false;
+  if(MP._reconnectTimeout) {
+    clearTimeout(MP._reconnectTimeout);
+    MP._reconnectTimeout = null;
+  }
 }
 
 function mpDisconnect() {
