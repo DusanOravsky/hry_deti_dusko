@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA s 35 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA s 38 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (35)
+## Hry (38)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -27,6 +27,8 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Breakout (Arkanoid) | - | Yes (easy/medium/hard) |
 | Pong | Yes | Yes (easy/medium/hard) |
 | Tank Battle (power-upy: shield/rapid/speed) | Yes | Yes (easy/medium/hard) |
+| Vcely (canvas, vcely letia do ulov, hadaj ktory dostal najviac) | - | Yes (easy/medium/hard) |
+| Futbal (canvas, penaltova strelba, sipka+sila, brankár) | - | Yes (easy/medium/hard) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra |
@@ -46,6 +48,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - Tetris (wall kicks, ghost piece, mobilne ovladacie tlacidla)
 - Snake (canvas, swipe + sipky + tlacidla, high score)
 - Preteky (Racing) (5x12 grid, 3 drahy, prekazky + mince)
+- Gravity Run (canvas, endless runner, preklop gravitacie, high score)
 - Statistiky + Achievement system (oddeleny reset statistik a achievementov)
 
 ## Online Multiplayer
@@ -105,13 +108,13 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ## Technologie
 
-- Single HTML file (~14600 riadkov)
+- Single HTML file (~16200 riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
 - Responsivny dizajn (mobile + desktop)
 - Web Audio API zvuky s vibraciami
-- Canvas-based hry (Snake, Tetris, Doodle Jump, Puzzle Scramble, Dots & Boxes, Breakout, Pong, Tank Battle, Snake Duel)
+- Canvas-based hry (Snake, Tetris, Doodle Jump, Puzzle Scramble, Dots & Boxes, Breakout, Pong, Tank Battle, Snake Duel, Vcely, Futbal, Gravity Run)
 - DFS generovanie labyrintu, BFS AI solver
 - Web Speech API pre hlasove prikazy
 - RTCPeerConnection.getStats() pre detekciu typu spojenia
@@ -146,9 +149,29 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v6.0**
+Aktualna verzia: **v6.4**
 
 ### Changelog
+
+**v6.4** (2026-03-10) - New Games + Bugfixes
+- 🐝 **Vcely (Bee Counting)** — canvas hra, vcely letia do 3 ulov, hadaj ktory dostal najviac
+  - AI mode: solo X/5 (bez P2), PvP: striedanie hracov
+  - 3 obtiaznosti (easy/medium/hard) ovplyvnuju rychlost a pocet vciel
+- ⚽ **Futbal (Penalty Shootout)** — canvas penaltova strelba
+  - Kyvajuca sipka pre smer + oscilujuci power bar pre silu
+  - AI brankar (easy 20%/medium 45%/hard 70% zachytenie)
+  - Solo X/5 v AI mode, PvP striedanie strelcov
+- 🌀 **Gravity Run** — canvas endless runner s preklpom gravitacie
+  - Bezis automaticky, klikni/medzernik pre zmenu gravitacie (podlaha/strop)
+  - Prekazky na oboch stranach, zvysujuca sa rychlost
+  - High score ulozeny v localStorage
+- 🔧 **Bugfixy:**
+  - 7 systemovych bugov (mpSend helper, localStorage crash protection, memory leaks)
+  - Bee solo mode: skryte mena hracov v AI mode
+  - TDZ crash fix (v6.3): resetSoccer/resetGravity volane pred const deklaraciami
+  - 13 chybajucich desktop sidebar tlacidiel
+  - Quiz ikona zmenena z ❓ na 🧪
+  - Stats page: pridana help informacia
 
 **v6.0** (2026-03-10) - Tournament Polish & Fixes
 - 🏆 **Tournament mode improvements:**

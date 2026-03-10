@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~14600 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~16200 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v6.0
+- **Current version**: v6.4
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -22,7 +22,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~14600 
 
 **ALL `const`/`let` variables MUST be declared BEFORE any code that references them at init time.**
 
-`const` and `let` in JavaScript have a "temporal dead zone" (TDZ). Even `typeof X` throws a ReferenceError if `const X` or `let X` is declared later in the same scope. This has caused crashes in v10-v12, v28-v38, and v42.
+`const` and `let` in JavaScript have a "temporal dead zone" (TDZ). Even `typeof X` throws a ReferenceError if `const X` or `let X` is declared later in the same scope. This has caused crashes in v10-v12, v28-v38, v42, and v6.3.
 
 ```javascript
 // CORRECT ORDER — all declarations before any reset*() calls:
@@ -53,7 +53,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (35 total)
+## Games (38 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -72,6 +72,8 @@ resetWordle(); // welcomeGameMode check works
 - Breakout/Arkanoid (AI: easy/medium/hard, canvas, roundRect polyfill)
 - Pong [MP] (AI: easy/medium/hard, canvas, W/S + arrows, touch drag, first to 10)
 - Tank Battle [MP] (AI: easy/medium/hard, 16x16 grid, power-ups: shield/rapid/speed)
+- Vcely / Bee Counting (AI: easy/medium/hard, canvas, bees fly into 3 hives, guess which got most, solo X/5 in AI mode)
+- Futbal / Soccer (AI: easy/medium/hard, canvas, penalty shootout with swinging arrow + power bar, solo X/5 in AI mode)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -89,6 +91,7 @@ resetWordle(); // welcomeGameMode check works
 - Tetris (wall kicks, ghost piece)
 - Snake (canvas, swipe + arrows + buttons, high score)
 - Preteky (Racing, coins +2 bonus)
+- Gravity Run (canvas, endless runner with gravity flip, high score, space/click/tap to flip)
 - Statistiky + Achievement system (split reset: stats vs achievements)
 
 ## Features (v13-v114, v4.0+)
@@ -129,9 +132,14 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "Obsahuje 35 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "Obsahuje 38 hier!" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
+- **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
+- **Soccer/Futbal**: Canvas penalty shootout, swinging arrow for direction + oscillating power bar, AI keeper (easy 20%/medium 45%/hard 70% intercept), solo X/5 or PvP alternating
+- **Gravity Run**: Canvas endless runner, player runs on floor/ceiling, tap/space to flip gravity, obstacles spawn on both sides, increasing speed, high score in localStorage
+- **Solo mode pattern**: Games with mode:'both' show solo score (X/5) in AI mode — hide player-info div, show soloScore div via `applyGameMode()` and `reset*()`
+- **mpSend() helper**: Wraps `MP.connection.send()` with null checks and try/catch — all 46+ send calls use this
 
 ## Adding a New Game
 
@@ -140,7 +148,7 @@ resetWordle(); // welcomeGameMode check works
 3. Add entry to `GAME_NAMES` object
 4. Add to `gameKeys` object (button ID mapping)
 5. Add stat key to both `getActiveP1Name` and `getActiveP2Name`
-6. Add `reset*()` function and call it in init section (AFTER `const MP` AND `let welcomeGameMode`)
+6. Add `reset*()` function and call it AFTER the `const` state object declaration (either in init section or right after the game section). **NEVER call reset before the const declaration — TDZ crash!**
 7. Implement game logic with `addWin()` calls for all outcomes
 8. For AI mode: block player clicks with `if(welcomeGameMode==='ai' && turn===opponent) return;`
 9. **CRITICAL**: Verify your `reset*()` function does NOT reference any `const`/`let` variable declared later in the file. Grep all referenced variables and check line numbers.
@@ -288,6 +296,9 @@ Key game state objects and their patterns:
 - `PNG` — Pong (canvas, paddles, ball, scores, first to 10)
 - `TNK` — Tank Battle (16x16 grid, tanks, bullets, walls, powerup, cooldowns, first to 5)
 - `SD` — Snake Duel (2 snakes, directions, scores, first to 5)
+- `BEE` — Bee Counting (canvas, hives, bees, phase, timers, scores, solo X/5)
+- `SOC` — Soccer (canvas, arrow angle, power, keeper, ball, penalty shootout)
+- `GRAV` — Gravity Run (canvas, player, obstacles, particles, gravDir, score, best)
 
 ## Performance Optimization
 
@@ -296,7 +307,7 @@ Key game state objects and their patterns:
 
 ### stopAllGames()
 Centralized cleanup function that stops all game timers/rafs:
-- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout
+- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf
 - Called by `mobileGoTo()` and desktop sidebar game switching
 
 ## Deploy
@@ -341,7 +352,7 @@ GitHub Pages auto-deploys from main branch.
 
 ### MP-Specific Issues
 
-- **TDZ crash (v10-v12, v28-v38, v42)**: `const`/`let` declarations are NOT hoisted. Even `typeof` throws in TDZ. Solution: declare ALL variables before any init calls. This applies to `const MP`, `let welcomeGameMode`, and any other module-level variable.
+- **TDZ crash (v10-v12, v28-v38, v42, v6.3)**: `const`/`let` declarations are NOT hoisted. Even `typeof` throws in TDZ. Solution: declare ALL variables before any init calls. This applies to `const MP`, `let welcomeGameMode`, `const SOC`, `const GRAV`, `const BEE`, and any other module-level variable. **Best practice: place `reset*()` call right after the game section (after const + functions), NOT in a centralized init block that runs before the const.**
 - **Game state desync**: Host MUST send all game settings in handshake. Guest applies via UI functions.
 - **Guest changing settings**: Block or hide setting controls for guest in MP mode.
 - **Duplicate declarations**: Always `grep "const MP\|let welcomeGameMode" index.html` before changes.
