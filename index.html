@@ -14805,7 +14805,6 @@ function socCheckGoal(){
   const inGoalY=SOC.targetY>=SOC.goalY&&SOC.targetY<=SOC.goalY+SOC.goalH;
   const inGoalX=SOC.targetX>=SOC.goalX&&SOC.targetX<=SOC.goalX+SOC.goalW;
   const keeperClose=Math.abs(SOC.keeperX-SOC.targetX)<35&&inGoalY;
-  const isGoal=inGoalY&&inGoalX&&!keeperClose;
   const solo=welcomeGameMode==='ai';
   if(!inGoalY||!inGoalX){
     $('socStatus').textContent='Vedľa! 😞';playSound('wrong');
@@ -15048,7 +15047,7 @@ function gravGameOver(){
   } else {
     $('gravStatus').textContent='💀 Game Over! Skóre: '+GRAV.score;
   }
-  addWin(GRAV.score>=50?1:0,'gravityRun');
+  addWin(1,'gravityRun');
   $('gravStartBtn').disabled=false;
   playSound('wrong');
   // Death particles
@@ -15105,16 +15104,15 @@ function gravRender(){
   c.globalAlpha=1;
   // Player
   const p=GRAV.player;
-  if(GRAV.running||GRAV.frameCount===0){
-    c.fillStyle='#00cec9';c.fillRect(p.x,p.y,p.w,p.h);
-    c.strokeStyle='#81ecec';c.lineWidth=1.5;c.strokeRect(p.x,p.y,p.w,p.h);
-    // Eyes
-    const eyeY=GRAV.gravDir===1?p.y+5:p.y+p.h-7;
-    c.fillStyle='#fff';
-    c.fillRect(p.x+4,eyeY,4,4);c.fillRect(p.x+10,eyeY,4,4);
-    c.fillStyle='#1a1a2e';
-    c.fillRect(p.x+5,eyeY+1,2,2);c.fillRect(p.x+11,eyeY+1,2,2);
-    // Trail
+  c.fillStyle=GRAV.running?'#00cec9':'#e74c3c';
+  c.fillRect(p.x,p.y,p.w,p.h);
+  c.strokeStyle=GRAV.running?'#81ecec':'#ff6b6b';c.lineWidth=1.5;c.strokeRect(p.x,p.y,p.w,p.h);
+  const eyeY=GRAV.gravDir===1?p.y+5:p.y+p.h-7;
+  c.fillStyle='#fff';
+  c.fillRect(p.x+4,eyeY,4,4);c.fillRect(p.x+10,eyeY,4,4);
+  c.fillStyle='#1a1a2e';
+  c.fillRect(p.x+5,eyeY+1,2,2);c.fillRect(p.x+11,eyeY+1,2,2);
+  if(GRAV.running){
     c.fillStyle='rgba(0,206,201,0.15)';
     for(let t=1;t<=4;t++){c.fillRect(p.x-t*8,p.y+2,6,p.h-4);}
   }
