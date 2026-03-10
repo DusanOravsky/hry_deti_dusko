@@ -13847,6 +13847,8 @@ function stopAllGames(){
   if(typeof REAC!=='undefined'&&REAC.timeout){clearTimeout(REAC.timeout);REAC.timeout=null;}
   // Chess voice recognition
   if(typeof chessVoiceStop==='function'&&chVoiceActive){chessVoiceStop();}
+  // Chess timer
+  if(typeof CH!=='undefined'&&CH.timerInterval){clearInterval(CH.timerInterval);CH.timerInterval=null;}
 }
 
 function mobileGoTo(level, gameId) {
@@ -14685,12 +14687,10 @@ function mpTryReconnect() {
 
   const timeout = setTimeout(() => {
     if(!MP.isConnected) {
-      console.log('Reconnect failed - timeout');
-      mpClearSession();
+      console.log('Reconnect attempt failed - timeout');
       if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
-      MP.isHost = false; MP.roomCode = null;
-      toast.textContent = 'Nepodarilo sa pripojiť';
-      setTimeout(() => toast.remove(), 2000);
+      toast.remove();
+      mpAutoReconnect(); // Try again if attempts remaining
     }
   }, 8000);
 
@@ -14727,7 +14727,7 @@ function mpTryReconnect() {
         conn.on('data', (d) => mpHandleMessage(d));
         conn.on('close', mpHandleDisconnect);
       });
-      MP.peer.on('error', () => { clearTimeout(timeout); mpClearSession(); toast.remove(); });
+      MP.peer.on('error', () => { clearTimeout(timeout); if(MP.peer){try{MP.peer.destroy();}catch(e){}MP.peer=null;} toast.remove(); mpAutoReconnect(); });
     } else {
       MP.peer = new Peer(reconConfig);
       MP.peer.on('open', () => {
@@ -14742,12 +14742,13 @@ function mpTryReconnect() {
         MP.connection.on('data', (d) => mpHandleMessage(d));
         MP.connection.on('close', mpHandleDisconnect);
       });
-      MP.peer.on('error', () => { clearTimeout(timeout); mpClearSession(); toast.remove(); });
+      MP.peer.on('error', () => { clearTimeout(timeout); if(MP.peer){try{MP.peer.destroy();}catch(e){}MP.peer=null;} toast.remove(); mpAutoReconnect(); });
     }
   } catch(e) {
     clearTimeout(timeout);
-    mpClearSession();
+    if(MP.peer){try{MP.peer.destroy();}catch(e2){}MP.peer=null;}
     toast.remove();
+    mpAutoReconnect();
   }
 }
 
