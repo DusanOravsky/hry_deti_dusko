@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~14600 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v2.0
+- **Current version**: v3.0
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -61,7 +61,7 @@ resetWordle(); // welcomeGameMode check works
 - Kamen Papier Noznice [MP] (AI: easy/medium/hard)
 - Hadaj Cislo [MP]
 - Pexeso (6 random themes) [MP]
-- Sach [MP] (AI: easy/medium/hard, stalemate detection)
+- Sach [MP] (AI: easy/medium/hard, check/checkmate detection, legal move filtering, stalemate detection)
 - Dama [MP] (AI: easy/medium/hard)
 - Lodicky (Battleship) [MP] (AI: easy/medium/hard)
 - Clovece nehnevaj sa [MP] (AI: easy/medium/hard)
@@ -105,7 +105,7 @@ resetWordle(); // welcomeGameMode check works
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
 - **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
-- **Chess stalemate**: Detected after turn switch — 0 legal moves = draw
+- **Chess check/checkmate**: Legal move filtering (can't move into check or ignore check), check detection with red king highlight, checkmate (0 legal moves + in check = win), stalemate (0 legal moves + not in check = draw)
 - **Tetris wall kicks**: `tetRotate()` tries kick offsets `[0,-1,1,-2,2]`
 - **Tetris ghost piece**: Semi-transparent preview of where piece will land (0.25 opacity)
 - **Wordle word validation**: Both PVP set phase and guess phase validate against word list
