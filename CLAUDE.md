@@ -61,7 +61,7 @@ resetWordle(); // welcomeGameMode check works
 - Kamen Papier Noznice [MP] (AI: easy/medium/hard)
 - Hadaj Cislo [MP]
 - Pexeso (6 random themes) [MP]
-- Sach [MP] (AI: easy/medium/hard, check/checkmate detection, legal move filtering, stalemate detection)
+- Sach [MP] (AI: easy/medium/hard, complete official rules: check/checkmate, castling, en passant, pawn promotion dialog, 50-move rule, legal move filtering)
 - Dama [MP] (AI: easy/medium/hard)
 - Lodicky (Battleship) [MP] (AI: easy/medium/hard)
 - Clovece nehnevaj sa [MP] (AI: easy/medium/hard)
@@ -105,7 +105,7 @@ resetWordle(); // welcomeGameMode check works
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
 - **Chess voice commands**: Web Speech API (`sk-SK`), say "E2 E4" to move, mic toggle button
-- **Chess check/checkmate**: Legal move filtering (can't move into check or ignore check), check detection with red king highlight, checkmate (0 legal moves + in check = win), stalemate (0 legal moves + not in check = draw)
+- **Chess complete rules**: Legal move filtering (can't move into check or ignore check), check detection with red king highlight, checkmate (0 legal moves + in check = win), stalemate (0 legal moves + not in check = draw), castling (kingside/queenside with through-check validation), en passant capture, pawn promotion dialog (Q/R/B/N choice), 50-move rule draw
 - **Tetris wall kicks**: `tetRotate()` tries kick offsets `[0,-1,1,-2,2]`
 - **Tetris ghost piece**: Semi-transparent preview of where piece will land (0.25 opacity)
 - **Wordle word validation**: Both PVP set phase and guess phase validate against word list
