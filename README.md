@@ -146,9 +146,21 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v5.0**
+Aktualna verzia: **v6.0**
 
 ### Changelog
+
+**v6.0** (2026-03-10) - Tournament Polish & Fixes
+- 🏆 **Tournament mode improvements:**
+  - Fixed 7 critical bugs (custom confirm, celebrate crash, mobile detection)
+  - Floating leaderboard banner - visible during games with live scores
+  - Mobile back button protection - warns before canceling tournament
+  - Immediate score updates after each game
+  - AI/PvP mode filtering - shows only relevant games (10 vs 15)
+  - Tournament rules help button
+  - Better UX with green toast notifications
+- 📳 Vibration toggle improvements - red background when disabled for clarity
+- Tournament available games filtered by mode (AI: 10 games, PvP: 15 games)
 
 **v5.0** (2026-03-10) - Major Feature Release
 - 🏆 **Multi-Game Tournament Mode** - compete across 3-5 games

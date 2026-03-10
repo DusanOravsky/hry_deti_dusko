@@ -1,5 +1,5 @@
 // Keep in sync with APP_VERSION in index.html
-const CACHE_NAME = 'hrajmesi-v5.0';
+const CACHE_NAME = 'hrajmesi-v6.0';
 const ASSETS = [
   './manifest.json',
   './icon-192.png',
