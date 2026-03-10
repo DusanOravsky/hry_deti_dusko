@@ -2019,6 +2019,17 @@ body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
 @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 .welcome-start-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(102,126,234,0.55); }
 .welcome-start-btn:active { transform:scale(0.98); }
+.welcome-install-btn {
+  width:100%; padding:10px; border:none; border-radius:12px; cursor:pointer;
+  font-size:0.9em; font-weight:700; color:white;
+  background:linear-gradient(135deg,#11998e,#38ef7d);
+  box-shadow:0 4px 16px rgba(17,153,142,0.4);
+  transition:all 0.25s;
+  margin-bottom:12px;
+  box-sizing:border-box;
+}
+.welcome-install-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(17,153,142,0.5); }
+.welcome-install-btn:active { transform:scale(0.98); }
 .welcome-games-preview {
   display:flex; flex-wrap:wrap; gap:6px; justify-content:center;
   margin-top:4px;
@@ -2117,6 +2128,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       </div>
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
+    <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
     <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 35 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
@@ -3397,6 +3409,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="tetCelebration">🎉</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startTetris()">▶️ Štart</button>
+      <button class="action-btn" id="tetPauseBtn" style="display:none" onclick="togglePauseTetris()">⏸️ Pauza</button>
       <button class="action-btn danger-btn" onclick="resetTetris()">🔄 Reset</button>
     </div>
   </div>
@@ -3435,6 +3448,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="snakeCelebration">🎉</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startSnake()">▶️ Štart</button>
+      <button class="action-btn" id="snakePauseBtn" style="display:none" onclick="togglePauseSnake()">⏸️ Pauza</button>
       <button class="action-btn danger-btn" onclick="resetSnake()">🔄 Reset</button>
     </div>
   </div>
@@ -3496,6 +3510,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="celebration" id="raceCelebration">🎉</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startRace()">▶️ Štart</button>
+      <button class="action-btn" id="racePauseBtn" style="display:none" onclick="togglePauseRace()">⏸️ Pauza</button>
       <button class="action-btn danger-btn" onclick="resetRace()">🔄 Reset</button>
     </div>
   </div>
@@ -9317,7 +9332,9 @@ const CH = {
   castling: { wK:true, wQ:true, bK:true, bQ:true },
   enPassant: -1,
   halfMoveClock: 0,
-  promotionPending: null
+  promotionPending: null,
+  aiPremove: null,
+  aiThinkTimer: null
 };
 function setCHDiff(d,btn) { CH.diff=d; document.querySelectorAll('#chAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 const CH_START = [
@@ -9339,6 +9356,9 @@ function resetChess() {
   CH.enPassant = -1;
   CH.halfMoveClock = 0;
   CH.promotionPending = null;
+  if(CH.aiThinkTimer) clearTimeout(CH.aiThinkTimer);
+  CH.aiPremove = null;
+  CH.aiThinkTimer = null;
   $('chStatus').textContent='Biely na ťahu';
   activeTurn('chP1Card','chP2Card',1);
   renderChessBoard();
@@ -9508,9 +9528,64 @@ function chessMove(from,to,promoteTo) {
   if(welcomeGameMode==='ai'&&CH.turn==='b'&&!CH.over) {
     setTimeout(chessAI,500);
   }
+  // AI pre-thinking: start thinking during player's turn (hard mode only)
+  if(welcomeGameMode==='ai'&&CH.turn==='w'&&!CH.over&&CH.diff==='hard') {
+    chStartAIThinking();
+  }
+}
+function chStartAIThinking() {
+  if(CH.aiThinkTimer) clearTimeout(CH.aiThinkTimer);
+  CH.aiPremove = null;
+  // Think ahead after a short delay
+  CH.aiThinkTimer = setTimeout(() => {
+    if(CH.over || CH.turn!=='w') return;
+    // Calculate AI move for current position
+    const pieces=[];
+    for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]==='b') {
+      const mvs=chGetLegalMoves(i);
+      mvs.forEach(m=>pieces.push({from:i,to:m}));
+    }
+    if(pieces.length===0) return;
+    const vals={P:1,N:3,B:3,R:5,Q:9,K:100};
+    const captures=pieces.filter(m=>CH.board[m.to]&&CH.board[m.to][0]==='w');
+    let pick;
+    if(captures.length>0) {
+      captures.sort((a,b)=>(vals[CH.board[b.to][1]]||0)-(vals[CH.board[a.to][1]]||0));
+      pick=captures[0];
+    } else {
+      pieces.forEach(m=>{
+        const r=Math.floor(m.to/8),c=m.to%8;
+        m.score=4-Math.abs(3.5-r)+4-Math.abs(3.5-c);
+        if(CH.board[m.from]&&CH.board[m.from][1]==='P') m.score+=r;
+      });
+      pieces.sort((a,b)=>b.score-a.score);
+      const top=pieces.slice(0,Math.min(3,pieces.length));
+      pick=top[Math.floor(Math.random()*top.length)];
+    }
+    // Save board state snapshot
+    CH.aiPremove = {
+      from: pick.from,
+      to: pick.to,
+      boardSnapshot: JSON.stringify(CH.board)
+    };
+  }, 300);
 }
 function chessAI() {
   if(CH.over) return;
+  // Check if we have a valid premove (hard mode pre-thinking)
+  if(CH.aiPremove && CH.diff==='hard') {
+    const currentBoard = JSON.stringify(CH.board);
+    if(currentBoard === CH.aiPremove.boardSnapshot) {
+      // Board unchanged, use premove
+      const piece=CH.board[CH.aiPremove.from];
+      const toR=Math.floor(CH.aiPremove.to/8);
+      const promoteTo = (piece==='bP' && toR===7) ? 'Q' : undefined;
+      chessMove(CH.aiPremove.from, CH.aiPremove.to, promoteTo);
+      CH.aiPremove = null;
+      return;
+    }
+    CH.aiPremove = null; // Board changed, recalculate
+  }
   const pieces=[];
   for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]==='b') {
     const mvs=chGetLegalMoves(i);
@@ -9787,7 +9862,7 @@ function chPromote(pieceType) {
 // =============================================================================
 // SEKCIA 29: DÁMA (CHECKERS)
 // =============================================================================
-const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null, diff:'easy' };
+const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null, diff:'easy', aiPremove:null, aiThinkTimer:null };
 function setDKDiff(d,btn) { DK.diff=d; document.querySelectorAll('#dkAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetCheckers() {
@@ -9801,6 +9876,9 @@ function resetCheckers() {
     DK.board[ri*8+c]='r'; // red bottom (rows 6-7)
   }
   DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null; DK._lastTo=null;
+  if(DK.aiThinkTimer) clearTimeout(DK.aiThinkTimer);
+  DK.aiPremove = null;
+  DK.aiThinkTimer = null;
   $('dkStatus').textContent=getP1Name('dk')+' (🔴) na ťahu';
   activeTurn('dkP1Card','dkP2Card',1);
   renderCheckersBoard();
@@ -9904,6 +9982,45 @@ function dkDoMove(from,to,isJump) {
   renderCheckersBoard();
   // AI move
   if(welcomeGameMode==='ai'&&DK.turn==='b'&&!DK.over) setTimeout(checkersAI,500);
+  // AI pre-thinking: start thinking during player's turn (hard mode only)
+  if(welcomeGameMode==='ai'&&DK.turn==='r'&&!DK.over&&DK.diff==='hard') {
+    dkStartAIThinking();
+  }
+}
+function dkStartAIThinking() {
+  if(DK.aiThinkTimer) clearTimeout(DK.aiThinkTimer);
+  DK.aiPremove = null;
+  DK.aiThinkTimer = setTimeout(() => {
+    if(DK.over || DK.turn!=='r') return;
+    // Calculate AI move
+    const pieces=[];
+    for(let i=0;i<64;i++) if(DK.board[i]&&(DK.board[i]==='b'||DK.board[i]==='B')) {
+      const mvs=dkGetMoves(i);
+      mvs.forEach(m=>pieces.push({from:i,to:m.to,isJump:m.isJump,captures:m.captures}));
+    }
+    if(pieces.length===0) return;
+    const jumps=pieces.filter(p=>p.isJump);
+    let pick;
+    if(jumps.length>0) {
+      jumps.sort((a,b)=>b.captures-a.captures);
+      const best=jumps.filter(j=>j.captures===jumps[0].captures);
+      pick=best[Math.floor(Math.random()*best.length)];
+    } else {
+      pieces.forEach(m=>{
+        const r=Math.floor(m.to/8);
+        m.score=(DK.board[m.from]==='B'?10:0)+r;
+      });
+      pieces.sort((a,b)=>b.score-a.score);
+      const top=pieces.slice(0,Math.min(3,pieces.length));
+      pick=top[Math.floor(Math.random()*top.length)];
+    }
+    DK.aiPremove = {
+      from: pick.from,
+      to: pick.to,
+      isJump: pick.isJump,
+      boardSnapshot: JSON.stringify(DK.board)
+    };
+  }, 300);
 }
 function dkWin(color) {
   DK.over=true;
@@ -9987,6 +10104,17 @@ function getDKJumps(idx) {
 }
 function checkersAI() {
   if(DK.over||DK.turn!=='b') return;
+  // Check if we have a valid premove (hard mode pre-thinking)
+  if(DK.aiPremove && DK.diff==='hard' && DK.mustJump===null) {
+    const currentBoard = JSON.stringify(DK.board);
+    if(currentBoard === DK.aiPremove.boardSnapshot) {
+      // Board unchanged, use premove
+      dkDoMove(DK.aiPremove.from, DK.aiPremove.to, DK.aiPremove.isJump);
+      DK.aiPremove = null;
+      return;
+    }
+    DK.aiPremove = null; // Board changed, recalculate
+  }
   // Multi-jump continuation
   if(DK.mustJump!==null) {
     const jumps=getDKJumps(DK.mustJump);
@@ -10163,7 +10291,7 @@ function revAI(){
 // SEKCIA 29.5: TETRIS — 2 hráči súťažia
 // =============================================================================
 const TET = {
-  board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800,running:false
+  board:[],piece:null,x:0,y:0,next:null,score:0,level:1,lines:0,gameOver:false,dropTimer:null,dropSpeed:800,running:false,paused:false
 };
 const TET_SHAPES = [
   {name:'I',color:'#00f0f0',blocks:[[0,0],[1,0],[2,0],[3,0]]},
@@ -10184,16 +10312,31 @@ function tetInit(){
 function startTetris(){
   if(TET.running)return;
   TET.running=true;
+  TET.paused=false;
   tetInit();
   $('tetScore').textContent='0';
   $('tetLevel').textContent='1';
   $('tetLines').textContent='0';
   $('tetStatus').textContent='Hra beží!';
+  $('tetPauseBtn').style.display='inline-block';
+  $('tetPauseBtn').textContent='⏸️ Pauza';
   tetRenderBoard();tetRenderNext();tetStartDrop();
 }
 function tetStartDrop(){
   if(TET.dropTimer)clearInterval(TET.dropTimer);
-  TET.dropTimer=setInterval(()=>{if(!TET.gameOver&&TET.running)tetMoveDown();},TET.dropSpeed);
+  TET.dropTimer=setInterval(()=>{if(!TET.gameOver&&TET.running&&!TET.paused)tetMoveDown();},TET.dropSpeed);
+}
+function togglePauseTetris(){
+  if(!TET.running||TET.gameOver)return;
+  TET.paused=!TET.paused;
+  const btn=$('tetPauseBtn');
+  if(TET.paused){
+    btn.textContent='▶️ Pokračovať';
+    $('tetStatus').textContent='⏸️ Pauza';
+  }else{
+    btn.textContent='⏸️ Pauza';
+    $('tetStatus').textContent='Hra beží!';
+  }
 }
 function tetRenderBoard(){
   const b=$('tetBoard');
@@ -10325,7 +10468,7 @@ const SNK = {
   W:20, H:20,
   body:[{x:10,y:10}], dir:'right', nextDir:'right',
   food:{x:15,y:10}, score:0, best:parseInt(localStorage.getItem('hry_snakeBest')||'0'),
-  timer:null, running:false, over:false, speed:250, diff:'easy'
+  timer:null, running:false, over:false, speed:250, diff:'easy', paused:false
 };
 function setSnakeDiff(d,btn){SNK.diff=d;btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function resetSnake(){
@@ -10368,7 +10511,7 @@ function snakeSetDir(dir){
   if(SNK.body.length<=1||SNK.dir==='none'||dir!==opp[SNK.dir])SNK.nextDir=dir;
 }
 function snakeStep(){
-  if(!SNK.running||SNK.over)return;
+  if(!SNK.running||SNK.over||SNK.paused)return;
   if(SNK.nextDir==='none')return; // waiting for first input
   SNK.dir=SNK.nextDir;
   const dx={left:-1,right:1,up:0,down:0};
@@ -10402,8 +10545,23 @@ function startSnake(){
   if(SNK.running)return;
   resetSnake();
   SNK.running=true;
+  SNK.paused=false;
   $('snakeStatus').textContent='Zvol smer šípkou!';
+  $('snakePauseBtn').style.display='inline-block';
+  $('snakePauseBtn').textContent='⏸️ Pauza';
   SNK.timer=setInterval(snakeStep,SNK.speed);
+}
+function togglePauseSnake(){
+  if(!SNK.running||SNK.over)return;
+  SNK.paused=!SNK.paused;
+  const btn=$('snakePauseBtn');
+  if(SNK.paused){
+    btn.textContent='▶️ Pokračovať';
+    $('snakeStatus').textContent='⏸️ Pauza';
+  }else{
+    btn.textContent='⏸️ Pauza';
+    $('snakeStatus').textContent='Hra beží!';
+  }
 }
 document.addEventListener('keydown',e=>{
   if(!SNK.running)return;
@@ -10677,7 +10835,7 @@ function ludoEndTurn(extra) {
 // =============================================================================
 // SEKCIA 31: RACING GAME (Preteky)
 // =============================================================================
-const RACE = { grid:[], lane:2, score:0, speed:1, interval:null, running:false, over:false, tickMs:350 };
+const RACE = { grid:[], lane:2, score:0, speed:1, interval:null, running:false, over:false, tickMs:350, paused:false };
 const RACE_ROWS = 12, RACE_COLS = 5;
 const RACE_OBS = ['🚧','🛢️','🪨','🌲'];
 const RACE_COIN = '⭐';
@@ -10732,7 +10890,7 @@ function raceSpawn() {
 }
 
 function raceTick() {
-  if(!RACE.running || RACE.over) return;
+  if(!RACE.running || RACE.over || RACE.paused) return;
   // Shift rows down
   for(let r=RACE_ROWS-1;r>0;r--) {
     for(let c=0;c<RACE_COLS;c++) {
@@ -10780,9 +10938,24 @@ function startRace() {
   if(RACE.running) return;
   raceInit();
   RACE.running = true;
+  RACE.paused = false;
   $('raceStatus').textContent = '🏁 Jazda!';
+  $('racePauseBtn').style.display='inline-block';
+  $('racePauseBtn').textContent='⏸️ Pauza';
   RACE.interval = setInterval(raceTick, RACE.tickMs);
   raceRender();
+}
+function togglePauseRace(){
+  if(!RACE.running||RACE.over)return;
+  RACE.paused=!RACE.paused;
+  const btn=$('racePauseBtn');
+  if(RACE.paused){
+    btn.textContent='▶️ Pokračovať';
+    $('raceStatus').textContent='⏸️ Pauza';
+  }else{
+    btn.textContent='⏸️ Pauza';
+    $('raceStatus').textContent='🏁 Jazda!';
+  }
 }
 
 function raceMove(dir) {
@@ -15039,6 +15212,32 @@ function updateFloatingMPButton(isConnected) {
 mpTryReconnect();
 
 // ===== PWA SERVICE WORKER =====
+// PWA Install Prompt
+let deferredPWAPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPWAPrompt = e;
+  const btn = $('pwaInstallBtn');
+  if(btn) btn.style.display = 'block';
+});
+window.addEventListener('appinstalled', () => {
+  deferredPWAPrompt = null;
+  const btn = $('pwaInstallBtn');
+  if(btn) btn.style.display = 'none';
+});
+function installPWA() {
+  if(!deferredPWAPrompt) return;
+  deferredPWAPrompt.prompt();
+  deferredPWAPrompt.userChoice.then((choiceResult) => {
+    if(choiceResult.outcome === 'accepted') {
+      console.log('PWA installed');
+      const btn = $('pwaInstallBtn');
+      if(btn) btn.style.display = 'none';
+    }
+    deferredPWAPrompt = null;
+  });
+}
+
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(reg => {
     reg.update();
