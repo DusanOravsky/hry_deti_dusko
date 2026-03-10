@@ -4369,8 +4369,21 @@ function tourNextGame() {
     return;
   }
   const gameId = TOUR.games[TOUR.currentIndex];
+  console.log('Tournament next game:', gameId, 'index:', TOUR.currentIndex);
   tourUpdateLeaderboard();
-  switchGame(gameId);
+
+  // Check if mobile - use existence of mobileGameView as indicator
+  const mobileView = $('mobileGameView');
+  const isMobile = mobileView && (mobileView.classList.contains('active') || window.innerWidth <= 640);
+  console.log('Is mobile?', isMobile, 'Opening game:', gameId);
+
+  if(isMobile) {
+    console.log('Using mobileGoTo for game:', gameId);
+    mobileGoTo(3, gameId);
+  } else {
+    console.log('Using switchGame for game:', gameId);
+    switchGame(gameId);
+  }
 }
 
 function tourUpdateLeaderboard() {
@@ -4381,7 +4394,15 @@ function tourUpdateLeaderboard() {
 
 function tourShowVictory() {
   TOUR.active = false;
-  switchGame('tournament');
+
+  // Check if mobile
+  const isMobile = $('mobileGameView').classList.contains('active') || $('mobileGamePicker').classList.contains('active');
+  if(isMobile) {
+    mobileGoTo(3, 'tournament');
+  } else {
+    switchGame('tournament');
+  }
+
   $('tourSetup').style.display = 'none';
   $('tourActive').style.display = 'none';
   $('tourVictory').style.display = 'block';
