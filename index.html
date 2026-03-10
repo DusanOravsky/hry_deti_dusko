@@ -3293,6 +3293,23 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="difficulty-btn" onclick="setCHDiff('medium',this)">Stredná</button>
       <button class="difficulty-btn" onclick="setCHDiff('hard',this)">Ťažká</button>
     </div>
+    <!-- Timer Options -->
+    <div style="text-align:center;margin:12px 0;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px">
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em">
+        <input type="checkbox" id="chTimerToggle" onchange="chToggleTimer()" style="width:18px;height:18px;cursor:pointer">
+        <span>⏱️ Časomieru</span>
+      </label>
+      <div id="chTimerSelector" style="display:none;margin-top:8px">
+        <button class="difficulty-btn active" onclick="chSetTimerMode('5',this)">5 min</button>
+        <button class="difficulty-btn" onclick="chSetTimerMode('10',this)">10 min</button>
+        <button class="difficulty-btn" onclick="chSetTimerMode('15',this)">15 min</button>
+      </div>
+      <div id="chTimerDisplay" style="display:none;margin-top:8px;font-size:1.1em;font-weight:700">
+        <span style="color:#f5576c" id="chTimer1">5:00</span>
+        <span style="opacity:0.5;margin:0 8px">|</span>
+        <span style="color:#4facfe" id="chTimer2">5:00</span>
+      </div>
+    </div>
     <div class="status" id="chStatus">Biely na ťahu</div>
     <div style="text-align:center;overflow-x:auto">
       <div class="chess-board-wrap" id="chessBoardWrap">
@@ -9334,9 +9351,82 @@ const CH = {
   halfMoveClock: 0,
   promotionPending: null,
   aiPremove: null,
-  aiThinkTimer: null
+  aiThinkTimer: null,
+  timerEnabled: false,
+  timerMode: '5', // '5', '10', 'off'
+  time1: 0, // seconds
+  time2: 0,
+  timerInterval: null
 };
 function setCHDiff(d,btn) { CH.diff=d; document.querySelectorAll('#chAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function chToggleTimer() {
+  CH.timerEnabled = $('chTimerToggle').checked;
+  $('chTimerSelector').style.display = CH.timerEnabled ? 'block' : 'none';
+  $('chTimerDisplay').style.display = CH.timerEnabled ? 'block' : 'none';
+  if(CH.timerEnabled) chResetTimers();
+}
+function chSetTimerMode(mode, btn) {
+  CH.timerMode = mode;
+  document.querySelectorAll('#chTimerSelector .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  chResetTimers();
+}
+function chResetTimers() {
+  const mins = parseInt(CH.timerMode);
+  CH.time1 = mins * 60;
+  CH.time2 = mins * 60;
+  chUpdateTimerDisplay();
+}
+function chUpdateTimerDisplay() {
+  const fmt = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  };
+  $('chTimer1').textContent = fmt(CH.time1);
+  $('chTimer2').textContent = fmt(CH.time2);
+}
+function chStartTimer() {
+  if(CH.timerInterval) clearInterval(CH.timerInterval);
+  if(!CH.timerEnabled) return;
+  CH.timerInterval = setInterval(() => {
+    if(CH.over || CH.promotionPending) return;
+    if(CH.turn === 'w') {
+      CH.time1--;
+      if(CH.time1 <= 0) {
+        CH.time1 = 0;
+        chTimeLoss('w');
+      }
+    } else {
+      CH.time2--;
+      if(CH.time2 <= 0) {
+        CH.time2 = 0;
+        chTimeLoss('b');
+      }
+    }
+    chUpdateTimerDisplay();
+  }, 1000);
+}
+function chStopTimer() {
+  if(CH.timerInterval) {
+    clearInterval(CH.timerInterval);
+    CH.timerInterval = null;
+  }
+}
+function chTimeLoss(color) {
+  chStopTimer();
+  CH.over = true;
+  const winner = color === 'w' ? 'b' : 'w';
+  const name = getChessColorName(winner);
+  $('chStatus').textContent = '⏱️ Čas vypršal! ' + name + ' vyhráva!';
+  const w = winner === 'w' ? 1 : 2;
+  if(w===1){CH.s1++;$('p1ScoreCH').textContent=CH.s1;}
+  else{CH.s2++;$('p2ScoreCH').textContent=CH.s2;}
+  addWin(w,'chess');
+  celebrate('chCelebration');
+  playSound('win');
+  renderChessBoard();
+}
 const CH_START = [
   'bR','bN','bB','bQ','bK','bB','bN','bR',
   'bP','bP','bP','bP','bP','bP','bP','bP',
@@ -9359,6 +9449,9 @@ function resetChess() {
   if(CH.aiThinkTimer) clearTimeout(CH.aiThinkTimer);
   CH.aiPremove = null;
   CH.aiThinkTimer = null;
+  chStopTimer();
+  chResetTimers();
+  chStartTimer();
   $('chStatus').textContent='Biely na ťahu';
   activeTurn('chP1Card','chP2Card',1);
   renderChessBoard();
@@ -9490,10 +9583,13 @@ function chessMove(from,to,promoteTo) {
     CH.halfMoveClock++;
   }
 
+  // Start timer on first move
+  const isFirstMove = CH.lastFrom === -1;
   CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
   playSound('move'); vibrate(20);
   if(captured || enPassantCapture) playSound('hit');
   CH.turn=CH.turn==='w'?'b':'w';
+  if(isFirstMove && CH.timerEnabled) chStartTimer();
 
   // Check for 50-move rule
   if(CH.halfMoveClock >= 100) {
