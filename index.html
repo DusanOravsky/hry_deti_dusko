@@ -3496,8 +3496,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="status" id="doodleStatus">Pripraveni? Start!</div>
     <canvas id="doodleCanvas" width="320" height="480" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:#1a1a2e;touch-action:none"></canvas>
     <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
-      <button class="action-btn" onclick="DOOD.moveDir=-1" ontouchstart="DOOD.moveDir=-1" ontouchend="DOOD.moveDir=0" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9664;</button>
-      <button class="action-btn" onclick="DOOD.moveDir=1" ontouchstart="DOOD.moveDir=1" ontouchend="DOOD.moveDir=0" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9654;</button>
+      <button class="action-btn" onclick="DOOD.vx=-DOOD_SPEED*2" ontouchstart="DOOD.vx=-DOOD_SPEED*2" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9664;</button>
+      <button class="action-btn" onclick="DOOD.vx=DOOD_SPEED*2" ontouchstart="DOOD.vx=DOOD_SPEED*2" style="width:70px;padding:14px;font-size:1.8em;background:rgba(79,172,254,0.3);border:2px solid rgba(79,172,254,0.6);border-radius:12px">&#9654;</button>
     </div>
     <div class="celebration" id="doodleCelebration">&#127881;</div>
     <div class="buttons-group">
@@ -10739,12 +10739,8 @@ function doodRender() {
 function doodStep() {
   if(!DOOD.running || DOOD.over) return;
 
-  // Horizontal movement (keyboard/buttons)
-  if(DOOD.moveDir !== 0) {
-    DOOD.vx = DOOD.moveDir * DOOD_SPEED;
-  } else {
-    DOOD.vx *= 0.85;
-  }
+  // Horizontal movement — impulse based (tap = one nudge, then decelerate)
+  DOOD.vx *= 0.85;
 
   DOOD.x += DOOD.vx;
   // Wrap around screen edges
@@ -10911,14 +10907,10 @@ document.addEventListener('keydown', e => {
   if(!DOOD.running || DOOD.over) return;
   const doodleEl = $('doodle');
   if(!doodleEl || doodleEl.offsetParent === null) return;
-  if(e.key === 'ArrowLeft') { DOOD.moveDir = -1; e.preventDefault(); }
-  if(e.key === 'ArrowRight') { DOOD.moveDir = 1; e.preventDefault(); }
+  if(e.key === 'ArrowLeft') { DOOD.vx = -DOOD_SPEED * 2; e.preventDefault(); }
+  if(e.key === 'ArrowRight') { DOOD.vx = DOOD_SPEED * 2; e.preventDefault(); }
 });
-document.addEventListener('keyup', e => {
-  if(e.key === 'ArrowLeft' && DOOD.moveDir === -1) DOOD.moveDir = 0;
-  if(e.key === 'ArrowRight' && DOOD.moveDir === 1) DOOD.moveDir = 0;
-});
-// Touch on canvas: tap left/right half
+// Touch on canvas: tap left/right half — impulse
 (function(){
   const dc=$('doodleCanvas'); if(!dc) return;
   dc.addEventListener('touchstart',e=>{
@@ -10926,9 +10918,8 @@ document.addEventListener('keyup', e => {
     e.preventDefault();
     const rect=dc.getBoundingClientRect();
     const tx=e.touches[0].clientX-rect.left;
-    DOOD.moveDir=tx<rect.width/2?-1:1;
+    DOOD.vx=tx<rect.width/2?-DOOD_SPEED*2:DOOD_SPEED*2;
   },{passive:false});
-  dc.addEventListener('touchend',()=>{DOOD.moveDir=0;});
 })();
 
 // =============================================================================
