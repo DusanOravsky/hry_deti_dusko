@@ -3294,11 +3294,14 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="difficulty-btn" onclick="setCHDiff('hard',this)">Ťažká</button>
     </div>
     <!-- Timer Options -->
-    <div style="text-align:center;margin:12px 0;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px">
+    <div id="chTimerContainer" style="text-align:center;margin:12px 0;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px">
       <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em">
         <input type="checkbox" id="chTimerToggle" onchange="chToggleTimer()" style="width:18px;height:18px;cursor:pointer">
         <span>⏱️ Časomieru</span>
       </label>
+      <div id="chTimerMPWarning" style="display:none;font-size:0.75em;opacity:0.6;margin-top:4px">
+        (nie je podporované v online multiplayer)
+      </div>
       <div id="chTimerSelector" style="display:none;margin-top:8px">
         <button class="difficulty-btn active" onclick="chSetTimerMode('5',this)">5 min</button>
         <button class="difficulty-btn" onclick="chSetTimerMode('10',this)">10 min</button>
@@ -5261,6 +5264,15 @@ function getChessColorName(color) {
 }
 function applyChessMPStart() {
   if(!MP.isConnected) return;
+  // Disable timer in MP mode
+  CH.timerEnabled = false;
+  chStopTimer();
+  const toggle = $('chTimerToggle');
+  toggle.checked = false;
+  toggle.disabled = true;
+  $('chTimerSelector').style.display = 'none';
+  $('chTimerDisplay').style.display = 'none';
+  $('chTimerMPWarning').style.display = 'block';
   CH.turn = 'w'; // white always starts
   const whiteName = getChessColorName('w');
   $('chStatus').textContent = '⬜ ' + whiteName + ' na ťahu';
@@ -14539,6 +14551,12 @@ function mpDisconnect() {
   // Restore hidden selectors (were hidden for guest)
   $('tttSizeSel').style.display = '';
   $('memSizeSel').style.display='';
+  // Restore chess timer toggle (was disabled in MP)
+  const chToggle = $('chTimerToggle');
+  if(chToggle) {
+    chToggle.disabled = false;
+    $('chTimerMPWarning').style.display = 'none';
+  }
   // Restore P2 controls (were hidden in MP)
   const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=welcomeGameMode==='ai'?'none':'flex';
   const pngP2c=$('pngP2Controls');if(pngP2c)pngP2c.style.display=welcomeGameMode==='ai'?'none':'grid';
