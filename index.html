@@ -3815,7 +3815,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '4.5';
+const APP_VERSION = '4.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -15490,7 +15490,6 @@ if('serviceWorker' in navigator) {
     toast.innerHTML = '<span>🎮 Nová verzia nainštalovaná!</span><button style="background:white;color:#667eea;border:none;padding:6px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em">Obnoviť stránku</button>';
 
     toast.querySelector('button').addEventListener('click', () => {
-      localStorage.setItem(LAST_VERSION_KEY, currentVersion);
       location.reload();
     });
 
@@ -15501,10 +15500,13 @@ if('serviceWorker' in navigator) {
   if(lastVersion && lastVersion !== currentVersion) {
     // Version changed - show toast
     showUpdateToast();
-  } else {
-    // Same version or first load - save current version
+    // Save new version immediately (don't wait for button click)
+    localStorage.setItem(LAST_VERSION_KEY, currentVersion);
+  } else if(!lastVersion) {
+    // First load - save current version
     localStorage.setItem(LAST_VERSION_KEY, currentVersion);
   }
+  // If same version (lastVersion === currentVersion), do nothing
 
   navigator.serviceWorker.register('sw.js').then(reg => {
     reg.update();
