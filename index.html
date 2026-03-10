@@ -4360,14 +4360,17 @@ function tourUpdateCount() {
 
   // Update count text with status
   if(count < 2) {
-    $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':'hier'} (minimum: 2)`;
-    $('tourSelCount').style.color = 'rgba(245,87,108,0.8)';
+    $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':'hier'} ⚠️ minimum: 2`;
+    $('tourSelCount').style.color = 'rgba(245,87,108,0.9)';
+    $('tourSelCount').style.fontWeight = '700';
   } else if(count > 6) {
-    $('tourSelCount').textContent = `Vybrané: ${count} hier (maximum: 6)`;
-    $('tourSelCount').style.color = 'rgba(245,87,108,0.8)';
+    $('tourSelCount').textContent = `Vybrané: ${count} hier ⚠️ maximum: 6`;
+    $('tourSelCount').style.color = 'rgba(245,87,108,0.9)';
+    $('tourSelCount').style.fontWeight = '700';
   } else {
     $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':count<5?'hry':'hier'} ✓`;
-    $('tourSelCount').style.color = 'rgba(67,233,123,0.8)';
+    $('tourSelCount').style.color = 'rgba(67,233,123,0.9)';
+    $('tourSelCount').style.fontWeight = '700';
   }
 
   $('tourStartBtn').disabled = count < 2 || count > 6;
