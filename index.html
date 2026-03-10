@@ -1798,6 +1798,7 @@ body.light .chess-sq.dark-sq { background:#b58863; }
   background:rgba(0,0,0,0.25);
 }
 .chess-sq.can-capture { background:rgba(255,80,80,0.4) !important; }
+.chess-sq.in-check { background:rgba(255,40,40,0.6) !important; box-shadow:inset 0 0 8px rgba(255,0,0,0.8); }
 .chess-sq.last-move { box-shadow:inset 0 0 0 3px rgba(255,255,0,0.5); }
 @media(max-width:480px) {
   .chess-board { max-width:100%; }
@@ -3247,7 +3248,9 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="rules"><h3>📋 Šach:</h3><ul>
       <li>Klasický šach — biely začína</li>
       <li>Klikni na figúrku a potom na cieľové políčko</li>
-      <li>Šach mat = výhra!</li>
+      <li>Šach — kráľ je ohrozený (červené zvýraznenie)</li>
+      <li>Musíš sa brániť šachu — iné ťahy nie sú povolené</li>
+      <li>Šach mat = výhra! Pat (žiadne ťahy) = remíza</li>
     </ul></div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="chP1Card"><div class="player-name-display" id="chP1Name">Hráč 1</div><div class="player-score" id="p1ScoreCH">0</div></div>
@@ -9331,9 +9334,13 @@ function renderChessBoard() {
     sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
     if(i===CH.lastFrom||i===CH.lastTo) sq.classList.add('last-move');
     if(CH.selected===i) sq.classList.add('selected');
-    if(CH.board[i]) { sq.textContent=CH_ICONS[CH.board[i]]; if(i===CH.lastTo) sq.classList.add('piece-move'); }
+    if(CH.board[i]) {
+      sq.textContent=CH_ICONS[CH.board[i]];
+      if(i===CH.lastTo) sq.classList.add('piece-move');
+      if((CH.board[i]==='wK'||CH.board[i]==='bK')&&!CH.over&&chIsInCheck(CH.board[i][0])) sq.classList.add('in-check');
+    }
     if(CH.selected!==null && !CH.over) {
-      const moves=getChessMoves(CH.selected);
+      const moves=chGetLegalMoves(CH.selected);
       if(moves.includes(i)) sq.classList.add(CH.board[i]?'can-capture':'can-move');
     }
     sq.onclick=()=>chessClick(i);
@@ -9352,7 +9359,7 @@ function chessClick(i) {
   if(CH.selected===null) {
     if(piece && piece[0]===CH.turn) { CH.selected=i; renderChessBoard(); }
   } else {
-    const moves=getChessMoves(CH.selected);
+    const moves=chGetLegalMoves(CH.selected);
     if(moves.includes(i)) {
       chessMove(CH.selected,i);
     } else if(piece && piece[0]===CH.turn) {
@@ -9373,17 +9380,19 @@ function chessMove(from,to) {
   if(CH.board[to]==='bP'&&r===7) CH.board[to]='bQ';
   CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
   playSound('move'); vibrate(20);
-  // Check for king capture
   if(captured) playSound('hit');
-  if(captured==='wK') { chessWin('b'); return; }
-  if(captured==='bK') { chessWin('w'); return; }
   CH.turn=CH.turn==='w'?'b':'w';
-  // Stalemate detection: if current player has no legal moves
+  // Check for legal moves of the next player
   const allMoves=[];
-  for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]===CH.turn) allMoves.push(...getChessMoves(i));
-  if(allMoves.length===0) { chessDraw(); return; }
+  for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]===CH.turn) allMoves.push(...chGetLegalMoves(i));
+  const inCheck=chIsInCheck(CH.turn);
+  if(allMoves.length===0) {
+    if(inCheck) { chessWin(CH.turn==='w'?'b':'w'); return; }
+    else { chessDraw(); return; }
+  }
   const turnName=getChessColorName(CH.turn);
-  $('chStatus').textContent=(CH.turn==='w'?'⬜':'⬛')+' '+turnName+' na ťahu';
+  const checkText=inCheck?' — Šach!':'';
+  $('chStatus').textContent=(CH.turn==='w'?'⬜':'⬛')+' '+turnName+' na ťahu'+checkText;
   // Active turn card: in MP, determine which card based on who plays this color
   if(MP.isConnected) {
     const hostIsWhite = MP.chRound % 2 === 0;
@@ -9402,10 +9411,10 @@ function chessAI() {
   if(CH.over) return;
   const pieces=[];
   for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]==='b') {
-    const mvs=getChessMoves(i);
+    const mvs=chGetLegalMoves(i);
     mvs.forEach(m=>pieces.push({from:i,to:m}));
   }
-  if(pieces.length===0) { chessDraw(); return; }
+  if(pieces.length===0) return; // already handled by chessMove
   const vals={P:1,N:3,B:3,R:5,Q:9,K:100};
   const captures=pieces.filter(m=>CH.board[m.to]&&CH.board[m.to][0]==='w');
   let pick;
@@ -9446,7 +9455,7 @@ function chessWin(color) {
   } else { w = color==='w' ? 1 : 2; }
   if(w===1){CH.s1++;$('p1ScoreCH').textContent=CH.s1;}
   else{CH.s2++;$('p2ScoreCH').textContent=CH.s2;}
-  $('chStatus').textContent='🏆 '+name+' vyhral šach!';
+  $('chStatus').textContent='🏆 Šach mat! '+name+' vyhral!';
   addWin(w,'chess'); celebrate('chCelebration'); playSound('win');
   renderChessBoard();
 }
@@ -9491,6 +9500,31 @@ function getChessMoves(idx) {
     });
   }
   return moves;
+}
+function chIsSquareAttacked(sq, byColor) {
+  for(let i=0;i<64;i++) {
+    if(CH.board[i]&&CH.board[i][0]===byColor) {
+      const rawMoves=getChessMoves(i);
+      if(rawMoves.includes(sq)) return true;
+    }
+  }
+  return false;
+}
+function chIsInCheck(color) {
+  for(let i=0;i<64;i++) if(CH.board[i]===color+'K') return chIsSquareAttacked(i, color==='w'?'b':'w');
+  return false;
+}
+function chGetLegalMoves(idx) {
+  const piece=CH.board[idx]; if(!piece) return [];
+  const color=piece[0];
+  const raw=getChessMoves(idx);
+  return raw.filter(to=>{
+    const saved=CH.board[to];
+    CH.board[to]=CH.board[idx]; CH.board[idx]='';
+    const inCheck=chIsInCheck(color);
+    CH.board[idx]=CH.board[to]; CH.board[to]=saved;
+    return !inCheck;
+  });
 }
 
 // Chess voice commands
