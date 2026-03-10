@@ -9397,9 +9397,11 @@ function chessMove(from,to,promoteTo) {
   }
 
   // En passant: remove captured pawn
+  let enPassantCapture = false;
   if(type==='P' && to===CH.enPassant) {
     const capturedPawnSq = color==='w' ? to+8 : to-8;
     CH.board[capturedPawnSq] = '';
+    enPassantCapture = true;
   }
 
   CH.board[to]=CH.board[from]; CH.board[from]='';
@@ -9413,8 +9415,11 @@ function chessMove(from,to,promoteTo) {
       CH.promotionPending = { square: to, color };
       CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
       renderChessBoard();
-      chShowPromotionDialog(color);
-      return; // wait for user choice
+      // In MP receiving mode, guest waits for ch-promote message (no dialog)
+      if(!MP._chReceiving) {
+        chShowPromotionDialog(color);
+      }
+      return; // wait for user choice (host) or ch-promote message (guest)
     }
   }
 
@@ -9433,6 +9438,11 @@ function chessMove(from,to,promoteTo) {
     if(from===0)  CH.castling.bQ=false;
     if(from===7)  CH.castling.bK=false;
   }
+  // Deactivate castling if rook is captured
+  if(to===56) CH.castling.wQ=false;
+  if(to===63) CH.castling.wK=false;
+  if(to===0)  CH.castling.bQ=false;
+  if(to===7)  CH.castling.bK=false;
 
   // Update halfmove clock
   if(type==='P' || captured) {
@@ -9443,7 +9453,7 @@ function chessMove(from,to,promoteTo) {
 
   CH.lastFrom=from; CH.lastTo=to; CH.selected=null;
   playSound('move'); vibrate(20);
-  if(captured) playSound('hit');
+  if(captured || enPassantCapture) playSound('hit');
   CH.turn=CH.turn==='w'?'b':'w';
 
   // Check for 50-move rule
@@ -9716,18 +9726,8 @@ function chShowPromotionDialog(color) {
   `;
   document.body.insertAdjacentHTML('beforeend', html);
 }
-function chPromote(pieceType) {
-  const overlay = $('chPromotionOverlay');
-  if(overlay) overlay.remove();
-  if(!CH.promotionPending) return;
-  const {square, color} = CH.promotionPending;
-  CH.board[square] = color + pieceType;
-  CH.promotionPending = null;
-  // Send promotion choice in MP
-  if(MP.isConnected && MP.connection && !MP._chReceiving) {
-    MP.connection.send({ type: 'ch-promote', piece: color+pieceType });
-  }
-  // Continue with turn switch
+function chFinishTurn() {
+  // Continue with turn switch after promotion
   CH.turn = CH.turn==='w'?'b':'w';
   const allMoves=[];
   for(let i=0;i<64;i++) if(CH.board[i]&&CH.board[i][0]===CH.turn) allMoves.push(...chGetLegalMoves(i));
@@ -9750,6 +9750,19 @@ function chPromote(pieceType) {
   if(welcomeGameMode==='ai'&&CH.turn==='b'&&!CH.over) {
     setTimeout(chessAI,500);
   }
+}
+function chPromote(pieceType) {
+  const overlay = $('chPromotionOverlay');
+  if(overlay) overlay.remove();
+  if(!CH.promotionPending) return;
+  const {square, color} = CH.promotionPending;
+  CH.board[square] = color + pieceType;
+  CH.promotionPending = null;
+  // Send promotion choice in MP
+  if(MP.isConnected && MP.connection && !MP._chReceiving) {
+    MP.connection.send({ type: 'ch-promote', piece: color+pieceType });
+  }
+  chFinishTurn();
 }
 
 // =============================================================================
@@ -14530,7 +14543,7 @@ function mpHandleMessage(data) {
       CH.promotionPending = null;
       const overlay = $('chPromotionOverlay');
       if(overlay) overlay.remove();
-      renderChessBoard();
+      chFinishTurn();
     }
   }
 
