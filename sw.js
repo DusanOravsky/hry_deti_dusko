@@ -1,5 +1,5 @@
 // Keep in sync with APP_VERSION in index.html
-const CACHE_NAME = 'hrajmesi-v4.2';
+const CACHE_NAME = 'hrajmesi-v4.3';
 const ASSETS = [
   './manifest.json',
   './icon-192.png',
@@ -10,13 +10,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  // Don't skipWaiting automatically - wait for user confirmation
-});
-
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  self.skipWaiting(); // Install and activate immediately
 });
 
 self.addEventListener('activate', event => {
@@ -25,8 +19,7 @@ self.addEventListener('activate', event => {
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
-  // Don't claim clients automatically - page will reload after skipWaiting
-  // and pick up the new SW naturally
+  self.clients.claim(); // Take control of all clients
 });
 
 self.addEventListener('fetch', event => {
