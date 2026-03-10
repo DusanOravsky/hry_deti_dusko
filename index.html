@@ -3002,6 +3002,16 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
 
     <div class="stats-section">
+      <h3>🏆 Turnajové štatistiky</h3>
+      <div class="stats-grid">
+        <div class="stats-tile purple"><div class="stats-tile-val" id="stTourPlayed">0</div><div class="stats-tile-label">Turnaje odohraných</div></div>
+        <div class="stats-tile gold"><div class="stats-tile-val" id="stTourP1Wins">0</div><div class="stats-tile-label" id="stTourP1Label">Hráč 1 vyhral</div></div>
+        <div class="stats-tile blue"><div class="stats-tile-val" id="stTourP2Wins">0</div><div class="stats-tile-label" id="stTourP2Label">Hráč 2 vyhral</div></div>
+        <div class="stats-tile"><div class="stats-tile-val" id="stTourDraws">0</div><div class="stats-tile-label">Remízy</div></div>
+      </div>
+    </div>
+
+    <div class="stats-section">
       <h3>🏅 Achievementy</h3>
       <div id="stAchievements" class="achievements-grid"></div>
     </div>
@@ -4223,7 +4233,8 @@ const gStats = {
   total:0, p1:0, p2:0, draws:0,
   perGame:{},
   history:[],
-  records:{ reacP1:null, reacP2:null, fcStreak:0, quizBest:0, scrambleBest:0, ghostWins:0 }
+  records:{ reacP1:null, reacP2:null, fcStreak:0, quizBest:0, scrambleBest:0, ghostWins:0 },
+  tournaments:{ played:0, p1Wins:0, p2Wins:0, draws:0 }
 };
 
 function saveStats() {
@@ -4242,6 +4253,9 @@ function loadStats() {
     if(Array.isArray(s.history)) gStats.history=s.history;
     if(s.records && typeof s.records==='object') {
       Object.keys(gStats.records).forEach(k => { if(k in s.records) gStats.records[k]=s.records[k]; });
+    }
+    if(s.tournaments && typeof s.tournaments==='object') {
+      gStats.tournaments = s.tournaments;
     }
     $('totalGames').textContent = gStats.total;
     $('p1Wins').textContent     = gStats.p1;
@@ -4498,6 +4512,14 @@ function tourShowVictory() {
   }).join('');
   $('tourResultsList').innerHTML = resultsList;
 
+  // Track tournament stats
+  gStats.tournaments.played++;
+  if(p1 > p2) gStats.tournaments.p1Wins++;
+  else if(p2 > p1) gStats.tournaments.p2Wins++;
+  else gStats.tournaments.draws++;
+  saveStats();
+  checkAchievements();
+
   // Show celebration in victory div
   const victoryDiv = $('tourVictory');
   if(victoryDiv) {
@@ -4622,6 +4644,10 @@ const ACHIEVEMENTS = [
   { id:'pexeso5',  icon:'🧠', name:'Pexeso majster',  desc:'Vyhraj 5x Pexeso',         check:()=>(gStats.perGame.memory?.p1||0)+(gStats.perGame.memory?.p2||0)>=5 },
   { id:'chess5',   icon:'♟️', name:'Sachista',         desc:'Vyhraj 5x Sach',           check:()=>(gStats.perGame.chess?.p1||0)+(gStats.perGame.chess?.p2||0)>=5 },
   { id:'bs5',      icon:'🚢', name:'Admiral',         desc:'Vyhraj 5x Lodicky',        check:()=>(gStats.perGame.battleship?.p1||0)+(gStats.perGame.battleship?.p2||0)>=5 },
+  { id:'tour1',    icon:'🏆', name:'Prvy turnaj',     desc:'Dokonci prvy turnaj',      check:()=>(gStats.tournaments?.played||0)>=1 },
+  { id:'tour5',    icon:'🏆', name:'Turnajovy veteran', desc:'Dokonci 5 turnajov',     check:()=>(gStats.tournaments?.played||0)>=5 },
+  { id:'tourWin3', icon:'👑', name:'Turnajovy sampion', desc:'Vyhraj 3 turnaje',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=3 },
+  { id:'tourWin10',icon:'💎', name:'Turnajovy kral',  desc:'Vyhraj 10 turnajov',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=10 },
 ];
 
 let _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]');
@@ -4838,6 +4864,14 @@ function renderStats() {
         <div class="stats-history-time">${h.time}</div></div>`;
     }).join('');
   }
+  // Tournament stats
+  const t = gStats.tournaments || { played:0, p1Wins:0, p2Wins:0, draws:0 };
+  $('stTourPlayed').textContent = t.played;
+  $('stTourP1Wins').textContent = t.p1Wins;
+  $('stTourP2Wins').textContent = t.p2Wins;
+  $('stTourDraws').textContent  = t.draws;
+  $('stTourP1Label').textContent = globalP1 + ' vyhral';
+  $('stTourP2Label').textContent = globalP2 + ' vyhral';
   renderAchievements();
 }
 
