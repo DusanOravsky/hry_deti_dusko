@@ -13541,6 +13541,8 @@ function stopAllGames(){
   if(typeof QUIZ!=='undefined'&&QUIZ.timerInterval){clearTimeout(QUIZ.timerInterval);QUIZ.timerInterval=null;}
   // Reaction timer
   if(typeof REAC!=='undefined'&&REAC.timeout){clearTimeout(REAC.timeout);REAC.timeout=null;}
+  // Chess voice recognition
+  if(typeof chessVoiceStop==='function'&&chVoiceActive){chessVoiceStop();}
 }
 
 function mobileGoTo(level, gameId) {
@@ -14215,6 +14217,12 @@ function mpDisconnect() {
   MP.isHost = false;
   MP.isConnected = false;
   MP.roomCode = null;
+  // Clean up chess promotion dialog and state
+  if(CH.promotionPending) {
+    CH.promotionPending = null;
+    const overlay = $('chPromotionOverlay');
+    if(overlay) overlay.remove();
+  }
   // Reset UI
   $('mpHostRoom').classList.add('mp-hidden');
   $('mpJoinStatus').classList.add('mp-hidden');
