@@ -4010,8 +4010,18 @@ function toggleSound() {
 function toggleVibration() {
   vibrationEnabled = !vibrationEnabled;
   const label = vibrationEnabled ? '📳' : '📴';
-  const opacity = vibrationEnabled ? '1' : '0.5';
-  document.querySelectorAll('#vibrationToggle, #vibrationToggleDesktop').forEach(el => { if(el) { el.textContent = label; el.style.opacity = opacity; } });
+  document.querySelectorAll('#vibrationToggle, #vibrationToggleDesktop, #mobileVibrationBtn, #mobileVibrationBtn2').forEach(el => {
+    if(el) {
+      el.textContent = label;
+      if(vibrationEnabled) {
+        el.style.opacity = '1';
+        el.style.background = '';
+      } else {
+        el.style.opacity = '0.4';
+        el.style.background = 'rgba(255,0,0,0.15)';
+      }
+    }
+  });
 }
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -4297,13 +4307,18 @@ function showTournament() {
 
 function tourRenderSetup() {
   const list = $('tourGameList');
+  if(!list) {
+    console.error('tourGameList element not found');
+    return;
+  }
   list.innerHTML = TOUR_AVAILABLE_GAMES.map(g => `
-    <label style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;transition:background 0.2s" onchange="tourUpdateCount()">
-      <input type="checkbox" class="tour-game-check" data-game="${g.id}" style="width:20px;height:20px;cursor:pointer">
-      <span style="font-size:1.5em">${g.icon}</span>
-      <span style="flex:1;font-weight:600">${g.name}</span>
+    <label style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;transition:background 0.2s;-webkit-tap-highlight-color:transparent" onchange="tourUpdateCount()">
+      <input type="checkbox" class="tour-game-check" data-game="${g.id}" style="width:24px;height:24px;cursor:pointer;flex-shrink:0">
+      <span style="font-size:1.5em;flex-shrink:0">${g.icon}</span>
+      <span style="flex:1;font-weight:600;font-size:1em">${g.name}</span>
     </label>
   `).join('');
+  console.log('Tournament setup rendered, games:', TOUR_AVAILABLE_GAMES.length);
   tourUpdateCount();
 }
 
@@ -14187,6 +14202,7 @@ function mobileGoTo(level, gameId) {
     currentGameId = gameId;
     trackRecentGame(gameId);
     if(gameId === 'stats') renderStats();
+    if(gameId === 'tournament') tourRenderSetup();
     content.scrollTop = 0;
   }
   _updateMobileToggles();
