@@ -9459,7 +9459,7 @@ function chessMove(from,to,promoteTo) {
   // Check for 50-move rule
   if(CH.halfMoveClock >= 100) {
     CH.over=true;
-    $('chStatus').textContent='🤝 Remiza — 50 ťahov bez pohybu pešiaka/bития!';
+    $('chStatus').textContent='🤝 Remiza — 50 ťahov bez ťahu pešiaka/brania!';
     addWin(0,'chess'); playSound('flip');
     renderChessBoard();
     return;
