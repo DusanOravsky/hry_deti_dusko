@@ -2245,7 +2245,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="theme-toggle sidebar-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Tmavý</button>
       <button class="sound-toggle sidebar-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
       <button class="sound-toggle sidebar-toggle" id="vibrationToggle" onclick="toggleVibration()">📳</button>
-      <button onclick="randomBattle()" style="width:100%;padding:10px;margin-bottom:8px;border:none;border-radius:10px;font-size:0.85em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite">🎲 RANDOM BATTLE!</button>
+      <button onclick="randomBattle()" style="width:100%;padding:10px;margin-bottom:4px;border:none;border-radius:10px;font-size:0.85em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite">🎲 RANDOM BATTLE!</button>
+      <button onclick="showTournament()" style="width:100%;padding:10px;margin-bottom:8px;border:none;border-radius:10px;font-size:0.85em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ffd700,#ff8c00);box-shadow:0 4px 12px rgba(255,140,0,0.4)">🏆 TURNAJ!</button>
       <button class="game-btn active" id="ticTacToeBtn" style="background:linear-gradient(135deg,rgba(240,147,251,0.25),rgba(245,87,108,0.25))"><span class="game-btn-icon">🔶</span><span class="game-btn-label">Piškvorky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="rockPaperBtn" style="background:linear-gradient(135deg,rgba(79,172,254,0.2),rgba(0,242,254,0.2))"><span class="game-btn-icon">🪨</span><span class="game-btn-label">Kameň Papier</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="guessNumBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.2),rgba(56,249,215,0.2))"><span class="game-btn-icon">🎲</span><span class="game-btn-label">Hádaj Číslo</span><span class="game-btn-dot"></span></button>
@@ -2268,7 +2269,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="emojiGuessBtn" style="background:linear-gradient(135deg,rgba(255,200,0,0.25),rgba(255,100,200,0.25))"><span class="game-btn-icon">😂</span><span class="game-btn-label">Emoji Hádanka</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="hangmanBtn" style="background:linear-gradient(135deg,rgba(120,80,200,0.25),rgba(200,100,150,0.25))"><span class="game-btn-icon">💀</span><span class="game-btn-label">Obesenec</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="higherLowerBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.2),rgba(0,0,0,0.2))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vyššie Nižšie</span><span class="game-btn-dot"></span></button>
-      <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
   </div>
 
@@ -2897,6 +2899,56 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startFC()">▶️ Štart</button>
       <button class="action-btn danger-btn" onclick="resetFC()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- ===== TURNAJ ===== -->
+  <div class="game-area" id="tournament" style="display:none">
+    <div id="tourSetup">
+      <h2 style="text-align:center;margin-bottom:20px">🏆 Multi-Game Turnaj</h2>
+      <p style="text-align:center;opacity:0.7;margin-bottom:20px">Vyber 3-5 hier alebo nechaj počítač vybrať náhodne!</p>
+
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:25px">
+        <button class="action-btn primary-btn" onclick="tourRandomSelect()">🎲 Náhodný výber</button>
+        <button class="action-btn" onclick="tourClearSelection()">🗑️ Vymazať</button>
+      </div>
+
+      <div id="tourGameList" style="display:grid;grid-template-columns:1fr;gap:8px;max-width:500px;margin:0 auto 25px"></div>
+
+      <div style="text-align:center">
+        <div id="tourSelCount" style="margin-bottom:12px;font-size:0.9em;opacity:0.6">Vybrané: 0 hier</div>
+        <button class="action-btn primary-btn" id="tourStartBtn" onclick="tourStart()" disabled style="font-size:1.1em;padding:14px 32px">▶️ Začať turnaj</button>
+      </div>
+    </div>
+
+    <div id="tourActive" style="display:none">
+      <div id="tourLeaderboard" style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:20px">
+        <h3 style="text-align:center;margin-bottom:15px">🏆 Skóre turnaja</h3>
+        <div style="display:flex;justify-content:space-around;margin-bottom:15px">
+          <div style="text-align:center">
+            <div style="font-size:0.8em;opacity:0.6;margin-bottom:4px" id="tourP1Name">Hráč 1</div>
+            <div style="font-size:2em;font-weight:900" id="tourP1Score">0</div>
+          </div>
+          <div style="font-size:2em;opacity:0.4">:</div>
+          <div style="text-align:center">
+            <div style="font-size:0.8em;opacity:0.6;margin-bottom:4px" id="tourP2Name">Hráč 2</div>
+            <div style="font-size:2em;font-weight:900" id="tourP2Score">0</div>
+          </div>
+        </div>
+        <div id="tourProgress" style="font-size:0.85em;text-align:center;opacity:0.7"></div>
+      </div>
+
+      <div style="text-align:center">
+        <button class="action-btn danger-btn" onclick="tourCancel()">❌ Zrušiť turnaj</button>
+      </div>
+    </div>
+
+    <div id="tourVictory" style="display:none;text-align:center">
+      <div style="font-size:4em;margin-bottom:20px">🏆</div>
+      <h2 id="tourWinnerText" style="margin-bottom:15px"></h2>
+      <div id="tourFinalScore" style="font-size:1.3em;opacity:0.8;margin-bottom:30px"></div>
+      <div id="tourResultsList" style="max-width:400px;margin:0 auto 30px;text-align:left"></div>
+      <button class="action-btn primary-btn" onclick="tourReset()" style="font-size:1.1em;padding:14px 32px">🔄 Nový turnaj</button>
     </div>
   </div>
 
@@ -3849,7 +3901,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -3860,10 +3912,24 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
+
+function switchGame(gId) {
+  if(typeof stopAllGames==='function') stopAllGames();
+  document.querySelectorAll('.game-area').forEach(g => g.classList.remove('active'));
+  document.querySelectorAll('.game-btn').forEach(b => b.classList.remove('active'));
+  const area = $(gId);
+  if(area) area.classList.add('active');
+  const btn = $(gameKeys[gId]);
+  if(btn) btn.classList.add('active');
+  currentGameId = gId;
+  if(typeof trackRecentGame==='function' && gId !== 'tournament') trackRecentGame(gId);
+  if(gId === 'stats') renderStats();
+  if(gId === 'tournament') tourRenderSetup();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   Object.entries(gameKeys).forEach(([gId]) => {
@@ -4194,6 +4260,160 @@ function updateWelcomeStats() {
     histEl.innerHTML = '';
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOURNAMENT MODE
+// ─────────────────────────────────────────────────────────────────────────────
+const TOUR = {
+  active: false,
+  games: [],
+  currentIndex: 0,
+  scores: { p1: 0, p2: 0 },
+  results: []
+};
+
+const TOUR_AVAILABLE_GAMES = [
+  {id:'ticTacToe', name:'Piškvorky', icon:'🔶'},
+  {id:'connect4', name:'Connect 4', icon:'🔴'},
+  {id:'rockPaper', name:'Kameň Papier Nožnice', icon:'🪨'},
+  {id:'memory', name:'Pexeso', icon:'🧠'},
+  {id:'chess', name:'Šach', icon:'♟️'},
+  {id:'checkers', name:'Dáma', icon:'⚫'},
+  {id:'battleship', name:'Lodičky', icon:'🚢'},
+  {id:'ludo', name:'Človeče nehnevaj sa', icon:'🎲'},
+  {id:'guessNum', name:'Hádaj Číslo', icon:'🔢'},
+  {id:'ghost', name:'Ghost', icon:'👻'},
+  {id:'reaction', name:'Reakcný test', icon:'⚡'},
+  {id:'scramble', name:'Scramble', icon:'🔤'},
+  {id:'higherLower', name:'Vyššie Nižšie', icon:'🎰'},
+  {id:'reversi', name:'Reversi', icon:'⚪'},
+  {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦'}
+];
+
+function showTournament() {
+  switchGame('tournament');
+  tourRenderSetup();
+}
+
+function tourRenderSetup() {
+  const list = $('tourGameList');
+  list.innerHTML = TOUR_AVAILABLE_GAMES.map(g => `
+    <label style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;transition:background 0.2s" onchange="tourUpdateCount()">
+      <input type="checkbox" class="tour-game-check" data-game="${g.id}" style="width:20px;height:20px;cursor:pointer">
+      <span style="font-size:1.5em">${g.icon}</span>
+      <span style="flex:1;font-weight:600">${g.name}</span>
+    </label>
+  `).join('');
+  tourUpdateCount();
+}
+
+function tourUpdateCount() {
+  const checks = document.querySelectorAll('.tour-game-check:checked');
+  const count = checks.length;
+  $('tourSelCount').textContent = `Vybrané: ${count} ${count===1?'hra':count<5?'hry':'hier'}`;
+  $('tourStartBtn').disabled = count < 3 || count > 5;
+}
+
+function tourRandomSelect() {
+  document.querySelectorAll('.tour-game-check').forEach(c => c.checked = false);
+  const count = 3 + Math.floor(Math.random() * 3); // 3-5
+  const shuffled = [...TOUR_AVAILABLE_GAMES].sort(() => Math.random() - 0.5);
+  shuffled.slice(0, count).forEach(g => {
+    const check = document.querySelector(`.tour-game-check[data-game="${g.id}"]`);
+    if(check) check.checked = true;
+  });
+  tourUpdateCount();
+}
+
+function tourClearSelection() {
+  document.querySelectorAll('.tour-game-check').forEach(c => c.checked = false);
+  tourUpdateCount();
+}
+
+function tourStart() {
+  const checks = document.querySelectorAll('.tour-game-check:checked');
+  if(checks.length < 3 || checks.length > 5) return;
+
+  TOUR.games = Array.from(checks).map(c => c.dataset.game);
+  TOUR.currentIndex = 0;
+  TOUR.scores = { p1: 0, p2: 0 };
+  TOUR.results = [];
+  TOUR.active = true;
+
+  $('tourSetup').style.display = 'none';
+  $('tourActive').style.display = 'block';
+  $('tourP1Name').textContent = globalP1;
+  $('tourP2Name').textContent = globalP2;
+  tourUpdateLeaderboard();
+  tourNextGame();
+}
+
+function tourNextGame() {
+  if(TOUR.currentIndex >= TOUR.games.length) {
+    tourShowVictory();
+    return;
+  }
+  const gameId = TOUR.games[TOUR.currentIndex];
+  tourUpdateLeaderboard();
+  switchGame(gameId);
+}
+
+function tourUpdateLeaderboard() {
+  $('tourP1Score').textContent = TOUR.scores.p1.toFixed(1);
+  $('tourP2Score').textContent = TOUR.scores.p2.toFixed(1);
+  $('tourProgress').textContent = `Hra ${TOUR.currentIndex + 1} z ${TOUR.games.length}`;
+}
+
+function tourShowVictory() {
+  TOUR.active = false;
+  switchGame('tournament');
+  $('tourSetup').style.display = 'none';
+  $('tourActive').style.display = 'none';
+  $('tourVictory').style.display = 'block';
+
+  const p1 = TOUR.scores.p1, p2 = TOUR.scores.p2;
+  let winnerText = '';
+  if(p1 > p2) winnerText = `🏆 ${globalP1} vyhral turnaj!`;
+  else if(p2 > p1) winnerText = `🏆 ${globalP2} vyhral turnaj!`;
+  else winnerText = '🤝 Turnaj skončil remízou!';
+
+  $('tourWinnerText').textContent = winnerText;
+  $('tourFinalScore').textContent = `${globalP1}: ${p1.toFixed(1)} bodov • ${globalP2}: ${p2.toFixed(1)} bodov`;
+
+  const resultsList = TOUR.results.map((r, i) => {
+    const game = TOUR_AVAILABLE_GAMES.find(g => g.id === r.game);
+    const icon = game ? game.icon : '🎮';
+    const name = game ? game.name : r.game;
+    const result = r.winner === 1 ? `${globalP1} +1` : r.winner === 2 ? `${globalP2} +1` : 'Remíza +0.5/+0.5';
+    return `<div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:6px">
+      <span>${icon} ${name}</span>
+      <span style="opacity:0.7">${result}</span>
+    </div>`;
+  }).join('');
+  $('tourResultsList').innerHTML = resultsList;
+
+  celebrate('tourVictory');
+  playSound('win');
+}
+
+function tourCancel() {
+  if(!confirm('Naozaj chceš zrušiť turnaj?')) return;
+  TOUR.active = false;
+  tourReset();
+}
+
+function tourReset() {
+  TOUR.active = false;
+  TOUR.games = [];
+  TOUR.currentIndex = 0;
+  TOUR.scores = { p1: 0, p2: 0 };
+  TOUR.results = [];
+  $('tourSetup').style.display = 'block';
+  $('tourActive').style.display = 'none';
+  $('tourVictory').style.display = 'none';
+  tourClearSelection();
+}
+
 function addWin(w, gameId) {
   const gId = gameId || currentGameId;
   const n1 = getActiveP1Name(gId), n2 = getActiveP2Name(gId);
@@ -4213,6 +4433,24 @@ function addWin(w, gameId) {
   saveStats();
   updateWelcomeStats();
   checkAchievements();
+
+  // Tournament mode integration
+  if(TOUR.active) {
+    if(w === 1) TOUR.scores.p1 += 1;
+    else if(w === 2) TOUR.scores.p2 += 1;
+    else { TOUR.scores.p1 += 0.5; TOUR.scores.p2 += 0.5; }
+    TOUR.results.push({ game: gId, winner: w });
+    TOUR.currentIndex++;
+
+    setTimeout(() => {
+      if(TOUR.currentIndex < TOUR.games.length) {
+        showToast(`Ďalšia hra za 3 sekundy...`, 3000);
+        setTimeout(() => tourNextGame(), 3000);
+      } else {
+        tourNextGame(); // Shows victory screen
+      }
+    }, 1000);
+  }
 }
 function updateRecord(key, value) {
   if(key==='reacP1'||key==='reacP2') {
@@ -13852,6 +14090,7 @@ const MOBILE_GAMES = [
   { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp', mp:true },
   { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
   { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both' },
+  { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
 
