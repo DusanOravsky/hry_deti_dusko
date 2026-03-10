@@ -11975,7 +11975,11 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0
+  pngRound: 0,
+  _intentionalDisconnect: false,
+  _reconnectAttempts: 0,
+  _maxReconnectAttempts: 3,
+  _reconnectTimeout: null
 };
 
 // =============================================================================
@@ -14335,7 +14339,7 @@ function mpCreateRoom() {
 
       conn.on('close', () => {
         console.log('Guest disconnected');
-        mpDisconnect();
+        mpHandleDisconnect();
       });
 
       conn.on('error', (err) => {
@@ -14434,7 +14438,7 @@ function mpJoinWithConfig(code, statusEl, config) {
 
       MP.connection.on('close', () => {
         console.log('Host disconnected');
-        mpDisconnect();
+        mpHandleDisconnect();
       });
 
       MP.connection.on('error', (err) => {
@@ -14520,6 +14524,11 @@ function mpClearSession() {
 }
 
 function mpDisconnect() {
+  MP._intentionalDisconnect = true;
+  if(MP._reconnectTimeout) {
+    clearTimeout(MP._reconnectTimeout);
+    MP._reconnectTimeout = null;
+  }
   mpClearSession();
   // Close connection
   if(MP.connection) {
@@ -14574,6 +14583,87 @@ function mpDisconnect() {
   console.log('Disconnected');
 }
 
+function mpHandleDisconnect() {
+  console.log('MP: connection closed');
+
+  // Check if intentional (user clicked disconnect)
+  if(MP._intentionalDisconnect) {
+    console.log('MP: intentional disconnect');
+    mpDisconnect();
+    return;
+  }
+
+  // Connection lost unexpectedly - try to reconnect
+  console.log('MP: unexpected disconnect, attempting auto-reconnect');
+
+  // Clear connection but keep session
+  if(MP.connection) {
+    try { MP.connection.close(); } catch(e) {}
+    MP.connection = null;
+  }
+  if(MP.peer) {
+    try { MP.peer.destroy(); } catch(e) {}
+    MP.peer = null;
+  }
+  MP.isConnected = false;
+  mpUpdateRoleBadge();
+  updateFloatingMPButton(false);
+
+  // Attempt auto-reconnect
+  mpAutoReconnect();
+}
+
+function mpAutoReconnect() {
+  // Don't auto-reconnect if:
+  // - User clicked disconnect button
+  // - Already reconnecting
+  // - Max attempts reached
+  if(MP._intentionalDisconnect) {
+    console.log('Auto-reconnect: intentional disconnect, skipping');
+    return;
+  }
+  if(MP._reconnectTimeout) {
+    console.log('Auto-reconnect: already in progress');
+    return;
+  }
+  if(MP._reconnectAttempts >= MP._maxReconnectAttempts) {
+    console.log('Auto-reconnect: max attempts reached');
+    mpClearSession();
+    showToast('Spojenie sa nepodarilo obnoviť', 3000, 'rgba(220,53,69,0.9)');
+    return;
+  }
+
+  MP._reconnectAttempts++;
+  console.log(`Auto-reconnect: attempt ${MP._reconnectAttempts}/${MP._maxReconnectAttempts}`);
+
+  // Show reconnecting toast
+  showToast(`Obnova spojenia... (${MP._reconnectAttempts}/${MP._maxReconnectAttempts})`, 0, 'rgba(255,193,7,0.9)');
+
+  // Wait 2 seconds before attempting
+  MP._reconnectTimeout = setTimeout(() => {
+    MP._reconnectTimeout = null;
+    MP._intentionalDisconnect = false; // Allow next reconnect
+    mpTryReconnect();
+  }, 2000);
+}
+
+function showToast(text, duration = 2000, bg = 'rgba(0,0,0,0.8)') {
+  // Remove existing toast
+  const existing = document.getElementById('mpReconnectToast');
+  if(existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'mpReconnectToast';
+  toast.style.cssText = `position:fixed;top:10px;left:50%;transform:translateX(-50%);background:${bg};color:white;padding:8px 16px;border-radius:8px;z-index:99999;font-size:0.85em;box-shadow:0 4px 12px rgba(0,0,0,0.3)`;
+  toast.textContent = text;
+  document.body.appendChild(toast);
+
+  if(duration > 0) {
+    setTimeout(() => toast.remove(), duration);
+  }
+  return toast;
+}
+
 function mpTryReconnect() {
   const raw = sessionStorage.getItem('mp_session');
   if(!raw) return;
@@ -14610,6 +14700,12 @@ function mpTryReconnect() {
     toast.style.background = 'rgba(40,167,69,0.9)';
     setTimeout(() => toast.remove(), 1500);
     updateFloatingMPButton(true);
+    // Reset reconnect attempts on success
+    MP._reconnectAttempts = 0;
+    MP._intentionalDisconnect = false;
+    // Remove reconnect toast if present
+    const rToast = document.getElementById('mpReconnectToast');
+    if(rToast) rToast.remove();
   }
 
   const reconConfig = mpGetConfig();
@@ -14629,7 +14725,7 @@ function mpTryReconnect() {
             tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
         });
         conn.on('data', (d) => mpHandleMessage(d));
-        conn.on('close', () => mpDisconnect());
+        conn.on('close', mpHandleDisconnect);
       });
       MP.peer.on('error', () => { clearTimeout(timeout); mpClearSession(); toast.remove(); });
     } else {
@@ -14644,7 +14740,7 @@ function mpTryReconnect() {
           MP.connection.send({ type: 'handshake', from: 'guest', name: MP.myName });
         });
         MP.connection.on('data', (d) => mpHandleMessage(d));
-        MP.connection.on('close', () => mpDisconnect());
+        MP.connection.on('close', mpHandleDisconnect);
       });
       MP.peer.on('error', () => { clearTimeout(timeout); mpClearSession(); toast.remove(); });
     }
