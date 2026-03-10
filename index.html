@@ -2280,7 +2280,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="higherLowerBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.2),rgba(0,0,0,0.2))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vyššie Nižšie</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="chessBtn" style="background:linear-gradient(135deg,rgba(60,60,60,0.35),rgba(180,140,100,0.3))"><span class="game-btn-icon">♟️</span><span class="game-btn-label">Šach</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="checkersBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.3))"><span class="game-btn-icon">⬤</span><span class="game-btn-label">Dáma</span><span class="game-btn-dot"></span></button>
-      <button class="game-btn" id="reversiBtn" style="background:linear-gradient(135deg,rgba(100,100,100,0.25),rgba(200,200,200,0.25))"><span class="game-btn-icon">⚫</span><span class="game-btn-label">Reversi</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="reversiBtn" style="background:linear-gradient(135deg,rgba(100,100,100,0.25),rgba(200,200,200,0.25))"><span class="game-btn-icon">🔄</span><span class="game-btn-label">Reversi</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="ludoBtn" style="background:linear-gradient(135deg,rgba(239,83,80,0.25),rgba(66,165,245,0.25))"><span class="game-btn-icon">🎲</span><span class="game-btn-label">Človeče</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="dotsBoxesBtn" style="background:linear-gradient(135deg,rgba(156,39,176,0.25),rgba(233,30,99,0.25))"><span class="game-btn-icon">⬜</span><span class="game-btn-label">Bodky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="wordleBtn" style="background:linear-gradient(135deg,rgba(83,141,78,0.3),rgba(181,159,59,0.3))"><span class="game-btn-icon">🟩</span><span class="game-btn-label">Wordle</span><span class="game-btn-dot"></span></button>
@@ -3965,8 +3965,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <li>V mriežke sú ukryté míny — nesmieš na ne kliknúť!</li>
       <li>Klikni na políčko — odkryje sa. Číslo ukazuje koľko mín je v 8 susedných políčkach</li>
       <li>Podľa čísel zisti, kde sú míny, a označ ich vlajkou 🚩</li>
-      <li>Prepni tlačidlom medzi odkrývaním (🔍) a vlajkovaním (🚩)</li>
-      <li>Pravý klik na PC = vlajka</li>
+      <li><b>🔍 Kopať</b> = klik odkryje políčko | <b>🚩 Vlajka</b> = klik označí mínu (chráni pred odkrytím)</li>
+      <li>Prepínaj režim tlačidlom medzi 💣 a ⏱. Na PC: pravý klik = vlajka</li>
       <li>Vyhráš keď odkryješ všetky bezpečné políčka!</li>
       <li><b>Ľahká:</b> 8×8, 10 mín | <b>Stredná:</b> 10×10, 20 mín | <b>Ťažká:</b> 12×12, 35 mín</li>
     </ul></div>
@@ -3977,11 +3977,11 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <div id="msInfoBar" style="display:flex;justify-content:space-between;align-items:center;max-width:min(340px,90vw);margin:0 auto 6px;font-weight:bold;font-size:1.1em">
       <span>💣 <span id="msMineCount">10</span></span>
-      <button id="msFlagToggle" onclick="msToggleFlag()" style="padding:4px 12px;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);font-size:1.1em;cursor:pointer;color:inherit">🔍 Odkryť</button>
+      <button id="msFlagToggle" onclick="msToggleFlag()" style="padding:4px 12px;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);font-size:1.1em;cursor:pointer;color:inherit">🔍 Kopať</button>
       <span>⏱ <span id="msTime">0</span></span>
     </div>
     <div class="status" id="msStatus">Klikni Štart!</div>
-    <div id="msGrid" style="display:grid;max-width:min(340px,90vw);margin:0 auto;gap:1px;user-select:none"></div>
+    <div id="msGrid" style="display:grid;max-width:min(340px,90vw);margin:0 auto;gap:2px;user-select:none;background:rgba(255,255,255,0.15);padding:2px;border-radius:6px;border:2px solid rgba(255,255,255,0.3)"></div>
     <div class="celebration" id="msCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
       <button class="action-btn primary-btn" id="msStartBtn" onclick="msStart()">Štart 💣</button>
@@ -4458,7 +4458,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'higherLower', name:'Vyššie Nižšie', icon:'🎰', mode:'pvp'},
   {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦', mode:'pvp'},
   {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'},
-  {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'}
+  {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'},
+  {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'}
 ];
 
 function showTournament() {
@@ -4476,9 +4477,9 @@ function tourRenderSetup() {
   // Filter games based on current mode
   const availableGames = TOUR_AVAILABLE_GAMES.filter(g => {
     if(welcomeGameMode === 'ai') {
-      return g.mode === 'both'; // Only AI-compatible games in AI mode
+      return g.mode === 'both' || g.mode === 'ai'; // AI-compatible games in AI mode
     }
-    return true; // All games in PvP mode
+    return g.mode !== 'ai'; // Exclude AI-only games in PvP mode
   });
 
   if(availableGames.length === 0) {
@@ -15192,14 +15193,14 @@ function resetMinesweeper(){
   $('msStartBtn').disabled=false;
   $('msCelebration').textContent='';
   const tog=$('msFlagToggle');
-  if(tog){tog.textContent='🔍 Odkryť';tog.style.background='rgba(255,255,255,0.1)';}
+  if(tog){tog.textContent='🔍 Kopať';tog.style.background='rgba(255,255,255,0.1)';}
   msRenderGrid();
 }
 function msStart(){
   resetMinesweeper();
   MS.firstClick=true;MS.started=true;
   $('msStartBtn').disabled=true;
-  $('msStatus').textContent='Odkrývaj políčka! Prepni na 🚩 pre vlajky.';
+  $('msStatus').textContent='Klikni na políčko! 🔍=kopať, 🚩=vlajka';
   msRenderGrid();
 }
 function msGenerate(safeR,safeC){
@@ -15260,7 +15261,7 @@ function msToggleFlag(){
   if(MS.flagMode){
     tog.textContent='🚩 Vlajka';tog.style.background='rgba(244,67,54,0.3)';
   } else {
-    tog.textContent='🔍 Odkryť';tog.style.background='rgba(255,255,255,0.1)';
+    tog.textContent='🔍 Kopať';tog.style.background='rgba(255,255,255,0.1)';
   }
 }
 function msCellClick(r,c){
@@ -15312,7 +15313,7 @@ function msGameOver(hitR,hitC){
     if(MS.grid[r][c].flagged&&!MS.grid[r][c].mine) MS.grid[r][c]._wrongFlag=true;
   }
   $('msStatus').textContent='💥 BOOM! Mína! Čas: '+MS.time+'s';
-  addWin(1,'minesweeper');
+  addWin(0,'minesweeper');
   $('msStartBtn').disabled=false;
   playSound('wrong');
   msRenderGrid();
@@ -15331,7 +15332,7 @@ function msRenderGrid(){
     for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
       const d=document.createElement('div');
       d.dataset.r=r;d.dataset.c=c;
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;';
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;border:1px solid rgba(255,255,255,0.25);';
       d.addEventListener('click',()=>msCellClick(r,c));
       d.addEventListener('contextmenu',(e)=>{e.preventDefault();if(MS.started&&!MS.gameOver&&!MS.won&&!MS.firstClick){msFlag(r,c);msRenderGrid();}});
       grid.appendChild(d);
@@ -15346,18 +15347,18 @@ function msRenderGrid(){
     el.style.fontSize=(cellSize>28?'14':'11')+'px';
     if(cell.revealed){
       if(cell.mine){
-        el.textContent='💣';el.style.background='rgba(0,0,0,0.3)';el.style.color='#fff';
+        el.textContent='💣';el.style.background='rgba(0,0,0,0.4)';el.style.color='#fff';el.style.borderColor='rgba(244,67,54,0.5)';
       } else if(cell.count>0){
-        el.textContent=cell.count;el.style.background='rgba(255,255,255,0.15)';el.style.color=MS_COLORS[cell.count];
+        el.textContent=cell.count;el.style.background='rgba(255,255,255,0.1)';el.style.color=MS_COLORS[cell.count];el.style.borderColor='rgba(255,255,255,0.1)';
       } else {
-        el.textContent='';el.style.background='rgba(255,255,255,0.08)';el.style.color='';
+        el.textContent='';el.style.background='rgba(255,255,255,0.05)';el.style.color='';el.style.borderColor='rgba(255,255,255,0.1)';
       }
     } else if(cell._wrongFlag){
-      el.textContent='❌';el.style.background='rgba(244,67,54,0.2)';el.style.color='';
+      el.textContent='❌';el.style.background='rgba(244,67,54,0.3)';el.style.color='';el.style.borderColor='rgba(244,67,54,0.5)';
     } else if(cell.flagged){
-      el.textContent='🚩';el.style.background='rgba(255,193,7,0.25)';el.style.color='';
+      el.textContent='🚩';el.style.background='rgba(255,193,7,0.35)';el.style.color='';el.style.borderColor='rgba(255,193,7,0.5)';
     } else {
-      el.textContent='';el.style.background='rgba(255,255,255,0.22)';el.style.color='';
+      el.textContent='';el.style.background='rgba(100,140,200,0.35)';el.style.color='';el.style.borderColor='rgba(255,255,255,0.3)';
     }
   }
 }
@@ -15407,7 +15408,7 @@ const MOBILE_GAMES = [
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
-  { id:'reversi',       label:'Reversi',        icon:'⚫', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both' },
+  { id:'reversi',       label:'Reversi',        icon:'🔄', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
   { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
