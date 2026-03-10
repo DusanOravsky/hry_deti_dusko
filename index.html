@@ -15215,11 +15215,25 @@ mpTryReconnect();
 // PWA Install Prompt
 let deferredPWAPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('PWA Install Prompt: event fired, showing button');
   e.preventDefault();
   deferredPWAPrompt = e;
   const btn = $('pwaInstallBtn');
   if(btn) btn.style.display = 'block';
 });
+// iOS does not support beforeinstallprompt - show manual instructions
+if(/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+  setTimeout(() => {
+    const btn = $('pwaInstallBtn');
+    if(btn && btn.style.display === 'none') {
+      btn.style.display = 'block';
+      btn.textContent = '📱 Pridaj na plochu';
+      btn.onclick = () => {
+        alert('iOS: Klikni na Share tlačidlo (štvorček so šípkou) a vyber "Add to Home Screen"');
+      };
+    }
+  }, 1000);
+}
 window.addEventListener('appinstalled', () => {
   deferredPWAPrompt = null;
   const btn = $('pwaInstallBtn');
