@@ -4130,8 +4130,10 @@ function loadStats() {
 function saveNames() {
   try {
     localStorage.setItem(NAMES_KEY, JSON.stringify({
-      p1: $('globalP1Input').value,
-      p2: welcomeGameMode === 'ai' ? $('wP2Input').value : $('globalP2Input').value,
+      p1: $('globalP1Input').value.trim() || 'Hráč 1',
+      p2: welcomeGameMode === 'ai'
+        ? ($('wP2Input').value.trim() || 'Hráč 2')
+        : ($('globalP2Input').value.trim() || 'Hráč 2'),
     }));
   } catch(e) {}
 }
