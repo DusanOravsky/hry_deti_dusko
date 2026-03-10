@@ -1,5 +1,5 @@
 // Keep in sync with APP_VERSION in index.html
-const CACHE_NAME = 'hrajmesi-v4.1';
+const CACHE_NAME = 'hrajmesi-v4.2';
 const ASSETS = [
   './manifest.json',
   './icon-192.png',
@@ -25,7 +25,8 @@ self.addEventListener('activate', event => {
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
-  self.clients.claim();
+  // Don't claim clients automatically - page will reload after skipWaiting
+  // and pick up the new SW naturally
 });
 
 self.addEventListener('fetch', event => {
