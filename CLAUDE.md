@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~14600 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v3.0
+- **Current version**: v4.0
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -91,7 +91,7 @@ resetWordle(); // welcomeGameMode check works
 - Preteky (Racing, coins +2 bonus)
 - Statistiky + Achievement system (split reset: stats vs achievements)
 
-## Features (v13-v114)
+## Features (v13-v114, v4.0+)
 
 - **Tutorial/Rules Modal**: help button on all games, opens centralized modal with game rules
 - **AI Difficulty**: All AI games have easy/medium/hard selector (shown when `welcomeGameMode==='ai'`)
@@ -115,7 +115,11 @@ resetWordle(); // welcomeGameMode check works
 - **Pong**: Classic 2-paddle game, canvas, AI mode
 - **Tank Battle**: 16x16 grid arena, WASD+Space vs Arrows+Enter, walls, projectiles, power-ups (shield/rapid/speed)
 - **Snake Duel**: 2 snakes simultaneously, WASD vs arrows, first to 5 rounds
-- **stopAllGames()**: All game loops stop on navigation (no background sounds/vibrations)
+- **stopAllGames()**: All game loops stop on navigation (no background sounds/vibrations), includes chess voice recognition
+- **Game Pause/Resume**: Tetris, Snake, Racing have pause button (⏸️/▶️), game logic pauses, status text updates
+- **PWA Install Prompt**: "Inštaluj aplikáciu" button on welcome screen, captures `beforeinstallprompt`, auto-hides after install
+- **AI Pre-thinking**: Chess and Checkers (hard mode) calculate next move during player's turn, 300ms delay, board snapshot validation
+- **MP Role Badge**: HOST/GUEST indicator in MP modal title, updates on connect/disconnect
 - **AI mode P2 controls hidden**: Tank Battle hides P2 mobile buttons in AI mode, arrows control P1
 - **MP TURN servers**: Metered TURN for cross-network play, password-protected (STUN-first, TURN fallback)
 - **MP connection type indicator**: Shows "Cez server (TURN)" or "Priame spojenie" after connecting
