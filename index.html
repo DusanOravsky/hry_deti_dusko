@@ -2916,6 +2916,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     <div class="rules"><h3>🏆 Multi-Game Turnaj:</h3><ul>
       <li><b>Cieľ:</b> Súťaž v 3-5 hrách a získaj najviac bodov!</li>
       <li><b>Body:</b> 1 bod za výhru, 0.5 bodu za remízu, 0 bodov za prehru</li>
+      <li><b>AI vs PvP:</b> V AI móde (👤 vs Počítač) sú dostupné len hry s AI supportom (10 hier). V PvP móde (👥 2 Hráči) sú všetky hry (15 hier).</li>
       <li><b>Výber hier:</b> Zaklikni 3-5 hier manuálne ALEBO klikni "🎲 Náhodný výber" (počítač vyberie za teba)</li>
       <li><b>Priebeh:</b> Hry sa hrajú jedna po druhej. Po každej hre sa zobrazí skóre a o 3 sekundy začne ďalšia hra.</li>
       <li><b>Live skóre:</b> Počas hier je hore zlatý banner so živým skóre - môžeš ho použiť aj na zrušenie turnaja (tlačidlo ✕)</li>
@@ -4300,21 +4301,21 @@ const TOUR = {
 };
 
 const TOUR_AVAILABLE_GAMES = [
-  {id:'ticTacToe', name:'Piškvorky', icon:'🔶'},
-  {id:'connect4', name:'Connect 4', icon:'🔴'},
-  {id:'rockPaper', name:'Kameň Papier Nožnice', icon:'🪨'},
-  {id:'memory', name:'Pexeso', icon:'🧠'},
-  {id:'chess', name:'Šach', icon:'♟️'},
-  {id:'checkers', name:'Dáma', icon:'⚫'},
-  {id:'battleship', name:'Lodičky', icon:'🚢'},
-  {id:'ludo', name:'Človeče nehnevaj sa', icon:'🎲'},
-  {id:'guessNum', name:'Hádaj Číslo', icon:'🔢'},
-  {id:'ghost', name:'Ghost', icon:'👻'},
-  {id:'reaction', name:'Reakcný test', icon:'⚡'},
-  {id:'scramble', name:'Scramble', icon:'🔤'},
-  {id:'higherLower', name:'Vyššie Nižšie', icon:'🎰'},
-  {id:'reversi', name:'Reversi', icon:'⚪'},
-  {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦'}
+  {id:'ticTacToe', name:'Piškvorky', icon:'🔶', mode:'both'},
+  {id:'connect4', name:'Connect 4', icon:'🔴', mode:'both'},
+  {id:'rockPaper', name:'Kameň Papier Nožnice', icon:'🪨', mode:'both'},
+  {id:'memory', name:'Pexeso', icon:'🧠', mode:'both'},
+  {id:'chess', name:'Šach', icon:'♟️', mode:'both'},
+  {id:'checkers', name:'Dáma', icon:'⚫', mode:'both'},
+  {id:'battleship', name:'Lodičky', icon:'🚢', mode:'both'},
+  {id:'ludo', name:'Človeče nehnevaj sa', icon:'🎲', mode:'both'},
+  {id:'guessNum', name:'Hádaj Číslo', icon:'🔢', mode:'both'},
+  {id:'reversi', name:'Reversi', icon:'⚪', mode:'both'},
+  {id:'ghost', name:'Ghost', icon:'👻', mode:'pvp'},
+  {id:'reaction', name:'Reakcný test', icon:'⚡', mode:'pvp'},
+  {id:'scramble', name:'Scramble', icon:'🔤', mode:'pvp'},
+  {id:'higherLower', name:'Vyššie Nižšie', icon:'🎰', mode:'pvp'},
+  {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦', mode:'pvp'}
 ];
 
 function showTournament() {
@@ -4328,14 +4329,28 @@ function tourRenderSetup() {
     console.error('tourGameList element not found');
     return;
   }
-  list.innerHTML = TOUR_AVAILABLE_GAMES.map(g => `
+
+  // Filter games based on current mode
+  const availableGames = TOUR_AVAILABLE_GAMES.filter(g => {
+    if(welcomeGameMode === 'ai') {
+      return g.mode === 'both'; // Only AI-compatible games in AI mode
+    }
+    return true; // All games in PvP mode
+  });
+
+  if(availableGames.length === 0) {
+    list.innerHTML = '<p style="text-align:center;opacity:0.7">Žiadne dostupné hry pre tento mód</p>';
+    return;
+  }
+
+  list.innerHTML = availableGames.map(g => `
     <label style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;transition:background 0.2s;-webkit-tap-highlight-color:transparent" onchange="tourUpdateCount()">
       <input type="checkbox" class="tour-game-check" data-game="${g.id}" style="width:24px;height:24px;cursor:pointer;flex-shrink:0">
       <span style="font-size:1.5em;flex-shrink:0">${g.icon}</span>
       <span style="flex:1;font-weight:600;font-size:1em">${g.name}</span>
     </label>
   `).join('');
-  console.log('Tournament setup rendered, games:', TOUR_AVAILABLE_GAMES.length);
+  console.log('Tournament setup rendered, games:', availableGames.length, 'mode:', welcomeGameMode);
   tourUpdateCount();
 }
 
@@ -4348,8 +4363,17 @@ function tourUpdateCount() {
 
 function tourRandomSelect() {
   document.querySelectorAll('.tour-game-check').forEach(c => c.checked = false);
-  const count = 3 + Math.floor(Math.random() * 3); // 3-5
-  const shuffled = [...TOUR_AVAILABLE_GAMES].sort(() => Math.random() - 0.5);
+
+  // Filter games based on current mode (same as tourRenderSetup)
+  const availableGames = TOUR_AVAILABLE_GAMES.filter(g => {
+    if(welcomeGameMode === 'ai') {
+      return g.mode === 'both';
+    }
+    return true;
+  });
+
+  const count = Math.min(3 + Math.floor(Math.random() * 3), availableGames.length); // 3-5 or max available
+  const shuffled = [...availableGames].sort(() => Math.random() - 0.5);
   shuffled.slice(0, count).forEach(g => {
     const check = document.querySelector(`.tour-game-check[data-game="${g.id}"]`);
     if(check) check.checked = true;
