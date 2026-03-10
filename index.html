@@ -3815,7 +3815,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '4.3';
+const APP_VERSION = '4.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -15476,21 +15476,13 @@ function installPWA() {
 }
 
 if('serviceWorker' in navigator) {
-  let isFirstLoad = !navigator.serviceWorker.controller;
+  const LAST_VERSION_KEY = 'hry_last_version';
+  const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
+  const currentVersion = APP_VERSION;
 
-  navigator.serviceWorker.register('sw.js').then(reg => {
-    reg.update();
-  }).catch(()=>{});
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if(isFirstLoad) {
-      isFirstLoad = false;
-      return; // First load, don't show toast
-    }
-
-    // New SW took control - show update toast (but don't reload automatically)
+  function showUpdateToast() {
     const existing = document.getElementById('swUpdateToast');
-    if(existing) existing.remove();
+    if(existing) return; // Already showing
 
     const toast = document.createElement('div');
     toast.id = 'swUpdateToast';
@@ -15498,10 +15490,31 @@ if('serviceWorker' in navigator) {
     toast.innerHTML = '<span>🎮 Nová verzia nainštalovaná!</span><button style="background:white;color:#667eea;border:none;padding:6px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em">Obnoviť stránku</button>';
 
     toast.querySelector('button').addEventListener('click', () => {
+      localStorage.setItem(LAST_VERSION_KEY, currentVersion);
       location.reload();
     });
 
     document.body.appendChild(toast);
+  }
+
+  // Check if version changed
+  if(lastVersion && lastVersion !== currentVersion) {
+    // Version changed - show toast
+    showUpdateToast();
+  } else {
+    // Same version or first load - save current version
+    localStorage.setItem(LAST_VERSION_KEY, currentVersion);
+  }
+
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    reg.update();
+  }).catch(()=>{});
+
+  // Also listen for runtime updates (controllerchange)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(lastVersion && lastVersion !== currentVersion) {
+      showUpdateToast();
+    }
   });
 }
 </script>
