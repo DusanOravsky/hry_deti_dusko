@@ -2163,7 +2163,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 41 hier!</div>
+    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 40 hier!</div>
     <div class="welcome-games-preview">
       <span class="welcome-game-chip">🔶 Piškvorky</span>
       <span class="welcome-game-chip">🧠 Pexeso</span>
@@ -15530,8 +15530,8 @@ function g2048Move(dir){
     $('g2048Score').textContent=G48.score;
     if(G48.score>G48.best){G48.best=G48.score;try{localStorage.setItem('hry_2048_best',G48.best);}catch(e){}$('g2048Best').textContent=G48.best;}
     g2048Render();
-    if(G48.won){$('g2048Status').textContent='🎉 Dosiahol si 2048!';celebrate('g2048Celebration');dailyCheckComplete('game2048',G48.score,true);addWin(1,'game2048');G48.won=false;}
-    if(!G48.over&&g2048IsOver()){G48.over=true;$('g2048Status').textContent='💀 Game Over! Skóre: '+G48.score;playSound('wrong');if(G48.score>0)lbAddScore('hry_2048_best',G48.score,globalP1);dailyCheckComplete('game2048',G48.score,false);addWin(1,'game2048');showPlayAgain(resetG2048,'game2048');}
+    if(G48.won){G48.won=false;$('g2048Status').textContent='🎉 Dosiahol si 2048!';celebrate('g2048Celebration');dailyCheckComplete('game2048',G48.score,true);addWin(1,'game2048');}
+    if(!G48.over&&g2048IsOver()){G48.over=true;$('g2048Status').textContent='💀 Game Over! Skóre: '+G48.score;playSound('wrong');if(G48.score>0)lbAddScore('hry_2048_best',G48.score,globalP1);dailyCheckComplete('game2048',G48.score,false);showPlayAgain(resetG2048,'game2048');}
   }
 }
 function g2048IsOver(){
@@ -16997,6 +16997,10 @@ function mpTryReconnect() {
 }
 
 function mpHandleMessage(data) {
+  if(!data || !data.type) return;
+  try { _mpHandleMessageInner(data); } catch(e) { console.error('MP message error:', e, data); }
+}
+function _mpHandleMessageInner(data) {
   if(data.type === 'handshake') {
     console.log('Handshake from:', data.from, 'name:', data.name);
     MP.opponentName = data.name || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
