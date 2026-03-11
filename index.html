@@ -2005,10 +2005,6 @@ body.light .welcome-name-group label { color:#333; }
   .welcome-name-group { min-width:0; overflow:hidden; }
   .welcome-name-input { padding:6px 4px; font-size:0.8em; }
   .welcome-start-btn { padding:12px; font-size:1em; }
-  .welcome-games-preview { gap:4px; }
-  .welcome-game-chip { padding:3px 7px; font-size:0.68em; }
-  .welcome-stats { padding:8px 4px; }
-  .welcome-stats-grid { gap:2px; }
 }
 /* Desktop welcome: larger and more spacious */
 @media(min-width:641px) {
@@ -2019,8 +2015,6 @@ body.light .welcome-name-group label { color:#333; }
   .welcome-names { gap:16px; margin-bottom:28px; }
   .welcome-name-input { padding:10px 12px; font-size:1em; }
   .welcome-start-btn { padding:18px; font-size:1.2em; border-radius:18px; }
-  .welcome-games-preview { gap:8px; margin-top:8px; }
-  .welcome-game-chip { padding:6px 14px; font-size:0.82em; }
 }
 #wP1Input {
   background:rgba(245,87,108,0.15); border:2px solid rgba(245,87,108,0.4); color:white;
@@ -2058,16 +2052,6 @@ body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
 }
 .welcome-install-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(17,153,142,0.5); }
 .welcome-install-btn:active { transform:scale(0.98); }
-.welcome-games-preview {
-  display:flex; flex-wrap:wrap; gap:6px; justify-content:center;
-  margin-top:4px;
-}
-.welcome-game-chip {
-  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
-  border-radius:20px; padding:4px 10px; font-size:0.75em;
-  color:rgba(255,255,255,0.6);
-}
-body.light .welcome-game-chip { background:rgba(0,0,0,0.05); border-color:rgba(0,0,0,0.1); color:rgba(0,0,0,0.5); }
 .welcome-mode-pick {
   display:flex; gap:8px; justify-content:center; margin-bottom:16px;
 }
@@ -2082,33 +2066,6 @@ body.light .welcome-game-chip { background:rgba(0,0,0,0.05); border-color:rgba(0
 }
 body.light .welcome-mode-btn { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.15); color:rgba(0,0,0,0.5); }
 body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border-color:transparent; }
-
-/* Welcome stats */
-.welcome-stats {
-  margin-top:14px; padding:10px 6px; background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1); border-radius:14px; text-align:center;
-  box-sizing:border-box;
-}
-body.light .welcome-stats { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0,0.08); }
-.welcome-stats-label { font-size:0.65em; letter-spacing:2px; text-transform:uppercase; opacity:0.4; margin-bottom:6px; }
-.welcome-stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
-.welcome-stats-val { font-size:1.3em; font-weight:900; }
-.welcome-stats-sub { font-size:0.6em; opacity:0.5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-@media(max-width:400px) {
-  .welcome-stats { margin-top:10px; padding:8px 4px; }
-  .welcome-stats-val { font-size:1.1em; }
-  .welcome-stats-sub { font-size:0.55em; }
-}
-@media(min-width:641px) {
-  .welcome-stats { margin-top:20px; padding:14px 12px; }
-  .welcome-stats-val { font-size:1.6em; }
-  .welcome-stats-sub { font-size:0.7em; }
-}
-.welcome-history { margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1); }
-body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
-.welcome-history-row { display:flex; justify-content:space-between; align-items:center; padding:4px 6px; font-size:0.65em; opacity:0.6; }
-.welcome-history-game { font-weight:600; }
-.welcome-history-winner { font-size:0.9em; }
 
 /* Scroll hint for sidebar nav */
 .sidebar-scroll-hint {
@@ -2173,29 +2130,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
     </div>
     <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.6;margin-bottom:4px">🎯 Obsahuje 40 hier!</div>
-    <div class="welcome-games-preview">
-      <span class="welcome-game-chip">🔶 Piškvorky</span>
-      <span class="welcome-game-chip">🧠 Pexeso</span>
-      <span class="welcome-game-chip">🚢 Lodičky</span>
-      <span class="welcome-game-chip">❓ Quiz</span>
-      <span class="welcome-game-chip">🧮 Matika</span>
-      <span class="welcome-game-chip">😂 Emoji</span>
-      <span class="welcome-game-chip">💀 Obesenec</span>
-      <span class="welcome-game-chip">♟️ Šach</span>
-      <span class="welcome-game-chip">+16 ďalších</span>
-    </div>
-    <!-- MINI STATS na welcome screene -->
-    <div id="welcomeStats" class="welcome-stats">
-      <div class="welcome-stats-label">📊 Štatistiky</div>
-      <div class="welcome-stats-grid">
-        <div><div class="welcome-stats-val" id="wStTotal">0</div><div class="welcome-stats-sub">Hier</div></div>
-        <div><div class="welcome-stats-val" style="color:#f5576c" id="wStP1">0</div><div class="welcome-stats-sub" id="wStP1Label">Hráč 1</div></div>
-        <div><div class="welcome-stats-val" style="color:#4facfe" id="wStP2">0</div><div class="welcome-stats-sub" id="wStP2Label">Hráč 2</div></div>
-        <div><div class="welcome-stats-val" style="color:#ffd200" id="wStDraws">0</div><div class="welcome-stats-sub">Remízy</div></div>
-      </div>
-      <div id="welcomeHistory" class="welcome-history"></div>
-    </div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 40 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
