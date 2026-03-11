@@ -4145,7 +4145,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.1';
+const APP_VERSION = '10.2';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16110,7 +16110,6 @@ function warFlip(){
     $('warWarPile').textContent='';
     WAR.animating=false;
     if(WAR.deck1.length===0||WAR.deck2.length===0) warEnd();
-    else if(welcomeGameMode==='ai') WAR._timer=setTimeout(()=>warFlip(),800);
   },600);
 }
 
@@ -16159,7 +16158,6 @@ function warDoWar(){
       $('warWarPile').textContent='';
       WAR.animating=false;
       if(WAR.deck1.length===0||WAR.deck2.length===0) warEnd();
-      else if(welcomeGameMode==='ai') WAR._timer=setTimeout(()=>warFlip(),800);
     },600);
   },500);
 }
