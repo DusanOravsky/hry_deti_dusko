@@ -310,6 +310,15 @@ body.light .mobile-topbar-btn { background:rgba(0,0,0,0.07); border-color:rgba(0
 .mobile-player-chip.p2 { border-left:3px solid #4facfe; }
 body.light .mobile-player-chip { color:#333; background:rgba(0,0,0,0.04); }
 
+#catPills::-webkit-scrollbar{display:none}
+.cat-pill{
+  padding:6px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06);color:inherit;font-size:0.82em;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0;
+}
+.cat-pill.active{background:linear-gradient(135deg,rgba(102,126,234,0.4),rgba(118,75,162,0.4));border-color:rgba(102,126,234,0.6);transform:scale(1.05)}
+.light .cat-pill{border-color:rgba(0,0,0,0.12);background:rgba(0,0,0,0.04)}
+.light .cat-pill.active{background:linear-gradient(135deg,rgba(102,126,234,0.25),rgba(118,75,162,0.25));border-color:rgba(102,126,234,0.5)}
 .mobile-game-grid {
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -2169,6 +2178,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button onclick="randomBattle()" style="flex:1;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite;box-shadow:0 4px 16px rgba(255,0,128,0.4);transition:transform 0.2s">🎲 RANDOM</button>
       <button onclick="startDailyChallenge()" id="dailyChallengeBtn" style="flex:1;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);box-shadow:0 4px 16px rgba(102,126,234,0.4);transition:transform 0.2s">📅 DENNÁ VÝZVA</button>
     </div>
+    <div id="catPills" style="display:flex;gap:6px;padding:0 14px 6px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
     <div class="mobile-game-grid" id="mobileGameGrid">
       <!-- filled by JS -->
     </div>
@@ -3253,7 +3263,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <li>Správna odpoveď = 1 bod</li>
       <li>10 kôl — kto má viac bodov, vyhráva!</li>
     </ul></div>
-    <div class="difficulty-selector">
+    <div class="difficulty-selector" id="mdDiffSel">
       <button class="difficulty-btn active" onclick="setMDDiff('easy',this)">Ľahká (+−)</button>
       <button class="difficulty-btn" onclick="setMDDiff('medium',this)">Stredná (+−×)</button>
       <button class="difficulty-btn" onclick="setMDDiff('hard',this)">Ťažká (+−×÷)</button>
@@ -3315,7 +3325,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <li>Nápoveda: klikni 💡 pre odhalenie písmena</li>
       <li>Hráči sa striedajú</li>
     </ul></div>
-    <div class="difficulty-selector">
+    <div class="difficulty-selector" id="hmDiffSel">
       <button class="difficulty-btn active" onclick="setHMDiff('easy',this)">Ľahká (4-5 písmen)</button>
       <button class="difficulty-btn" onclick="setHMDiff('medium',this)">Stredná (6-7)</button>
       <button class="difficulty-btn" onclick="setHMDiff('hard',this)">Ťažká (8+)</button>
@@ -4821,6 +4831,34 @@ function updateDailyBtn(){
   }
 }
 
+// --- Difficulty persistence ---
+function saveDiff(gameId,d){try{localStorage.setItem('hry_diff_'+gameId,d);}catch(e){}}
+function loadDiff(gameId){try{return localStorage.getItem('hry_diff_'+gameId)||null;}catch(e){return null;}}
+function restoreAllDiffs(){
+  const map=[
+    ['ticTacToe','tttAISel',setTTTDiff],['ticTacToe','psk15AISel',setPsk15Diff],
+    ['connect4','c4AISel',setC4Diff],['rockPaper','rpsAISel',setRPSDiff],
+    ['chess','chAISel',setCHDiff],['checkers','dkAISel',setDKDiff],
+    ['battleship','bsAISel',setBSDiff],['maze','mzAISel',setMZDiff],
+    ['reversi','revAISel',setRevDiff],['ludo','ludoAISel',setLudoDiff],
+    ['breakout','brkAISel',setBrkDiff],['pong','pngAISel',setPngDiff],
+    ['tanks','tnkAISel',setTnkDiff],['beeCount','beeDiffWrap',setBeeDiff],
+    ['soccer','socDiffWrap',setSocDiff],['minesweeper','msDiffWrap',setMsDiff],
+    ['snake','snakeDiffSel',setSnakeDiff],
+    ['mathDuel','mdDiffSel',setMDDiff],
+    ['hangman','hmDiffSel',setHMDiff],
+  ];
+  map.forEach(([gId,selId,setFn])=>{
+    const d=loadDiff(gId); if(!d) return;
+    const sel=$(selId); if(!sel) return;
+    const btn=sel.querySelector(`.difficulty-btn[onclick*="'${d}'"]`);
+    if(btn) setFn(d,btn);
+  });
+  // Memory AI difficulty (separate from size)
+  const memD=loadDiff('memoryAI');
+  if(memD){const sel=$('memAISel');if(sel){const btn=sel.querySelector(`.difficulty-btn[onclick*="'${memD}'"]`);if(btn)setMemAIDiff(memD,btn);}}
+}
+
 function addWin(w, gameId) {
   const gId = gameId || currentGameId;
   const n1 = getActiveP1Name(gId), n2 = getActiveP2Name(gId);
@@ -5236,6 +5274,7 @@ function setTTTDiff(d,btn) {
   PSK15.diff=d; // Sync difficulty for 10x10 grid
   document.querySelectorAll('#tttAISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  saveDiff('ticTacToe',d);
   // Reset whichever board is currently active
   if($('psk15Board').style.display !== 'none') {
     resetPsk15();
@@ -5412,6 +5451,7 @@ function setPsk15Diff(d,btn) {
   PSK15.diff=d;
   document.querySelectorAll('#psk15AISel .difficulty-btn').forEach(b=>b.classList.remove('active')); // element optional
   btn.classList.add('active');
+  saveDiff('ticTacToe',d);
   resetPsk15();
 }
 function initPsk15Board() {
@@ -5608,7 +5648,7 @@ function setRPSMode(m,btn) {
   setP2Card('rpsP2Name', m==='ai', 'Počítač');
 }
 function setRPSDiff(d,btn) {
-  RPS.diff=d;
+  RPS.diff=d; saveDiff('rockPaper',d);
   document.querySelectorAll('#rpsAISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -5839,7 +5879,7 @@ function setMemMode(m,btn) {
   setP2Card('memP2Name', m==='ai', 'Počítač');
 }
 function setMemAIDiff(d,btn) {
-  MEM.aiDiff=d;
+  MEM.aiDiff=d; saveDiff('memoryAI',d);
   document.querySelectorAll('#memAISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   resetMem();
@@ -6106,7 +6146,7 @@ function setC4Mode(m,btn) {
   resetC4();
 }
 function setC4Diff(d,btn) {
-  C4.diff=d;
+  C4.diff=d; saveDiff('connect4',d);
   document.querySelectorAll('#c4AISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   resetC4();
@@ -7662,7 +7702,7 @@ const BS = {
   currSetup:0, selectedShip:null, orientH:true,
   placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy', enemySunk:new Set()
 };
-function setBSDiff(d,btn) { BS.diff=d; document.querySelectorAll('#bsAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function setBSDiff(d,btn) { BS.diff=d; saveDiff('battleship',d); document.querySelectorAll('#bsAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 // ===== LODIČKY (BATTLESHIP) =====
 
@@ -9676,7 +9716,7 @@ function resetSC() {
 const MD = { player:1, s1:0, s2:0, round:0, over:false, diff:'easy', answered:false };
 
 function setMDDiff(d,btn) {
-  MD.diff=d;
+  MD.diff=d; saveDiff('mathDuel',d);
   document.querySelectorAll('#mathDuel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -9913,7 +9953,7 @@ const HM_WORDS = {
 };
 
 function setHMDiff(d,btn) {
-  HM.diff=d;
+  HM.diff=d; saveDiff('hangman',d);
   document.querySelectorAll('#hangman .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -10136,7 +10176,7 @@ const CH = {
   time2: 0,
   timerInterval: null
 };
-function setCHDiff(d,btn) { CH.diff=d; document.querySelectorAll('#chAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function setCHDiff(d,btn) { CH.diff=d; saveDiff('chess',d); document.querySelectorAll('#chAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 function chToggleTimer() {
   CH.timerEnabled = $('chTimerToggle').checked;
   $('chTimerSelector').style.display = CH.timerEnabled ? 'block' : 'none';
@@ -10737,7 +10777,7 @@ function chPromote(pieceType) {
 // SEKCIA 29: DÁMA (CHECKERS)
 // =============================================================================
 const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null, diff:'easy', aiPremove:null, aiThinkTimer:null };
-function setDKDiff(d,btn) { DK.diff=d; document.querySelectorAll('#dkAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function setDKDiff(d,btn) { DK.diff=d; saveDiff('checkers',d); document.querySelectorAll('#dkAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetCheckers() {
   DK.board=Array(64).fill('');
@@ -11042,7 +11082,7 @@ function checkersAI() {
 // =============================================================================
 const REV={board:Array(64).fill(0),turn:1,over:false,diff:'easy'};
 // 0=empty, 1=black(P1), 2=white(P2)
-function setRevDiff(d,btn){REV.diff=d;btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function setRevDiff(d,btn){REV.diff=d;saveDiff('reversi',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function resetReversi(){
   REV.board=Array(64).fill(0);
   REV.board[27]=2;REV.board[28]=1;REV.board[35]=1;REV.board[36]=2;
@@ -11346,7 +11386,7 @@ const SNK = {
   food:{x:15,y:10}, score:0, best:parseInt(localStorage.getItem('hry_snakeBest')||'0'),
   timer:null, running:false, over:false, speed:250, diff:'easy', paused:false
 };
-function setSnakeDiff(d,btn){SNK.diff=d;btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function setSnakeDiff(d,btn){SNK.diff=d;saveDiff('snake',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function resetSnake(){
   if(SNK.timer)clearInterval(SNK.timer);
   SNK.running=false; SNK.over=false; SNK.speed=SNK_SPEEDS[SNK.diff]; SNK.score=0;
@@ -11470,7 +11510,7 @@ const LUDO = {
   dice:0, turn:0, rolled:false, over:false, s1:0, s2:0,
   pieces:[[-1,-1,-1,-1],[-1,-1,-1,-1]], diff:'easy'
 };
-function setLudoDiff(d,btn) { LUDO.diff=d; document.querySelectorAll('#ludoAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function setLudoDiff(d,btn) { LUDO.diff=d; saveDiff('ludo',d); document.querySelectorAll('#ludoAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 const LUDO_PATH = [
   [10,4],[9,4],[8,4],[7,4],[6,4],
   [6,3],[6,2],[6,1],[6,0],
@@ -12550,7 +12590,7 @@ function puzzleAI() {
 // SEKCIA 31: MINI LABYRINT (MAZE)
 // =============================================================================
 const MZ = { grid:null, cols:15, rows:15, px:0, py:0, ex:14, ey:14, player:1, times:[0,0], timer:null, startTime:0, done:false, s1:0, s2:0, mazeData:null, cellSize:20, aiSolving:false, diff:'easy' };
-function setMZDiff(d,btn) { MZ.diff=d; document.querySelectorAll('#mzAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function setMZDiff(d,btn) { MZ.diff=d; saveDiff('maze',d); document.querySelectorAll('#mzAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetMaze() {
   MZ.done=false; MZ.player=1; MZ.times=[0,0]; MZ.aiSolving=false;
@@ -12934,7 +12974,7 @@ const BRK = {
 };
 
 function setBrkDiff(d,btn){
-  BRK.diff=d;
+  BRK.diff=d; saveDiff('breakout',d);
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -13225,7 +13265,7 @@ const PNG = {
 };
 
 function setPngDiff(d,btn){
-  PNG.diff=d;
+  PNG.diff=d; saveDiff('pong',d);
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -13485,7 +13525,7 @@ const TNK = {
 const TNK_DX=[0,1,0,-1], TNK_DY=[-1,0,1,0];
 
 function setTnkDiff(d,btn){
-  TNK.diff=d;
+  TNK.diff=d; saveDiff('tanks',d);
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -14236,7 +14276,7 @@ const BEE = {
 };
 
 function setBeeDiff(d,btn){
-  BEE.diff=d;
+  BEE.diff=d; saveDiff('beeCount',d);
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -14993,7 +15033,7 @@ const SOC={
   goalX:70,goalY:30,goalW:200,goalH:90
 };
 function setSocDiff(d,btn){
-  SOC.diff=d;
+  SOC.diff=d; saveDiff('soccer',d);
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
@@ -15721,7 +15761,7 @@ const MS={
   timer:null,time:0,flagMode:false
 };
 function setMsDiff(d,btn){
-  MS.diff=d;
+  MS.diff=d; saveDiff('minesweeper',d);
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   resetMinesweeper();
@@ -15933,48 +15973,58 @@ updateOnlineStatus();
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
+const GAME_CATS = [
+  {id:'all', label:'Všetky', icon:'🎮'},
+  {id:'board', label:'Doskové', icon:'♟️'},
+  {id:'arcade', label:'Arkádové', icon:'🕹️'},
+  {id:'word', label:'Slovné', icon:'📝'},
+  {id:'logic', label:'Logické', icon:'🧩'},
+  {id:'fun', label:'Zábavné', icon:'🎯'},
+];
+let _selectedCat = 'all';
+
 const MOBILE_GAMES = [
-  { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)', mode:'both', mp:true },
-  { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)', mode:'both', mp:true },
-  { id:'memory',        label:'Pexeso',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both', mp:true },
-  { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both', mp:true },
-  { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both', mp:true },
-  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both', mp:true },
-  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both', mp:true },
-  { id:'quiz',          label:'Kvíz',           icon:'🧪', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp' },
-  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both', mp:true },
-  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp' },
-  { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
-  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp' },
-  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp' },
-  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp' },
-  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp' },
-  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp' },
-  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
-  { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp' },
-  { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp' },
-  { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp' },
-  { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp' },
-  { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both' },
-  { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both' },
-  { id:'reversi',       label:'Reversi',        icon:'🔄', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both' },
-  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo' },
-  { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo' },
-  { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true },
-  { id:'dotsBoxes',     label:'Bodky',          icon:'✏️', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp' },
-  { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo' },
-  { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both' },
-  { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both', mp:true },
-  { id:'tanks',         label:'Tank Battle',    icon:'💥', grad:'rgba(200,0,0,0.3),rgba(0,100,200,0.3)', mode:'both', mp:true },
-  { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp', mp:true },
-  { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both' },
-  { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both', mp:true },
-  { id:'beeCount',     label:'Včely',          icon:'🐝', grad:'rgba(255,193,7,0.3),rgba(255,152,0,0.3)', mode:'both' },
-  { id:'soccer',       label:'Futbal',         icon:'⚽', grad:'rgba(76,175,80,0.3),rgba(255,235,59,0.3)', mode:'both' },
-  { id:'minesweeper',  label:'Míny',           icon:'💣', grad:'rgba(100,100,100,0.3),rgba(244,67,54,0.3)', mode:'solo' },
-  { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo' },
-  { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo' },
-  { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo' },
+  { id:'ticTacToe',     label:'Piškvorky',      icon:'🔶', grad:'rgba(240,147,251,0.3),rgba(245,87,108,0.3)', mode:'both', mp:true, cat:'board' },
+  { id:'rockPaper',     label:'Kameň Papier',   icon:'🪨', grad:'rgba(79,172,254,0.25),rgba(0,242,254,0.25)', mode:'both', mp:true, cat:'fun' },
+  { id:'memory',        label:'Pexeso',         icon:'🧠', grad:'rgba(250,112,154,0.25),rgba(254,225,64,0.25)', mode:'both', mp:true, cat:'logic' },
+  { id:'connect4',      label:'Connect 4',      icon:'🔴', grad:'rgba(48,207,208,0.25),rgba(51,8,103,0.25)', mode:'both', mp:true, cat:'board' },
+  { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both', mp:true, cat:'logic' },
+  { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both', mp:true, cat:'board' },
+  { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both', mp:true, cat:'board' },
+  { id:'quiz',          label:'Kvíz',           icon:'🧪', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp', cat:'fun' },
+  { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both', mp:true, cat:'board' },
+  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp', cat:'word' },
+  { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'fun' },
+  { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp', cat:'fun' },
+  { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp', cat:'logic' },
+  { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp', cat:'fun' },
+  { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp', cat:'word' },
+  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp', cat:'logic' },
+  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word' },
+  { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'word' },
+  { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp', cat:'word' },
+  { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word' },
+  { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp', cat:'word' },
+  { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both', cat:'logic' },
+  { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both', cat:'logic' },
+  { id:'reversi',       label:'Reversi',        icon:'🔄', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both', cat:'board' },
+  { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo', cat:'arcade' },
+  { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo', cat:'arcade' },
+  { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true, cat:'board' },
+  { id:'dotsBoxes',     label:'Bodky',          icon:'✏️', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp', cat:'board' },
+  { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo', cat:'arcade' },
+  { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both', cat:'arcade' },
+  { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both', mp:true, cat:'arcade' },
+  { id:'tanks',         label:'Tank Battle',    icon:'💥', grad:'rgba(200,0,0,0.3),rgba(0,100,200,0.3)', mode:'both', mp:true, cat:'arcade' },
+  { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp', mp:true, cat:'arcade' },
+  { id:'doodle',        label:'Doodle Jump',    icon:'🤸', grad:'rgba(255,210,0,0.3),rgba(67,233,123,0.25)', mode:'both', cat:'arcade' },
+  { id:'wordle',       label:'Wordle',         icon:'🟩', grad:'rgba(83,141,78,0.3),rgba(181,159,59,0.3)', mode:'both', mp:true, cat:'word' },
+  { id:'beeCount',     label:'Včely',          icon:'🐝', grad:'rgba(255,193,7,0.3),rgba(255,152,0,0.3)', mode:'both', cat:'fun' },
+  { id:'soccer',       label:'Futbal',         icon:'⚽', grad:'rgba(76,175,80,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun' },
+  { id:'minesweeper',  label:'Míny',           icon:'💣', grad:'rgba(100,100,100,0.3),rgba(244,67,54,0.3)', mode:'solo', cat:'logic' },
+  { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo', cat:'arcade' },
+  { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo', cat:'logic' },
+  { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -16103,6 +16153,7 @@ function mobileGoTo(level, gameId) {
       // Forward from welcome → picker slides in from right
       picker.classList.add('active');
     }
+    _renderCatPills();
     renderMobileGrid();
     _updateMobileChips();
   } else if(level === 3 && gameId) {
@@ -16176,16 +16227,32 @@ function _renderGameCard(g, idx) {
    </div>`;
 }
 
+function _renderCatPills() {
+  const wrap = $('catPills'); if(!wrap) return;
+  wrap.innerHTML = GAME_CATS.map(c =>
+    `<button class="cat-pill${_selectedCat===c.id?' active':''}" onclick="selectCat('${c.id}')">${c.icon} ${c.label}</button>`
+  ).join('');
+}
+function selectCat(catId) {
+  _selectedCat = catId;
+  _renderCatPills();
+  renderMobileGrid();
+}
+
 function renderMobileGrid() {
   const grid = $('mobileGameGrid');
   if(!grid) return;
-  const filtered = MOBILE_GAMES.filter(g => {
+  let filtered = MOBILE_GAMES.filter(g => {
     if(g.mode==='always') return true;
     if(g.mode==='solo') return !welcomeGameMode || welcomeGameMode==='' || welcomeGameMode==='ai';
     if(welcomeGameMode==='ai') return g.mode==='both';
     if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp';
     return true;
   });
+  // Category filter
+  if(_selectedCat !== 'all') {
+    filtered = filtered.filter(g => g.cat === _selectedCat || g.mode === 'always');
+  }
   const filteredIds = filtered.map(g=>g.id);
   // Recently played (that are in current filtered set)
   const recent = _recentGames.filter(id=>filteredIds.includes(id)).slice(0,3);
@@ -16196,13 +16263,13 @@ function renderMobileGrid() {
   const sorted = [...favs, ...rest];
 
   let html = '';
-  // Recent section
-  if(recentGames.length>0) {
+  // Recent section (only in "all" category)
+  if(_selectedCat === 'all' && recentGames.length>0) {
     html += '<div class="mobile-grid-section">Nedavno hrane <span onclick="clearRecentGames()" style="float:right;font-size:0.85em;cursor:pointer;opacity:0.6;text-transform:none;letter-spacing:0">✕ vymazat</span></div>';
     html += recentGames.map((g,i)=>_renderGameCard(g,i)).join('');
     html += '<div class="mobile-grid-section">Vsetky hry</div>';
   }
-  const offset = recentGames.length;
+  const offset = (_selectedCat === 'all') ? recentGames.length : 0;
   html += sorted.map((g,i)=>_renderGameCard(g,i+offset)).join('');
   grid.innerHTML = html;
   updateDailyBtn();
@@ -16267,6 +16334,7 @@ function _stopEmojiRotation() {
   if(_welcomeEmojiTimer) { clearInterval(_welcomeEmojiTimer); _welcomeEmojiTimer = null; }
 }
 _startEmojiRotation();
+restoreAllDiffs();
 
 function _updateContinueBtn() {
   const btn = $('welcomeContinueBtn');
@@ -16304,7 +16372,7 @@ function updateWelcomeSub() {
   if(!MP._savedP1) saveNames();
 }
 function setWelcomeMode(mode) {
-  welcomeGameMode = mode;
+  welcomeGameMode = mode; _selectedCat = 'all';
   $('wMode2p').classList.toggle('active', mode==='pvp');
   $('wMode1p').classList.toggle('active', mode==='ai');
   const p2g = $('wP2Group');
