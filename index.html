@@ -2304,6 +2304,8 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
       <button class="game-btn" id="doodleBtn" style="background:linear-gradient(135deg,rgba(255,210,0,0.3),rgba(67,233,123,0.25))"><span class="game-btn-icon">🤸</span><span class="game-btn-label">Doodle Jump</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="snakeBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.25),rgba(79,172,254,0.25))"><span class="game-btn-icon">🐍</span><span class="game-btn-label">Snake</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="racingBtn" style="background:linear-gradient(135deg,rgba(255,69,0,0.3),rgba(255,165,0,0.25))"><span class="game-btn-icon">🏎️</span><span class="game-btn-label">Preteky</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="game2048Btn" style="background:linear-gradient(135deg,rgba(237,194,46,0.3),rgba(237,130,14,0.3))"><span class="game-btn-icon">🔢</span><span class="game-btn-label">2048</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="flappyBtn" style="background:linear-gradient(135deg,rgba(76,217,100,0.3),rgba(255,204,0,0.3))"><span class="game-btn-icon">🐤</span><span class="game-btn-label">Flappy Bird</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
@@ -4420,7 +4422,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4431,7 +4433,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4844,6 +4846,7 @@ function dailyCheckComplete(gameId,score,won){
     dailySaveState({date:today,completed:true,gameId:gameId,streak:streak,lastDate:today});
     showToast('🎉 Denná výzva splnená! Streak: '+streak+'🔥',4000,'rgba(67,233,123,0.9)');
     playSound('win');
+    updateDailyBtn();
   }
 }
 function _getDailyStreak(){
@@ -14811,13 +14814,18 @@ function wdlMpResolve() {
   const oppRows = WDL.mpOpponentRows;
   const myName = MP.isHost ? globalP1 : globalP2;
   const oppName = MP.isHost ? globalP2 : globalP1;
-  if(myRows <= oppRows && myRows <= 6) {
-    // I win (fewer guesses or opponent failed)
+  if(myRows < oppRows && myRows <= 6) {
+    // I win (fewer guesses)
     const w = MP.isHost ? 1 : 2;
     if(w===1){WDL.p1Score++;$('p1ScoreWDL').textContent=WDL.p1Score;}
     else{WDL.p2Score++;$('p2ScoreWDL').textContent=WDL.p2Score;}
     $('wdlStatus').textContent = myName + ' vyhráva! (' + myRows + ' vs ' + (oppRows>6?'❌':oppRows) + ') Slovo: ' + WDL.secret;
     addWin(w, 'wordle');
+  } else if(myRows === oppRows) {
+    // Tie — same number of guesses (or both failed)
+    const msg = myRows > 6 ? 'Remíza! Obaja neuhádli.' : 'Remíza! Obaja za ' + myRows + '/6.';
+    $('wdlStatus').textContent = msg + ' Slovo: ' + WDL.secret;
+    addWin(0, 'wordle');
   } else if(oppRows < myRows && oppRows <= 6) {
     // Opponent wins
     const w = MP.isHost ? 2 : 1;
