@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~17300 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~17900 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v7.0
+- **Current version**: v9.1
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -53,7 +53,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (39 total)
+## Games (40 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -68,7 +68,7 @@ resetWordle(); // welcomeGameMode check works
 - Puzzle Scramble (canvas, 3x3/4x4/5x5)
 - Mini Labyrint (AI: easy/medium/hard — hard:30ms, medium:80ms, easy:180ms)
 - Reversi/Othello (AI: easy/medium/hard)
-- Wordle (SK: ~400 slov, EN: ~400 slov, language selector, word validation)
+- Wordle [MP] (SK: ~400 slov, EN: ~400 slov, language selector, word validation, MP: simultaneous guessing with tie-breaking)
 - Breakout/Arkanoid (AI: easy/medium/hard, canvas, roundRect polyfill)
 - Pong [MP] (AI: easy/medium/hard, canvas, W/S + arrows, touch drag, first to 10)
 - Tank Battle [MP] (AI: easy/medium/hard, 16x16 grid, power-ups: shield/rapid/speed)
@@ -93,7 +93,9 @@ resetWordle(); // welcomeGameMode check works
 - Preteky (Racing, coins +2 bonus)
 - Gravity Run (canvas, endless runner with gravity flip, high score, space/click/tap to flip)
 - Minesweeper / Míny (8x8/10x10/12x12, iterative flood-fill, flag mode, timer, tournament-compatible in AI mode)
-- Statistiky + Achievement system (split reset: stats vs achievements)
+- 2048 (4x4 sliding tiles, swipe + arrows, high score in localStorage, leaderboard)
+- Flappy Bird (canvas, tap/space/click to flap, pipe obstacles, high score, leaderboard)
+- Statistiky + Achievement system (43 achievements, split reset: stats vs achievements)
 
 ## Features (v13-v114, v4.0+)
 
@@ -104,7 +106,7 @@ resetWordle(); // welcomeGameMode check works
 - **Offline indicator**: Red banner when device offline, MP button auto-hides
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
-- **Achievement system**: 16 achievements checked after every `addWin()` and `toggleFavorite()`, toast notification on unlock, displayed in Stats page
+- **Achievement system**: 43 achievements (16 general + 23 per-game + 4 daily) checked after every `addWin()`, `toggleFavorite()`, and `dailyCheckComplete()`, toast notification on unlock, displayed in Stats page
 - **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
@@ -133,7 +135,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "Obsahuje 39 hier!" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "40 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -141,6 +143,15 @@ resetWordle(); // welcomeGameMode check works
 - **Gravity Run**: Canvas endless runner, player runs on floor/ceiling, tap/space to flip gravity, obstacles spawn on both sides, increasing speed, high score in localStorage
 - **Solo mode pattern**: Games with mode:'both' show solo score (X/5) in AI mode — hide player-info div, show soloScore div via `applyGameMode()` and `reset*()`
 - **mpSend() helper**: Wraps `MP.connection.send()` with null checks and try/catch — all 46+ send calls use this
+- **Confetti on wins**: Canvas confetti animation on any win via `addWin()`, 150 particles, 2.5s duration
+- **Daily Challenge**: Random game challenge each day, streak tracking in localStorage, daily button on welcome + sidebar
+- **Emoji Avatars**: 20 emoji avatars per player, stored in localStorage, shown on welcome screen + game cards
+- **Top 5 Leaderboard**: Solo games (Tetris, Snake, Racing, Gravity Run, 2048, Flappy Bird) track top 5 scores in localStorage
+- **Wordle MP**: Simultaneous guessing mode, both players see own board, tie-breaking logic (fewer rows wins, equal = draw)
+- **2048**: Classic sliding tile puzzle, 4x4 grid, swipe + arrows, merge tiles to reach 2048, high score + leaderboard
+- **Flappy Bird**: Canvas game, tap/space/click to flap, pipe obstacles with gap, gravity physics, high score + leaderboard
+- **Animated transitions**: Slide animations (slideInRight/slideOutLeft) between navigation levels, cardPop for game cards
+- **Welcome screen UX**: Time-based greeting, rotating emoji animation, continue last game button, pulse animation on start button
 
 ## Adding a New Game
 
@@ -210,7 +221,7 @@ const MP = {
   roomCode: null, myName: '', opponentName: '',
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
   dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
-  sdRound: 0, tnkRound: 0, pngRound: 0,
+  sdRound: 0, tnkRound: 0, pngRound: 0, wdlRound: 0,
   _intentionalDisconnect: false,
   _reconnectAttempts: 0,
   _maxReconnectAttempts: 3,
@@ -232,9 +243,9 @@ const MP = {
 - `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
 - `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
-**Games with MP Support (12 games):**
+**Games with MP Support (13 games):**
 
-*Turn-based (9 games):*
+*Turn-based (10 games):*
 - Piskvorky — `ttt-move`, alternating start (tttRound)
 - Connect4 — `c4-move`
 - Kamen Papier Noznice — `rps-choice`
@@ -244,6 +255,7 @@ const MP = {
 - Lodicky — `bs-shoot`, `bs-result`, `bs-ready`, `bs-gameover`
 - Clovece — `ludo-roll`, `ludo-move`
 - Hadaj Cislo — `gn-setup`, `gn-guess`, `gn-feedback`
+- Wordle — `wdl-word`, `wdl-guess`, `wdl-result` (simultaneous guessing, both see own board, tie-breaking)
 
 *Real-time (3 games — host-authoritative architecture):*
 - Snake Duel — `sd-start`, `sd-dir`, `sd-state` (host runs setInterval, guest sends direction only)
@@ -301,6 +313,8 @@ Key game state objects and their patterns:
 - `SOC` — Soccer (canvas, arrow angle, power, keeper, ball, penalty shootout)
 - `GRAV` — Gravity Run (canvas, player, obstacles, particles, gravDir, score, best)
 - `MS` — Minesweeper (grid[][], rows, cols, mines, diff, revealed, flagged, totalSafe, gameOver, won, firstClick, started, timer, flagMode)
+- `G48` — 2048 (grid 4x4, score, best, won, over)
+- `FLAP` — Flappy Bird (canvas, bird, pipes, score, best, running, raf)
 
 ## Performance Optimization
 
@@ -309,7 +323,7 @@ Key game state objects and their patterns:
 
 ### stopAllGames()
 Centralized cleanup function that stops all game timers/rafs:
-- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf
+- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf, FLAP.raf, MS.timer
 - Called by `mobileGoTo()` and desktop sidebar game switching
 
 ## Deploy
