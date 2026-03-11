@@ -4145,7 +4145,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.2';
+const APP_VERSION = '10.3';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16040,7 +16040,7 @@ resetMinesweeper();
 // =============================================================================
 // SEKCIA 42: WAR (VOJNA) — kartová hra
 // =============================================================================
-const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150};
+const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150,_epoch:0};
 const WAR_SUITS = ['♠','♥','♦','♣'];
 const WAR_RANKS = [2,3,4,5,6,7,8,9,10,11,12,13,14];
 const WAR_RANK_DISPLAY = {2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10',11:'J',12:'Q',13:'K',14:'A'};
@@ -16058,6 +16058,7 @@ function warCardHTML(c){
 }
 
 function resetWar(){
+  WAR._epoch++;
   if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}
   const deck=warMakeDeck();
   WAR.deck1=deck.slice(0,26);WAR.deck2=deck.slice(26);
@@ -16083,12 +16084,13 @@ function warFlip(){
   const c1=WAR.deck1.shift();
   const c2=WAR.deck2.shift();
   WAR.card1=c1;WAR.card2=c2;
+  const ep=WAR._epoch;
   // Show cards
   $('warCard1').className='war-card war-card-face';$('warCard1').innerHTML=warCardHTML(c1);
   $('warCard2').className='war-card war-card-face';$('warCard2').innerHTML=warCardHTML(c2);
   playSound('flip');
   setTimeout(()=>{
-    if(WAR.over) return;
+    if(WAR._epoch!==ep||WAR.over) return;
     if(c1.rank>c2.rank){
       WAR.deck1.push(c1,c2,...WAR.pile);WAR.pile=[];
       $('warStatus').textContent=getActiveP1Name('cardWar')+' berie!';
@@ -16114,10 +16116,10 @@ function warFlip(){
 }
 
 function warDoWar(){
+  const ep=WAR._epoch;
   // Each player puts 3 face-down + 1 face-up
   const faceDown=Math.min(3,WAR.deck1.length-1,WAR.deck2.length-1);
   if(faceDown<0||WAR.deck1.length===0||WAR.deck2.length===0){
-    // Not enough cards for war — whoever has more in pile wins
     warEnd();WAR.animating=false;return;
   }
   for(let i=0;i<faceDown;i++){
@@ -16129,14 +16131,14 @@ function warDoWar(){
   if(WAR.deck1.length===0||WAR.deck2.length===0){warEnd();WAR.animating=false;return;}
   // Flip one more
   setTimeout(()=>{
-    if(WAR.over) return;
+    if(WAR._epoch!==ep||WAR.over) return;
     if(WAR.deck1.length===0||WAR.deck2.length===0){warEnd();WAR.animating=false;return;}
     const w1=WAR.deck1.shift(),w2=WAR.deck2.shift();
     WAR.card1=w1;WAR.card2=w2;
     $('warCard1').innerHTML=warCardHTML(w1);$('warCard2').innerHTML=warCardHTML(w2);
     playSound('flip');
     setTimeout(()=>{
-      if(WAR.over) return;
+      if(WAR._epoch!==ep||WAR.over) return;
       if(w1.rank>w2.rank){
         WAR.deck1.push(w1,w2,...WAR.pile);WAR.pile=[];
         $('warStatus').textContent=getActiveP1Name('cardWar')+' vyhrala vojnu!';
