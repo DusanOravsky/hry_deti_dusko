@@ -4100,6 +4100,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div id="warWarPile" style="text-align:center;min-height:24px;font-size:0.85em;opacity:0.6"></div>
     <div class="celebration" id="warCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn" onclick="warQuickPlay()" id="warQuickBtn">⚡ Rýchla hra</button>
       <button class="action-btn primary-btn" onclick="resetWar()">🔄 Nová hra</button>
     </div>
   </div>
@@ -4109,10 +4110,10 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div class="rules"><h3>🎴 Uno:</h3><ul>
       <li>Každý začína so 7 kartami</li>
       <li>Zahraj kartu s rovnakou farbou alebo číslom</li>
-      <li>+2 = súper ťahá 2 karty, ⛔ = preskočenie</li>
-      <li>🔄 = preskočenie, 🌈 Wild = zmeň farbu</li>
+      <li>+2 = súper ťahá 2, ⛔ = preskočenie, 🔄 = preskočenie</li>
+      <li>🌈 Wild = zmeň farbu, +4 Wild = zmeň farbu + súper ťahá 4</li>
       <li>Nemôžeš hrať? Potiahni kartu!</li>
-      <li>Kto sa prvý zbaví všetkých kariet (0), vyhráva!</li>
+      <li>UNO! — keď má hráč poslednú kartu</li>
     </ul></div>
     <div class="difficulty-selector" id="unoAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setUnoDiff('easy',this)">Ľahká</button>
@@ -4175,6 +4176,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div class="status" id="solStatus"></div>
     <div class="celebration" id="solCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn" onclick="solUndo()" id="solUndoBtn" style="opacity:0.5">↩️ Späť</button>
       <button class="action-btn primary-btn" onclick="resetSol()">🔄 Nová hra</button>
     </div>
   </div>
@@ -4186,7 +4188,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.1';
+const APP_VERSION = '11.2';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16101,6 +16103,8 @@ function warCardHTML(c){
 function resetWar(){
   WAR._epoch++;
   if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}
+  WAR._quick=false;
+  if($('warQuickBtn')) $('warQuickBtn').disabled=false;
   const deck=warMakeDeck();
   WAR.deck1=deck.slice(0,26);WAR.deck2=deck.slice(26);
   WAR.card1=null;WAR.card2=null;WAR.pile=[];WAR.over=false;WAR.animating=false;WAR.rounds=0;
@@ -16226,6 +16230,42 @@ function warEnd(){
     addWin(0,'cardWar');
   }
 }
+function warQuickPlay(){
+  if(WAR.animating) return;
+  resetWar();
+  WAR._quick=true;
+  $('warQuickBtn').disabled=true;
+  warQuickStep();
+}
+function warQuickStep(){
+  if(WAR.over||!WAR._quick) {WAR._quick=false;$('warQuickBtn').disabled=false;return;}
+  if(WAR.deck1.length===0||WAR.deck2.length===0){warEnd();WAR._quick=false;$('warQuickBtn').disabled=false;return;}
+  WAR.rounds++;
+  if(WAR.rounds>=WAR.maxRounds){warEnd();WAR._quick=false;$('warQuickBtn').disabled=false;return;}
+  const c1=WAR.deck1.shift(),c2=WAR.deck2.shift();
+  WAR.card1=c1;WAR.card2=c2;
+  $('warCard1').className='war-card war-card-face';$('warCard1').innerHTML=warCardHTML(c1);
+  $('warCard2').className='war-card war-card-face';$('warCard2').innerHTML=warCardHTML(c2);
+  if(c1.rank>c2.rank){
+    WAR.deck1.push(c1,c2,...WAR.pile);WAR.pile=[];
+  } else if(c2.rank>c1.rank){
+    WAR.deck2.push(c1,c2,...WAR.pile);WAR.pile=[];
+  } else {
+    // Quick war
+    WAR.pile.push(c1,c2);
+    const fd=Math.min(3,WAR.deck1.length-1,WAR.deck2.length-1);
+    if(fd<0||WAR.deck1.length===0||WAR.deck2.length===0){warEnd();WAR._quick=false;$('warQuickBtn').disabled=false;return;}
+    for(let i=0;i<fd;i++) WAR.pile.push(WAR.deck1.shift(),WAR.deck2.shift());
+  }
+  $('warP1Count').textContent=WAR.deck1.length;
+  $('warP2Count').textContent=WAR.deck2.length;
+  $('warWarPile').textContent=WAR.pile.length>0?'Na stole: '+WAR.pile.length+' kariet':'';
+  const ep=WAR._epoch;
+  WAR._timer=setTimeout(()=>{
+    if(WAR._epoch!==ep) return;
+    warQuickStep();
+  },100);
+}
 resetWar();
 
 // =============================================================================
@@ -16244,10 +16284,12 @@ function unoMakeDeck(){
     for(let i=0;i<2;i++){d.push({color:c,value:'+2'});d.push({color:c,value:'skip'});d.push({color:c,value:'reverse'});}
   });
   for(let i=0;i<4;i++) d.push({color:'wild',value:'wild'});
+  for(let i=0;i<4;i++) d.push({color:'wild',value:'+4'});
   for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
   return d;
 }
 function unoCardLabel(c){
+  if(c.value==='+4') return '+4';
   if(c.value==='wild') return '🌈';
   if(c.value==='+2') return '+2';
   if(c.value==='skip') return '⛔';
@@ -16353,15 +16395,19 @@ function unoAIPickColor(){
 }
 
 function unoApplyEffect(card){
+  // UNO! callout when 1 card left
+  if(UNO.hand1.length===1) showToast('🔴 UNO! '+getActiveP1Name('unoGame')+' má poslednú kartu!');
+  if(UNO.hand2.length===1) showToast('🔴 UNO! '+getActiveP2Name('unoGame')+' má poslednú kartu!');
   // Check win
   if(UNO.hand1.length===0){UNO.over=true;$('unoStatus').textContent='🎉 '+getActiveP1Name('unoGame')+' vyhráva!';addWin(1,'unoGame');unoRender();return;}
   if(UNO.hand2.length===0){UNO.over=true;$('unoStatus').textContent='🎉 '+getActiveP2Name('unoGame')+' vyhráva!';addWin(2,'unoGame');unoRender();return;}
-  if(card.value==='+2'){
+  if(card.value==='+2'||card.value==='+4'){
+    const drawCount=card.value==='+4'?4:2;
     const nextP=unoNextPlayer();
     const nextHand=nextP===1?UNO.hand1:UNO.hand2;
-    for(let i=0;i<2;i++){if(UNO.deck.length===0)unoRecycleDeck();if(UNO.deck.length>0)nextHand.push(UNO.deck.shift());}
+    for(let i=0;i<drawCount;i++){if(UNO.deck.length===0)unoRecycleDeck();if(UNO.deck.length>0)nextHand.push(UNO.deck.shift());}
     playSound('hit');
-    UNO.turn=unoNextPlayer();// skip the +2 victim
+    UNO.turn=unoNextPlayer();// skip the victim
   }
   if(card.value==='reverse'){UNO.dir*=-1;playSound('flip');UNO.turn=unoNextPlayer();/* 2-player: acts as skip */}
   if(card.value==='skip'){UNO.turn=unoNextPlayer();playSound('wrong');}
@@ -16424,13 +16470,14 @@ function unoAI(){
     const specials=playable.filter(x=>typeof x.c.value!=='number');
     pick=specials.length>0?specials[0]:playable.sort((a,b)=>(typeof b.c.value==='number'?b.c.value:0)-(typeof a.c.value==='number'?a.c.value:0))[0];
   } else {
-    // Hard: prefer +2, then color with most cards, avoid wild unless needed
+    // Hard: prefer +4, then +2, then color with most cards, avoid wild unless needed
+    const plus4=playable.filter(x=>x.c.value==='+4');
     const plus2=playable.filter(x=>x.c.value==='+2');
-    if(plus2.length>0){pick=plus2[0];}
+    if(plus4.length>0){pick=plus4[0];}
+    else if(plus2.length>0){pick=plus2[0];}
     else{
       const nonWild=playable.filter(x=>x.c.color!=='wild');
       if(nonWild.length>0){
-        // Pick color we have most of
         const counts={red:0,blue:0,green:0,yellow:0};
         hand.forEach(c=>{if(counts[c.color]!==undefined)counts[c.color]++;});
         nonWild.sort((a,b)=>(counts[b.c.color]||0)-(counts[a.c.color]||0));
@@ -16463,7 +16510,8 @@ const SOL = {
   foundation:[[],[],[],[]],
   stock:[],waste:[],
   selected:null, // {source:'tab'|'waste', col, cardIdx}
-  moves:0,timer:null,time:0,over:false
+  moves:0,timer:null,time:0,over:false,started:false,
+  _undo:null // JSON snapshot for undo
 };
 
 function solIsRed(c){return c.suit==='♥'||c.suit==='♦';}
@@ -16479,7 +16527,7 @@ function resetSol(){
   const deck=solMakeDeck();
   SOL.foundation=[[],[],[],[]];
   SOL.tableau=[[],[],[],[],[],[],[]];
-  SOL.waste=[];SOL.stock=[];SOL.selected=null;SOL.moves=0;SOL.time=0;SOL.over=false;
+  SOL.waste=[];SOL.stock=[];SOL.selected=null;SOL.moves=0;SOL.time=0;SOL.over=false;SOL.started=false;SOL._undo=null;
   let idx=0;
   for(let c=0;c<7;c++){
     for(let r=0;r<=c;r++){
@@ -16491,9 +16539,7 @@ function resetSol(){
   SOL.stock=deck.slice(idx);
   $('solStatus').textContent='';
   $('solCelebration').innerHTML='';
-  SOL.timer=setInterval(()=>{
-    if(!SOL.over){SOL.time++;const m=Math.floor(SOL.time/60),s=SOL.time%60;$('solTime').textContent=m+':'+(s<10?'0':'')+s;}
-  },1000);
+  $('solTime').textContent='0:00';$('solMoves').textContent='0';
   solRender();
 }
 
@@ -16543,8 +16589,63 @@ function solRender(){
   $('solMoves').textContent=SOL.moves;
 }
 
+function solStartTimer(){
+  if(SOL.started||SOL.over) return;
+  SOL.started=true;
+  SOL.timer=setInterval(()=>{
+    if(!SOL.over){SOL.time++;const m=Math.floor(SOL.time/60),s=SOL.time%60;$('solTime').textContent=m+':'+(s<10?'0':'')+s;}
+  },1000);
+}
+function solSaveUndo(){
+  SOL._undo=JSON.stringify({
+    tableau:SOL.tableau.map(c=>c.map(card=>({...card}))),
+    foundation:SOL.foundation.map(f=>f.map(card=>({...card}))),
+    stock:SOL.stock.map(c=>({...c})),waste:SOL.waste.map(c=>({...c})),
+    moves:SOL.moves,selected:null
+  });
+  $('solUndoBtn').style.opacity='1';
+}
+function solUndo(){
+  if(!SOL._undo||SOL.over) return;
+  const s=JSON.parse(SOL._undo);
+  SOL.tableau=s.tableau;SOL.foundation=s.foundation;
+  SOL.stock=s.stock;SOL.waste=s.waste;
+  SOL.moves=s.moves;SOL.selected=null;SOL._undo=null;
+  $('solUndoBtn').style.opacity='0.5';
+  playSound('flip');solRender();
+}
+function solAutoComplete(){
+  if(SOL.over) return;
+  // Check: stock+waste empty, all tableau cards face-up
+  if(SOL.stock.length>0||SOL.waste.length>0) return;
+  if(SOL.tableau.some(col=>col.some(c=>!c.faceUp))) return;
+  // Auto-move all remaining cards to foundations
+  SOL.over=true;
+  function moveNext(){
+    for(let c=0;c<7;c++){
+      const col=SOL.tableau[c];
+      if(col.length===0) continue;
+      const card=col[col.length-1];
+      for(let f=0;f<4;f++){
+        if(solCanFoundation(card,f)){
+          col.pop();SOL.foundation[f].push(card);SOL.moves++;
+          solRender();
+          setTimeout(moveNext,60);return;
+        }
+      }
+    }
+    // Done
+    if(SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
+    $('solStatus').textContent='🎉 Vyhral si! ('+SOL.moves+' ťahov, '+$('solTime').textContent+')';
+    addWin(1,'solitaire');
+    solRender();
+  }
+  moveNext();
+}
+
 function solFlipStock(){
   if(SOL.over) return;
+  solStartTimer();solSaveUndo();
   SOL.selected=null;
   if(SOL.stock.length===0){
     if(SOL.waste.length===0) return;
@@ -16563,6 +16664,7 @@ function solFlipStock(){
 
 function solClickWaste(){
   if(SOL.over||SOL.waste.length===0) return;
+  solStartTimer();
   if(SOL.selected&&SOL.selected.source==='waste'){
     // Double-click waste: try auto-foundation
     const c=SOL.waste[SOL.waste.length-1];
@@ -16591,6 +16693,7 @@ function solClickFoundation(fi){
     card=col[col.length-1];
   }
   if(!solCanFoundation(card,fi)) return;
+  solSaveUndo();
   if(SOL.selected.source==='waste') SOL.waste.pop();
   else {SOL.tableau[SOL.selected.col].pop();solFlipTop(SOL.selected.col);}
   SOL.foundation[fi].push(card);
@@ -16600,6 +16703,7 @@ function solClickFoundation(fi){
 
 function solClickCard(col,idx){
   if(SOL.over) return;
+  solStartTimer();
   const column=SOL.tableau[col];
   // Empty column
   if(idx===-1||column.length===0){
@@ -16608,10 +16712,12 @@ function solClickCard(col,idx){
     if(SOL.selected.source==='waste'){
       const c=SOL.waste[SOL.waste.length-1];
       if(c.rank!==13) return;
+      solSaveUndo();
       cards=[SOL.waste.pop()];
     } else {
       const src=SOL.tableau[SOL.selected.col];
       if(src[SOL.selected.cardIdx].rank!==13) return;
+      solSaveUndo();
       cards=src.splice(SOL.selected.cardIdx);
       solFlipTop(SOL.selected.col);
     }
@@ -16633,6 +16739,7 @@ function solClickCard(col,idx){
       if(idx===column.length-1){
         for(let f=0;f<4;f++){
           if(solCanFoundation(card,f)){
+            solSaveUndo();
             column.pop();SOL.foundation[f].push(card);
             solFlipTop(col);SOL.moves++;SOL.selected=null;
             playSound('correct');solRender();solCheckWin();return;
@@ -16647,6 +16754,7 @@ function solClickCard(col,idx){
     else movingCard=SOL.tableau[SOL.selected.col][SOL.selected.cardIdx];
     const topCard=column[column.length-1];
     if(solCanTab(movingCard,topCard)){
+      solSaveUndo();
       let cards;
       if(SOL.selected.source==='waste') cards=[SOL.waste.pop()];
       else {cards=SOL.tableau[SOL.selected.col].splice(SOL.selected.cardIdx);solFlipTop(SOL.selected.col);}
@@ -16681,7 +16789,7 @@ function solCheckWin(){
     if(SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
     $('solStatus').textContent='🎉 Vyhral si! ('+SOL.moves+' ťahov, '+$('solTime').textContent+')';
     addWin(1,'solitaire');
-  }
+  } else solAutoComplete();
 }
 resetSol();
 
