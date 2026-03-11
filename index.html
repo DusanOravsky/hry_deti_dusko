@@ -2170,7 +2170,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 43 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 44 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -2295,6 +2295,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="game-btn" id="cardWarBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.25))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vojna</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="unoGameBtn" style="background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(46,204,113,0.3))"><span class="game-btn-icon">🎴</span><span class="game-btn-label">Uno</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="solitaireBtn" style="background:linear-gradient(135deg,rgba(26,35,126,0.3),rgba(40,53,147,0.3))"><span class="game-btn-icon">🂡</span><span class="game-btn-label">Solitaire</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="nimGameBtn" style="background:linear-gradient(135deg,rgba(139,69,19,0.3),rgba(210,180,140,0.3))"><span class="game-btn-icon">🪨</span><span class="game-btn-label">Nim</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
@@ -4181,6 +4182,31 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== NIM ===== -->
+  <div class="game-area" id="nimGame">
+    <div class="rules"><h3>🪨 Nim:</h3><ul>
+      <li>Hromádky kamienkov: 1, 3, 5, 7</li>
+      <li>Odober 1–3 kamienky z jednej hromádky</li>
+      <li>Kto vezme posledný kamienok, prehrá!</li>
+    </ul></div>
+    <div class="difficulty-selector" id="nimAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setNimDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setNimDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setNimDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info" id="nimPlayerInfo">
+      <div class="player-card player1 active-turn" id="nimP1Card"><div class="player-name-display" id="nimP1Name">Hráč 1</div><div class="player-score">🏆 <span id="nimP1Score">0</span></div></div>
+      <div class="player-card player2" id="nimP2Card"><div class="player-name-display" id="nimP2Name">Hráč 2</div><div class="player-score">🏆 <span id="nimP2Score">0</span></div></div>
+    </div>
+    <div class="status" id="nimStatus">Vyber kamienky!</div>
+    <div id="nimBoard" style="display:flex;flex-direction:column;align-items:center;gap:12px;margin:16px auto"></div>
+    <div id="nimTakeInfo" style="text-align:center;min-height:24px;font-size:0.85em;opacity:0.6"></div>
+    <div class="celebration" id="nimCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" onclick="resetNim()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -4188,7 +4214,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.2';
+const APP_VERSION = '11.3';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4204,7 +4230,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4215,7 +4241,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4514,7 +4540,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4525,7 +4551,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4643,7 +4669,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'},
   {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'},
   {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'},
-  {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'}
+  {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'},
+  {id:'nimGame', name:'Nim', icon:'🪨', mode:'both'}
 ];
 
 function showTournament() {
@@ -16793,6 +16820,162 @@ function solCheckWin(){
 }
 resetSol();
 
+// =============================================================================
+// SEKCIA 45: NIM
+// =============================================================================
+const NIM = {piles:[1,3,5,7],turn:1,over:false,selected:null,diff:'easy',s1:0,s2:0,_timer:null};
+
+function setNimDiff(d,btn){NIM.diff=d;saveDiff('nimGame',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function resetNim(){
+  if(NIM._timer){clearTimeout(NIM._timer);NIM._timer=null;}
+  NIM.piles=[1,3,5,7];NIM.turn=1;NIM.over=false;NIM.selected=null;
+  const n1=getActiveP1Name('nimGame'),n2=getActiveP2Name('nimGame');
+  $('nimP1Name').textContent=n1;$('nimP2Name').textContent=n2;
+  $('nimP1Score').textContent=NIM.s1;$('nimP2Score').textContent=NIM.s2;
+  $('nimStatus').textContent=(NIM.turn===1?n1:n2)+' je na ťahu';
+  $('nimTakeInfo').textContent='';
+  $('nimCelebration').innerHTML='';
+  activeTurn('nimP1Card','nimP2Card',NIM.turn);
+  nimRender();
+}
+
+function nimRender(){
+  const board=$('nimBoard');
+  let html='';
+  NIM.piles.forEach((count,pi)=>{
+    html+='<div style="display:flex;gap:6px;align-items:center">';
+    html+='<span style="font-size:0.75em;opacity:0.5;width:20px;text-align:right">'+count+'</span>';
+    for(let si=0;si<count;si++){
+      const takeCount=count-si; // clicking this stone = take from here to end
+      const isSel=NIM.selected&&NIM.selected.pile===pi&&si>=count-NIM.selected.count;
+      const canTake=takeCount>=1&&takeCount<=3;
+      html+='<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;cursor:'+(canTake?'pointer':'default')+';background:'+(isSel?'rgba(241,196,15,0.5)':'rgba(139,69,19,0.35)')+';border:2px solid '+(isSel?'#f1c40f':'rgba(210,180,140,0.4)')+';transition:all 0.15s'+(canTake?'':';opacity:0.7')+'" onclick="nimSelect('+pi+','+takeCount+')">🪨</div>';
+    }
+    if(count===0) html+='<span style="opacity:0.3;font-size:0.8em">prázdna</span>';
+    html+='</div>';
+  });
+  board.innerHTML=html;
+  $('nimTakeInfo').textContent=NIM.selected?'Odobrať '+NIM.selected.count+' z hromádky '+(NIM.selected.pile+1)+' — klikni znova pre potvrdenie':'';
+}
+
+function nimSelect(pile,count){
+  if(NIM.over) return;
+  if(welcomeGameMode==='ai'&&NIM.turn===2) return;
+  if(count>NIM.piles[pile]||count<1||count>3) return;
+  // If same pile+count clicked again = confirm
+  if(NIM.selected&&NIM.selected.pile===pile&&NIM.selected.count===count){
+    nimTake(pile,count);return;
+  }
+  NIM.selected={pile,count};
+  nimRender();
+}
+
+function nimTake(pile,count){
+  NIM.piles[pile]-=count;
+  NIM.selected=null;
+  playSound('click');
+  // Check if last stone taken
+  if(NIM.piles.every(p=>p===0)){
+    NIM.over=true;
+    // Player who took last loses
+    const loser=NIM.turn;
+    const winner=loser===1?2:1;
+    if(winner===1) NIM.s1++; else NIM.s2++;
+    $('nimP1Score').textContent=NIM.s1;$('nimP2Score').textContent=NIM.s2;
+    const wName=winner===1?getActiveP1Name('nimGame'):getActiveP2Name('nimGame');
+    $('nimStatus').textContent='🎉 '+wName+' vyhráva!';
+    $('nimCelebration').textContent='🎉🪨🎉';
+    celebrate('nimCelebration');
+    addWin(winner,'nimGame');
+    playSound('win');
+    nimRender();return;
+  }
+  // Switch turn
+  NIM.turn=NIM.turn===1?2:1;
+  const tName=NIM.turn===1?getActiveP1Name('nimGame'):getActiveP2Name('nimGame');
+  $('nimStatus').textContent=tName+' je na ťahu';
+  activeTurn('nimP1Card','nimP2Card',NIM.turn);
+  nimRender();
+  // AI move
+  if(welcomeGameMode==='ai'&&NIM.turn===2&&!NIM.over){
+    NIM._timer=setTimeout(nimAI,600);
+  }
+}
+
+function nimAI(){
+  if(NIM.over||NIM.turn!==2) return;
+  let pile,count;
+  if(NIM.diff==='hard'){
+    // Nim-sum (XOR) strategy for misère
+    const total=NIM.piles.reduce((a,b)=>a+b,0);
+    const nimSum=NIM.piles.reduce((a,b)=>a^b,0);
+    if(total===1){
+      // Only 1 stone left total — must take it (lose)
+      pile=NIM.piles.findIndex(p=>p>0);count=1;
+    } else if(nimSum===0){
+      // Losing position — take 1 from largest pile
+      pile=NIM.piles.indexOf(Math.max(...NIM.piles));
+      count=1;
+    } else {
+      // Find move that leaves nim-sum 0
+      // In misère: if all piles <=1, leave odd number of piles
+      const bigPiles=NIM.piles.filter(p=>p>1).length;
+      if(bigPiles<=1){
+        // End game: leave odd number of size-1 piles
+        const onesCount=NIM.piles.filter(p=>p===1).length;
+        const bigIdx=NIM.piles.findIndex(p=>p>1);
+        if(bigIdx>=0){
+          // Take from big pile to leave odd total piles with 1
+          const want=onesCount%2===0?1:0;
+          pile=bigIdx;count=NIM.piles[bigIdx]-want;
+          if(count<1) count=1;if(count>3) count=3;
+        } else {
+          pile=NIM.piles.findIndex(p=>p>0);count=1;
+        }
+      } else {
+        // Normal: make nim-sum = 0
+        let found=false;
+        for(let p=0;p<NIM.piles.length;p++){
+          const target=NIM.piles[p]^nimSum;
+          if(target<NIM.piles[p]){
+            const take=NIM.piles[p]-target;
+            if(take>=1&&take<=3){pile=p;count=take;found=true;break;}
+          }
+        }
+        if(!found){pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;}
+      }
+    }
+  } else if(NIM.diff==='medium'){
+    // 50% optimal, 50% random
+    if(Math.random()<0.5){
+      const ns=NIM.piles.reduce((a,b)=>a^b,0);
+      const tot=NIM.piles.reduce((a,b)=>a+b,0);
+      if(tot===1){pile=NIM.piles.findIndex(p=>p>0);count=1;}
+      else if(ns!==0){
+        let found=false;
+        for(let p=0;p<NIM.piles.length;p++){const t=NIM.piles[p]^ns;if(t<NIM.piles[p]){const tk=NIM.piles[p]-t;if(tk>=1&&tk<=3){pile=p;count=tk;found=true;break;}}}
+        if(!found){pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;}
+      } else {pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;}
+    } else {
+      const nonEmpty=NIM.piles.map((p,i)=>({p,i})).filter(x=>x.p>0);
+      const pick=nonEmpty[Math.floor(Math.random()*nonEmpty.length)];
+      pile=pick.i;count=Math.min(Math.floor(Math.random()*3)+1,NIM.piles[pile]);
+    }
+  } else {
+    // Easy: random
+    const nonEmpty=NIM.piles.map((p,i)=>({p,i})).filter(x=>x.p>0);
+    const pick=nonEmpty[Math.floor(Math.random()*nonEmpty.length)];
+    pile=pick.i;count=Math.min(Math.floor(Math.random()*3)+1,NIM.piles[pile]);
+  }
+  if(count>3) count=3;
+  if(count<1) count=1;
+  NIM.selected={pile,count};
+  nimRender();
+  NIM._timer=setTimeout(()=>{nimTake(pile,count);},400);
+}
+resetNim();
+
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
   const banner = $('offlineBanner');
@@ -16868,6 +17051,7 @@ const MOBILE_GAMES = [
   { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
+  { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -16937,6 +17121,7 @@ function stopAllGames(){
   if(typeof WAR!=='undefined'){if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}WAR.over=true;WAR.animating=false;}
   // Uno AI
   if(typeof UNO!=='undefined'){if(UNO._timer){clearTimeout(UNO._timer);UNO._timer=null;}UNO.over=true;}
+  if(typeof NIM!=='undefined'){if(NIM._timer){clearTimeout(NIM._timer);NIM._timer=null;}NIM.over=true;}
   // Solitaire timer
   if(typeof SOL!=='undefined'&&SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
   // Tournament timeout
@@ -17253,14 +17438,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
