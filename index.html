@@ -691,6 +691,16 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
   box-shadow:0 5px 15px rgba(102,126,234,0.4);
 }
 
+/* WAR + UNO CARDS */
+.war-card{width:80px;height:110px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2.5em;border:3px solid rgba(255,255,255,0.2);transition:all 0.3s;cursor:pointer;user-select:none}
+.war-card-back{background:linear-gradient(135deg,#1a237e,#283593);color:#5c6bc0}
+.war-card-face{background:white;color:#222;box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.war-card-red{color:#e74c3c}
+.uno-hand-card{width:48px;height:68px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:1.1em;font-weight:900;border:2px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;user-select:none;flex-shrink:0}
+.uno-hand-card:hover{transform:translateY(-6px);box-shadow:0 6px 16px rgba(0,0,0,0.3)}
+.uno-hand-card.disabled{opacity:0.4;cursor:not-allowed;transform:none !important}
+.uno-opp-card{width:36px;height:52px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:1.2em;background:linear-gradient(135deg,#1a237e,#283593);color:#5c6bc0;border:2px solid rgba(255,255,255,0.15)}
+
 /* GAME AREA */
 .game-area { display:none; }
 .game-area.active { display:block; animation:fadeIn 0.35s ease-out; }
@@ -2151,7 +2161,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 40 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 42 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -2273,6 +2283,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="game-btn" id="racingBtn" style="background:linear-gradient(135deg,rgba(255,69,0,0.3),rgba(255,165,0,0.25))"><span class="game-btn-icon">🏎️</span><span class="game-btn-label">Preteky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="game2048Btn" style="background:linear-gradient(135deg,rgba(237,194,46,0.3),rgba(237,130,14,0.3))"><span class="game-btn-icon">🔢</span><span class="game-btn-label">2048</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="flappyBtn" style="background:linear-gradient(135deg,rgba(76,217,100,0.3),rgba(255,204,0,0.3))"><span class="game-btn-icon">🐤</span><span class="game-btn-label">Flappy Bird</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="cardWarBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.25))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vojna</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="unoGameBtn" style="background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(46,204,113,0.3))"><span class="game-btn-icon">🎴</span><span class="game-btn-label">Uno</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
@@ -4056,6 +4068,81 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== WAR (VOJNA) ===== -->
+  <div class="game-area" id="cardWar">
+    <div class="rules"><h3>🃏 Vojna:</h3><ul>
+      <li>Každý hráč otočí vrchnú kartu</li>
+      <li>Vyššia karta berie obe</li>
+      <li>Rovnaké = vojna! 3 skryté + 1 otvorená</li>
+      <li>Kto má na konci viac kariet, vyhráva</li>
+    </ul></div>
+    <div class="difficulty-selector" id="warAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setWarDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setWarDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setWarDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info" id="warPlayerInfo">
+      <div class="player-card player1 active-turn" id="warP1Card"><div class="player-name-display" id="warP1Name">Hráč 1</div><div class="player-score" id="warP1Count">26</div></div>
+      <div class="player-card player2" id="warP2Card"><div class="player-name-display" id="warP2Name">Hráč 2</div><div class="player-score" id="warP2Count">26</div></div>
+    </div>
+    <div class="status" id="warStatus">Klikni na balíček!</div>
+    <div id="warTable" style="display:flex;justify-content:center;gap:30px;margin:16px auto;align-items:center">
+      <div id="warCard1" class="war-card war-card-back" onclick="warFlip()">🂠</div>
+      <div style="font-size:1.5em;font-weight:bold;opacity:0.4">VS</div>
+      <div id="warCard2" class="war-card war-card-back">🂠</div>
+    </div>
+    <div id="warWarPile" style="text-align:center;min-height:24px;font-size:0.85em;opacity:0.6"></div>
+    <div class="celebration" id="warCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" onclick="resetWar()">🔄 Nová hra</button>
+    </div>
+  </div>
+
+  <!-- ===== UNO LIGHT ===== -->
+  <div class="game-area" id="unoGame">
+    <div class="rules"><h3>🎴 Uno:</h3><ul>
+      <li>Zahraj kartu s rovnakou farbou alebo číslom</li>
+      <li>+2 = súper ťahá 2 karty</li>
+      <li>🔄 = zmena smeru, ⛔ = preskočenie</li>
+      <li>🌈 Wild = zmeň farbu</li>
+      <li>Nemôžeš hrať? Potiahni kartu!</li>
+      <li>Kto sa prvý zbaví kariet, vyhráva</li>
+    </ul></div>
+    <div class="difficulty-selector" id="unoAISel" style="display:none">
+      <button class="difficulty-btn active" onclick="setUnoDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setUnoDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setUnoDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info" id="unoPlayerInfo">
+      <div class="player-card player1 active-turn" id="unoP1Card"><div class="player-name-display" id="unoP1Name">Hráč 1</div><div class="player-score" id="unoP1Count">7</div></div>
+      <div class="player-card player2" id="unoP2Card"><div class="player-name-display" id="unoP2Name">Hráč 2</div><div class="player-score" id="unoP2Count">7</div></div>
+    </div>
+    <div class="status" id="unoStatus">Tvoj ťah!</div>
+    <div id="unoDiscard" style="text-align:center;margin:10px 0">
+      <div id="unoTopCard" class="uno-card" style="display:inline-block;font-size:2em;width:70px;height:100px;line-height:100px;border-radius:12px;border:3px solid rgba(255,255,255,0.3)"></div>
+      <div id="unoDirection" style="font-size:0.85em;opacity:0.5;margin-top:4px">Smer: →</div>
+    </div>
+    <div id="unoColorPicker" style="display:none;text-align:center;margin:8px 0">
+      <span style="font-size:0.9em;font-weight:bold">Vyber farbu:</span>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:6px">
+        <button onclick="unoPickColor('red')" style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);background:#e74c3c;cursor:pointer;font-size:1.2em">🔴</button>
+        <button onclick="unoPickColor('blue')" style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);background:#3498db;cursor:pointer;font-size:1.2em">🔵</button>
+        <button onclick="unoPickColor('green')" style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);background:#2ecc71;cursor:pointer;font-size:1.2em">🟢</button>
+        <button onclick="unoPickColor('yellow')" style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);background:#f1c40f;cursor:pointer;font-size:1.2em">🟡</button>
+      </div>
+    </div>
+    <div id="unoOppHand" style="display:flex;justify-content:center;gap:4px;margin:8px 14px;flex-wrap:wrap;min-height:50px"></div>
+    <div style="text-align:center;opacity:0.5;font-size:0.8em;margin:2px 0" id="unoOppLabel">Súper</div>
+    <div id="unoDeck" style="text-align:center;margin:6px 0">
+      <button onclick="unoDraw()" class="action-btn" style="padding:10px 24px;font-size:1.1em;border-radius:12px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2)">🂠 Potiahni kartu</button>
+    </div>
+    <div id="unoMyHand" style="display:flex;justify-content:center;gap:4px;margin:8px 14px;flex-wrap:wrap;min-height:70px"></div>
+    <div class="celebration" id="unoCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" onclick="resetUno()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -4063,7 +4150,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '9.1';
+const APP_VERSION = '10.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4079,7 +4166,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4090,7 +4177,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4389,7 +4476,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4400,7 +4487,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4517,7 +4604,9 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'dotsBoxes', name:'Bodky a Krabičky', icon:'📦', mode:'pvp'},
   {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'},
   {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'},
-  {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'}
+  {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'},
+  {id:'cardWar', name:'Vojna', icon:'🃏', mode:'both'},
+  {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'}
 ];
 
 function showTournament() {
@@ -4847,6 +4936,8 @@ function restoreAllDiffs(){
     ['snake','snakeDiffSel',setSnakeDiff],
     ['mathDuel','mdDiffSel',setMDDiff],
     ['hangman','hmDiffSel',setHMDiff],
+    ['cardWar','warAISel',setWarDiff],
+    ['unoGame','unoAISel',setUnoDiff],
   ];
   map.forEach(([gId,selId,setFn])=>{
     const d=loadDiff(gId); if(!d) return;
@@ -15953,6 +16044,362 @@ function msRenderGrid(){
 }
 resetMinesweeper();
 
+// =============================================================================
+// SEKCIA 42: WAR (VOJNA) — kartová hra
+// =============================================================================
+const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,diff:'easy'};
+const WAR_SUITS = ['♠','♥','♦','♣'];
+const WAR_RANKS = [2,3,4,5,6,7,8,9,10,11,12,13,14];
+const WAR_RANK_DISPLAY = {2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10',11:'J',12:'Q',13:'K',14:'A'};
+
+function warMakeDeck(){
+  const d=[];
+  WAR_SUITS.forEach(s=>WAR_RANKS.forEach(r=>d.push({suit:s,rank:r})));
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+function warCardHTML(c){
+  if(!c) return '🂠';
+  const red = c.suit==='♥'||c.suit==='♦';
+  return `<span class="${red?'war-card-red':''}">${WAR_RANK_DISPLAY[c.rank]}${c.suit}</span>`;
+}
+function setWarDiff(d,btn){WAR.diff=d;saveDiff('cardWar',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function resetWar(){
+  const deck=warMakeDeck();
+  WAR.deck1=deck.slice(0,26);WAR.deck2=deck.slice(26);
+  WAR.card1=null;WAR.card2=null;WAR.pile=[];WAR.over=false;WAR.animating=false;
+  $('warCard1').className='war-card war-card-back';$('warCard1').innerHTML='🂠';
+  $('warCard2').className='war-card war-card-back';$('warCard2').innerHTML='🂠';
+  $('warP1Count').textContent=WAR.deck1.length;
+  $('warP2Count').textContent=WAR.deck2.length;
+  $('warStatus').textContent='Klikni na balíček!';
+  $('warWarPile').textContent='';
+  $('warCelebration').innerHTML='';
+  const n1=getActiveP1Name('cardWar'),n2=getActiveP2Name('cardWar');
+  $('warP1Name').textContent=n1;$('warP2Name').textContent=n2;
+  activeTurn('warP1Card','warP2Card',1);
+}
+
+function warFlip(){
+  if(WAR.over||WAR.animating) return;
+  if(welcomeGameMode==='ai'&&WAR.animating) return;
+  if(WAR.deck1.length===0||WAR.deck2.length===0){warEnd();return;}
+  WAR.animating=true;
+  const c1=WAR.deck1.shift();
+  const c2=WAR.deck2.shift();
+  WAR.card1=c1;WAR.card2=c2;
+  // Show cards
+  $('warCard1').className='war-card war-card-face';$('warCard1').innerHTML=warCardHTML(c1);
+  $('warCard2').className='war-card war-card-face';$('warCard2').innerHTML=warCardHTML(c2);
+  playSound('flip');
+  setTimeout(()=>{
+    if(c1.rank>c2.rank){
+      WAR.deck1.push(c1,c2,...WAR.pile);WAR.pile=[];
+      $('warStatus').textContent=getActiveP1Name('cardWar')+' berie!';
+      playSound('correct');
+    } else if(c2.rank>c1.rank){
+      WAR.deck2.push(c1,c2,...WAR.pile);WAR.pile=[];
+      $('warStatus').textContent=getActiveP2Name('cardWar')+' berie!';
+      playSound('correct');
+    } else {
+      // WAR!
+      WAR.pile.push(c1,c2);
+      $('warStatus').textContent='⚔️ VOJNA!';
+      playSound('hit');
+      warDoWar();
+      return;
+    }
+    $('warP1Count').textContent=WAR.deck1.length;
+    $('warP2Count').textContent=WAR.deck2.length;
+    $('warWarPile').textContent='';
+    WAR.animating=false;
+    if(WAR.deck1.length===0||WAR.deck2.length===0) warEnd();
+    else if(welcomeGameMode==='ai') setTimeout(()=>warFlip(),800);
+  },600);
+}
+
+function warDoWar(){
+  // Each player puts 3 face-down + 1 face-up
+  const faceDown=Math.min(3,WAR.deck1.length-1,WAR.deck2.length-1);
+  if(faceDown<0||WAR.deck1.length===0||WAR.deck2.length===0){
+    // Not enough cards for war — whoever has more in pile wins
+    warEnd();WAR.animating=false;return;
+  }
+  for(let i=0;i<faceDown;i++){
+    WAR.pile.push(WAR.deck1.shift(),WAR.deck2.shift());
+  }
+  $('warWarPile').textContent='Na stole: '+WAR.pile.length+' kariet';
+  $('warP1Count').textContent=WAR.deck1.length;
+  $('warP2Count').textContent=WAR.deck2.length;
+  if(WAR.deck1.length===0||WAR.deck2.length===0){warEnd();WAR.animating=false;return;}
+  // Flip one more
+  setTimeout(()=>{
+    const w1=WAR.deck1.shift(),w2=WAR.deck2.shift();
+    WAR.card1=w1;WAR.card2=w2;
+    $('warCard1').innerHTML=warCardHTML(w1);$('warCard2').innerHTML=warCardHTML(w2);
+    playSound('flip');
+    setTimeout(()=>{
+      if(w1.rank>w2.rank){
+        WAR.deck1.push(w1,w2,...WAR.pile);WAR.pile=[];
+        $('warStatus').textContent=getActiveP1Name('cardWar')+' vyhrala vojnu!';
+        playSound('correct');
+      } else if(w2.rank>w1.rank){
+        WAR.deck2.push(w1,w2,...WAR.pile);WAR.pile=[];
+        $('warStatus').textContent=getActiveP2Name('cardWar')+' vyhrala vojnu!';
+        playSound('correct');
+      } else {
+        // Double war!
+        WAR.pile.push(w1,w2);
+        $('warStatus').textContent='⚔️⚔️ DVOJITÁ VOJNA!';
+        playSound('hit');
+        warDoWar();
+        return;
+      }
+      $('warP1Count').textContent=WAR.deck1.length;
+      $('warP2Count').textContent=WAR.deck2.length;
+      $('warWarPile').textContent='';
+      WAR.animating=false;
+      if(WAR.deck1.length===0||WAR.deck2.length===0) warEnd();
+      else if(welcomeGameMode==='ai') setTimeout(()=>warFlip(),800);
+    },600);
+  },500);
+}
+
+function warEnd(){
+  WAR.over=true;WAR.animating=false;
+  if(WAR.deck1.length>WAR.deck2.length){
+    $('warStatus').textContent='🎉 '+getActiveP1Name('cardWar')+' vyhráva!';
+    addWin(1,'cardWar');
+  } else if(WAR.deck2.length>WAR.deck1.length){
+    $('warStatus').textContent='🎉 '+getActiveP2Name('cardWar')+' vyhráva!';
+    addWin(2,'cardWar');
+  } else {
+    $('warStatus').textContent='🤝 Remíza!';
+    addWin(0,'cardWar');
+  }
+}
+resetWar();
+
+// =============================================================================
+// SEKCIA 43: UNO LIGHT
+// =============================================================================
+const UNO_COLORS = ['red','blue','green','yellow'];
+const UNO_COLOR_CSS = {red:'#e74c3c',blue:'#3498db',green:'#2ecc71',yellow:'#f1c40f',wild:'#8e44ad'};
+const UNO_COLOR_EMOJI = {red:'🔴',blue:'🔵',green:'🟢',yellow:'🟡'};
+const UNO = {hand1:[],hand2:[],deck:[],discard:[],turn:1,dir:1,over:false,topColor:'red',diff:'easy',pendingWild:false};
+
+function unoMakeDeck(){
+  const d=[];
+  UNO_COLORS.forEach(c=>{
+    d.push({color:c,value:0});
+    for(let v=1;v<=9;v++){d.push({color:c,value:v});d.push({color:c,value:v});}
+    for(let i=0;i<2;i++){d.push({color:c,value:'+2'});d.push({color:c,value:'skip'});d.push({color:c,value:'reverse'});}
+  });
+  for(let i=0;i<4;i++) d.push({color:'wild',value:'wild'});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+function unoCardLabel(c){
+  if(c.value==='wild') return '🌈';
+  if(c.value==='+2') return '+2';
+  if(c.value==='skip') return '⛔';
+  if(c.value==='reverse') return '🔄';
+  return c.value;
+}
+function unoCardBg(c){return UNO_COLOR_CSS[c.color]||UNO_COLOR_CSS.wild;}
+function setUnoDiff(d,btn){UNO.diff=d;saveDiff('unoGame',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function resetUno(){
+  UNO.deck=unoMakeDeck();
+  UNO.hand1=UNO.deck.splice(0,7);UNO.hand2=UNO.deck.splice(0,7);
+  // Find a number card to start
+  let startIdx=UNO.deck.findIndex(c=>typeof c.value==='number');
+  if(startIdx<0) startIdx=0;
+  const startCard=UNO.deck.splice(startIdx,1)[0];
+  UNO.discard=[startCard];UNO.topColor=startCard.color==='wild'?'red':startCard.color;
+  UNO.turn=1;UNO.dir=1;UNO.over=false;UNO.pendingWild=false;
+  $('unoColorPicker').style.display='none';
+  const n1=getActiveP1Name('unoGame'),n2=getActiveP2Name('unoGame');
+  $('unoP1Name').textContent=n1;$('unoP2Name').textContent=n2;
+  $('unoCelebration').innerHTML='';
+  unoRender();
+}
+
+function unoRender(){
+  const top=UNO.discard[UNO.discard.length-1];
+  $('unoTopCard').style.background=UNO_COLOR_CSS[UNO.topColor]||UNO_COLOR_CSS.wild;
+  $('unoTopCard').style.color='white';
+  $('unoTopCard').textContent=unoCardLabel(top);
+  $('unoDirection').textContent='Smer: '+(UNO.dir===1?'→':'←');
+  $('unoP1Count').textContent=UNO.hand1.length;
+  $('unoP2Count').textContent=UNO.hand2.length;
+  activeTurn('unoP1Card','unoP2Card',UNO.turn);
+  // My hand (P1 or current turn in PvP)
+  const myHand = UNO.turn===1 ? UNO.hand1 : UNO.hand2;
+  const isMyTurn = welcomeGameMode==='ai' ? UNO.turn===1 : true;
+  let handHTML='';
+  myHand.forEach((c,i)=>{
+    const canPlay=unoCanPlay(c)&&isMyTurn&&!UNO.over&&!UNO.pendingWild;
+    handHTML+=`<div class="uno-hand-card${canPlay?'':' disabled'}" style="background:${unoCardBg(c)};color:white" onclick="${canPlay?`unoPlay(${i})`:''}">
+      ${unoCardLabel(c)}</div>`;
+  });
+  $('unoMyHand').innerHTML=handHTML;
+  // Opponent hand (face down)
+  const oppHand = UNO.turn===1 ? UNO.hand2 : UNO.hand1;
+  $('unoOppHand').innerHTML=oppHand.map(()=>'<div class="uno-opp-card">🂠</div>').join('');
+  $('unoOppLabel').textContent=(UNO.turn===1?getActiveP2Name('unoGame'):getActiveP1Name('unoGame'));
+  if(!UNO.over){
+    $('unoStatus').textContent=(UNO.turn===1?getActiveP1Name('unoGame'):getActiveP2Name('unoGame'))+' je na ťahu';
+  }
+}
+
+function unoCanPlay(c){
+  if(c.color==='wild') return true;
+  const top=UNO.discard[UNO.discard.length-1];
+  if(c.color===UNO.topColor) return true;
+  if(c.value===top.value) return true;
+  return false;
+}
+
+function unoPlay(idx){
+  if(UNO.over||UNO.pendingWild) return;
+  const hand=UNO.turn===1?UNO.hand1:UNO.hand2;
+  const card=hand[idx];
+  if(!unoCanPlay(card)) return;
+  hand.splice(idx,1);
+  UNO.discard.push(card);
+  playSound('click');
+  if(card.color==='wild'){
+    UNO.pendingWild=true;
+    if(welcomeGameMode==='ai'&&UNO.turn===2){
+      // AI picks color
+      unoAIPickColor();
+    } else {
+      $('unoColorPicker').style.display='block';
+      unoRender();
+    }
+    return;
+  }
+  UNO.topColor=card.color;
+  unoApplyEffect(card);
+}
+
+function unoPickColor(color){
+  UNO.topColor=color;UNO.pendingWild=false;
+  $('unoColorPicker').style.display='none';
+  const top=UNO.discard[UNO.discard.length-1];
+  unoApplyEffect(top);
+}
+
+function unoAIPickColor(){
+  // Pick most common color in AI hand
+  const hand=UNO.turn===1?UNO.hand1:UNO.hand2;
+  const counts={red:0,blue:0,green:0,yellow:0};
+  hand.forEach(c=>{if(counts[c.color]!==undefined)counts[c.color]++;});
+  let best='red',max=0;
+  Object.keys(counts).forEach(k=>{if(counts[k]>max){max=counts[k];best=k;}});
+  UNO.topColor=best;UNO.pendingWild=false;
+  $('unoColorPicker').style.display='none';
+  unoApplyEffect(UNO.discard[UNO.discard.length-1]);
+}
+
+function unoApplyEffect(card){
+  // Check win
+  if(UNO.hand1.length===0){UNO.over=true;$('unoStatus').textContent='🎉 '+getActiveP1Name('unoGame')+' vyhráva!';addWin(1,'unoGame');unoRender();return;}
+  if(UNO.hand2.length===0){UNO.over=true;$('unoStatus').textContent='🎉 '+getActiveP2Name('unoGame')+' vyhráva!';addWin(2,'unoGame');unoRender();return;}
+  if(card.value==='+2'){
+    const nextP=unoNextPlayer();
+    const nextHand=nextP===1?UNO.hand1:UNO.hand2;
+    for(let i=0;i<2;i++){if(UNO.deck.length===0)unoRecycleDeck();if(UNO.deck.length>0)nextHand.push(UNO.deck.shift());}
+    playSound('hit');
+    UNO.turn=unoNextPlayer();// skip the +2 victim
+  }
+  if(card.value==='reverse'){UNO.dir*=-1;playSound('flip');}
+  if(card.value==='skip'){UNO.turn=unoNextPlayer();playSound('wrong');}
+  UNO.turn=unoNextPlayer();
+  unoRender();
+  // AI turn
+  if(welcomeGameMode==='ai'&&UNO.turn===2&&!UNO.over){
+    setTimeout(unoAI,700);
+  }
+}
+
+function unoNextPlayer(){
+  if(UNO.dir===1) return UNO.turn===1?2:1;
+  return UNO.turn===1?2:1; // 2 players so direction doesn't matter much
+}
+
+function unoDraw(){
+  if(UNO.over||UNO.pendingWild) return;
+  if(welcomeGameMode==='ai'&&UNO.turn===2) return;
+  if(UNO.deck.length===0) unoRecycleDeck();
+  if(UNO.deck.length===0){$('unoStatus').textContent='Balíček je prázdny!';return;}
+  const hand=UNO.turn===1?UNO.hand1:UNO.hand2;
+  hand.push(UNO.deck.shift());
+  playSound('click');
+  UNO.turn=unoNextPlayer();
+  unoRender();
+  if(welcomeGameMode==='ai'&&UNO.turn===2&&!UNO.over) setTimeout(unoAI,700);
+}
+
+function unoRecycleDeck(){
+  if(UNO.discard.length<=1) return;
+  const top=UNO.discard.pop();
+  UNO.deck=UNO.discard;
+  UNO.discard=[top];
+  for(let i=UNO.deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[UNO.deck[i],UNO.deck[j]]=[UNO.deck[j],UNO.deck[i]];}
+}
+
+function unoAI(){
+  if(UNO.over||UNO.turn!==2) return;
+  const hand=UNO.hand2;
+  let playable=hand.map((c,i)=>({c,i})).filter(x=>unoCanPlay(x.c));
+  if(playable.length===0){
+    // Draw
+    if(UNO.deck.length===0) unoRecycleDeck();
+    if(UNO.deck.length>0) hand.push(UNO.deck.shift());
+    playSound('click');
+    UNO.turn=1;unoRender();return;
+  }
+  // AI strategy
+  let pick;
+  if(UNO.diff==='easy'){
+    pick=playable[Math.floor(Math.random()*playable.length)];
+  } else if(UNO.diff==='medium'){
+    // Prefer special cards, then highest number
+    const specials=playable.filter(x=>typeof x.c.value!=='number');
+    pick=specials.length>0?specials[0]:playable.sort((a,b)=>(typeof b.c.value==='number'?b.c.value:0)-(typeof a.c.value==='number'?a.c.value:0))[0];
+  } else {
+    // Hard: prefer +2, then color with most cards, avoid wild unless needed
+    const plus2=playable.filter(x=>x.c.value==='+2');
+    if(plus2.length>0){pick=plus2[0];}
+    else{
+      const nonWild=playable.filter(x=>x.c.color!=='wild');
+      if(nonWild.length>0){
+        // Pick color we have most of
+        const counts={red:0,blue:0,green:0,yellow:0};
+        hand.forEach(c=>{if(counts[c.color]!==undefined)counts[c.color]++;});
+        nonWild.sort((a,b)=>(counts[b.c.color]||0)-(counts[a.c.color]||0));
+        pick=nonWild[0];
+      } else {
+        pick=playable[0]; // wild
+      }
+    }
+  }
+  hand.splice(pick.i,1);
+  UNO.discard.push(pick.c);
+  playSound('click');
+  if(pick.c.color==='wild'){
+    UNO.pendingWild=true;
+    unoAIPickColor();
+    return;
+  }
+  UNO.topColor=pick.c.color;
+  unoApplyEffect(pick.c);
+}
+resetUno();
+
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
   const banner = $('offlineBanner');
@@ -16025,6 +16472,8 @@ const MOBILE_GAMES = [
   { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo', cat:'arcade' },
   { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo', cat:'logic' },
   { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
+  { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'both', cat:'board' },
+  { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -16404,14 +16853,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','warAISel','unoAISel'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
