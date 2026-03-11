@@ -16215,6 +16215,7 @@ function unoCardBg(c){return UNO_COLOR_CSS[c.color]||UNO_COLOR_CSS.wild;}
 function setUnoDiff(d,btn){UNO.diff=d;saveDiff('unoGame',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
 function resetUno(){
+  if(UNO._timer){clearTimeout(UNO._timer);UNO._timer=null;}
   UNO.deck=unoMakeDeck();
   UNO.hand1=UNO.deck.splice(0,7);UNO.hand2=UNO.deck.splice(0,7);
   // Find a number card to start
