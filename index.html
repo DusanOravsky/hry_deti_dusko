@@ -1969,7 +1969,7 @@ body.light .welcome-box {
   box-shadow:0 30px 80px rgba(0,0,0,0.15);
 }
 @keyframes wFadeIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
-.welcome-emoji { font-size:3.5em; margin-bottom:12px; animation:welcomeBounce 1.5s ease-in-out infinite; }
+.welcome-emoji { font-size:3.5em; margin-bottom:12px; animation:welcomeBounce 1.5s ease-in-out infinite; transition:opacity 0.2s, transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes welcomeBounce { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-12px) rotate(-5deg)} 50%{transform:translateY(0) rotate(0)} 75%{transform:translateY(-8px) rotate(5deg)} }
 .welcome-title {
   font-size:1.8em; font-weight:900; line-height:1.2; margin-bottom:4px;
@@ -2028,19 +2028,30 @@ body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
 .avatar-pick { cursor:pointer; font-size:1.3em; transition:transform 0.2s; display:inline-block; }
 .avatar-pick:hover { transform:scale(1.2); }
 .welcome-start-btn {
-  width:100%; padding:14px; border:none; border-radius:16px; cursor:pointer;
-  font-size:1.1em; font-weight:800; color:white;
+  width:100%; padding:16px; border:none; border-radius:16px; cursor:pointer;
+  font-size:1.15em; font-weight:800; color:white;
   background:linear-gradient(135deg,#667eea,#764ba2,#e96cff);
   background-size:200% 200%;
-  animation:gradientShift 3s ease infinite;
+  animation:gradientShift 3s ease infinite, startPulse 2s ease-in-out infinite;
   box-shadow:0 8px 28px rgba(102,126,234,0.5);
   transition:all 0.25s;
-  margin-bottom:12px;
+  margin-bottom:8px;
   box-sizing:border-box;
+  position:relative;
 }
 @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-.welcome-start-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(102,126,234,0.55); }
+@keyframes startPulse { 0%,100%{box-shadow:0 8px 28px rgba(102,126,234,0.5)} 50%{box-shadow:0 8px 36px rgba(102,126,234,0.7),0 0 60px rgba(118,75,162,0.3)} }
+.welcome-start-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(102,126,234,0.55); animation:gradientShift 3s ease infinite; }
 .welcome-start-btn:active { transform:scale(0.98); }
+.welcome-continue-btn {
+  width:100%; padding:12px; border:2px solid rgba(255,255,255,0.2); border-radius:14px; cursor:pointer;
+  font-size:0.95em; font-weight:700; color:rgba(255,255,255,0.8);
+  background:rgba(255,255,255,0.08); transition:all 0.25s;
+  margin-bottom:12px; box-sizing:border-box;
+}
+.welcome-continue-btn:hover { background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.3); }
+body.light .welcome-continue-btn { background:rgba(0,0,0,0.04); border-color:rgba(0,0,0,0.12); color:rgba(0,0,0,0.6); }
+body.light .welcome-continue-btn:hover { background:rgba(0,0,0,0.08); }
 .welcome-install-btn {
   width:100%; padding:10px; border:none; border-radius:12px; cursor:pointer;
   font-size:0.9em; font-weight:700; color:white;
@@ -2105,9 +2116,9 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 <!-- ===== WELCOME SCREEN ===== -->
 <div id="welcomeScreen">
   <div class="welcome-box">
-    <div class="welcome-emoji">🎮</div>
+    <div class="welcome-emoji" id="welcomeEmoji">🎮</div>
     <div class="welcome-title">Hrajme si!</div>
-    <div class="welcome-sub" id="welcomeSub">Premium Vydanie</div>
+    <div class="welcome-sub" id="welcomeSub"></div>
     <div class="welcome-mode-pick">
       <button class="welcome-mode-btn active" id="wMode2p" onclick="setWelcomeMode('pvp')">👥 2 Hráči</button>
       <button class="welcome-mode-btn" id="wMode1p" onclick="setWelcomeMode('ai')">👤 vs Počítač</button>
@@ -2128,7 +2139,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
         <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
       </div>
     </div>
-    <button class="welcome-start-btn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
+    <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
+    <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
     <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 40 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
@@ -14957,6 +14969,7 @@ resetSnakeDuel();
 resetBee();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
+_startEmojiRotation();
 loadTheme();
 $('appVersion').textContent='v'+APP_VERSION;
 const svEl=$('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
@@ -15970,6 +15983,7 @@ const MOBILE_GAMES = [
 // Original parent of each game-area (main-content) — for restoring on desktop
 let _gameAreaParent = null;
 let _mobileCurrentGame = null;
+_updateContinueBtn();
 
 function _returnGameToParent() {
   if(_mobileCurrentGame && _gameAreaParent) {
@@ -16074,6 +16088,9 @@ function mobileGoTo(level, gameId) {
       _returnGameToParent();
       ws.style.display = '';
       ws.classList.remove('hide');
+      _startEmojiRotation();
+      _updateContinueBtn();
+      updateWelcomeSub();
     }, hideDelay);
   } else if(level === 2) {
     _returnGameToParent();
@@ -16221,11 +16238,65 @@ const _origTV = toggleVibration; toggleVibration = function(){ _origTV(); _updat
 
 // ===== WELCOME SCREEN =====
 
+function _getGreeting() {
+  const h = new Date().getHours();
+  if(h>=5 && h<12) return 'Dobré ráno! ☀️';
+  if(h>=12 && h<18) return 'Dobrý deň! 🌤️';
+  return 'Dobrý večer! 🌙';
+}
+
+const _welcomeEmojis = ['🎮','🎲','🧩','♟️','🎯','🏓','🐍','🔢','🐤','💥'];
+let _welcomeEmojiIdx = 0;
+let _welcomeEmojiTimer = null;
+function _rotateWelcomeEmoji() {
+  const el = $('welcomeEmoji');
+  if(!el) return;
+  _welcomeEmojiIdx = (_welcomeEmojiIdx + 1) % _welcomeEmojis.length;
+  el.style.opacity = '0';
+  el.style.transform = 'scale(0.5) rotate(20deg)';
+  setTimeout(() => {
+    el.textContent = _welcomeEmojis[_welcomeEmojiIdx];
+    el.style.opacity = '1';
+    el.style.transform = 'scale(1) rotate(0)';
+  }, 200);
+}
+function _startEmojiRotation() {
+  if(_welcomeEmojiTimer) clearInterval(_welcomeEmojiTimer);
+  _welcomeEmojiTimer = setInterval(_rotateWelcomeEmoji, 2500);
+}
+function _stopEmojiRotation() {
+  if(_welcomeEmojiTimer) { clearInterval(_welcomeEmojiTimer); _welcomeEmojiTimer = null; }
+}
+
+function _updateContinueBtn() {
+  const btn = $('welcomeContinueBtn');
+  if(!btn) return;
+  try {
+    const recent = JSON.parse(localStorage.getItem('hry_recent')||'[]');
+    if(recent.length > 0) {
+      const lastId = recent[0];
+      const gDef = MOBILE_GAMES.find(g => g.id === lastId);
+      if(gDef) {
+        btn.textContent = '↩️ Pokračovať v ' + gDef.icon + ' ' + (GAME_NAMES[lastId]||lastId);
+        btn.style.display = 'block';
+        btn.onclick = function(){ startFromWelcome(); setTimeout(()=>{ mobileGoTo(3, lastId); switchGame(lastId); }, 50); };
+        return;
+      }
+    }
+  } catch(e){}
+  btn.style.display = 'none';
+}
+
 function updateWelcomeSub() {
   const p1 = $('wP1Input').value.trim() || 'Hráč 1';
   const p2 = $('wP2Input').value.trim() || 'Hráč 2';
   const sub = $('welcomeSub');
-  if(sub) sub.textContent = (p1 !== 'Hráč 1' && p2 !== 'Hráč 2') ? p1 + ' & ' + p2 + ' — Premium Vydanie' : 'Premium Vydanie';
+  if(sub) {
+    const greeting = _getGreeting();
+    if(p1 !== 'Hráč 1' && p2 !== 'Hráč 2') sub.textContent = greeting + ' ' + p1 + ' & ' + p2;
+    else if(p1 !== 'Hráč 1') sub.textContent = greeting + ' ' + p1;
+    else sub.textContent = greeting;
+  }
   document.title = (p1 !== 'Hráč 1' && p2 !== 'Hráč 2') ? 'Hrajme si ' + p1 + ' a ' + p2 : 'Hrajme si';
   // Sync welcome inputs to global and save
   $('globalP1Input').value = $('wP1Input').value;
@@ -16302,6 +16373,7 @@ function startFromWelcome() {
   // Hide MP globe button in AI mode — only show for 2 players
   const mpBtn = $('floatingMpBtn');
   if(mpBtn) mpBtn.style.display = welcomeGameMode==='ai' ? 'none' : '';
+  _stopEmojiRotation();
   const ws = $('welcomeScreen');
   ws.classList.add('hide');
   setTimeout(() => { ws.style.display = 'none'; }, 520);
