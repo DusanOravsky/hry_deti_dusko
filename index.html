@@ -700,6 +700,15 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 .uno-hand-card:hover{transform:translateY(-6px);box-shadow:0 6px 16px rgba(0,0,0,0.3)}
 .uno-hand-card.disabled{opacity:0.4;cursor:not-allowed;transform:none !important}
 .uno-opp-card{width:36px;height:52px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:1.2em;background:linear-gradient(135deg,#1a237e,#283593);color:#5c6bc0;border:2px solid rgba(255,255,255,0.15)}
+.sol-col{position:relative;width:44px;min-height:80px;flex-shrink:0}
+.sol-card{position:absolute;width:44px;height:60px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;border:1.5px solid rgba(0,0,0,0.12);user-select:none;font-size:0.8em;line-height:1}
+.sol-face{background:white;color:#222;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.sol-face.red{color:#c0392b}
+.sol-back{background:linear-gradient(135deg,#1a237e,#283593);color:#5c6bc0;font-size:1.1em}
+.sol-selected{outline:2.5px solid #f1c40f;outline-offset:-1px;z-index:50 !important}
+.sol-pile{width:44px;height:60px;border-radius:6px;border:1.5px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;flex-shrink:0}
+.sol-pile .sol-card{position:relative}
+.sol-empty-suit{opacity:0.25;font-size:1.4em}
 
 /* GAME AREA */
 .game-area { display:none; }
@@ -2161,7 +2170,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 42 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 43 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -2285,6 +2294,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="game-btn" id="flappyBtn" style="background:linear-gradient(135deg,rgba(76,217,100,0.3),rgba(255,204,0,0.3))"><span class="game-btn-icon">🐤</span><span class="game-btn-label">Flappy Bird</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="cardWarBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.25))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vojna</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="unoGameBtn" style="background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(46,204,113,0.3))"><span class="game-btn-icon">🎴</span><span class="game-btn-label">Uno</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="solitaireBtn" style="background:linear-gradient(135deg,rgba(26,35,126,0.3),rgba(40,53,147,0.3))"><span class="game-btn-icon">🂡</span><span class="game-btn-label">Solitaire</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
@@ -4139,6 +4149,36 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== SOLITAIRE (KLONDIKE) ===== -->
+  <div class="game-area" id="solitaire">
+    <div class="rules"><h3>🂡 Solitaire:</h3><ul>
+      <li>Poskladaj karty do 4 kôpok od Esa po Kráľa</li>
+      <li>V stĺpcoch kladaj zostupne, striedaj farby</li>
+      <li>Klikni balíček pre novú kartu</li>
+      <li>Na prázdny stĺpec môže len Kráľ</li>
+      <li>Klikni kartu 2x = pošli na kôpku</li>
+    </ul></div>
+    <div style="display:flex;justify-content:center;gap:16px;font-size:0.85em;opacity:0.7;margin:4px 0">
+      <span>Ťahy: <span id="solMoves">0</span></span>
+      <span>Čas: <span id="solTime">0:00</span></span>
+    </div>
+    <div id="solTop" style="display:flex;justify-content:center;gap:4px;margin:6px auto;align-items:flex-start">
+      <div class="sol-pile" id="solStock" onclick="solFlipStock()"></div>
+      <div class="sol-pile" id="solWaste" onclick="solClickWaste()"></div>
+      <div style="width:10px"></div>
+      <div class="sol-pile" id="solF0" onclick="solClickFoundation(0)"><span class="sol-empty-suit">♠</span></div>
+      <div class="sol-pile" id="solF1" onclick="solClickFoundation(1)"><span class="sol-empty-suit">♥</span></div>
+      <div class="sol-pile" id="solF2" onclick="solClickFoundation(2)"><span class="sol-empty-suit">♦</span></div>
+      <div class="sol-pile" id="solF3" onclick="solClickFoundation(3)"><span class="sol-empty-suit">♣</span></div>
+    </div>
+    <div id="solTableau" style="display:flex;justify-content:center;gap:4px;margin:8px auto"></div>
+    <div class="status" id="solStatus"></div>
+    <div class="celebration" id="solCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" onclick="resetSol()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -4146,7 +4186,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.6';
+const APP_VERSION = '11.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4162,7 +4202,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4173,7 +4213,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4472,7 +4512,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4483,7 +4523,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -16413,6 +16453,237 @@ function unoAI(){
 }
 resetUno();
 
+// =============================================================================
+// SEKCIA 44: SOLITAIRE (KLONDIKE)
+// =============================================================================
+const SOL_SUITS = ['♠','♥','♦','♣'];
+const SOL_RANK_DISP = {1:'A',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10',11:'J',12:'Q',13:'K'};
+const SOL = {
+  tableau:[[],[],[],[],[],[],[]],
+  foundation:[[],[],[],[]],
+  stock:[],waste:[],
+  selected:null, // {source:'tab'|'waste', col, cardIdx}
+  moves:0,timer:null,time:0,over:false
+};
+
+function solIsRed(c){return c.suit==='♥'||c.suit==='♦';}
+function solMakeDeck(){
+  const d=[];
+  SOL_SUITS.forEach(s=>{for(let r=1;r<=13;r++)d.push({suit:s,rank:r,faceUp:false});});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+function resetSol(){
+  if(SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
+  const deck=solMakeDeck();
+  SOL.foundation=[[],[],[],[]];
+  SOL.tableau=[[],[],[],[],[],[],[]];
+  SOL.waste=[];SOL.stock=[];SOL.selected=null;SOL.moves=0;SOL.time=0;SOL.over=false;
+  let idx=0;
+  for(let c=0;c<7;c++){
+    for(let r=0;r<=c;r++){
+      const card=deck[idx++];
+      card.faceUp=(r===c);
+      SOL.tableau[c].push(card);
+    }
+  }
+  SOL.stock=deck.slice(idx);
+  $('solStatus').textContent='';
+  $('solCelebration').innerHTML='';
+  SOL.timer=setInterval(()=>{
+    if(!SOL.over){SOL.time++;const m=Math.floor(SOL.time/60),s=SOL.time%60;$('solTime').textContent=m+':'+(s<10?'0':'')+s;}
+  },1000);
+  solRender();
+}
+
+function solRender(){
+  // Stock
+  const stEl=$('solStock');
+  stEl.innerHTML=SOL.stock.length>0?'<div class="sol-card sol-back">🂠</div>':'<span class="sol-empty-suit" style="font-size:1.6em">♻️</span>';
+  // Waste
+  const wEl=$('solWaste');
+  if(SOL.waste.length>0){
+    const c=SOL.waste[SOL.waste.length-1];
+    const sel=SOL.selected&&SOL.selected.source==='waste';
+    wEl.innerHTML=`<div class="sol-card sol-face${solIsRed(c)?' red':''}${sel?' sol-selected':''}">${SOL_RANK_DISP[c.rank]}${c.suit}</div>`;
+  } else wEl.innerHTML='';
+  // Foundations
+  for(let i=0;i<4;i++){
+    const fEl=$('solF'+i);
+    const pile=SOL.foundation[i];
+    if(pile.length>0){
+      const c=pile[pile.length-1];
+      fEl.innerHTML=`<div class="sol-card sol-face${solIsRed(c)?' red':''}">${SOL_RANK_DISP[c.rank]}${c.suit}</div>`;
+    } else fEl.innerHTML=`<span class="sol-empty-suit">${SOL_SUITS[i]}</span>`;
+  }
+  // Tableau
+  const tabEl=$('solTableau');
+  let html='';
+  for(let c=0;c<7;c++){
+    const col=SOL.tableau[c];
+    let top=0;
+    const h=Math.max(80,col.reduce((a,card)=>a+(card.faceUp?20:12),0)+60);
+    html+=`<div class="sol-col" style="height:${h}px">`;
+    if(col.length===0){
+      html+=`<div style="position:absolute;top:0;width:44px;height:60px;border-radius:6px;border:1.5px dashed rgba(255,255,255,0.15);cursor:pointer" onclick="solClickCard(${c},-1)"></div>`;
+    }
+    col.forEach((card,idx)=>{
+      const isSel=SOL.selected&&SOL.selected.source==='tab'&&SOL.selected.col===c&&idx>=SOL.selected.cardIdx;
+      if(card.faceUp){
+        html+=`<div class="sol-card sol-face${solIsRed(card)?' red':''}${isSel?' sol-selected':''}" style="top:${top}px;z-index:${idx+1}" onclick="solClickCard(${c},${idx})">${SOL_RANK_DISP[card.rank]}${card.suit}</div>`;
+      } else {
+        html+=`<div class="sol-card sol-back" style="top:${top}px;z-index:${idx+1}" onclick="solClickCard(${c},${idx})">🂠</div>`;
+      }
+      top+=card.faceUp?20:12;
+    });
+    html+='</div>';
+  }
+  tabEl.innerHTML=html;
+  $('solMoves').textContent=SOL.moves;
+}
+
+function solFlipStock(){
+  if(SOL.over) return;
+  SOL.selected=null;
+  if(SOL.stock.length===0){
+    if(SOL.waste.length===0) return;
+    SOL.stock=SOL.waste.reverse();
+    SOL.stock.forEach(c=>c.faceUp=false);
+    SOL.waste=[];
+    playSound('flip');
+  } else {
+    const c=SOL.stock.pop();
+    c.faceUp=true;
+    SOL.waste.push(c);
+    playSound('click');
+  }
+  solRender();
+}
+
+function solClickWaste(){
+  if(SOL.over||SOL.waste.length===0) return;
+  if(SOL.selected&&SOL.selected.source==='waste'){
+    // Double-click waste: try auto-foundation
+    const c=SOL.waste[SOL.waste.length-1];
+    for(let f=0;f<4;f++){
+      if(solCanFoundation(c,f)){
+        SOL.waste.pop();
+        SOL.foundation[f].push(c);
+        SOL.moves++;SOL.selected=null;
+        playSound('correct');solRender();solCheckWin();return;
+      }
+    }
+    SOL.selected=null;solRender();return;
+  }
+  SOL.selected={source:'waste'};
+  solRender();
+}
+
+function solClickFoundation(fi){
+  if(SOL.over||!SOL.selected) return;
+  let card;
+  if(SOL.selected.source==='waste'){
+    card=SOL.waste[SOL.waste.length-1];
+  } else {
+    const col=SOL.tableau[SOL.selected.col];
+    if(SOL.selected.cardIdx!==col.length-1) return; // only top card
+    card=col[col.length-1];
+  }
+  if(!solCanFoundation(card,fi)) return;
+  if(SOL.selected.source==='waste') SOL.waste.pop();
+  else {SOL.tableau[SOL.selected.col].pop();solFlipTop(SOL.selected.col);}
+  SOL.foundation[fi].push(card);
+  SOL.moves++;SOL.selected=null;
+  playSound('correct');solRender();solCheckWin();
+}
+
+function solClickCard(col,idx){
+  if(SOL.over) return;
+  const column=SOL.tableau[col];
+  // Empty column
+  if(idx===-1||column.length===0){
+    if(!SOL.selected) return;
+    let cards;
+    if(SOL.selected.source==='waste'){
+      const c=SOL.waste[SOL.waste.length-1];
+      if(c.rank!==13) return;
+      cards=[SOL.waste.pop()];
+    } else {
+      const src=SOL.tableau[SOL.selected.col];
+      if(src[SOL.selected.cardIdx].rank!==13) return;
+      cards=src.splice(SOL.selected.cardIdx);
+      solFlipTop(SOL.selected.col);
+    }
+    SOL.tableau[col].push(...cards);
+    SOL.moves++;SOL.selected=null;
+    playSound('click');solRender();return;
+  }
+  const card=column[idx];
+  // Face-down: flip if top
+  if(!card.faceUp){
+    if(idx===column.length-1){card.faceUp=true;playSound('flip');solRender();}
+    return;
+  }
+  // Face-up card clicked
+  if(SOL.selected){
+    // Same card clicked again: try auto-foundation
+    if(SOL.selected.source==='tab'&&SOL.selected.col===col&&SOL.selected.cardIdx===idx){
+      if(idx===column.length-1){
+        for(let f=0;f<4;f++){
+          if(solCanFoundation(card,f)){
+            column.pop();SOL.foundation[f].push(card);
+            solFlipTop(col);SOL.moves++;SOL.selected=null;
+            playSound('correct');solRender();solCheckWin();return;
+          }
+        }
+      }
+      SOL.selected=null;solRender();return;
+    }
+    // Try move to this column
+    let movingCard;
+    if(SOL.selected.source==='waste') movingCard=SOL.waste[SOL.waste.length-1];
+    else movingCard=SOL.tableau[SOL.selected.col][SOL.selected.cardIdx];
+    const topCard=column[column.length-1];
+    if(solCanTab(movingCard,topCard)){
+      let cards;
+      if(SOL.selected.source==='waste') cards=[SOL.waste.pop()];
+      else {cards=SOL.tableau[SOL.selected.col].splice(SOL.selected.cardIdx);solFlipTop(SOL.selected.col);}
+      column.push(...cards);
+      SOL.moves++;SOL.selected=null;
+      playSound('click');solRender();
+    } else {
+      SOL.selected={source:'tab',col,cardIdx:idx};solRender();
+    }
+  } else {
+    SOL.selected={source:'tab',col,cardIdx:idx};solRender();
+  }
+}
+
+function solCanTab(moving,target){
+  if(!target||!target.faceUp) return false;
+  return solIsRed(moving)!==solIsRed(target)&&moving.rank===target.rank-1;
+}
+function solCanFoundation(card,fi){
+  const pile=SOL.foundation[fi];
+  if(pile.length===0) return card.rank===1;
+  const top=pile[pile.length-1];
+  return card.suit===top.suit&&card.rank===top.rank+1;
+}
+function solFlipTop(col){
+  const c=SOL.tableau[col];
+  if(c.length>0&&!c[c.length-1].faceUp) c[c.length-1].faceUp=true;
+}
+function solCheckWin(){
+  if(SOL.foundation.every(f=>f.length===13)){
+    SOL.over=true;
+    if(SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
+    $('solStatus').textContent='🎉 Vyhral si! ('+SOL.moves+' ťahov, '+$('solTime').textContent+')';
+    addWin(1,'solitaire');
+  }
+}
+resetSol();
+
 // ===== OFFLINE INDICATOR =====
 function updateOnlineStatus() {
   const banner = $('offlineBanner');
@@ -16487,6 +16758,7 @@ const MOBILE_GAMES = [
   { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
   { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
+  { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -16556,6 +16828,8 @@ function stopAllGames(){
   if(typeof WAR!=='undefined'){if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}WAR.over=true;WAR.animating=false;}
   // Uno AI
   if(typeof UNO!=='undefined'){if(UNO._timer){clearTimeout(UNO._timer);UNO._timer=null;}UNO.over=true;}
+  // Solitaire timer
+  if(typeof SOL!=='undefined'&&SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
