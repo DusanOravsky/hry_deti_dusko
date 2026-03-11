@@ -4186,7 +4186,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.0';
+const APP_VERSION = '11.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16548,7 +16548,7 @@ function solFlipStock(){
   SOL.selected=null;
   if(SOL.stock.length===0){
     if(SOL.waste.length===0) return;
-    SOL.stock=SOL.waste.reverse();
+    SOL.stock=[...SOL.waste].reverse();
     SOL.stock.forEach(c=>c.faceUp=false);
     SOL.waste=[];
     playSound('flip');
@@ -16620,10 +16620,11 @@ function solClickCard(col,idx){
     playSound('click');solRender();return;
   }
   const card=column[idx];
-  // Face-down: flip if top
+  // Face-down: flip if top, otherwise deselect
   if(!card.faceUp){
-    if(idx===column.length-1){card.faceUp=true;playSound('flip');solRender();}
-    return;
+    if(idx===column.length-1){card.faceUp=true;playSound('flip');}
+    else if(SOL.selected){SOL.selected=null;}
+    solRender();return;
   }
   // Face-up card clicked
   if(SOL.selected){
@@ -16666,7 +16667,7 @@ function solCanTab(moving,target){
 }
 function solCanFoundation(card,fi){
   const pile=SOL.foundation[fi];
-  if(pile.length===0) return card.rank===1;
+  if(pile.length===0) return card.rank===1&&card.suit===SOL_SUITS[fi];
   const top=pile[pile.length-1];
   return card.suit===top.suit&&card.rank===top.rank+1;
 }
