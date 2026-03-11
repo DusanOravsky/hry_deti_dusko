@@ -4214,7 +4214,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.3';
+const APP_VERSION = '11.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16256,6 +16256,9 @@ function warEnd(){
     $('warStatus').textContent='🤝 Remíza!';
     addWin(0,'cardWar');
   }
+  $('warCelebration').textContent='🎉🃏🎉';
+  celebrate('warCelebration');
+  playSound('win');
 }
 function warQuickPlay(){
   if(WAR.animating) return;
@@ -16567,6 +16570,7 @@ function resetSol(){
   $('solStatus').textContent='';
   $('solCelebration').innerHTML='';
   $('solTime').textContent='0:00';$('solMoves').textContent='0';
+  $('solUndoBtn').style.opacity='0.5';
   solRender();
 }
 
@@ -16907,54 +16911,58 @@ function nimAI(){
   if(NIM.over||NIM.turn!==2) return;
   let pile,count;
   if(NIM.diff==='hard'){
-    // Nim-sum (XOR) strategy for misère
+    // Grundy-value strategy for take-1-to-3 misère Nim
+    // Grundy value of pile n with max take 3: n % 4
+    const grundy=NIM.piles.map(p=>p%4);
+    const gSum=grundy.reduce((a,b)=>a^b,0);
     const total=NIM.piles.reduce((a,b)=>a+b,0);
-    const nimSum=NIM.piles.reduce((a,b)=>a^b,0);
     if(total===1){
-      // Only 1 stone left total — must take it (lose)
+      // Must take last stone (lose)
       pile=NIM.piles.findIndex(p=>p>0);count=1;
-    } else if(nimSum===0){
-      // Losing position — take 1 from largest pile
-      pile=NIM.piles.indexOf(Math.max(...NIM.piles));
-      count=1;
     } else {
-      // Find move that leaves nim-sum 0
-      // In misère: if all piles <=1, leave odd number of piles
+      // Misère endgame: all piles <=1 → leave odd number of piles
       const bigPiles=NIM.piles.filter(p=>p>1).length;
       if(bigPiles<=1){
-        // End game: leave odd number of size-1 piles
         const onesCount=NIM.piles.filter(p=>p===1).length;
         const bigIdx=NIM.piles.findIndex(p=>p>1);
         if(bigIdx>=0){
-          // Take from big pile to leave odd total piles with 1
-          const want=onesCount%2===0?1:0;
-          pile=bigIdx;count=NIM.piles[bigIdx]-want;
-          if(count<1) count=1;if(count>3) count=3;
+          // Reduce big pile: want odd total remaining piles
+          // After our move: onesCount piles of 1 + (0 or 1 pile left from big)
+          const want=onesCount%2===0?1:0; // leave this many in the big pile
+          const take=NIM.piles[bigIdx]-want;
+          pile=bigIdx;count=Math.min(take,3);
+          if(count<1) count=1;
         } else {
           pile=NIM.piles.findIndex(p=>p>0);count=1;
         }
+      } else if(gSum===0){
+        // Losing position — take 1 from largest
+        pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;
       } else {
-        // Normal: make nim-sum = 0
+        // Find move that makes Grundy XOR = 0
         let found=false;
         for(let p=0;p<NIM.piles.length;p++){
-          const target=NIM.piles[p]^nimSum;
-          if(target<NIM.piles[p]){
-            const take=NIM.piles[p]-target;
-            if(take>=1&&take<=3){pile=p;count=take;found=true;break;}
+          for(let t=1;t<=Math.min(3,NIM.piles[p]);t++){
+            const newPile=NIM.piles[p]-t;
+            const newGrundy=newPile%4;
+            const newSum=gSum^grundy[p]^newGrundy;
+            if(newSum===0){pile=p;count=t;found=true;break;}
           }
+          if(found) break;
         }
         if(!found){pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;}
       }
     }
   } else if(NIM.diff==='medium'){
-    // 50% optimal, 50% random
+    // 50% optimal (Grundy), 50% random
     if(Math.random()<0.5){
-      const ns=NIM.piles.reduce((a,b)=>a^b,0);
+      const gr=NIM.piles.map(p=>p%4);
+      const gs=gr.reduce((a,b)=>a^b,0);
       const tot=NIM.piles.reduce((a,b)=>a+b,0);
       if(tot===1){pile=NIM.piles.findIndex(p=>p>0);count=1;}
-      else if(ns!==0){
+      else if(gs!==0){
         let found=false;
-        for(let p=0;p<NIM.piles.length;p++){const t=NIM.piles[p]^ns;if(t<NIM.piles[p]){const tk=NIM.piles[p]-t;if(tk>=1&&tk<=3){pile=p;count=tk;found=true;break;}}}
+        for(let p=0;p<NIM.piles.length;p++){for(let t=1;t<=Math.min(3,NIM.piles[p]);t++){if((gs^gr[p]^((NIM.piles[p]-t)%4))===0){pile=p;count=t;found=true;break;}}if(found)break;}
         if(!found){pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;}
       } else {pile=NIM.piles.indexOf(Math.max(...NIM.piles));count=1;}
     } else {
