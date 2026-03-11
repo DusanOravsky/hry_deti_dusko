@@ -1376,7 +1376,7 @@ body.light .achievement { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0,0
 body.light .achievement.unlocked { background:rgba(255,210,0,0.1); border-color:rgba(255,180,0,0.3); }
 body.light .achievement-name { color:#333; }
 body.light .achievement.unlocked .achievement-name { color:#b8860b; }
-@media(max-width:640px) { .achievements-grid { grid-template-columns:repeat(3,1fr); gap:8px; } }
+@media(max-width:640px) { .achievements-grid { grid-template-columns:repeat(2,1fr); gap:8px; } }
 /* Achievement toast */
 .achievement-toast {
   position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-120px);
@@ -4847,6 +4847,7 @@ function dailyCheckComplete(gameId,score,won){
     showToast('🎉 Denná výzva splnená! Streak: '+streak+'🔥',4000,'rgba(67,233,123,0.9)');
     playSound('win');
     updateDailyBtn();
+    checkAchievements();
   }
 }
 function _getDailyStreak(){
@@ -4952,6 +4953,30 @@ const ACHIEVEMENTS = [
   { id:'tour5',    icon:'🏆', name:'Turnajovy veteran', desc:'Dokonci 5 turnajov',     check:()=>(gStats.tournaments?.played||0)>=5 },
   { id:'tourWin3', icon:'👑', name:'Turnajovy sampion', desc:'Vyhraj 3 turnaje',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=3 },
   { id:'tourWin10',icon:'💎', name:'Turnajovy kral',  desc:'Vyhraj 10 turnajov',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=10 },
+  // Per-game achievements
+  { id:'tetris1k', icon:'🧱', name:'Tetris tisícka',   desc:'Dosiahni 1000 v Tetris',  check:()=>parseInt(localStorage.getItem('hry_tetris')||'0')>=1000 },
+  { id:'tetris5k', icon:'🧱', name:'Tetris mág',       desc:'Dosiahni 5000 v Tetris',  check:()=>parseInt(localStorage.getItem('hry_tetris')||'0')>=5000 },
+  { id:'snake20',  icon:'🐍', name:'Had',              desc:'Snake: 20+ bodov',         check:()=>parseInt(localStorage.getItem('hry_snakeBest')||'0')>=20 },
+  { id:'snake50',  icon:'🐍', name:'Anakondaluk',       desc:'Snake: 50+ bodov',         check:()=>parseInt(localStorage.getItem('hry_snakeBest')||'0')>=50 },
+  { id:'g2048',    icon:'🔢', name:'2048!',            desc:'Dosiahni dlaždicu 2048',   check:()=>parseInt(localStorage.getItem('hry_2048_best')||'0')>=2048 },
+  { id:'g4096',    icon:'🔢', name:'4096!',            desc:'Dosiahni dlaždicu 4096',   check:()=>parseInt(localStorage.getItem('hry_2048_best')||'0')>=4096 },
+  { id:'flap10',   icon:'🐤', name:'Vtáčik',           desc:'Flappy: preleť 10 rúr',    check:()=>parseInt(localStorage.getItem('hry_flappy_best')||'0')>=10 },
+  { id:'flap25',   icon:'🐤', name:'Letec',            desc:'Flappy: preleť 25 rúr',    check:()=>parseInt(localStorage.getItem('hry_flappy_best')||'0')>=25 },
+  { id:'grav100',  icon:'🌀', name:'Graviták',         desc:'Gravity Run: 100+ bodov',  check:()=>parseInt(localStorage.getItem('hry_grav_best')||'0')>=100 },
+  { id:'dood500',  icon:'🤸', name:'Skáčik',           desc:'Doodle Jump: 500+ bodov',  check:()=>parseInt(localStorage.getItem('hry_doodleBest')||'0')>=500 },
+  { id:'c4_10',    icon:'🔴', name:'Štvorkar',         desc:'Vyhraj 10x Connect 4',     check:()=>(gStats.perGame.connect4?.p1||0)+(gStats.perGame.connect4?.p2||0)>=10 },
+  { id:'rev10',    icon:'🔄', name:'Reversi stratég',  desc:'Vyhraj 10x Reversi',       check:()=>(gStats.perGame.reversi?.p1||0)+(gStats.perGame.reversi?.p2||0)>=10 },
+  { id:'dk10',     icon:'⬤',  name:'Dámista',          desc:'Vyhraj 10x Dámu',          check:()=>(gStats.perGame.checkers?.p1||0)+(gStats.perGame.checkers?.p2||0)>=10 },
+  { id:'ludo10',   icon:'🎲', name:'Človeče expert',   desc:'Vyhraj 10x Človeče',       check:()=>(gStats.perGame.ludo?.p1||0)+(gStats.perGame.ludo?.p2||0)>=10 },
+  { id:'rps20',    icon:'🪨', name:'KPN šampión',      desc:'Vyhraj 20x Kameň Papier',  check:()=>(gStats.perGame.rockPaper?.p1||0)+(gStats.perGame.rockPaper?.p2||0)>=20 },
+  { id:'wdl10',    icon:'🟩', name:'Slovíčkár',        desc:'Vyhraj 10x Wordle',        check:()=>(gStats.perGame.wordle?.p1||0)+(gStats.perGame.wordle?.p2||0)>=10 },
+  { id:'reac200',  icon:'⚡', name:'Blesk',            desc:'Reakcia pod 200ms',         check:()=>{const r=gStats.records;return(r.reacP1!==null&&r.reacP1<200)||(r.reacP2!==null&&r.reacP2<200);} },
+  { id:'daily3',   icon:'🔥', name:'Denný streak 3',   desc:'3-dňový denný streak',     check:()=>_getDailyStreak()>=3 },
+  { id:'daily7',   icon:'🔥', name:'Týždňový streak',  desc:'7-dňový denný streak',     check:()=>_getDailyStreak()>=7 },
+  { id:'daily30',  icon:'🌟', name:'Mesačný streak',   desc:'30-dňový denný streak',    check:()=>_getDailyStreak()>=30 },
+  { id:'ms5',      icon:'💣', name:'Mínolovník',       desc:'Vyhraj 5x Minesweeper',    check:()=>(gStats.perGame.minesweeper?.p1||0)>=5 },
+  { id:'tnk10',    icon:'💥', name:'Tankový veliteľ',  desc:'Vyhraj 10x Tank Battle',   check:()=>(gStats.perGame.tanks?.p1||0)+(gStats.perGame.tanks?.p2||0)>=10 },
+  { id:'brk10',    icon:'🏓', name:'Búrač',            desc:'Vyhraj 10x Breakout',      check:()=>(gStats.perGame.breakout?.p1||0)+(gStats.perGame.breakout?.p2||0)>=10 },
 ];
 
 let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
