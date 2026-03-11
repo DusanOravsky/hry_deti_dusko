@@ -4084,7 +4084,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div id="warTable" style="display:flex;justify-content:center;gap:30px;margin:16px auto;align-items:center">
       <div id="warCard1" class="war-card war-card-back" onclick="warFlip()">🂠</div>
       <div style="font-size:1.5em;font-weight:bold;opacity:0.4">VS</div>
-      <div id="warCard2" class="war-card war-card-back" onclick="warFlip()">🂠</div>
+      <div id="warCard2" class="war-card war-card-back">🂠</div>
     </div>
     <div id="warWarPile" style="text-align:center;min-height:24px;font-size:0.85em;opacity:0.6"></div>
     <div class="celebration" id="warCelebration"></div>
@@ -4129,7 +4129,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div id="unoOppHand" style="display:flex;justify-content:center;gap:4px;margin:8px 14px;flex-wrap:wrap;min-height:50px"></div>
     <div style="text-align:center;opacity:0.5;font-size:0.8em;margin:2px 0" id="unoOppLabel">Súper</div>
     <div id="unoDeck" style="text-align:center;margin:6px 0">
-      <button onclick="unoDraw()" class="action-btn" style="padding:10px 24px;font-size:1.1em;border-radius:12px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2)">🂠 Potiahni kartu</button>
+      <button onclick="unoDraw()" class="action-btn" style="padding:10px 24px;font-size:1.1em;border-radius:12px;background:linear-gradient(135deg,rgba(102,126,234,0.5),rgba(118,75,162,0.5));border:2px solid rgba(102,126,234,0.6);font-weight:bold">🂠 Potiahni kartu</button>
     </div>
     <div id="unoMyHand" style="display:flex;justify-content:center;gap:4px;margin:8px 14px;flex-wrap:wrap;min-height:70px"></div>
     <div class="celebration" id="unoCelebration"></div>
@@ -4145,7 +4145,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.3';
+const APP_VERSION = '10.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
