@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA so 42 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA so 44 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (42)
+## Hry (44)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -29,8 +29,8 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Tank Battle (power-upy: shield/rapid/speed) | Yes | Yes (easy/medium/hard) |
 | Vcely (canvas, vcely letia do ulov, hadaj ktory dostal najviac) | - | Yes (easy/medium/hard) |
 | Futbal (canvas, penaltova strelba, sipka+sila, brankár) | - | Yes (easy/medium/hard) |
-| Vojna (War) — kartova hra, vyššia karta berie, vojna pri zhode | - | - (pure luck) |
-| Uno Light — farby+cisla+specials, wild, +2, skip, reverse | - | Yes (easy/medium/hard) |
+| Uno — farby+cisla, wild, +2, +4 Wild Draw Four, skip, reverse, UNO! callout | - | Yes (easy/medium/hard) |
+| Nim — 4 hromadky (1,3,5,7), odober 1-3, posledny prehra | - | Yes (easy/medium/hard, Grundy XOR) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra |
@@ -54,6 +54,8 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 - Minesweeper / Míny (8x8/10x10/12x12, flood-fill, vlajky, casovac)
 - 2048 (4x4, swipe + sipky, zlucovanie dlazdic, high score + leaderboard)
 - Flappy Bird (canvas, tap/space, prekazky z rur, high score + leaderboard)
+- Vojna (War) — kartova hra, vyššia karta berie, vojna pri zhode, rychla hra
+- Solitaire (Klondike) — 7 stlpcov, 4 kopky, undo, auto-complete, casovac
 - Statistiky + Achievement system (43 achievementov, oddeleny reset statistik a achievementov)
 
 ## Online Multiplayer
@@ -120,7 +122,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ## Technologie
 
-- Single HTML file (~18500 riadkov)
+- Single HTML file (~19000 riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
@@ -161,9 +163,19 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v10.0**
+Aktualna verzia: **v11.5**
 
 ### Changelog
+
+**v11.5** (2026-03-11) - Solitaire + Nim + War/Uno improvements
+- 🂡 **Solitaire (Klondike)** — 7 stlpcov, 4 kopky od Esa po Krala, click-to-select, undo, auto-complete, casovac
+- 🪨 **Nim** — klasicka strategicka hra, 4 hromadky (1,3,5,7), odober 1-3, kto vezme posledny prehra
+  - AI: easy (nahodne), medium (50% optimal), hard (Grundy XOR — takmer neporazitelna)
+- ⚡ **Vojna rychla hra** — tlacidlo auto-prehraje celu hru za 100ms/krok
+- 🎴 **Uno vylepsenia** — Wild Draw Four (+4) karty, UNO! callout pri poslednej karte
+  - +4 len ak hrac nema karty zhodnej farby (oficialne pravidla)
+- Bugfixy: War epoch pattern (stale timeouts), Solitaire undo na vsetkych move types, win sounds
+- Celkovo 44 hier
 
 **v10.0** (2026-03-11) - War + Uno + Categories + Difficulty Persistence
 - 🃏 **Vojna (War)** — kartova hra, vyššia karta berie, vojna pri zhode, AI auto-flip
