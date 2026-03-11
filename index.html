@@ -227,8 +227,11 @@ body.light {
   z-index:100;
   background:inherit;
   overflow-y:auto;
+  animation:slideInRight 0.3s ease-out;
 }
 #mobileGamePicker.active { display:flex; }
+#mobileGamePicker.slide-out { animation:slideOutLeft 0.25s ease-in forwards; }
+#mobileGamePicker.slide-back { animation:slideInLeft 0.3s ease-out; }
 
 .mobile-topbar {
   display:flex;
@@ -335,6 +338,7 @@ body.light .mobile-player-chip { color:#333; background:rgba(0,0,0,0.04); }
   transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
   display:flex;
   flex-direction:column;
+  animation:cardPop 0.3s ease-out both;
   align-items:center;
   gap:8px;
   -webkit-tap-highlight-color:transparent;
@@ -381,6 +385,7 @@ body.light .mobile-grid-section { color:rgba(0,0,0,0.4); border-bottom-color:rgb
   bottom:0;
   z-index:100;
   background:inherit;
+  animation:slideInRight 0.3s ease-out;
 }
 #mobileGameView.active { display:flex; }
 #mobileGameContent {
@@ -678,9 +683,14 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 }
 
 /* GAME AREA */
-.game-area { display:none; animation:fadeIn 0.4s; }
-.game-area.active { display:block; }
+.game-area { display:none; }
+.game-area.active { display:block; animation:fadeIn 0.35s ease-out; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideInRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutLeft { from{transform:translateX(0);opacity:1} to{transform:translateX(-30%);opacity:0} }
+@keyframes slideInLeft { from{transform:translateX(-30%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
+@keyframes cardPop { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
 
 /* PLAYER INFO */
 .player-info { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin:15px 0; }
@@ -4096,7 +4106,7 @@ body.light .welcome-history { border-top-color:rgba(0,0,0,0.08); }
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '8.0';
+const APP_VERSION = '9.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16102,29 +16112,53 @@ function mobileBackWithTournamentCheck(targetLevel) {
   mobileGoTo(targetLevel);
 }
 
+let _mobileLevel = 1;
 function mobileGoTo(level, gameId) {
   const picker = $('mobileGamePicker');
   const view   = $('mobileGameView');
   const ws = $('welcomeScreen');
-  picker.classList.remove('active');
-  view.classList.remove('active');
+  const prevLevel = _mobileLevel;
 
   stopAllGames();
+
+  // Determine slide direction: forward (1→2→3) or back (3→2→1)
+  const goingForward = level > prevLevel;
+
+  // Remove animation classes
+  picker.classList.remove('slide-out','slide-back');
+  view.classList.remove('slide-out','slide-back');
+
   if(level === 1) {
-    _returnGameToParent();
-    ws.style.display = '';
-    ws.classList.remove('hide');
+    // Going back to welcome
+    if(prevLevel === 2) picker.classList.add('slide-out');
+    if(prevLevel === 3) view.classList.add('slide-out');
+    const hideDelay = (prevLevel > 1) ? 200 : 0;
+    setTimeout(()=>{
+      picker.classList.remove('active','slide-out');
+      view.classList.remove('active','slide-out');
+      _returnGameToParent();
+      ws.style.display = '';
+      ws.classList.remove('hide');
+    }, hideDelay);
   } else if(level === 2) {
     _returnGameToParent();
     ws.classList.add('hide');
     ws.style.display = 'none';
-    picker.classList.add('active');
+    if(prevLevel === 3) {
+      // Back from game → picker slides in from left
+      view.classList.remove('active');
+      picker.classList.add('active','slide-back');
+    } else {
+      // Forward from welcome → picker slides in from right
+      picker.classList.add('active');
+    }
     renderMobileGrid();
     _updateMobileChips();
   } else if(level === 3 && gameId) {
     _returnGameToParent();
     ws.classList.add('hide');
     ws.style.display = 'none';
+    picker.classList.remove('active');
     view.classList.add('active');
     // Set title
     const gDef = MOBILE_GAMES.find(g => g.id === gameId);
@@ -16146,6 +16180,7 @@ function mobileGoTo(level, gameId) {
     if(gameId === 'tournament') tourRenderSetup();
     content.scrollTop = 0;
   }
+  _mobileLevel = level;
   _updateMobileToggles();
 }
 
@@ -16178,10 +16213,11 @@ function trackRecentGame(gId) {
   try{localStorage.setItem('hry_recent', JSON.stringify(_recentGames));}catch(e){}
 }
 
-function _renderGameCard(g) {
+function _renderGameCard(g, idx) {
   const isFav = _favorites.includes(g.id);
+  const delay = Math.min((idx||0)*30, 300);
   return `<div class="mobile-game-card" onclick="mobileGoTo(3,'${g.id}')"
-        style="background:linear-gradient(135deg,${g.grad})">
+        style="background:linear-gradient(135deg,${g.grad});animation-delay:${delay}ms">
      <div class="mobile-game-card-icon">${g.icon}</div>
      <div class="mobile-game-card-name">${g.label}</div>
      ${g.mp && welcomeGameMode!=='ai' ? '<div style="position:absolute;top:6px;right:8px;font-size:0.6em;opacity:0.7">🌐</div>' : ''}
@@ -16212,10 +16248,11 @@ function renderMobileGrid() {
   // Recent section
   if(recentGames.length>0) {
     html += '<div class="mobile-grid-section">Nedavno hrane <span onclick="clearRecentGames()" style="float:right;font-size:0.85em;cursor:pointer;opacity:0.6;text-transform:none;letter-spacing:0">✕ vymazat</span></div>';
-    html += recentGames.map(g=>_renderGameCard(g)).join('');
+    html += recentGames.map((g,i)=>_renderGameCard(g,i)).join('');
     html += '<div class="mobile-grid-section">Vsetky hry</div>';
   }
-  html += sorted.map(g=>_renderGameCard(g)).join('');
+  const offset = recentGames.length;
+  html += sorted.map((g,i)=>_renderGameCard(g,i+offset)).join('');
   grid.innerHTML = html;
   updateDailyBtn();
 }
