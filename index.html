@@ -4214,7 +4214,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.4';
+const APP_VERSION = '11.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16375,7 +16375,12 @@ function unoRender(){
 }
 
 function unoCanPlay(c){
-  if(c.color==='wild') return true;
+  if(c.value==='wild') return true;
+  if(c.value==='+4'){
+    // +4 Wild: only if no cards matching current color
+    const hand=UNO.turn===1?UNO.hand1:UNO.hand2;
+    return !hand.some(h=>h!==c&&h.color===UNO.topColor);
+  }
   const top=UNO.discard[UNO.discard.length-1];
   if(c.color===UNO.topColor) return true;
   if(c.value===top.value) return true;
@@ -16668,7 +16673,10 @@ function solAutoComplete(){
     // Done
     if(SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
     $('solStatus').textContent='🎉 Vyhral si! ('+SOL.moves+' ťahov, '+$('solTime').textContent+')';
+    $('solCelebration').textContent='🎉🂡🎉';
+    celebrate('solCelebration');
     addWin(1,'solitaire');
+    playSound('win');
     solRender();
   }
   moveNext();
@@ -16676,15 +16684,17 @@ function solAutoComplete(){
 
 function solFlipStock(){
   if(SOL.over) return;
-  solStartTimer();solSaveUndo();
+  solStartTimer();
   SOL.selected=null;
   if(SOL.stock.length===0){
     if(SOL.waste.length===0) return;
+    solSaveUndo();
     SOL.stock=[...SOL.waste].reverse();
     SOL.stock.forEach(c=>c.faceUp=false);
     SOL.waste=[];
     playSound('flip');
   } else {
+    solSaveUndo();
     const c=SOL.stock.pop();
     c.faceUp=true;
     SOL.waste.push(c);
@@ -16701,6 +16711,7 @@ function solClickWaste(){
     const c=SOL.waste[SOL.waste.length-1];
     for(let f=0;f<4;f++){
       if(solCanFoundation(c,f)){
+        solSaveUndo();
         SOL.waste.pop();
         SOL.foundation[f].push(c);
         SOL.moves++;SOL.selected=null;
@@ -16819,7 +16830,10 @@ function solCheckWin(){
     SOL.over=true;
     if(SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
     $('solStatus').textContent='🎉 Vyhral si! ('+SOL.moves+' ťahov, '+$('solTime').textContent+')';
+    $('solCelebration').textContent='🎉🂡🎉';
+    celebrate('solCelebration');
     addWin(1,'solitaire');
+    playSound('win');
   } else solAutoComplete();
 }
 resetSol();
