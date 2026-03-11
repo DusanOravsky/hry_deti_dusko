@@ -4145,7 +4145,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.0';
+const APP_VERSION = '10.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16040,7 +16040,7 @@ resetMinesweeper();
 // =============================================================================
 // SEKCIA 42: WAR (VOJNA) — kartová hra
 // =============================================================================
-const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null};
+const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150};
 const WAR_SUITS = ['♠','♥','♦','♣'];
 const WAR_RANKS = [2,3,4,5,6,7,8,9,10,11,12,13,14];
 const WAR_RANK_DISPLAY = {2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10',11:'J',12:'Q',13:'K',14:'A'};
@@ -16061,7 +16061,7 @@ function resetWar(){
   if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}
   const deck=warMakeDeck();
   WAR.deck1=deck.slice(0,26);WAR.deck2=deck.slice(26);
-  WAR.card1=null;WAR.card2=null;WAR.pile=[];WAR.over=false;WAR.animating=false;
+  WAR.card1=null;WAR.card2=null;WAR.pile=[];WAR.over=false;WAR.animating=false;WAR.rounds=0;
   $('warCard1').className='war-card war-card-back';$('warCard1').innerHTML='🂠';
   $('warCard2').className='war-card war-card-back';$('warCard2').innerHTML='🂠';
   $('warP1Count').textContent=WAR.deck1.length;
@@ -16077,6 +16077,8 @@ function resetWar(){
 function warFlip(){
   if(WAR.over||WAR.animating) return;
   if(WAR.deck1.length===0||WAR.deck2.length===0){warEnd();return;}
+  WAR.rounds++;
+  if(WAR.rounds>=WAR.maxRounds){warEnd();return;}
   WAR.animating=true;
   const c1=WAR.deck1.shift();
   const c2=WAR.deck2.shift();
