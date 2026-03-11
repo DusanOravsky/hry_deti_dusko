@@ -2041,7 +2041,7 @@ body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
 }
 @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 @keyframes startPulse { 0%,100%{box-shadow:0 8px 28px rgba(102,126,234,0.5)} 50%{box-shadow:0 8px 36px rgba(102,126,234,0.7),0 0 60px rgba(118,75,162,0.3)} }
-.welcome-start-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(102,126,234,0.55); animation:gradientShift 3s ease infinite; }
+.welcome-start-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(102,126,234,0.55); }
 .welcome-start-btn:active { transform:scale(0.98); }
 .welcome-continue-btn {
   width:100%; padding:12px; border:2px solid rgba(255,255,255,0.2); border-radius:14px; cursor:pointer;
@@ -14969,7 +14969,6 @@ resetSnakeDuel();
 resetBee();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
-_startEmojiRotation();
 loadTheme();
 $('appVersion').textContent='v'+APP_VERSION;
 const svEl=$('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
@@ -16081,7 +16080,7 @@ function mobileGoTo(level, gameId) {
     // Going back to welcome
     if(prevLevel === 2) picker.classList.add('slide-out');
     if(prevLevel === 3) view.classList.add('slide-out');
-    const hideDelay = (prevLevel > 1) ? 200 : 0;
+    const hideDelay = (prevLevel > 1) ? 260 : 0;
     setTimeout(()=>{
       picker.classList.remove('active','slide-out');
       view.classList.remove('active','slide-out');
@@ -16267,6 +16266,7 @@ function _startEmojiRotation() {
 function _stopEmojiRotation() {
   if(_welcomeEmojiTimer) { clearInterval(_welcomeEmojiTimer); _welcomeEmojiTimer = null; }
 }
+_startEmojiRotation();
 
 function _updateContinueBtn() {
   const btn = $('welcomeContinueBtn');
