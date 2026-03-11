@@ -4600,7 +4600,6 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'beeCount', name:'Včely', icon:'🐝', mode:'both'},
   {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'},
   {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'},
-  {id:'cardWar', name:'Vojna', icon:'🃏', mode:'both'},
   {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'}
 ];
 
@@ -16059,6 +16058,7 @@ function warCardHTML(c){
 }
 
 function resetWar(){
+  if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}
   const deck=warMakeDeck();
   WAR.deck1=deck.slice(0,26);WAR.deck2=deck.slice(26);
   WAR.card1=null;WAR.card2=null;WAR.pile=[];WAR.over=false;WAR.animating=false;
@@ -16481,7 +16481,7 @@ const MOBILE_GAMES = [
   { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo', cat:'arcade' },
   { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo', cat:'logic' },
   { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
-  { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'both', cat:'board' },
+  { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
