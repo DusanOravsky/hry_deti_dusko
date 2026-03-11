@@ -4097,12 +4097,12 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
   <!-- ===== UNO LIGHT ===== -->
   <div class="game-area" id="unoGame">
     <div class="rules"><h3>🎴 Uno:</h3><ul>
+      <li>Každý začína so 7 kartami</li>
       <li>Zahraj kartu s rovnakou farbou alebo číslom</li>
-      <li>+2 = súper ťahá 2 karty</li>
-      <li>🔄 = zmena smeru, ⛔ = preskočenie</li>
-      <li>🌈 Wild = zmeň farbu</li>
+      <li>+2 = súper ťahá 2 karty, ⛔ = preskočenie</li>
+      <li>🔄 = preskočenie, 🌈 Wild = zmeň farbu</li>
       <li>Nemôžeš hrať? Potiahni kartu!</li>
-      <li>Kto sa prvý zbaví kariet, vyhráva</li>
+      <li>Kto sa prvý zbaví všetkých kariet (0), vyhráva!</li>
     </ul></div>
     <div class="difficulty-selector" id="unoAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setUnoDiff('easy',this)">Ľahká</button>
@@ -4110,8 +4110,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="difficulty-btn" onclick="setUnoDiff('hard',this)">Ťažká</button>
     </div>
     <div class="player-info" id="unoPlayerInfo">
-      <div class="player-card player1 active-turn" id="unoP1Card"><div class="player-name-display" id="unoP1Name">Hráč 1</div><div class="player-score" id="unoP1Count">7</div></div>
-      <div class="player-card player2" id="unoP2Card"><div class="player-name-display" id="unoP2Name">Hráč 2</div><div class="player-score" id="unoP2Count">7</div></div>
+      <div class="player-card player1 active-turn" id="unoP1Card"><div class="player-name-display" id="unoP1Name">Hráč 1</div><div class="player-score">🃏 <span id="unoP1Count">7</span></div></div>
+      <div class="player-card player2" id="unoP2Card"><div class="player-name-display" id="unoP2Name">Hráč 2</div><div class="player-score">🃏 <span id="unoP2Count">7</span></div></div>
     </div>
     <div class="status" id="unoStatus">Tvoj ťah!</div>
     <div id="unoDiscard" style="text-align:center;margin:10px 0">
@@ -4146,7 +4146,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.5';
+const APP_VERSION = '10.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
