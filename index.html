@@ -4071,14 +4071,15 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
   <!-- ===== WAR (VOJNA) ===== -->
   <div class="game-area" id="cardWar">
     <div class="rules"><h3>🃏 Vojna:</h3><ul>
-      <li>Každý hráč otočí vrchnú kartu</li>
+      <li>Každý hráč začína s 26 kartami</li>
+      <li>Klikni na kartu — obe sa otočia</li>
       <li>Vyššia karta berie obe</li>
       <li>Rovnaké = vojna! 3 skryté + 1 otvorená</li>
-      <li>Kto má na konci viac kariet, vyhráva</li>
+      <li>Kto získa všetky karty (52), vyhráva!</li>
     </ul></div>
     <div class="player-info" id="warPlayerInfo">
-      <div class="player-card player1 active-turn" id="warP1Card"><div class="player-name-display" id="warP1Name">Hráč 1</div><div class="player-score" id="warP1Count">26</div></div>
-      <div class="player-card player2" id="warP2Card"><div class="player-name-display" id="warP2Name">Hráč 2</div><div class="player-score" id="warP2Count">26</div></div>
+      <div class="player-card player1 active-turn" id="warP1Card"><div class="player-name-display" id="warP1Name">Hráč 1</div><div class="player-score">🃏 <span id="warP1Count">26</span></div></div>
+      <div class="player-card player2" id="warP2Card"><div class="player-name-display" id="warP2Name">Hráč 2</div><div class="player-score">🃏 <span id="warP2Count">26</span></div></div>
     </div>
     <div class="status" id="warStatus">Klikni na balíček!</div>
     <div id="warTable" style="display:flex;justify-content:center;gap:30px;margin:16px auto;align-items:center">
@@ -4145,7 +4146,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '10.4';
+const APP_VERSION = '10.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
