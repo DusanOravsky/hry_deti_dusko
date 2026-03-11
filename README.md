@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA so 40 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA so 42 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (40)
+## Hry (42)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -29,6 +29,8 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Tank Battle (power-upy: shield/rapid/speed) | Yes | Yes (easy/medium/hard) |
 | Vcely (canvas, vcely letia do ulov, hadaj ktory dostal najviac) | - | Yes (easy/medium/hard) |
 | Futbal (canvas, penaltova strelba, sipka+sila, brankár) | - | Yes (easy/medium/hard) |
+| Vojna (War) — kartova hra, vyššia karta berie, vojna pri zhode | - | - (pure luck) |
+| Uno Light — farby+cisla+specials, wild, +2, skip, reverse | - | Yes (easy/medium/hard) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra |
@@ -118,7 +120,7 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 
 ## Technologie
 
-- Single HTML file (~17900 riadkov)
+- Single HTML file (~18500 riadkov)
 - PWA s Service Worker (network-first pre HTML, cache-first pre assety, auto-reload pri update)
 - Plne offline funkcna (okrem online multiplayer)
 - WebRTC peer-to-peer cez PeerJS 1.5.5 + Metered TURN servery (heslo chranene)
@@ -159,9 +161,18 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v9.1**
+Aktualna verzia: **v10.0**
 
 ### Changelog
+
+**v10.0** (2026-03-11) - War + Uno + Categories + Difficulty Persistence
+- 🃏 **Vojna (War)** — kartova hra, vyššia karta berie, vojna pri zhode, AI auto-flip
+- 🎴 **Uno Light** — farby+cisla, wild, +2, skip, reverse (acts as skip in 2-player), AI easy/medium/hard
+- 🏷️ **Kategorie hier** — 6 kategorii (Všetky, Doskové, Arkádové, Slovné, Logické, Zábavné), horizontalne scrollovatelne pills
+- 💾 **AI difficulty persistence** — ulozenie zvolenej obtiažnosti per hra v localStorage, auto-restore pri nacitani
+- Bugfix: Reverse v Uno teraz správne funguje ako skip v 2-hráčovom mode
+- Bugfix: War/Uno AI timeout cleanup v stopAllGames()
+- Celkovo 42 hier
 
 **v9.1** (2026-03-11) - Docs & Version Sync
 - Aktualizacia CLAUDE.md a README.md

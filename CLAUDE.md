@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~17900 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~18500 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v9.1
+- **Current version**: v10.0
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -53,7 +53,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (40 total)
+## Games (42 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -74,6 +74,8 @@ resetWordle(); // welcomeGameMode check works
 - Tank Battle [MP] (AI: easy/medium/hard, 16x16 grid, power-ups: shield/rapid/speed)
 - Vcely / Bee Counting (AI: easy/medium/hard, canvas, bees fly into 3 hives, guess which got most, solo X/5 in AI mode)
 - Futbal / Soccer (AI: easy/medium/hard, canvas, penalty shootout with swinging arrow + power bar, solo X/5 in AI mode)
+- Vojna / War (pure luck card game, higher card takes both, war on tie with 3 face-down + 1 face-up, AI auto-flip)
+- Uno Light (AI: easy/medium/hard, color/number matching, wild, +2, skip, reverse acts as skip in 2-player)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -143,6 +145,8 @@ resetWordle(); // welcomeGameMode check works
 - **Gravity Run**: Canvas endless runner, player runs on floor/ceiling, tap/space to flip gravity, obstacles spawn on both sides, increasing speed, high score in localStorage
 - **Solo mode pattern**: Games with mode:'both' show solo score (X/5) in AI mode — hide player-info div, show soloScore div via `applyGameMode()` and `reset*()`
 - **mpSend() helper**: Wraps `MP.connection.send()` with null checks and try/catch — all 46+ send calls use this
+- **AI difficulty persistence**: `saveDiff(gameId,d)` / `loadDiff(gameId)` save to `localStorage('hry_diff_'+gameId)`, `restoreAllDiffs()` on page load
+- **Game categories**: 6 categories (Všetky, Doskové, Arkádové, Slovné, Logické, Zábavné), `GAME_CATS` array, `cat` property on MOBILE_GAMES, horizontal scrollable pills
 - **Confetti on wins**: Canvas confetti animation on any win via `addWin()`, 150 particles, 2.5s duration
 - **Daily Challenge**: Random game challenge each day, streak tracking in localStorage, daily button on welcome + sidebar
 - **Emoji Avatars**: 20 emoji avatars per player, stored in localStorage, shown on welcome screen + game cards
@@ -313,6 +317,8 @@ Key game state objects and their patterns:
 - `SOC` — Soccer (canvas, arrow angle, power, keeper, ball, penalty shootout)
 - `GRAV` — Gravity Run (canvas, player, obstacles, particles, gravDir, score, best)
 - `MS` — Minesweeper (grid[][], rows, cols, mines, diff, revealed, flagged, totalSafe, gameOver, won, firstClick, started, timer, flagMode)
+- `WAR` — War card game (deck1, deck2, card1, card2, pile, over, animating, _timer)
+- `UNO` — Uno Light (hand1, hand2, deck, discard, turn, dir, over, topColor, diff, pendingWild, _timer)
 - `G48` — 2048 (grid 4x4, score, best, won, over)
 - `FLAP` — Flappy Bird (canvas, bird, pipes, score, best, running, raf)
 
