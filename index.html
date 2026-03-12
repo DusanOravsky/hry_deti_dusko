@@ -663,6 +663,8 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 .maze-dir-btn:active { background:rgba(255,255,255,0.25); transform:scale(0.9); }
 .maze-dir-btn.empty { background:transparent; cursor:default; }
 @media(max-width:480px) { .maze-controls { grid-template-columns:repeat(3,50px); grid-template-rows:repeat(3,50px); } .maze-dir-btn { width:50px; height:50px; font-size:1.3em; } }
+body.light .maze-dir-btn { background:rgba(0,0,0,0.08); color:#333; }
+body.light .maze-dir-btn:active { background:rgba(0,0,0,0.18); }
 
 /* MODE & DIFFICULTY */
 .mode-selector, .difficulty-selector {
@@ -4214,10 +4216,11 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.6';
+const APP_VERSION = '11.7';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEKCIA 1: NAVIGÁCIA & GLOBÁLNE KONŠTANTY
@@ -4630,8 +4633,8 @@ function updateWelcomeStats() {
   if(histEl && gStats.history.length > 0) {
     const recent = gStats.history.slice(0, 3);
     histEl.innerHTML = recent.map(h => {
-      const winner = h.winner===1 ? '🥇 '+h.name1 : h.winner===2 ? '🥇 '+h.name2 : '🤝 Remíza';
-      return `<div class="welcome-history-row"><span class="welcome-history-game">${h.game}</span><span class="welcome-history-winner">${winner}</span></div>`;
+      const winner = h.winner===1 ? '🥇 '+escHtml(h.name1) : h.winner===2 ? '🥇 '+escHtml(h.name2) : '🤝 Remíza';
+      return `<div class="welcome-history-row"><span class="welcome-history-game">${escHtml(h.game)}</span><span class="welcome-history-winner">${winner}</span></div>`;
     }).join('');
   } else if(histEl) {
     histEl.innerHTML = '';
@@ -5303,11 +5306,11 @@ function renderStats() {
   const p2pct = Math.round(gStats.p2/total*100);
   $('stWinBars').innerHTML = `
     <div class="stats-bar-row" style="margin-bottom:6px">
-      <div class="stats-bar-name">${globalP1}</div>
+      <div class="stats-bar-name">${escHtml(globalP1)}</div>
       <div class="stats-bar-track"><div class="stats-bar-fill p1" style="width:${p1pct}%">${gStats.p1}</div></div>
     </div>
     <div class="stats-bar-row">
-      <div class="stats-bar-name">${globalP2}</div>
+      <div class="stats-bar-name">${escHtml(globalP2)}</div>
       <div class="stats-bar-track"><div class="stats-bar-fill p2" style="width:${p2pct}%">${gStats.p2}</div></div>
     </div>`;
   const perGameEl = $('stPerGame');
@@ -5318,13 +5321,13 @@ function renderStats() {
       const tot = v.p1+v.p2+v.draws||1;
       const p1w = Math.round(v.p1/tot*100), p2w = Math.round(v.p2/tot*100);
       return `<div style="margin-bottom:14px">
-        <div style="font-size:0.85em;font-weight:700;margin-bottom:6px;opacity:0.8">${GAME_NAMES[gId]||gId} <span style="opacity:0.4;font-weight:400">(${tot} ${tot===1?'hra':'hier'})</span></div>
+        <div style="font-size:0.85em;font-weight:700;margin-bottom:6px;opacity:0.8">${escHtml(GAME_NAMES[gId]||gId)} <span style="opacity:0.4;font-weight:400">(${tot} ${tot===1?'hra':'hier'})</span></div>
         <div class="stats-bar-row" style="margin-bottom:4px">
-          <div class="stats-bar-name" style="font-size:0.8em">${getActiveP1Name(gId)}</div>
+          <div class="stats-bar-name" style="font-size:0.8em">${escHtml(getActiveP1Name(gId))}</div>
           <div class="stats-bar-track" style="height:16px"><div class="stats-bar-fill p1" style="width:${p1w}%;font-size:0.75em">${v.p1}</div></div>
         </div>
         <div class="stats-bar-row">
-          <div class="stats-bar-name" style="font-size:0.8em">${getActiveP2Name(gId)}</div>
+          <div class="stats-bar-name" style="font-size:0.8em">${escHtml(getActiveP2Name(gId))}</div>
           <div class="stats-bar-track" style="height:16px"><div class="stats-bar-fill p2" style="width:${p2w}%;font-size:0.75em">${v.p2}</div></div>
         </div></div>`;
     }).join('');
@@ -5334,11 +5337,11 @@ function renderStats() {
   else {
     histEl.innerHTML = gStats.history.map(h=>{
       const wCls   = h.winner===1?'w1':h.winner===2?'w2':'draw';
-      const wLabel = h.winner===1?'🥇 '+h.name1 : h.winner===2?'🥇 '+h.name2 : '🤝 Remíza';
+      const wLabel = h.winner===1?'🥇 '+escHtml(h.name1) : h.winner===2?'🥇 '+escHtml(h.name2) : '🤝 Remíza';
       return `<div class="stats-history-row">
-        <div class="stats-history-game">${h.game}</div>
+        <div class="stats-history-game">${escHtml(h.game)}</div>
         <div class="stats-history-winner ${wCls}">${wLabel}</div>
-        <div class="stats-history-time">${h.time}</div></div>`;
+        <div class="stats-history-time">${escHtml(h.time)}</div></div>`;
     }).join('');
   }
   // Tournament stats
@@ -5865,10 +5868,10 @@ function showRPSP2() {
 function showRPSResult(n1,c1,n2,c2) {
   let resultText, winner=0;
   if(c1===c2){resultText='<span class="result-draw">🤝 Remíza!</span>';addWin(0);playSound('flip');}
-  else if(rpsBeats[c1]===c2){RPS.s1++;winner=1;resultText='<span class="result-win">🎉 '+n1+' vyhral!</span>';addWin(1);celebrate('rpsCelebration');playSound('win');}
-  else{RPS.s2++;winner=2;resultText='<span class="result-lose">🎉 '+n2+' vyhral!</span>';addWin(2);celebrate('rpsCelebration');playSound('win');}
+  else if(rpsBeats[c1]===c2){RPS.s1++;winner=1;resultText='<span class="result-win">🎉 '+escHtml(n1)+' vyhral!</span>';addWin(1);celebrate('rpsCelebration');playSound('win');}
+  else{RPS.s2++;winner=2;resultText='<span class="result-lose">🎉 '+escHtml(n2)+' vyhral!</span>';addWin(2);celebrate('rpsCelebration');playSound('win');}
   const resEl=$('rpsResult');
-  resEl.innerHTML=`<strong>${n1}:</strong> ${rpsNames[c1]}<br><strong>${n2}:</strong> ${rpsNames[c2]}<br>${resultText}`;
+  resEl.innerHTML=`<strong>${escHtml(n1)}:</strong> ${rpsNames[c1]}<br><strong>${escHtml(n2)}:</strong> ${rpsNames[c2]}<br>${resultText}`;
   resEl.classList.add('show');
   resEl.classList.remove('rps-reveal'); void resEl.offsetWidth; resEl.classList.add('rps-reveal');
   $('p1ScoreRPS').textContent=RPS.s1;
@@ -8457,7 +8460,7 @@ function reacNextTurn(pad){
 function reacAddTimeDisplay(player,t){
   const times=$('reactionTimes');
   const card=document.createElement('div'); card.className='reaction-time-card';
-  card.innerHTML=`<div class="reaction-time-val">${t}ms</div><div class="reaction-time-lbl">${player===1?getP1Name('reac'):getP2Name('reac')} kolo ${REAC.times[player-1].length}</div>`;
+  card.innerHTML=`<div class="reaction-time-val">${t}ms</div><div class="reaction-time-lbl">${escHtml(player===1?getP1Name('reac'):getP2Name('reac'))} kolo ${REAC.times[player-1].length}</div>`;
   times.appendChild(card);
 }
 function reacFinish(){
