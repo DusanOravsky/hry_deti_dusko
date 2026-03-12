@@ -3615,9 +3615,15 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <li>Pristátie na súperovu figúrku ju vyhodí!</li>
       <li>6 = bonus hod! Kto dostane všetky 4 domov vyhráva!</li>
     </ul></div>
-    <div class="player-info">
-      <div class="player-card player1 active-turn" id="ludoP1Card"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div style="font-size:1.4em">🔴</div><div class="player-score" id="p1ScoreLudo">0</div></div>
-      <div class="player-card player2" id="ludoP2Card"><div class="player-name-display" id="ludoP2Name">Hráč 2</div><div style="font-size:1.4em">🔵</div><div class="player-score" id="p2ScoreLudo">0</div></div>
+    <div class="difficulty-selector" id="ludoPlayerSel">
+      <button class="difficulty-btn" onclick="setLudoPlayers(2,this)">2 hráči</button>
+      <button class="difficulty-btn active" onclick="setLudoPlayers(4,this)">4 hráči</button>
+    </div>
+    <div class="player-info" id="ludoPlayerInfo" style="flex-wrap:wrap;gap:8px">
+      <div class="player-card player1 active-turn" id="ludoP1Card" style="min-width:70px;flex:1"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div style="font-size:1.2em">🔴</div><div class="player-score" id="ludoScore0">0</div></div>
+      <div class="player-card player2" id="ludoP2Card" style="min-width:70px;flex:1"><div class="player-name-display" id="ludoP2Name">Hráč 2</div><div style="font-size:1.2em">🔵</div><div class="player-score" id="ludoScore1">0</div></div>
+      <div class="player-card" id="ludoP3Card" style="min-width:70px;flex:1;border-top-color:#66bb6a"><div class="player-name-display" id="ludoP3Name">Hráč 3</div><div style="font-size:1.2em">🟢</div><div class="player-score" id="ludoScore2">0</div></div>
+      <div class="player-card" id="ludoP4Card" style="min-width:70px;flex:1;border-top-color:#fdd835"><div class="player-name-display" id="ludoP4Name">Hráč 4</div><div style="font-size:1.2em">🟡</div><div class="player-score" id="ludoScore3">0</div></div>
     </div>
     <div class="difficulty-selector" id="ludoAISel" style="display:none">
       <button class="difficulty-btn active" onclick="setLudoDiff('easy',this)">Ľahká</button>
@@ -4216,7 +4222,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.7';
+const APP_VERSION = '11.8';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6259,12 +6265,18 @@ function applyCheckersMPStart() {
 }
 function applyLudoMPStart() {
   if(!MP.isConnected) return;
+  // Force 2 players in MP mode
+  LUDO.numPlayers=2;
+  LUDO.pieces=[[-1,-1,-1,-1],[-1,-1,-1,-1]];
+  $('ludoP3Card').style.display='none';
+  $('ludoP4Card').style.display='none';
+  $('ludoPlayerSel').style.display='none';
   const hostFirst = MP.ludoRound % 2 === 0;
   LUDO.turn = hostFirst ? 0 : 1;
   const iAmFirst = (MP.isHost && hostFirst) || (!MP.isHost && !hostFirst);
   const pName = iAmFirst ? getP1Name('lu') : getP2Name('lu');
   $('ludoStatus').textContent = pName + ' hádže kockou!';
-  activeTurn('ludoP1Card', 'ludoP2Card', iAmFirst ? 1 : 2);
+  ludoActiveTurn(LUDO.turn);
   renderLudo();
 }
 function mpGetMyLudoTurn() {
@@ -11664,10 +11676,18 @@ document.addEventListener('keydown',e=>{
 // SEKCIA 32: ČLOVEČE NEHNEVAJ SA (Ludo)
 // =============================================================================
 const LUDO = {
-  dice:0, turn:0, rolled:false, over:false, s1:0, s2:0,
-  pieces:[[-1,-1,-1,-1],[-1,-1,-1,-1]], diff:'easy'
+  dice:0, turn:0, rolled:false, over:false, scores:[0,0,0,0],
+  pieces:[], numPlayers:4, diff:'easy'
 };
 function setLudoDiff(d,btn) { LUDO.diff=d; saveDiff('ludo',d); document.querySelectorAll('#ludoAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function setLudoPlayers(n,btn) {
+  LUDO.numPlayers=n;
+  document.querySelectorAll('#ludoPlayerSel .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  $('ludoP3Card').style.display=n===4?'':'none';
+  $('ludoP4Card').style.display=n===4?'':'none';
+  resetLudo();
+}
 const LUDO_PATH = [
   [10,4],[9,4],[8,4],[7,4],[6,4],
   [6,3],[6,2],[6,1],[6,0],
@@ -11682,9 +11702,28 @@ const LUDO_PATH = [
   [7,6],[8,6],[9,6],[10,6],
   [10,5]
 ];
-const LUDO_HOME = [[[9,5],[8,5],[7,5],[6,5]],[[1,5],[2,5],[3,5],[4,5]]];
-const LUDO_BASE = [[[9,0],[9,1],[10,0],[10,1]],[[0,9],[0,10],[1,9],[1,10]]];
-const LUDO_START = [0,20];
+const LUDO_HOME = [
+  [[9,5],[8,5],[7,5],[6,5]],
+  [[5,1],[5,2],[5,3],[5,4]],
+  [[1,5],[2,5],[3,5],[4,5]],
+  [[5,9],[5,8],[5,7],[5,6]]
+];
+const LUDO_BASE = [
+  [[9,0],[9,1],[10,0],[10,1]],
+  [[0,0],[0,1],[1,0],[1,1]],
+  [[0,9],[0,10],[1,9],[1,10]],
+  [[9,9],[9,10],[10,9],[10,10]]
+];
+const LUDO_START = [0,10,20,30];
+const LUDO_COL = ['#ef5350','#42a5f5','#66bb6a','#fdd835'];
+const LUDO_BG = ['rgba(239,83,80,','rgba(66,165,245,','rgba(102,187,106,','rgba(253,216,53,'];
+
+function ludoGetName(p) {
+  if(p===0) return getP1Name('lu');
+  if(p===1) return (welcomeGameMode==='ai'&&LUDO.numPlayers>1)?'Počítač':getP2Name('lu');
+  if(welcomeGameMode==='ai') return 'Počítač';
+  return 'Hráč '+(p+1);
+}
 
 function ludoRel2Coord(p,rel) {
   if(rel===-1) return null;
@@ -11692,24 +11731,38 @@ function ludoRel2Coord(p,rel) {
   return LUDO_PATH[(LUDO_START[p]+rel)%40];
 }
 
+function ludoActiveTurn(p) {
+  const ids=['ludoP1Card','ludoP2Card','ludoP3Card','ludoP4Card'];
+  for(let i=0;i<LUDO.numPlayers;i++) $(ids[i]).classList.toggle('active-turn',i===p);
+}
+
 function resetLudo() {
   LUDO.dice=0; LUDO.turn=0; LUDO.rolled=false; LUDO.over=false;
-  LUDO.pieces=[[-1,-1,-1,-1],[-1,-1,-1,-1]];
-  $('ludoStatus').textContent=getP1Name('lu')+' hádže kockou!';
+  LUDO.pieces=[];
+  for(let i=0;i<LUDO.numPlayers;i++) LUDO.pieces.push([-1,-1,-1,-1]);
+  // Show/hide P3/P4 cards
+  $('ludoP3Card').style.display=LUDO.numPlayers===4?'':'none';
+  $('ludoP4Card').style.display=LUDO.numPlayers===4?'':'none';
+  // Update names
+  $('ludoP1Name').textContent=ludoGetName(0);
+  $('ludoP2Name').textContent=ludoGetName(1);
+  if(LUDO.numPlayers>=3) $('ludoP3Name').textContent=ludoGetName(2);
+  if(LUDO.numPlayers>=4) $('ludoP4Name').textContent=ludoGetName(3);
+  $('ludoStatus').textContent=ludoGetName(0)+' hádže kockou!';
   $('ludoDiceVal').textContent='🎲';
   $('ludoDiceNum').style.display='none';
-  activeTurn('ludoP1Card','ludoP2Card',1);
+  ludoActiveTurn(0);
   renderLudo();
 }
 
 function renderLudo() {
   const board=$('ludoBoard');
   if(!board) return;
+  const np=LUDO.numPlayers;
   const pathSet=new Set(); LUDO_PATH.forEach(([r,c])=>pathSet.add(r+','+c));
-  const baseMap={}; LUDO_BASE.forEach((bases,p)=>bases.forEach(([r,c])=>baseMap[r+','+c]=p));
-  const homeMap={}; LUDO_HOME.forEach((homes,p)=>homes.forEach(([r,c])=>homeMap[r+','+c]=p));
-  const startMap={}; startMap[LUDO_PATH[LUDO_START[0]][0]+','+LUDO_PATH[LUDO_START[0]][1]]=0;
-  startMap[LUDO_PATH[LUDO_START[1]][0]+','+LUDO_PATH[LUDO_START[1]][1]]=1;
+  const baseMap={}; for(let p=0;p<np;p++) LUDO_BASE[p].forEach(([r,c])=>{baseMap[r+','+c]=p;});
+  const homeMap={}; for(let p=0;p<np;p++) LUDO_HOME[p].forEach(([r,c])=>{homeMap[r+','+c]=p;});
+  const startMap={}; for(let p=0;p<np;p++){const s=LUDO_PATH[LUDO_START[p]];startMap[s[0]+','+s[1]]=p;}
   const pieceMap={};
   LUDO.pieces.forEach((pcs,p)=>pcs.forEach((pos,i)=>{
     let coord=pos===-1?LUDO_BASE[p][i]:ludoRel2Coord(p,pos);
@@ -11717,27 +11770,25 @@ function renderLudo() {
   }));
   const movable=ludoGetMovable();
   const movSet=new Set(movable.map(m=>m.piece));
-  const pCol=['#ef5350','#42a5f5'];
-  const pBg=['rgba(239,83,80,','rgba(66,165,245,'];
   let html='';
   for(let r=0;r<11;r++){for(let c=0;c<11;c++){
     const k=r+','+c;
     let bg='transparent',bd='none';
     if(r===5&&c===5){bg='rgba(255,215,0,0.5)';bd='2px solid rgba(255,215,0,0.8)';}
-    else if(k in baseMap){const p=baseMap[k];bg=pBg[p]+'0.45)';bd='2px solid '+pBg[p]+'0.7)';}
-    else if(k in homeMap){const p=homeMap[k];bg=pBg[p]+'0.35)';bd='2px solid '+pBg[p]+'0.6)';}
+    else if(k in baseMap){const p=baseMap[k];bg=LUDO_BG[p]+'0.45)';bd='2px solid '+LUDO_BG[p]+'0.7)';}
+    else if(k in homeMap){const p=homeMap[k];bg=LUDO_BG[p]+'0.35)';bd='2px solid '+LUDO_BG[p]+'0.6)';}
     else if(pathSet.has(k)){bg='rgba(255,255,255,0.22)';bd='1px solid rgba(255,255,255,0.3)';
-      if(k in startMap){const p=startMap[k];bg=pBg[p]+'0.5)';bd='2px solid '+pBg[p]+'0.7)';}}
+      if(k in startMap){const p=startMap[k];bg=LUDO_BG[p]+'0.5)';bd='2px solid '+LUDO_BG[p]+'0.7)';}}
     let content='';
     if(r===5&&c===5) content='<div style="font-size:0.7em">⭐</div>';
     const pcs=pieceMap[k]||[];
     if(pcs.length>0){
-      const sz=pcs.length>1?'55%':'70%';
+      const sz=pcs.length>2?'40%':pcs.length>1?'55%':'70%';
       content=pcs.map(({p,i})=>{
         const canMove=p===LUDO.turn&&movSet.has(i)&&LUDO.rolled&&!LUDO.over;
-        const glow=canMove?'box-shadow:0 0 6px '+pCol[p]+';cursor:pointer;animation:ludoPulse 0.7s infinite alternate':'';
+        const glow=canMove?'box-shadow:0 0 6px '+LUDO_COL[p]+';cursor:pointer;animation:ludoPulse 0.7s infinite alternate':'';
         const oc=canMove?'onclick="ludoMove('+i+')"':'';
-        return '<div '+oc+' style="width:'+sz+';height:'+sz+';border-radius:50%;background:'+pCol[p]+';border:2px solid white;'+glow+';display:flex;align-items:center;justify-content:center;font-size:0.5em;color:white;font-weight:700">'+(i+1)+'</div>';
+        return '<div '+oc+' style="width:'+sz+';height:'+sz+';border-radius:50%;background:'+LUDO_COL[p]+';border:2px solid white;'+glow+';display:flex;align-items:center;justify-content:center;font-size:0.5em;color:white;font-weight:700">'+(i+1)+'</div>';
       }).join('');
     }
     html+='<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:1px;background:'+bg+';border:'+bd+';border-radius:3px;font-size:1em;overflow:hidden">'+content+'</div>';
@@ -11767,7 +11818,8 @@ function ludoGetMovable() {
 
 function ludoRoll() {
   if(LUDO.rolled||LUDO.over) return;
-  if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
+  // Block AI turns from human click
+  if(welcomeGameMode==='ai'&&LUDO.turn>0) return;
   // MP mode: only roll on your turn
   if(MP.isConnected) {
     if(LUDO.turn !== mpGetMyLudoTurn()) return;
@@ -11786,7 +11838,7 @@ function ludoRoll() {
   playSound('click');
   // Send dice to opponent
   if(MP.isConnected&&MP.connection) mpSend({type:'ludo-roll',dice:LUDO.dice});
-  const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+  const pName=ludoGetName(LUDO.turn);
   const movable=ludoGetMovable();
   if(movable.length===0){
     $('ludoStatus').textContent=pName+' hodil '+LUDO.dice+' — nemôže ťahať!';
@@ -11798,8 +11850,13 @@ function ludoRoll() {
   renderLudo();
 }
 
+function ludoIsAI(p) {
+  return welcomeGameMode==='ai'&&p>0;
+}
+
 function ludoDoRollAI() {
-  if(LUDO.rolled||LUDO.over||LUDO.turn!==1) return;
+  const p=LUDO.turn;
+  if(LUDO.rolled||LUDO.over||!ludoIsAI(p)) return;
   LUDO.dice=1+Math.floor(Math.random()*6);
   LUDO.rolled=true;
   const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
@@ -11809,7 +11866,7 @@ function ludoDoRollAI() {
   const btnAI=$('ludoDiceBtn');
   btnAI.classList.remove('dice-roll'); void btnAI.offsetWidth; btnAI.classList.add('dice-roll');
   playSound('click');
-  const pName=getP2Name('lu');
+  const pName=ludoGetName(p);
   const movable=ludoGetMovable();
   if(movable.length===0){
     $('ludoStatus').textContent=pName+' hodil '+LUDO.dice+' — nemôže ťahať!';
@@ -11820,27 +11877,26 @@ function ludoDoRollAI() {
   $('ludoStatus').textContent=pName+' hodil '+LUDO.dice+'...';
   renderLudo();
   setTimeout(()=>{
-    if(LUDO.over||LUDO.turn!==1) return;
+    if(LUDO.over||LUDO.turn!==p) return;
     const moves=ludoGetMovable();
     if(moves.length===0) return;
     let best;
     if(LUDO.diff==='easy') {
-      // Easy: random move
       best=moves[Math.floor(Math.random()*moves.length)];
     } else if(LUDO.diff==='medium') {
-      // Medium: prefer captures and home, but some randomness
       best=moves[0];
       for(const m of moves){
-        if(m.to<40){const abs=(LUDO_START[1]+m.to)%40;const canCap=LUDO.pieces[0].some(op=>op>=0&&op<40&&(LUDO_START[0]+op)%40===abs);if(canCap){best=m;break;}}
-      }
+        if(m.to<40){const abs=(LUDO_START[p]+m.to)%40;
+          const canCap=LUDO.pieces.some((opp,op)=>op!==p&&opp.some(rel=>rel>=0&&rel<40&&(LUDO_START[op]+rel)%40===abs));
+          if(canCap){best=m;break;}}}
       const homeM=moves.find(m=>m.to>=40);if(homeM&&Math.random()>0.3) best=homeM;
       if(Math.random()<0.25) best=moves[Math.floor(Math.random()*moves.length)];
     } else {
-      // Hard: always optimal - capture > home > leave base > advance
       best=moves[0];
       for(const m of moves){
-        if(m.to<40){const abs=(LUDO_START[1]+m.to)%40;const canCap=LUDO.pieces[0].some(op=>op>=0&&op<40&&(LUDO_START[0]+op)%40===abs);if(canCap){best=m;break;}}
-      }
+        if(m.to<40){const abs=(LUDO_START[p]+m.to)%40;
+          const canCap=LUDO.pieces.some((opp,op)=>op!==p&&opp.some(rel=>rel>=0&&rel<40&&(LUDO_START[op]+rel)%40===abs));
+          if(canCap){best=m;break;}}}
       const homeM=moves.find(m=>m.to>=40);if(homeM) best=homeM;
       const baseM=moves.find(m=>m.from===-1);if(baseM&&!homeM) best=baseM;
     }
@@ -11855,22 +11911,27 @@ function ludoDoMove(pieceIdx) {
   const p=LUDO.turn;
   LUDO.pieces[p][pieceIdx]=move.to;
   playSound('move');
+  // Check captures against all opponents
   if(move.to<40){
     const absPos=(LUDO_START[p]+move.to)%40;
-    const opp=1-p;
-    LUDO.pieces[opp].forEach((op,oi)=>{
-      if(op>=0&&op<40){
-        if((LUDO_START[opp]+op)%40===absPos){LUDO.pieces[opp][oi]=-1;playSound('hit');}
-      }
-    });
+    for(let opp=0;opp<LUDO.numPlayers;opp++){
+      if(opp===p) continue;
+      LUDO.pieces[opp].forEach((op,oi)=>{
+        if(op>=0&&op<40){
+          if((LUDO_START[opp]+op)%40===absPos){LUDO.pieces[opp][oi]=-1;playSound('hit');}
+        }
+      });
+    }
   }
+  // Check win
   if(LUDO.pieces[p].every(pos=>pos>=40)){
     LUDO.over=true;
-    const pName=p===0?getP1Name('lu'):getP2Name('lu');
+    const pName=ludoGetName(p);
     $('ludoStatus').textContent='🎉 '+pName+' vyhral!';
-    if(p===0){LUDO.s1++;addWin(1,'ludo');}else{LUDO.s2++;addWin(2,'ludo');}
-    $('p1ScoreLudo').textContent=LUDO.s1;
-    $('p2ScoreLudo').textContent=LUDO.s2;
+    LUDO.scores[p]++;
+    for(let i=0;i<LUDO.numPlayers;i++) $('ludoScore'+i).textContent=LUDO.scores[i];
+    // Stats: P1 win=1, P2 win=2, others=draw
+    if(p===0) addWin(1,'ludo'); else if(p===1) addWin(2,'ludo'); else addWin(0,'ludo');
     playSound('win');celebrate('ludoCelebration');
     renderLudo(); return;
   }
@@ -11879,7 +11940,7 @@ function ludoDoMove(pieceIdx) {
 
 function ludoMove(pieceIdx) {
   if(!LUDO.rolled||LUDO.over) return;
-  if(welcomeGameMode==='ai'&&LUDO.turn===1) return;
+  if(welcomeGameMode==='ai'&&LUDO.turn>0) return;
   if(MP.isConnected) {
     if(LUDO.turn !== mpGetMyLudoTurn()) return;
     mpSend({type:'ludo-move',piece:pieceIdx});
@@ -11891,20 +11952,21 @@ function ludoEndTurn(extra) {
   if(extra){
     LUDO.rolled=false;LUDO.dice=0;
     $('ludoDiceVal').textContent='🎲';
-    const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+    const pName=ludoGetName(LUDO.turn);
     $('ludoStatus').textContent=pName+' hodil 6 — hádže znova!';
     renderLudo();
-    if(welcomeGameMode==='ai'&&LUDO.turn===1) setTimeout(ludoDoRollAI,800);
+    if(ludoIsAI(LUDO.turn)) setTimeout(ludoDoRollAI,800);
     return;
   }
-  LUDO.turn=1-LUDO.turn;
+  LUDO.turn=(LUDO.turn+1)%LUDO.numPlayers;
   LUDO.rolled=false;LUDO.dice=0;
   $('ludoDiceVal').textContent='🎲';
-  const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+  $('ludoDiceNum').style.display='none';
+  const pName=ludoGetName(LUDO.turn);
   $('ludoStatus').textContent=pName+' hádže kockou!';
-  activeTurn('ludoP1Card','ludoP2Card',LUDO.turn===0?1:2);
+  ludoActiveTurn(LUDO.turn);
   renderLudo();
-  if(welcomeGameMode==='ai'&&LUDO.turn===1) setTimeout(ludoDoRollAI,800);
+  if(ludoIsAI(LUDO.turn)) setTimeout(ludoDoRollAI,800);
 }
 
 // =============================================================================
@@ -18012,6 +18074,8 @@ function mpDisconnect() {
   const tnkP2c=$('tnkP2Controls');if(tnkP2c)tnkP2c.style.display=welcomeGameMode==='ai'?'none':'flex';
   const pngP2c=$('pngP2Controls');if(pngP2c)pngP2c.style.display=welcomeGameMode==='ai'?'none':'grid';
   const sdP2c=$('sdP2Controls');if(sdP2c)sdP2c.style.display='flex';
+  // Restore Ludo player selector (was hidden in MP)
+  $('ludoPlayerSel').style.display='';
   // Restore original names from before MP
   if(MP._savedP1) {
     globalP1 = MP._savedP1; globalP2 = MP._savedP2;
@@ -18500,7 +18564,7 @@ function _mpHandleMessageInner(data) {
     const btnMP=$('ludoDiceBtn');
     btnMP.classList.remove('dice-roll'); void btnMP.offsetWidth; btnMP.classList.add('dice-roll');
     playSound('click');
-    const pName=LUDO.turn===0?getP1Name('lu'):getP2Name('lu');
+    const pName=ludoGetName(LUDO.turn);
     const movable=ludoGetMovable();
     if(movable.length===0){
       $('ludoStatus').textContent=pName+' hodil '+LUDO.dice+' — nemôže ťahať!';
