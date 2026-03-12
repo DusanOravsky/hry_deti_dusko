@@ -3616,8 +3616,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <li>6 = bonus hod! Kto dostane všetky 4 domov vyhráva!</li>
     </ul></div>
     <div class="difficulty-selector" id="ludoPlayerSel">
-      <button class="difficulty-btn" onclick="setLudoPlayers(2,this)">2 hráči</button>
-      <button class="difficulty-btn active" onclick="setLudoPlayers(4,this)">4 hráči</button>
+      <button class="difficulty-btn active" onclick="setLudoPlayers(2,this)">2 hráči</button>
+      <button class="difficulty-btn" onclick="setLudoPlayers(4,this)">4 hráči</button>
     </div>
     <div class="player-info" id="ludoPlayerInfo" style="flex-wrap:wrap;gap:8px">
       <div class="player-card player1 active-turn" id="ludoP1Card" style="min-width:70px;flex:1"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div style="font-size:1.2em">🔴</div><div class="player-score" id="ludoScore0">0</div></div>
@@ -11677,7 +11677,7 @@ document.addEventListener('keydown',e=>{
 // =============================================================================
 const LUDO = {
   dice:0, turn:0, rolled:false, over:false, scores:[0,0,0,0],
-  pieces:[], numPlayers:4, diff:'easy'
+  pieces:[], numPlayers:2, diff:'easy'
 };
 function setLudoDiff(d,btn) { LUDO.diff=d; saveDiff('ludo',d); document.querySelectorAll('#ludoAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 function setLudoPlayers(n,btn) {
@@ -11804,7 +11804,7 @@ function ludoGetMovable() {
     if(pos===-1){
       if(d===6){const blocked=LUDO.pieces[p].some((pp,j)=>j!==i&&pp===0);if(!blocked)moves.push({piece:i,from:-1,to:0});}
     } else if(pos>=40){
-      if(pos+d<=43) moves.push({piece:i,from:pos,to:pos+d});
+      if(pos+d<=43){const hBlocked=LUDO.pieces[p].some((pp,j)=>j!==i&&pp===pos+d);if(!hBlocked)moves.push({piece:i,from:pos,to:pos+d});}
     } else {
       const np=pos+d;
       if(np>43) return;
@@ -11952,6 +11952,7 @@ function ludoEndTurn(extra) {
   if(extra){
     LUDO.rolled=false;LUDO.dice=0;
     $('ludoDiceVal').textContent='🎲';
+    $('ludoDiceNum').style.display='none';
     const pName=ludoGetName(LUDO.turn);
     $('ludoStatus').textContent=pName+' hodil 6 — hádže znova!';
     renderLudo();
