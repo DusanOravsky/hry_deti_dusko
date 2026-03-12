@@ -11808,7 +11808,7 @@ function ludoGetMovable() {
     } else {
       const np=pos+d;
       if(np>43) return;
-      if(np>=40){moves.push({piece:i,from:pos,to:np});return;}
+      if(np>=40){const hBlocked=LUDO.pieces[p].some((pp,j)=>j!==i&&pp===np);if(!hBlocked)moves.push({piece:i,from:pos,to:np});return;}
       const blocked=LUDO.pieces[p].some((pp,j)=>j!==i&&pp===np);
       if(!blocked) moves.push({piece:i,from:pos,to:np});
     }
