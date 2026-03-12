@@ -4214,7 +4214,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.5';
+const APP_VERSION = '11.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -17753,7 +17753,7 @@ function mpCreateRoom() {
         setTimeout(closeMPModal, 1500);
 
         const _isPsk = $('psk15Board').style.display !== 'none';
-        conn.send({
+        mpSend({
           type: 'handshake',
           from: 'host',
           name: MP.myName,
@@ -18019,6 +18019,11 @@ function mpDisconnect() {
     onGlobalNameChange();
     MP._savedP1 = null; MP._savedP2 = null;
   }
+  // Reset game-specific MP flags
+  MP._rpsMyChoice = null; MP._rpsOpponentChoice = null;
+  MP._meReady = false; MP._opponentReady = false;
+  MP._chReceiving = false; MP._dkReceiving = false;
+  MP._applyingHostSettings = false; MP._isRelay = false;
   console.log('Disconnected');
 }
 
@@ -18158,7 +18163,7 @@ function mpTryReconnect() {
           mpUpdateRoleBadge();
           onReconnected();
           const _rPsk = $('psk15Board').style.display !== 'none';
-          conn.send({ type: 'handshake', from: 'host', name: MP.myName,
+          mpSend({ type: 'handshake', from: 'host', name: MP.myName,
             tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
         });
         conn.on('data', (d) => mpHandleMessage(d));
@@ -18522,11 +18527,6 @@ function _mpHandleMessageInner(data) {
     $('gnInput').value = data.val;
     makeGuess();
   }
-  if(data.type === 'gn-feedback') {
-    $('gnFeedback').textContent = data.text;
-    $('gnStatus').textContent = data.status;
-    if(data.over) gnShowBoxes(false,false,false,false);
-  }
 
   // Lodičky sync
   if(data.type === 'bs-shoot') {
@@ -18646,7 +18646,7 @@ function _mpHandleMessageInner(data) {
       activeTurn(p1c, p2c, hostIsX ? 1 : 2);
     }
     if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
-    if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; resetMem(); applyMemMPStart(); }
+    if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; if(MP.isHost) resetMem(); applyMemMPStart(); }
     if(gameId === 'chess') { if(data.round !== undefined) MP.chRound = data.round; resetChess(); applyChessMPStart(); }
     if(gameId === 'checkers') { if(data.round !== undefined) MP.dkRound = data.round; resetCheckers(); applyCheckersMPStart(); }
     if(gameId === 'ludo') { if(data.round !== undefined) MP.ludoRound = data.round; resetLudo(); applyLudoMPStart(); }
