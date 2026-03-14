@@ -4230,6 +4230,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="difficulty-btn" onclick="setNgDiff('hard',this)">Ťažká</button>
     </div>
     <div id="ngInfoBar" style="display:flex;justify-content:space-between;align-items:center;max-width:min(380px,92vw);margin:0 auto 6px;font-weight:bold;font-size:1.1em">
+      <span>❌ <span id="ngErrors">0</span>/3</span>
       <button id="ngModeToggle" onclick="ngToggleMode()" style="padding:4px 12px;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);font-size:1.1em;cursor:pointer;color:inherit">🖊️ Vyfarbi</button>
       <span>⏱ <span id="ngTime">0</span></span>
     </div>
@@ -4237,8 +4238,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div style="text-align:center"><div id="ngBoard" style="display:inline-grid;user-select:none;background:rgba(255,255,255,0.1);padding:3px;border-radius:6px;border:2px solid rgba(255,255,255,0.2)"></div></div>
     <div class="celebration" id="ngCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
-      <button class="action-btn primary-btn" id="ngStartBtn" onclick="ngStart()">Štart 🖼️</button>
-      <button class="action-btn danger-btn" onclick="resetNonogram()">Nová hra</button>
+      <button class="action-btn primary-btn" onclick="resetNonogram()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4249,7 +4249,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.3';
+const APP_VERSION = '12.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16210,8 +16210,8 @@ resetMinesweeper();
 const NG_DIFF={easy:{size:5,fill:0.55},medium:{size:8,fill:0.50},hard:{size:10,fill:0.45}};
 const NG={
   size:5, solution:[], player:[], diff:'easy',
-  gameOver:false, won:false, started:false,
-  timer:null, time:0, markMode:false
+  gameOver:false, won:false, started:false, firstClick:true,
+  timer:null, time:0, markMode:false, errors:0, maxErrors:3
 };
 
 // Predefined patterns for 5x5 (cute pixel art shapes)
@@ -16272,24 +16272,16 @@ function resetNonogram(){
   if(NG.timer){clearInterval(NG.timer);NG.timer=null;}
   const d=NG_DIFF[NG.diff];
   NG.size=d.size;
-  NG.gameOver=false;NG.won=false;NG.started=false;NG.time=0;NG.markMode=false;
+  NG.gameOver=false;NG.won=false;NG.started=true;NG.time=0;NG.markMode=false;NG.firstClick=true;NG.errors=0;
   NG.player=[];
-  for(let r=0;r<NG.size;r++){NG.player[r]=[];for(let c=0;c<NG.size;c++)NG.player[r][c]=0;}// 0=empty,1=filled,2=marked-X
+  for(let r=0;r<NG.size;r++){NG.player[r]=[];for(let c=0;c<NG.size;c++)NG.player[r][c]=0;}
   ngGenPuzzle();
   $('ngTime').textContent='0';
-  $('ngStatus').textContent=NG.size+'×'+NG.size+'. Klikni Štart!';
-  $('ngStartBtn').disabled=false;
+  const ngErr=$('ngErrors');if(ngErr)ngErr.textContent='0';
+  $('ngStatus').textContent='Klikaj na políčka podľa čísel!';
   $('ngCelebration').textContent='';
   const tog=$('ngModeToggle');
   if(tog){tog.textContent='🖊️ Vyfarbi';tog.style.background='rgba(255,255,255,0.1)';}
-  ngRender();
-}
-function ngStart(){
-  resetNonogram();
-  NG.started=true;
-  $('ngStartBtn').disabled=true;
-  $('ngStatus').textContent='Vyfarbuj podľa čísel!';
-  NG.timer=setInterval(()=>{NG.time++;$('ngTime').textContent=NG.time;},1000);
   ngRender();
 }
 function ngToggleMode(){
@@ -16303,21 +16295,59 @@ function ngToggleMode(){
 }
 function ngCellClick(r,c){
   if(!NG.started||NG.gameOver||NG.won)return;
+  // Start timer on first click
+  if(NG.firstClick){
+    NG.firstClick=false;
+    NG.timer=setInterval(()=>{NG.time++;$('ngTime').textContent=NG.time;},1000);
+  }
   if(NG.markMode){
     NG.player[r][c]=NG.player[r][c]===2?0:2;
     playSound('click');
   } else {
-    NG.player[r][c]=NG.player[r][c]===1?0:1;
-    playSound('click');
+    if(NG.player[r][c]===1){
+      // Unfill — always allowed
+      NG.player[r][c]=0;
+      playSound('click');
+    } else {
+      // Fill — check if correct
+      if(NG.solution[r][c]===1){
+        NG.player[r][c]=1;
+        playSound('correct');
+      } else {
+        // Wrong! Show briefly as error then mark as X
+        NG.errors++;
+        $('ngErrors').textContent=NG.errors;
+        NG.player[r][c]=3;// 3=error (red)
+        playSound('wrong');
+        $('ngStatus').textContent='❌ Chyba! ('+NG.errors+'/'+NG.maxErrors+') Toto políčko má byť prázdne';
+        ngRender();
+        setTimeout(()=>{
+          if(NG.player[r]&&NG.player[r][c]===3)NG.player[r][c]=2;// auto-mark as X
+          if(NG.errors>=NG.maxErrors){
+            NG.gameOver=true;
+            if(NG.timer){clearInterval(NG.timer);NG.timer=null;}
+            // Reveal solution
+            for(let rr=0;rr<NG.size;rr++)for(let cc=0;cc<NG.size;cc++){
+              if(NG.solution[rr][cc]===1&&NG.player[rr][cc]!==1)NG.player[rr][cc]=1;
+            }
+            $('ngStatus').textContent='💥 Priveľa chýb! Riešenie ukázané.';
+            addWin(0,'nonogram');
+            playSound('wrong');
+          }
+          ngRender();
+        },600);
+        return;
+      }
+    }
   }
   ngRender();
   ngCheckWin();
 }
 function ngCheckWin(){
   if(NG.gameOver)return;
+  // Win = all solution cells filled (errors are auto-marked as X, so we just check filled vs solution)
   for(let r=0;r<NG.size;r++)for(let c=0;c<NG.size;c++){
     if(NG.solution[r][c]===1&&NG.player[r][c]!==1)return;
-    if(NG.solution[r][c]===0&&NG.player[r][c]===1)return;
   }
   NG.won=true;NG.gameOver=true;
   if(NG.timer){clearInterval(NG.timer);NG.timer=null;}
@@ -16325,7 +16355,6 @@ function ngCheckWin(){
   $('ngCelebration').textContent='🎉🖼️🎉';
   celebrate('ngCelebration');
   addWin(1,'nonogram');
-  $('ngStartBtn').disabled=false;
   playSound('win');
   ngRender();
 }
@@ -16409,6 +16438,8 @@ function ngRender(){
       let bg,txt='',bdr;
       if(v===1){
         bg=isLight?'#333':'#fff';bdr=isLight?'rgba(0,0,0,0.3)':'rgba(255,255,255,0.3)';
+      } else if(v===3){
+        bg='#f44336';txt='✕';bdr='rgba(244,67,54,0.8)';
       } else if(v===2){
         bg=isLight?'#f0f0f0':'rgba(60,60,80,0.8)';txt='✕';bdr=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.15)';
       } else {
