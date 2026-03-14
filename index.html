@@ -4234,7 +4234,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <span>⏱ <span id="ngTime">0</span></span>
     </div>
     <div class="status" id="ngStatus">Klikni Štart!</div>
-    <div id="ngBoard" style="display:inline-grid;margin:0 auto;user-select:none"></div>
+    <div style="text-align:center"><div id="ngBoard" style="display:inline-grid;user-select:none;background:rgba(255,255,255,0.1);padding:3px;border-radius:6px;border:2px solid rgba(255,255,255,0.2)"></div></div>
     <div class="celebration" id="ngCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
       <button class="action-btn primary-btn" id="ngStartBtn" onclick="ngStart()">Štart 🖼️</button>
@@ -4249,7 +4249,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.2';
+const APP_VERSION = '12.3';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16408,11 +16408,11 @@ function ngRender(){
       const v=NG.player[r][c];
       let bg,txt='',bdr;
       if(v===1){
-        bg=isLight?'#333':'#e0e0e0';bdr=isLight?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.1)';
+        bg=isLight?'#333':'#fff';bdr=isLight?'rgba(0,0,0,0.3)':'rgba(255,255,255,0.3)';
       } else if(v===2){
-        bg='transparent';txt='✕';bdr=isLight?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.2)';
+        bg=isLight?'#f0f0f0':'rgba(60,60,80,0.8)';txt='✕';bdr=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.15)';
       } else {
-        bg=isLight?'rgba(0,0,0,0.06)':'rgba(100,140,200,0.25)';bdr=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.25)';
+        bg=isLight?'#e8e8e8':'rgba(60,60,80,0.8)';bdr=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.15)';
       }
       if(NG.won&&NG.solution[r][c]===1){bg=isLight?'#4CAF50':'#43e97b';bdr='rgba(67,233,123,0.5)';}
       el.style.width=cellSize+'px';el.style.height=cellSize+'px';
