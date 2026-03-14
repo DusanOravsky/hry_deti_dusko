@@ -4295,7 +4295,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.5';
+const APP_VERSION = '13.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12243,14 +12243,25 @@ function doodGenPlatforms() {
   DOOD.platforms = [];
   const wallOff=DOOD.wallMode?6:0;
   const areaW=DOOD.W-wallOff*2;
-  const gapBase=DOOD.wallMode?50:60;
-  const gapRand=DOOD.wallMode?18:20;
+  const gapBase=60;
+  const gapRand=20;
   // Ground platform
   DOOD.platforms.push({ x:130, y:460, w:DOOD_PW, type:'normal', moveDx:0 });
+  let prevX = 130;
   // Generate upwards
   for(let i=1; i<80; i++) {
     const y = 460 - i * gapBase - Math.random()*gapRand;
-    const x = wallOff + Math.random() * (areaW - DOOD_PW);
+    let x;
+    if(DOOD.wallMode) {
+      // Limit horizontal distance so next platform is reachable without wrap
+      const maxDx = 120;
+      const minX = Math.max(wallOff, prevX - maxDx);
+      const maxX = Math.min(wallOff + areaW - DOOD_PW, prevX + maxDx);
+      x = minX + Math.random() * (maxX - minX);
+    } else {
+      x = wallOff + Math.random() * (areaW - DOOD_PW);
+    }
+    prevX = x;
     let type = 'normal';
     if(i > 10 && Math.random() < 0.15) type = 'moving';
     if(i > 15 && Math.random() < 0.1) type = 'breaking';
@@ -12266,11 +12277,21 @@ function doodAddPlatforms() {
   // Add platforms above the topmost visible area
   const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
   if(topP - DOOD.cameraY > -DOOD.H) {
-    const addGapBase=DOOD.wallMode?42:50;
-    const addGapRand=DOOD.wallMode?30:40;
+    const addGapBase=50;
+    const addGapRand=40;
     const y = topP - addGapBase - Math.random() * addGapRand;
     const wallOff=DOOD.wallMode?6:0;
-    const x = wallOff + Math.random() * (DOOD.W - wallOff*2 - DOOD_PW);
+    let x;
+    if(DOOD.wallMode) {
+      // Find the topmost platform to limit horizontal distance
+      const topPlat = DOOD.platforms.reduce((best,p) => p.y < best.y ? p : best, DOOD.platforms[0]);
+      const maxDx = 120;
+      const minX = Math.max(wallOff, topPlat.x - maxDx);
+      const maxX = Math.min(wallOff + DOOD.W - wallOff*2 - DOOD_PW, topPlat.x + maxDx);
+      x = minX + Math.random() * (maxX - minX);
+    } else {
+      x = wallOff + Math.random() * (DOOD.W - wallOff*2 - DOOD_PW);
+    }
     const h = Math.abs(y);
     let type = 'normal';
     if(h > 800 && Math.random() < 0.2) type = 'moving';
