@@ -2172,7 +2172,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 44 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 45 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -4215,6 +4215,33 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== NONOGRAM ===== -->
+  <div class="game-area" id="nonogram">
+    <div class="rules"><h3>🖼️ Nonogram (Picross):</h3><ul>
+      <li>Podľa čísel na okrajoch vyfarbuj políčka v mriežke</li>
+      <li>Čísla v riadku/stĺpci udávajú dĺžky súvislých blokov vyplnených políčok</li>
+      <li>Medzi blokmi musí byť aspoň 1 prázdne políčko</li>
+      <li><b>Klik</b> = vyfarbi | <b>Pravý klik / ✕</b> = označ prázdne</li>
+      <li><b>Ľahká:</b> 5×5 | <b>Stredná:</b> 8×8 | <b>Ťažká:</b> 10×10</li>
+    </ul></div>
+    <div class="ai-difficulty" id="ngDiffWrap" style="display:flex;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setNgDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setNgDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setNgDiff('hard',this)">Ťažká</button>
+    </div>
+    <div id="ngInfoBar" style="display:flex;justify-content:space-between;align-items:center;max-width:min(380px,92vw);margin:0 auto 6px;font-weight:bold;font-size:1.1em">
+      <button id="ngModeToggle" onclick="ngToggleMode()" style="padding:4px 12px;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);font-size:1.1em;cursor:pointer;color:inherit">🖊️ Vyfarbi</button>
+      <span>⏱ <span id="ngTime">0</span></span>
+    </div>
+    <div class="status" id="ngStatus">Klikni Štart!</div>
+    <div id="ngBoard" style="display:inline-grid;margin:0 auto;user-select:none"></div>
+    <div class="celebration" id="ngCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" id="ngStartBtn" onclick="ngStart()">Štart 🖼️</button>
+      <button class="action-btn danger-btn" onclick="resetNonogram()">Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -4239,7 +4266,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4250,7 +4277,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4549,7 +4576,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4560,7 +4587,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4679,7 +4706,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'soccer', name:'Futbal', icon:'⚽', mode:'both'},
   {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'},
   {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'},
-  {id:'nimGame', name:'Nim', icon:'🪨', mode:'both'}
+  {id:'nimGame', name:'Nim', icon:'🪨', mode:'both'},
+  {id:'nonogram', name:'Nonogram', icon:'🖼️', mode:'ai'}
 ];
 
 function showTournament() {
@@ -16177,6 +16205,203 @@ function msRenderGrid(){
 resetMinesweeper();
 
 // =============================================================================
+// SEKCIA 39b: NONOGRAM (PICROSS)
+// =============================================================================
+const NG_DIFF={easy:{size:5,fill:0.55},medium:{size:8,fill:0.50},hard:{size:10,fill:0.45}};
+const NG={
+  size:5, solution:[], player:[], diff:'easy',
+  gameOver:false, won:false, started:false,
+  timer:null, time:0, markMode:false
+};
+
+// Predefined patterns for 5x5 (cute pixel art shapes)
+const NG_PATTERNS_5=[
+  // Heart
+  [0,1,0,1,0, 1,1,1,1,1, 1,1,1,1,1, 0,1,1,1,0, 0,0,1,0,0],
+  // Smiley
+  [0,1,1,1,0, 1,0,0,0,1, 1,0,1,0,1, 1,0,0,0,1, 0,1,1,1,0],
+  // Arrow up
+  [0,0,1,0,0, 0,1,1,1,0, 1,0,1,0,1, 0,0,1,0,0, 0,0,1,0,0],
+  // House
+  [0,0,1,0,0, 0,1,0,1,0, 1,1,1,1,1, 1,0,1,0,1, 1,0,1,0,1],
+  // Star
+  [0,0,1,0,0, 0,1,1,1,0, 1,1,1,1,1, 0,1,1,1,0, 0,1,0,1,0],
+  // Cup
+  [0,0,0,0,0, 1,1,1,1,0, 1,0,0,1,0, 1,1,1,1,0, 0,1,1,0,0],
+  // Cross
+  [0,0,1,0,0, 0,0,1,0,0, 1,1,1,1,1, 0,0,1,0,0, 0,0,1,0,0],
+  // Diamond
+  [0,0,1,0,0, 0,1,0,1,0, 1,0,0,0,1, 0,1,0,1,0, 0,0,1,0,0],
+];
+
+function setNgDiff(d,btn){
+  NG.diff=d; saveDiff('nonogram',d);
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetNonogram();
+}
+function ngGenPuzzle(){
+  const s=NG.size;
+  if(s===5){
+    // Use predefined pattern
+    const pat=NG_PATTERNS_5[Math.floor(Math.random()*NG_PATTERNS_5.length)];
+    NG.solution=[];
+    for(let r=0;r<s;r++){NG.solution[r]=[];for(let c=0;c<s;c++)NG.solution[r][c]=pat[r*s+c];}
+  } else {
+    // Random generation with guaranteed solvability (enough fill)
+    const fill=NG_DIFF[NG.diff].fill;
+    NG.solution=[];
+    for(let r=0;r<s;r++){NG.solution[r]=[];for(let c=0;c<s;c++)NG.solution[r][c]=Math.random()<fill?1:0;}
+    // Ensure no empty rows/cols
+    for(let r=0;r<s;r++){if(NG.solution[r].every(v=>v===0))NG.solution[r][Math.floor(Math.random()*s)]=1;}
+    for(let c=0;c<s;c++){if(NG.solution.every(row=>row[c]===0))NG.solution[Math.floor(Math.random()*s)][c]=1;}
+  }
+}
+function ngGetClues(line){
+  const clues=[];let run=0;
+  for(let i=0;i<line.length;i++){
+    if(line[i]===1){run++;}
+    else{if(run>0)clues.push(run);run=0;}
+  }
+  if(run>0)clues.push(run);
+  return clues.length?clues:[0];
+}
+function ngGetRowClues(r){return ngGetClues(NG.solution[r]);}
+function ngGetColClues(c){return ngGetClues(NG.solution.map(row=>row[c]));}
+function resetNonogram(){
+  if(NG.timer){clearInterval(NG.timer);NG.timer=null;}
+  const d=NG_DIFF[NG.diff];
+  NG.size=d.size;
+  NG.gameOver=false;NG.won=false;NG.started=false;NG.time=0;NG.markMode=false;
+  NG.player=[];
+  for(let r=0;r<NG.size;r++){NG.player[r]=[];for(let c=0;c<NG.size;c++)NG.player[r][c]=0;}// 0=empty,1=filled,2=marked-X
+  ngGenPuzzle();
+  $('ngTime').textContent='0';
+  $('ngStatus').textContent=NG.size+'×'+NG.size+'. Klikni Štart!';
+  $('ngStartBtn').disabled=false;
+  $('ngCelebration').textContent='';
+  const tog=$('ngModeToggle');
+  if(tog){tog.textContent='🖊️ Vyfarbi';tog.style.background='rgba(255,255,255,0.1)';}
+  ngRender();
+}
+function ngStart(){
+  resetNonogram();
+  NG.started=true;
+  $('ngStartBtn').disabled=true;
+  $('ngStatus').textContent='Vyfarbuj podľa čísel!';
+  NG.timer=setInterval(()=>{NG.time++;$('ngTime').textContent=NG.time;},1000);
+  ngRender();
+}
+function ngToggleMode(){
+  NG.markMode=!NG.markMode;
+  const tog=$('ngModeToggle');
+  if(NG.markMode){
+    tog.textContent='✕ Označ prázdne';tog.style.background='rgba(244,67,54,0.3)';
+  } else {
+    tog.textContent='🖊️ Vyfarbi';tog.style.background='rgba(255,255,255,0.1)';
+  }
+}
+function ngCellClick(r,c){
+  if(!NG.started||NG.gameOver||NG.won)return;
+  if(NG.markMode){
+    NG.player[r][c]=NG.player[r][c]===2?0:2;
+    playSound('click');
+  } else {
+    NG.player[r][c]=NG.player[r][c]===1?0:1;
+    playSound('click');
+  }
+  ngRender();
+  ngCheckWin();
+}
+function ngCheckWin(){
+  if(NG.gameOver)return;
+  for(let r=0;r<NG.size;r++)for(let c=0;c<NG.size;c++){
+    if(NG.solution[r][c]===1&&NG.player[r][c]!==1)return;
+    if(NG.solution[r][c]===0&&NG.player[r][c]===1)return;
+  }
+  NG.won=true;NG.gameOver=true;
+  if(NG.timer){clearInterval(NG.timer);NG.timer=null;}
+  $('ngStatus').textContent='🏆 Výborne! Vyriešené za '+NG.time+'s!';
+  $('ngCelebration').textContent='🎉🖼️🎉';
+  celebrate('ngCelebration');
+  addWin(1,'nonogram');
+  $('ngStartBtn').disabled=false;
+  playSound('win');
+  ngRender();
+}
+function ngRender(){
+  const board=$('ngBoard');
+  if(!board)return;
+  const s=NG.size;
+  const isLight=document.body.classList.contains('light');
+  // Calculate max clue lengths for sizing
+  let maxRowClues=1,maxColClues=1;
+  for(let r=0;r<s;r++)maxRowClues=Math.max(maxRowClues,ngGetRowClues(r).length);
+  for(let c=0;c<s;c++)maxColClues=Math.max(maxColClues,ngGetColClues(c).length);
+  const cellSize=Math.floor(Math.min(340,window.innerWidth*0.88)/(s+maxRowClues));
+  const clueFS=Math.max(9,Math.min(14,cellSize*0.5));
+  // Grid: top-left corner empty, then col clues on top, row clues on left, then cells
+  const totalCols=maxRowClues+s;
+  const totalRows=maxColClues+s;
+  board.style.gridTemplateColumns=('repeat('+maxRowClues+','+cellSize+'px) '+'repeat('+s+','+cellSize+'px)');
+  board.style.gridTemplateRows=('repeat('+maxColClues+','+cellSize+'px) '+'repeat('+s+','+cellSize+'px)');
+  board.style.gap='1px';
+  board.style.maxWidth=((cellSize+1)*totalCols)+'px';
+  board.innerHTML='';
+  // Col clues (top area)
+  for(let cr=0;cr<maxColClues;cr++){
+    // Empty cells for row clue area
+    for(let rc=0;rc<maxRowClues;rc++){
+      const d=document.createElement('div');
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;';
+      board.appendChild(d);
+    }
+    // Col clue cells
+    for(let c=0;c<s;c++){
+      const clues=ngGetColClues(c);
+      const offset=maxColClues-clues.length;
+      const d=document.createElement('div');
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+clueFS+'px;font-weight:bold;color:inherit;opacity:0.7;';
+      if(cr>=offset) d.textContent=clues[cr-offset];
+      board.appendChild(d);
+    }
+  }
+  // Rows with row clues + cells
+  for(let r=0;r<s;r++){
+    // Row clues
+    const rClues=ngGetRowClues(r);
+    const offset=maxRowClues-rClues.length;
+    for(let rc=0;rc<maxRowClues;rc++){
+      const d=document.createElement('div');
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+clueFS+'px;font-weight:bold;color:inherit;opacity:0.7;';
+      if(rc>=offset) d.textContent=rClues[rc-offset];
+      board.appendChild(d);
+    }
+    // Grid cells
+    for(let c=0;c<s;c++){
+      const d=document.createElement('div');
+      const v=NG.player[r][c];
+      let bg,txt='',bdr;
+      if(v===1){
+        bg=isLight?'#333':'#e0e0e0';bdr='rgba(255,255,255,0.1)';
+      } else if(v===2){
+        bg='transparent';txt='✕';bdr=isLight?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.2)';
+      } else {
+        bg=isLight?'rgba(0,0,0,0.06)':'rgba(100,140,200,0.25)';bdr=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.25)';
+      }
+      // On win, show solution colored
+      if(NG.won&&NG.solution[r][c]===1){bg=isLight?'#4CAF50':'#43e97b';bdr='rgba(67,233,123,0.5)';}
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize*0.5)+'px;font-weight:bold;border-radius:2px;cursor:pointer;user-select:none;background:'+bg+';border:1px solid '+bdr+';color:inherit;transition:background 0.1s;';
+      d.textContent=txt;
+      d.addEventListener('click',((rr,cc)=>()=>ngCellClick(rr,cc))(r,c));
+      d.addEventListener('contextmenu',((rr,cc)=>e=>{e.preventDefault();if(!NG.started||NG.gameOver||NG.won)return;NG.player[rr][cc]=NG.player[rr][cc]===2?0:2;playSound('click');ngRender();})(r,c));
+      board.appendChild(d);
+    }
+  }
+}
+resetNonogram();
+
+// =============================================================================
 // SEKCIA 42: WAR (VOJNA) — kartová hra
 // =============================================================================
 const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150,_epoch:0};
@@ -17143,6 +17368,7 @@ const MOBILE_GAMES = [
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
   { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
+  { id:'nonogram',     label:'Nonogram',       icon:'🖼️', grad:'rgba(156,39,176,0.3),rgba(103,58,183,0.3)', mode:'solo', cat:'logic' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -17215,6 +17441,8 @@ function stopAllGames(){
   if(typeof NIM!=='undefined'){if(NIM._timer){clearTimeout(NIM._timer);NIM._timer=null;}NIM.over=true;}
   // Solitaire timer
   if(typeof SOL!=='undefined'&&SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
+  // Nonogram timer
+  if(typeof NG!=='undefined'&&NG.timer){clearInterval(NG.timer);NG.timer=null;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
