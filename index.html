@@ -4293,7 +4293,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.3';
+const APP_VERSION = '13.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12241,8 +12241,8 @@ function doodGenPlatforms() {
   DOOD.platforms = [];
   const wallOff=DOOD.wallMode?6:0;
   const areaW=DOOD.W-wallOff*2;
-  const gapBase=DOOD.wallMode?40:60;
-  const gapRand=DOOD.wallMode?15:20;
+  const gapBase=DOOD.wallMode?50:60;
+  const gapRand=DOOD.wallMode?18:20;
   // Ground platform
   DOOD.platforms.push({ x:130, y:460, w:DOOD_PW, type:'normal', moveDx:0 });
   // Generate upwards
@@ -12264,8 +12264,8 @@ function doodAddPlatforms() {
   // Add platforms above the topmost visible area
   const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
   if(topP - DOOD.cameraY > -DOOD.H) {
-    const addGapBase=DOOD.wallMode?35:50;
-    const addGapRand=DOOD.wallMode?25:40;
+    const addGapBase=DOOD.wallMode?42:50;
+    const addGapRand=DOOD.wallMode?30:40;
     const y = topP - addGapBase - Math.random() * addGapRand;
     const wallOff=DOOD.wallMode?6:0;
     const x = wallOff + Math.random() * (DOOD.W - wallOff*2 - DOOD_PW);
