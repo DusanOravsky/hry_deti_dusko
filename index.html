@@ -4295,7 +4295,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.6';
+const APP_VERSION = '13.7';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12274,16 +12274,16 @@ function doodGenPlatforms() {
 }
 
 function doodAddPlatforms() {
-  // Add platforms above the topmost visible area
-  const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
-  if(topP - DOOD.cameraY > -DOOD.H) {
+  // Add platforms above the topmost visible area (multiple per frame if needed)
+  for(let iter=0; iter<5; iter++) {
+    const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
+    if(topP - DOOD.cameraY <= -DOOD.H) break;
     const addGapBase=50;
     const addGapRand=40;
     const y = topP - addGapBase - Math.random() * addGapRand;
     const wallOff=DOOD.wallMode?6:0;
     let x;
     if(DOOD.wallMode) {
-      // Find the topmost platform to limit horizontal distance
       const topPlat = DOOD.platforms.reduce((best,p) => p.y < best.y ? p : best, DOOD.platforms[0]);
       const maxDx = 120;
       const minX = Math.max(wallOff, topPlat.x - maxDx);
@@ -12404,9 +12404,9 @@ function doodStep() {
 
   DOOD.x += DOOD.vx;
   if(DOOD.wallMode){
-    // Bounce off walls
-    if(DOOD.x - DOOD_PLAYER_R < 0){DOOD.x=DOOD_PLAYER_R;DOOD.vx=0;}
-    if(DOOD.x + DOOD_PLAYER_R > DOOD.W){DOOD.x=DOOD.W-DOOD_PLAYER_R;DOOD.vx=0;}
+    // Bounce off walls (wall visual width = 4px)
+    if(DOOD.x - DOOD_PLAYER_R < 4){DOOD.x=4+DOOD_PLAYER_R;DOOD.vx=0;}
+    if(DOOD.x + DOOD_PLAYER_R > DOOD.W-4){DOOD.x=DOOD.W-4-DOOD_PLAYER_R;DOOD.vx=0;}
   } else {
     // Wrap around screen edges
     if(DOOD.x < -DOOD_PLAYER_R) DOOD.x = DOOD.W + DOOD_PLAYER_R;
