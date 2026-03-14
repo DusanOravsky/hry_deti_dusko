@@ -3694,6 +3694,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <li>Ovládanie: šípky alebo tlačidlá doľava/doprava</li>
       <li>Zelená = odraz, modrá = pohyblivá, červená = rozpadne sa!</li>
       <li>Pružina = super skok, raketa = vyletíš hore!</li>
+      <li>🔄 Prechod — loptička prejde cez okraj na druhú stranu</li>
+      <li>🧱 Steny — loptička sa odráža od stien, neprejde cez okraj</li>
       <li>Hráči sa striedajú — kto skočí vyššie, vyhrá!</li>
     </ul></div>
     <div class="player-info" id="doodPlayerInfo">
@@ -4293,7 +4295,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.4';
+const APP_VERSION = '13.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
