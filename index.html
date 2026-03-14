@@ -2163,10 +2163,10 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
         <input class="welcome-name-input" id="wP2Input" value="" maxlength="12" placeholder="Meno hráča 2" oninput="updateWelcomeSub()">
       </div>
     </div>
-    <div id="avatarPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center" onclick="closeAvatarPicker()">
-      <div style="background:rgba(26,26,46,0.97);border-radius:16px;padding:16px;max-width:320px;width:90%;text-align:center" onclick="event.stopPropagation()">
+    <div id="avatarPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;overflow:hidden" onclick="closeAvatarPicker()">
+      <div style="background:rgba(26,26,46,0.97);border-radius:16px;padding:16px;max-width:320px;width:90%;text-align:center;max-height:80vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
         <div style="font-weight:700;margin-bottom:10px;font-size:1.1em;color:inherit" id="avatarPickerTitle">Vyber avatar</div>
-        <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
+        <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:60vh;padding:4px"></div>
       </div>
     </div>
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
@@ -4282,7 +4282,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.0';
+const APP_VERSION = '13.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4572,11 +4572,12 @@ function openAvatarPicker(player){
   _avatarTarget=player;
   const overlay=$('avatarPickerOverlay');
   overlay.style.display='flex';
+  document.body.style.overflow='hidden';
   $('avatarPickerTitle').textContent='Vyber avatar pre Hráča '+player;
   const grid=$('avatarPickerGrid');
   grid.innerHTML=AVATAR_EMOJIS.map(e=>'<div style="font-size:1.8em;cursor:pointer;padding:6px;border-radius:8px;transition:background 0.15s" onclick="selectAvatar(\''+e+'\')" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'\'">'+e+'</div>').join('');
 }
-function closeAvatarPicker(){$('avatarPickerOverlay').style.display='none';}
+function closeAvatarPicker(){$('avatarPickerOverlay').style.display='none';document.body.style.overflow='';}
 function selectAvatar(emoji){
   if(_avatarTarget===1){_p1Avatar=emoji;$('wP1Avatar').textContent=emoji;}
   else{_p2Avatar=emoji;$('wP2Avatar').textContent=emoji;}
