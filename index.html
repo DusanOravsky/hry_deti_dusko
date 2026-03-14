@@ -2172,7 +2172,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 45 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 46 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -4242,6 +4242,33 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== SUDOKU ===== -->
+  <div class="game-area" id="sudoku">
+    <div class="rules"><h3>🔢 Sudoku:</h3><ul>
+      <li>Vyplň mriežku číslami tak, aby sa v žiadnom riadku, stĺpci ani štvorci neopakovali</li>
+      <li>Klikni na prázdne políčko, potom vyber číslo</li>
+      <li>Sivé čísla sú zadané — nedajú sa zmeniť</li>
+      <li>3 chyby = koniec hry</li>
+      <li><b>Ľahká:</b> 4×4 | <b>Stredná:</b> 6×6 | <b>Ťažká:</b> 9×9</li>
+    </ul></div>
+    <div class="ai-difficulty" id="sdkDiffWrap" style="display:flex;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setSdkDiff('easy',this)">Ľahká 4×4</button>
+      <button class="difficulty-btn" onclick="setSdkDiff('medium',this)">Stredná 6×6</button>
+      <button class="difficulty-btn" onclick="setSdkDiff('hard',this)">Ťažká 9×9</button>
+    </div>
+    <div id="sdkInfoBar" style="display:flex;justify-content:space-between;align-items:center;max-width:min(360px,92vw);margin:0 auto 6px;font-weight:bold;font-size:1.1em">
+      <span>❌ <span id="sdkErrors">0</span>/3</span>
+      <span>⏱ <span id="sdkTime">0</span></span>
+    </div>
+    <div class="status" id="sdkStatus">Vyplň všetky políčka!</div>
+    <div style="text-align:center"><div id="sdkGrid" style="display:inline-grid;user-select:none;background:rgba(255,255,255,0.15);padding:2px;border-radius:6px;border:2px solid rgba(255,255,255,0.3)"></div></div>
+    <div id="sdkNumpad" style="display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap"></div>
+    <div class="celebration" id="sdkCelebration"></div>
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" onclick="resetSudoku()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -4249,7 +4276,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.4';
+const APP_VERSION = '12.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4266,7 +4293,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4277,7 +4304,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4576,7 +4603,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4587,7 +4614,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -4707,7 +4734,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'minesweeper', name:'Míny', icon:'💣', mode:'ai'},
   {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'},
   {id:'nimGame', name:'Nim', icon:'🪨', mode:'both'},
-  {id:'nonogram', name:'Nonogram', icon:'🖼️', mode:'ai'}
+  {id:'nonogram', name:'Nonogram', icon:'🖼️', mode:'ai'},
+  {id:'sudoku', name:'Sudoku', icon:'🔢', mode:'ai'}
 ];
 
 function showTournament() {
@@ -16457,6 +16485,233 @@ function ngRender(){
 resetNonogram();
 
 // =============================================================================
+// SEKCIA 39c: SUDOKU
+// =============================================================================
+const SDK_DIFF={
+  easy:{size:4,boxR:2,boxC:2,remove:7},
+  medium:{size:6,boxR:2,boxC:3,remove:18},
+  hard:{size:9,boxR:3,boxC:3,remove:42}
+};
+const SDK={
+  size:4,boxR:2,boxC:2,diff:'easy',
+  solution:[],grid:[],fixed:[],
+  selR:-1,selC:-1,
+  gameOver:false,won:false,firstClick:true,
+  timer:null,time:0,errors:0,maxErrors:3
+};
+
+function setSdkDiff(d,btn){
+  SDK.diff=d;saveDiff('sudoku',d);
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetSudoku();
+}
+
+// Sudoku generator using backtracking
+function sdkIsValid(grid,r,c,num,size,boxR,boxC){
+  for(let i=0;i<size;i++){if(grid[r][i]===num||grid[i][c]===num)return false;}
+  const br=Math.floor(r/boxR)*boxR,bc=Math.floor(c/boxC)*boxC;
+  for(let dr=0;dr<boxR;dr++)for(let dc=0;dc<boxC;dc++){
+    if(grid[br+dr][bc+dc]===num)return false;
+  }
+  return true;
+}
+function sdkSolve(grid,size,boxR,boxC){
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++){
+    if(grid[r][c]===0){
+      const nums=[];for(let n=1;n<=size;n++)nums.push(n);
+      // Shuffle for random generation
+      for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}
+      for(const n of nums){
+        if(sdkIsValid(grid,r,c,n,size,boxR,boxC)){
+          grid[r][c]=n;
+          if(sdkSolve(grid,size,boxR,boxC))return true;
+          grid[r][c]=0;
+        }
+      }
+      return false;
+    }
+  }
+  return true;
+}
+function sdkGenerate(){
+  const d=SDK_DIFF[SDK.diff];
+  const s=d.size;
+  SDK.size=s;SDK.boxR=d.boxR;SDK.boxC=d.boxC;
+  // Create empty grid and solve it
+  const grid=[];
+  for(let r=0;r<s;r++){grid[r]=[];for(let c=0;c<s;c++)grid[r][c]=0;}
+  sdkSolve(grid,s,d.boxR,d.boxC);
+  // Save solution
+  SDK.solution=[];
+  for(let r=0;r<s;r++){SDK.solution[r]=[];for(let c=0;c<s;c++)SDK.solution[r][c]=grid[r][c];}
+  // Remove cells
+  SDK.grid=[];SDK.fixed=[];
+  for(let r=0;r<s;r++){
+    SDK.grid[r]=[];SDK.fixed[r]=[];
+    for(let c=0;c<s;c++){SDK.grid[r][c]=grid[r][c];SDK.fixed[r][c]=true;}
+  }
+  let removed=0;
+  const cells=[];for(let r=0;r<s;r++)for(let c=0;c<s;c++)cells.push([r,c]);
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+  for(const[r,c]of cells){
+    if(removed>=d.remove)break;
+    SDK.grid[r][c]=0;SDK.fixed[r][c]=false;removed++;
+  }
+}
+
+function resetSudoku(){
+  if(SDK.timer){clearInterval(SDK.timer);SDK.timer=null;}
+  SDK.gameOver=false;SDK.won=false;SDK.firstClick=true;SDK.time=0;SDK.errors=0;
+  SDK.selR=-1;SDK.selC=-1;
+  sdkGenerate();
+  $('sdkTime').textContent='0';
+  const ee=$('sdkErrors');if(ee)ee.textContent='0';
+  $('sdkStatus').textContent='Vyplň všetky políčka!';
+  $('sdkCelebration').textContent='';
+  sdkRender();
+  sdkRenderNumpad();
+}
+
+function sdkCellClick(r,c){
+  if(SDK.gameOver||SDK.won)return;
+  if(SDK.fixed[r][c])return;// can't select fixed cells
+  SDK.selR=r;SDK.selC=c;
+  sdkRender();
+}
+
+function sdkNumClick(num){
+  if(SDK.gameOver||SDK.won)return;
+  if(SDK.selR<0)return;
+  const r=SDK.selR,c=SDK.selC;
+  if(SDK.fixed[r][c])return;
+  if(SDK.firstClick){
+    SDK.firstClick=false;
+    SDK.timer=setInterval(()=>{SDK.time++;$('sdkTime').textContent=SDK.time;},1000);
+  }
+  if(num===0){
+    // Erase
+    SDK.grid[r][c]=0;
+    playSound('click');
+  } else if(num===SDK.solution[r][c]){
+    // Correct
+    SDK.grid[r][c]=num;
+    playSound('correct');
+  } else {
+    // Wrong
+    SDK.errors++;
+    $('sdkErrors').textContent=SDK.errors;
+    playSound('wrong');
+    $('sdkStatus').textContent='❌ Chyba! ('+SDK.errors+'/'+SDK.maxErrors+') Skús iné číslo';
+    if(SDK.errors>=SDK.maxErrors){
+      SDK.gameOver=true;
+      if(SDK.timer){clearInterval(SDK.timer);SDK.timer=null;}
+      // Reveal solution
+      for(let rr=0;rr<SDK.size;rr++)for(let cc=0;cc<SDK.size;cc++)SDK.grid[rr][cc]=SDK.solution[rr][cc];
+      $('sdkStatus').textContent='💥 Priveľa chýb! Riešenie ukázané.';
+      addWin(0,'sudoku');
+    }
+    sdkRender();
+    return;
+  }
+  sdkRender();
+  sdkCheckWin();
+}
+
+function sdkCheckWin(){
+  if(SDK.gameOver)return;
+  for(let r=0;r<SDK.size;r++)for(let c=0;c<SDK.size;c++){
+    if(SDK.grid[r][c]===0)return;
+  }
+  SDK.won=true;SDK.gameOver=true;
+  if(SDK.timer){clearInterval(SDK.timer);SDK.timer=null;}
+  $('sdkStatus').textContent='🏆 Výborne! Vyriešené za '+SDK.time+'s!';
+  $('sdkCelebration').textContent='🎉🔢🎉';
+  celebrate('sdkCelebration');
+  addWin(1,'sudoku');
+  playSound('win');
+  sdkRender();
+}
+
+function sdkRenderNumpad(){
+  const pad=$('sdkNumpad');if(!pad)return;
+  pad.innerHTML='';
+  for(let n=1;n<=SDK.size;n++){
+    const b=document.createElement('button');
+    b.textContent=n;
+    b.style.cssText='width:40px;height:40px;font-size:1.2em;font-weight:bold;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(79,172,254,0.3);cursor:pointer;color:inherit;';
+    b.addEventListener('click',()=>sdkNumClick(n));
+    pad.appendChild(b);
+  }
+  // Erase button
+  const eb=document.createElement('button');
+  eb.textContent='⌫';
+  eb.style.cssText='width:40px;height:40px;font-size:1.2em;font-weight:bold;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:rgba(244,67,54,0.3);cursor:pointer;color:inherit;';
+  eb.addEventListener('click',()=>sdkNumClick(0));
+  pad.appendChild(eb);
+}
+
+function sdkRender(){
+  const grid=$('sdkGrid');if(!grid)return;
+  const s=SDK.size;
+  const isLight=document.body.classList.contains('light');
+  const maxW=Math.min(360,window.innerWidth*0.9);
+  const cellSize=Math.floor(maxW/s);
+  const expectedCells=s*s;
+  grid.style.gridTemplateColumns='repeat('+s+','+cellSize+'px)';
+  grid.style.gridTemplateRows='repeat('+s+','+cellSize+'px)';
+  grid.style.gap='0px';
+  grid.style.width=(cellSize*s+2)+'px';
+  // Build DOM if needed
+  if(grid.children.length!==expectedCells){
+    grid.innerHTML='';
+    for(let r=0;r<s;r++)for(let c=0;c<s;c++){
+      const d=document.createElement('div');
+      d.style.cssText='display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:bold;transition:background 0.1s;';
+      d.addEventListener('click',((rr,cc)=>()=>sdkCellClick(rr,cc))(r,c));
+      grid.appendChild(d);
+    }
+  }
+  // Update cells
+  const cells=grid.children;
+  for(let r=0;r<s;r++)for(let c=0;c<s;c++){
+    const el=cells[r*s+c];
+    const v=SDK.grid[r][c];
+    const isSel=r===SDK.selR&&c===SDK.selC;
+    const isFixed=SDK.fixed[r][c];
+    // Background
+    let bg;
+    if(isSel){
+      bg=isLight?'rgba(79,172,254,0.3)':'rgba(79,172,254,0.4)';
+    } else if(isFixed){
+      bg=isLight?'#e0e0e0':'rgba(255,255,255,0.12)';
+    } else {
+      bg=isLight?'#fff':'rgba(255,255,255,0.05)';
+    }
+    if(SDK.won)bg=isLight?'rgba(76,175,80,0.2)':'rgba(67,233,123,0.2)';
+    // Borders — thicker on box boundaries
+    let bT='1px solid '+(isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.15)');
+    let bR=bT,bB=bT,bL=bT;
+    const thk='2px solid '+(isLight?'#333':'rgba(255,255,255,0.6)');
+    if(r%SDK.boxR===0)bT=thk;
+    if(c%SDK.boxC===0)bL=thk;
+    if(r===s-1)bB=thk;
+    if(c===s-1)bR=thk;
+    // Text color
+    let clr;
+    if(isFixed){clr=isLight?'#333':'#ddd';}
+    else{clr=isLight?'#1565C0':'#64B5F6';}
+    el.style.width=cellSize+'px';el.style.height=cellSize+'px';
+    el.style.fontSize=(cellSize*0.5)+'px';
+    el.style.background=bg;
+    el.style.borderTop=bT;el.style.borderRight=bR;el.style.borderBottom=bB;el.style.borderLeft=bL;
+    el.style.color=clr;
+    el.textContent=v>0?v:'';
+  }
+}
+resetSudoku();
+
+// =============================================================================
 // SEKCIA 42: WAR (VOJNA) — kartová hra
 // =============================================================================
 const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150,_epoch:0};
@@ -17424,6 +17679,7 @@ const MOBILE_GAMES = [
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
   { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
   { id:'nonogram',     label:'Nonogram',       icon:'🖼️', grad:'rgba(156,39,176,0.3),rgba(103,58,183,0.3)', mode:'solo', cat:'logic' },
+  { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -17498,6 +17754,8 @@ function stopAllGames(){
   if(typeof SOL!=='undefined'&&SOL.timer){clearInterval(SOL.timer);SOL.timer=null;}
   // Nonogram timer
   if(typeof NG!=='undefined'&&NG.timer){clearInterval(NG.timer);NG.timer=null;}
+  // Sudoku timer
+  if(typeof SDK!=='undefined'&&SDK.timer){clearInterval(SDK.timer);SDK.timer=null;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
   // QR scanner
