@@ -3693,6 +3693,10 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <span style="font-size:0.85em;opacity:0.6">Najlepšie:</span>
       <span id="doodleBest" style="font-size:1.1em;font-weight:900;color:#ffd200">0</span>
     </div>
+    <div id="doodModeWrap" style="display:flex;justify-content:center;gap:8px;margin-bottom:8px">
+      <button class="difficulty-btn active" id="doodModeWrap1" onclick="setDoodMode('wrap',this)">🔄 Prechod</button>
+      <button class="difficulty-btn" id="doodModeWall1" onclick="setDoodMode('wall',this)">🧱 Steny</button>
+    </div>
     <div class="status" id="doodleStatus">Pripraveni? Start!</div>
     <canvas id="doodleCanvas" width="320" height="480" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:#1a1a2e;touch-action:none"></canvas>
     <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
@@ -4278,7 +4282,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.8';
+const APP_VERSION = '12.9';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12201,9 +12205,16 @@ const DOOD = {
   x:160, y:400, vy:0, vx:0, moveDir:0,
   platforms:[], cameraY:0, score:0, maxHeight:0,
   best:parseInt(localStorage.getItem('hry_doodleBest')||'0'),
+  bestWall:parseInt(localStorage.getItem('hry_doodleBestWall')||'0'),
   player:1, scores:[0,0], s1:0, s2:0, phase:'idle',
-  rocketFrames:0
+  rocketFrames:0, wallMode:false
 };
+function setDoodMode(m,btn){
+  DOOD.wallMode=(m==='wall');
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetDoodle();
+}
 const DOOD_GRAVITY = 0.35;
 const DOOD_JUMP = -10;
 const DOOD_SPRING_JUMP = -16;
@@ -12216,12 +12227,14 @@ const DOOD_PLAYER_R = 12;
 
 function doodGenPlatforms() {
   DOOD.platforms = [];
+  const wallOff=DOOD.wallMode?6:0;
+  const areaW=DOOD.W-wallOff*2;
   // Ground platform
   DOOD.platforms.push({ x:130, y:460, w:DOOD_PW, type:'normal', moveDx:0 });
   // Generate upwards
   for(let i=1; i<80; i++) {
     const y = 460 - i * 60 - Math.random()*20;
-    const x = Math.random() * (DOOD.W - DOOD_PW);
+    const x = wallOff + Math.random() * (areaW - DOOD_PW);
     let type = 'normal';
     if(i > 10 && Math.random() < 0.15) type = 'moving';
     if(i > 15 && Math.random() < 0.1) type = 'breaking';
@@ -12238,7 +12251,8 @@ function doodAddPlatforms() {
   const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
   if(topP - DOOD.cameraY > -DOOD.H) {
     const y = topP - 50 - Math.random() * 40;
-    const x = Math.random() * (DOOD.W - DOOD_PW);
+    const wallOff=DOOD.wallMode?6:0;
+    const x = wallOff + Math.random() * (DOOD.W - wallOff*2 - DOOD_PW);
     const h = Math.abs(y);
     let type = 'normal';
     if(h > 800 && Math.random() < 0.2) type = 'moving';
@@ -12317,10 +12331,26 @@ function doodRender() {
   ctx.beginPath(); ctx.arc(DOOD.x - 3.5, py - 3.5, 1, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(DOOD.x + 4.5, py - 3.5, 1, 0, Math.PI * 2); ctx.fill();
 
+  // Walls in wall mode
+  if(DOOD.wallMode){
+    ctx.fillStyle='rgba(139,90,43,0.6)';
+    ctx.fillRect(0,0,4,DOOD.H);
+    ctx.fillRect(DOOD.W-4,0,4,DOOD.H);
+    // Brick pattern
+    ctx.strokeStyle='rgba(100,60,20,0.4)';ctx.lineWidth=0.5;
+    for(let by=0;by<DOOD.H;by+=10){
+      ctx.beginPath();ctx.moveTo(0,by);ctx.lineTo(4,by);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(DOOD.W-4,by);ctx.lineTo(DOOD.W,by);ctx.stroke();
+      const off=(Math.floor(by/10)%2)*4;
+      ctx.beginPath();ctx.moveTo(off,by);ctx.lineTo(off,by+10);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(DOOD.W-4+off,by);ctx.lineTo(DOOD.W-4+off,by+10);ctx.stroke();
+    }
+  }
+
   // Score overlay
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('Výška: ' + DOOD.score, 10, 20);
+  ctx.fillText('Výška: ' + DOOD.score, DOOD.wallMode?10:10, 20);
 }
 
 function doodStep() {
@@ -12334,9 +12364,15 @@ function doodStep() {
   }
 
   DOOD.x += DOOD.vx;
-  // Wrap around screen edges
-  if(DOOD.x < -DOOD_PLAYER_R) DOOD.x = DOOD.W + DOOD_PLAYER_R;
-  if(DOOD.x > DOOD.W + DOOD_PLAYER_R) DOOD.x = -DOOD_PLAYER_R;
+  if(DOOD.wallMode){
+    // Bounce off walls
+    if(DOOD.x - DOOD_PLAYER_R < 0){DOOD.x=DOOD_PLAYER_R;DOOD.vx=0;}
+    if(DOOD.x + DOOD_PLAYER_R > DOOD.W){DOOD.x=DOOD.W-DOOD_PLAYER_R;DOOD.vx=0;}
+  } else {
+    // Wrap around screen edges
+    if(DOOD.x < -DOOD_PLAYER_R) DOOD.x = DOOD.W + DOOD_PLAYER_R;
+    if(DOOD.x > DOOD.W + DOOD_PLAYER_R) DOOD.x = -DOOD_PLAYER_R;
+  }
 
   // Rocket mode
   if(DOOD.rocketFrames > 0) {
@@ -12383,10 +12419,11 @@ function doodStep() {
   }
 
   // Move moving platforms
+  const wallLim=DOOD.wallMode?6:0;
   DOOD.platforms.forEach(p => {
     if(p.type === 'moving' && !p.broken) {
       p.x += p.moveDx;
-      if(p.x <= 0 || p.x + p.w >= DOOD.W) p.moveDx *= -1;
+      if(p.x <= wallLim || p.x + p.w >= DOOD.W-wallLim) p.moveDx *= -1;
     }
   });
 
@@ -12444,13 +12481,15 @@ function doodStartRound() {
 
 function doodEndRound() {
   DOOD.scores[DOOD.player - 1] = DOOD.score;
-  if(DOOD.score > DOOD.best) {
-    DOOD.best = DOOD.score;
-    try{localStorage.setItem('hry_doodleBest', DOOD.best);}catch(e){}
-    updateRecord('doodleBest', DOOD.best);
+  const bestKey=DOOD.wallMode?'bestWall':'best';
+  const lsKey=DOOD.wallMode?'hry_doodleBestWall':'hry_doodleBest';
+  if(DOOD.score > DOOD[bestKey]) {
+    DOOD[bestKey] = DOOD.score;
+    try{localStorage.setItem(lsKey, DOOD[bestKey]);}catch(e){}
+    updateRecord('doodleBest', DOOD[bestKey]);
   }
-  if(DOOD.score>0)lbAddScore('hry_doodleBest',DOOD.score,globalP1);
-  $('doodleBest').textContent = DOOD.best;
+  if(DOOD.score>0)lbAddScore(lsKey,DOOD.score,globalP1);
+  $('doodleBest').textContent = DOOD[bestKey];
   if(DOOD.player === 1 && !DOOD._solo) {
     $('p1ScoreDood').textContent = DOOD.score;
     DOOD.player = 2;
@@ -12489,7 +12528,7 @@ function resetDoodle() {
   doodRender();
   $('p1ScoreDood').textContent = DOOD.s1;
   $('p2ScoreDood').textContent = DOOD.s2;
-  const be = $('doodleBest'); if(be) be.textContent = DOOD.best;
+  const be = $('doodleBest'); if(be) be.textContent = DOOD.wallMode?DOOD.bestWall:DOOD.best;
   $('doodleStatus').textContent = 'Pripraveni? Start!';
   activeTurn('doodP1Card', 'doodP2Card', 1);
 }
