@@ -4222,7 +4222,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '11.9';
+const APP_VERSION = '12.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -13733,7 +13733,7 @@ const TNK_POWERUPS=[
 ];
 const TNK = {
   G:16, W:400, H:400, running:false, over:false, raf:null, timer:null, diff:'easy',
-  walls:[], bullets:[], powerup:null, puTimer:0,
+  wallSet:new Set(), wallCoords:[], bullets:[], powerup:null, puTimer:0,
   // tanks: x,y in grid coords, dir: 0=up,1=right,2=down,3=left
   t1:{x:1,y:14,dir:0,shield:0,rapid:0,speed:0},
   t2:{x:14,y:1,dir:2,shield:0,rapid:0,speed:0},
@@ -13750,11 +13750,15 @@ function setTnkDiff(d,btn){
   btn.classList.add('active');
 }
 
+function tnkAddWall(x,y){
+  const k=x+','+y;
+  if(!TNK.wallSet.has(k)){TNK.wallSet.add(k);TNK.wallCoords.push(x,y);}
+}
 function tnkGenWalls(){
-  TNK.walls=[];
+  TNK.wallSet=new Set(); TNK.wallCoords=[];
   const g=TNK.G;
   // border
-  for(let i=0;i<g;i++){TNK.walls.push(i+',0');TNK.walls.push(i+','+(g-1));TNK.walls.push('0,'+i);TNK.walls.push((g-1)+','+i);}
+  for(let i=0;i<g;i++){tnkAddWall(i,0);tnkAddWall(i,g-1);tnkAddWall(0,i);tnkAddWall(g-1,i);}
   // random inner walls (symmetrical for fairness)
   const count=12+Math.floor(Math.random()*8);
   for(let i=0;i<count;i++){
@@ -13762,14 +13766,12 @@ function tnkGenWalls(){
     const wy=2+Math.floor(Math.random()*(g-4));
     // skip spawn zones
     if((wx<=2&&wy>=g-3)||(wx<=2&&wy<=2))continue;
-    const k1=wx+','+wy;
-    const k2=(g-1-wx)+','+(g-1-wy);
-    if(!TNK.walls.includes(k1))TNK.walls.push(k1);
-    if(!TNK.walls.includes(k2))TNK.walls.push(k2);
+    tnkAddWall(wx,wy);
+    tnkAddWall(g-1-wx,g-1-wy);
   }
 }
 
-function tnkIsWall(x,y){ return TNK.walls.includes(Math.floor(x)+','+Math.floor(y)); }
+function tnkIsWall(x,y){ return TNK.wallSet.has(Math.floor(x)+','+Math.floor(y)); }
 
 function tnkSpawnPowerup(){
   const g=TNK.G;
@@ -13812,13 +13814,14 @@ function tnkRender(){
   ctx.fillRect(0,0,TNK.G,TNK.G);
   // walls
   ctx.fillStyle=isLight?'#888':'#555';
-  TNK.walls.forEach(w=>{
-    const p=w.split(',');
-    ctx.fillRect(+p[0],+p[1],1,1);
-  });
-  // grid lines
+  for(let i=0;i<TNK.wallCoords.length;i+=2){
+    ctx.fillRect(TNK.wallCoords[i],TNK.wallCoords[i+1],1,1);
+  }
+  // grid lines (single path)
   ctx.strokeStyle='rgba(128,128,128,0.1)';ctx.lineWidth=0.02;
-  for(let i=0;i<=TNK.G;i++){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,TNK.G);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(TNK.G,i);ctx.stroke();}
+  ctx.beginPath();
+  for(let i=0;i<=TNK.G;i++){ctx.moveTo(i,0);ctx.lineTo(i,TNK.G);ctx.moveTo(0,i);ctx.lineTo(TNK.G,i);}
+  ctx.stroke();
   // tanks
   tnkDrawTank(ctx,TNK.t1,'#f5576c','#c0392b');
   tnkDrawTank(ctx,TNK.t2,'#4facfe','#2980b9');
@@ -14030,7 +14033,7 @@ function startTanks(){
   $('tnkStatus').textContent='Boj!';
   TNK.timer=setInterval(tnkStep, 1000/8);
   if(MP.isConnected&&MP.isHost){
-    mpSend({type:'tnk-start',walls:TNK.walls,powerup:TNK.powerup});
+    mpSend({type:'tnk-start',walls:Array.from(TNK.wallSet),powerup:TNK.powerup});
   }
 }
 
@@ -18767,7 +18770,7 @@ function _mpHandleMessageInner(data) {
 
   // Tank Battle MP
   if(data.type==='tnk-start'){
-    resetTanks();TNK.walls=data.walls;TNK.running=true;
+    resetTanks();TNK.wallSet=new Set(data.walls);TNK.wallCoords=[];data.walls.forEach(w=>{const p=w.split(',');TNK.wallCoords.push(+p[0],+p[1]);});TNK.running=true;
     if(data.powerup)TNK.powerup=data.powerup;
     $('tnkStatus').textContent='Boj!';tnkRender();
   }
