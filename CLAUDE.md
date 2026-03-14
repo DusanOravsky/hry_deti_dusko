@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v11.9
+- **Current version**: v13.8
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -53,7 +53,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (44 total)
+## Games (46 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -86,7 +86,7 @@ resetWordle(); // welcomeGameMode check works
 - Spam Click, Matika Duel, Emoji Hadanka
 - Obesenec, Vyssie Nizsie
 - Bodky a Krabicky (Dots and Boxes, 5x5 grid)
-- Doodle Jump (2-player turn-based, canvas, touch + arrows)
+- Doodle Jump (2-player turn-based, canvas, touch + arrows, 2 modes: wrap/wall)
 - Snake Duel [MP] (2 snakes simultaneously, WASD vs arrows, first to 5)
 
 ### Solo (mode:'solo'/'always')
@@ -99,6 +99,8 @@ resetWordle(); // welcomeGameMode check works
 - Flappy Bird (canvas, tap/space/click to flap, pipe obstacles, high score, leaderboard)
 - Vojna / War (pure luck card game, higher card takes both, war on tie, quick play button)
 - Solitaire / Klondike (7 tableau columns, 4 foundations, stock/waste, click-to-select, undo, auto-complete, timer)
+- Nonogram / Picross (5x5, 8 predefined patterns, error limit 3, long-press for X marks)
+- Sudoku (easy/medium/hard, backtracking generator, group highlighting, keyboard input)
 - Statistiky + Achievement system (43 achievements, split reset: stats vs achievements)
 
 ## Features (v13-v114, v4.0+)
@@ -139,7 +141,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "44 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "46 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -162,6 +164,10 @@ resetWordle(); // welcomeGameMode check works
 - **War quick play**: Auto-plays entire game at 100ms per round, epoch-protected timeouts
 - **Uno Wild Draw Four**: +4 cards only playable when no matching color cards (official rules), UNO! toast when 1 card left
 - **Nim**: Classic misère variant (last stone loses), 4 piles (1,3,5,7), take 1-3, hard AI uses Grundy values (n%4 XOR)
+- **Doodle Jump modes**: Wrap mode (pass through edges) and Wall mode (bounce off walls, brick rendering, separate high scores, horizontal platform distance limit 120px)
+- **Nonogram/Picross**: 5x5 grid puzzles, 8 predefined patterns, fill/X toggle, max 3 errors with red feedback, long-press for X on mobile, timer
+- **Sudoku**: 3 difficulties, backtracking generator with unique solutions, group highlighting (row/col/box), keyboard input, error tracking, timer
+- **Tank Battle wallSet**: O(1) wall lookups using Set instead of O(n) array includes
 
 ## Adding a New Game
 
@@ -329,6 +335,8 @@ Key game state objects and their patterns:
 - `NIM` — Nim (piles[1,3,5,7], turn, over, selected, diff, s1, s2, _timer)
 - `G48` — 2048 (grid 4x4, score, best, won, over)
 - `FLAP` — Flappy Bird (canvas, bird, pipes, score, best, running, raf)
+- `NG` — Nonogram (size, pattern, solution[][], player[][], errors, maxErrors:3, started, timer)
+- `SDK` — Sudoku (grid[][], solution[][], given[][], selected, diff, errors, timer)
 
 ## Performance Optimization
 
