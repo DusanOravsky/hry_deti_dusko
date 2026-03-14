@@ -2014,9 +2014,20 @@ body.light .welcome-sub { color:rgba(0,0,0,0.45); }
   display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;
   overflow:hidden;
 }
+.welcome-name-group {
+  background:rgba(255,255,255,0.05); border-radius:16px; padding:12px 10px 10px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25); transition:transform 0.2s, box-shadow 0.2s;
+}
+.welcome-name-group:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(0,0,0,0.35); }
+.welcome-name-group:nth-child(1) { border:2px solid rgba(79,172,254,0.4); }
+.welcome-name-group:nth-child(2) { border:2px solid rgba(245,87,108,0.4); }
+body.light .welcome-name-group { background:rgba(255,255,255,0.6); box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+body.light .welcome-name-group:hover { box-shadow:0 6px 24px rgba(0,0,0,0.12); }
+body.light .welcome-name-group:nth-child(1) { border-color:rgba(79,172,254,0.5); }
+body.light .welcome-name-group:nth-child(2) { border-color:rgba(245,87,108,0.5); }
 .welcome-name-group label {
   display:block; font-size:0.7em; font-weight:700; letter-spacing:1px;
-  text-transform:uppercase; opacity:0.5; margin-bottom:4px;
+  text-transform:uppercase; opacity:0.6; margin-bottom:6px;
 }
 body.light .welcome-name-group label { color:#333; }
 .welcome-name-input {
@@ -2032,7 +2043,7 @@ body.light .welcome-name-group label { color:#333; }
   .welcome-title { font-size:1.5em; }
   .welcome-sub { font-size:0.8em; margin-bottom:14px; }
   .welcome-names { gap:8px; margin-bottom:14px; }
-  .welcome-name-group { min-width:0; overflow:hidden; }
+  .welcome-name-group { min-width:0; overflow:hidden; padding:10px 8px 8px; border-radius:14px; }
   .welcome-name-input { padding:6px 4px; font-size:0.8em; }
   .welcome-start-btn { padding:12px; font-size:1em; }
 }
@@ -2047,13 +2058,13 @@ body.light .welcome-name-group label { color:#333; }
   .welcome-start-btn { padding:18px; font-size:1.2em; border-radius:18px; }
 }
 #wP1Input {
-  background:rgba(245,87,108,0.15); border:2px solid rgba(245,87,108,0.4); color:white;
+  background:rgba(79,172,254,0.12); border:1.5px solid rgba(79,172,254,0.3); color:white;
 }
 #wP2Input {
-  background:rgba(79,172,254,0.15); border:2px solid rgba(79,172,254,0.4); color:white;
+  background:rgba(245,87,108,0.12); border:1.5px solid rgba(245,87,108,0.3); color:white;
 }
-body.light #wP1Input { background:rgba(245,87,108,0.1); color:#333; }
-body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
+body.light #wP1Input { background:rgba(79,172,254,0.08); border-color:rgba(79,172,254,0.25); color:#333; }
+body.light #wP2Input { background:rgba(245,87,108,0.08); border-color:rgba(245,87,108,0.25); color:#333; }
 .welcome-name-input:focus { filter:brightness(1.2); }
 .avatar-pick { cursor:pointer; font-size:1.3em; transition:transform 0.2s; display:inline-block; }
 .avatar-pick:hover { transform:scale(1.2); }
@@ -4282,7 +4293,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.2';
+const APP_VERSION = '13.3';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
