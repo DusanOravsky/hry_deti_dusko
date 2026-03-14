@@ -2166,7 +2166,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div id="avatarPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;overflow:hidden" onclick="closeAvatarPicker()">
       <div style="background:rgba(26,26,46,0.97);border-radius:16px;padding:16px;max-width:320px;width:90%;text-align:center;max-height:80vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
         <div style="font-weight:700;margin-bottom:10px;font-size:1.1em;color:inherit" id="avatarPickerTitle">Vyber avatar</div>
-        <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:60vh;padding:4px"></div>
+        <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:60vh;padding:4px 4px 16px 4px"></div>
       </div>
     </div>
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
@@ -4282,7 +4282,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.1';
+const APP_VERSION = '13.2';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12230,11 +12230,13 @@ function doodGenPlatforms() {
   DOOD.platforms = [];
   const wallOff=DOOD.wallMode?6:0;
   const areaW=DOOD.W-wallOff*2;
+  const gapBase=DOOD.wallMode?40:60;
+  const gapRand=DOOD.wallMode?15:20;
   // Ground platform
   DOOD.platforms.push({ x:130, y:460, w:DOOD_PW, type:'normal', moveDx:0 });
   // Generate upwards
   for(let i=1; i<80; i++) {
-    const y = 460 - i * 60 - Math.random()*20;
+    const y = 460 - i * gapBase - Math.random()*gapRand;
     const x = wallOff + Math.random() * (areaW - DOOD_PW);
     let type = 'normal';
     if(i > 10 && Math.random() < 0.15) type = 'moving';
@@ -12251,7 +12253,9 @@ function doodAddPlatforms() {
   // Add platforms above the topmost visible area
   const topP = DOOD.platforms.reduce((min,p) => p.y < min ? p.y : min, Infinity);
   if(topP - DOOD.cameraY > -DOOD.H) {
-    const y = topP - 50 - Math.random() * 40;
+    const addGapBase=DOOD.wallMode?35:50;
+    const addGapRand=DOOD.wallMode?25:40;
+    const y = topP - addGapBase - Math.random() * addGapRand;
     const wallOff=DOOD.wallMode?6:0;
     const x = wallOff + Math.random() * (DOOD.W - wallOff*2 - DOOD_PW);
     const h = Math.abs(y);
