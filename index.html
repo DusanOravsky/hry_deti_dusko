@@ -4249,7 +4249,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.1';
+const APP_VERSION = '12.2';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16334,68 +16334,92 @@ function ngRender(){
   if(!board)return;
   const s=NG.size;
   const isLight=document.body.classList.contains('light');
-  // Calculate max clue lengths for sizing
   let maxRowClues=1,maxColClues=1;
   for(let r=0;r<s;r++)maxRowClues=Math.max(maxRowClues,ngGetRowClues(r).length);
   for(let c=0;c<s;c++)maxColClues=Math.max(maxColClues,ngGetColClues(c).length);
-  const cellSize=Math.floor(Math.min(340,window.innerWidth*0.88)/(s+maxRowClues));
-  const clueFS=Math.max(9,Math.min(14,cellSize*0.5));
-  // Grid: top-left corner empty, then col clues on top, row clues on left, then cells
   const totalCols=maxRowClues+s;
-  const totalRows=maxColClues+s;
-  board.style.gridTemplateColumns=('repeat('+maxRowClues+','+cellSize+'px) '+'repeat('+s+','+cellSize+'px)');
-  board.style.gridTemplateRows=('repeat('+maxColClues+','+cellSize+'px) '+'repeat('+s+','+cellSize+'px)');
+  const cellSize=Math.floor(Math.min(340,window.innerWidth*0.88)/totalCols);
+  const clueFS=Math.max(9,Math.min(14,cellSize*0.5));
+  const expectedCells=(maxColClues+s)*totalCols;
+  board.style.gridTemplateColumns='repeat('+maxRowClues+','+cellSize+'px) repeat('+s+','+cellSize+'px)';
+  board.style.gridTemplateRows='repeat('+maxColClues+','+cellSize+'px) repeat('+s+','+cellSize+'px)';
   board.style.gap='1px';
   board.style.maxWidth=((cellSize+1)*totalCols)+'px';
-  board.innerHTML='';
-  // Col clues (top area)
-  for(let cr=0;cr<maxColClues;cr++){
-    // Empty cells for row clue area
-    for(let rc=0;rc<maxRowClues;rc++){
-      const d=document.createElement('div');
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;';
-      board.appendChild(d);
+  // Build DOM only when grid size changed
+  if(board.children.length!==expectedCells){
+    board.innerHTML='';
+    for(let cr=0;cr<maxColClues;cr++){
+      for(let rc=0;rc<maxRowClues;rc++){
+        const d=document.createElement('div');
+        board.appendChild(d);
+      }
+      for(let c=0;c<s;c++){
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;align-items:center;justify-content:center;font-weight:bold;color:inherit;opacity:0.7;';
+        board.appendChild(d);
+      }
     }
-    // Col clue cells
+    for(let r=0;r<s;r++){
+      for(let rc=0;rc<maxRowClues;rc++){
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;align-items:center;justify-content:center;font-weight:bold;color:inherit;opacity:0.7;';
+        board.appendChild(d);
+      }
+      for(let c=0;c<s;c++){
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:2px;cursor:pointer;user-select:none;color:inherit;transition:background 0.1s;';
+        d.addEventListener('click',((rr,cc)=>()=>ngCellClick(rr,cc))(r,c));
+        d.addEventListener('contextmenu',((rr,cc)=>e=>{e.preventDefault();if(!NG.started||NG.gameOver||NG.won)return;NG.player[rr][cc]=NG.player[rr][cc]===2?0:2;playSound('click');ngRender();})(r,c));
+        board.appendChild(d);
+      }
+    }
+  }
+  // Update all cells
+  let idx=0;
+  const cells=board.children;
+  // Col clues
+  for(let cr=0;cr<maxColClues;cr++){
+    for(let rc=0;rc<maxRowClues;rc++){
+      cells[idx].style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;';
+      cells[idx].textContent='';
+      idx++;
+    }
     for(let c=0;c<s;c++){
       const clues=ngGetColClues(c);
       const offset=maxColClues-clues.length;
-      const d=document.createElement('div');
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+clueFS+'px;font-weight:bold;color:inherit;opacity:0.7;';
-      if(cr>=offset) d.textContent=clues[cr-offset];
-      board.appendChild(d);
+      const el=cells[idx];
+      el.style.width=cellSize+'px';el.style.height=cellSize+'px';el.style.fontSize=clueFS+'px';
+      el.textContent=cr>=offset?clues[cr-offset]:'';
+      idx++;
     }
   }
-  // Rows with row clues + cells
+  // Row clues + cells
   for(let r=0;r<s;r++){
-    // Row clues
     const rClues=ngGetRowClues(r);
     const offset=maxRowClues-rClues.length;
     for(let rc=0;rc<maxRowClues;rc++){
-      const d=document.createElement('div');
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+clueFS+'px;font-weight:bold;color:inherit;opacity:0.7;';
-      if(rc>=offset) d.textContent=rClues[rc-offset];
-      board.appendChild(d);
+      const el=cells[idx];
+      el.style.width=cellSize+'px';el.style.height=cellSize+'px';el.style.fontSize=clueFS+'px';
+      el.textContent=rc>=offset?rClues[rc-offset]:'';
+      idx++;
     }
-    // Grid cells
     for(let c=0;c<s;c++){
-      const d=document.createElement('div');
+      const el=cells[idx];
       const v=NG.player[r][c];
       let bg,txt='',bdr;
       if(v===1){
-        bg=isLight?'#333':'#e0e0e0';bdr='rgba(255,255,255,0.1)';
+        bg=isLight?'#333':'#e0e0e0';bdr=isLight?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.1)';
       } else if(v===2){
         bg='transparent';txt='✕';bdr=isLight?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.2)';
       } else {
         bg=isLight?'rgba(0,0,0,0.06)':'rgba(100,140,200,0.25)';bdr=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.25)';
       }
-      // On win, show solution colored
       if(NG.won&&NG.solution[r][c]===1){bg=isLight?'#4CAF50':'#43e97b';bdr='rgba(67,233,123,0.5)';}
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize*0.5)+'px;font-weight:bold;border-radius:2px;cursor:pointer;user-select:none;background:'+bg+';border:1px solid '+bdr+';color:inherit;transition:background 0.1s;';
-      d.textContent=txt;
-      d.addEventListener('click',((rr,cc)=>()=>ngCellClick(rr,cc))(r,c));
-      d.addEventListener('contextmenu',((rr,cc)=>e=>{e.preventDefault();if(!NG.started||NG.gameOver||NG.won)return;NG.player[rr][cc]=NG.player[rr][cc]===2?0:2;playSound('click');ngRender();})(r,c));
-      board.appendChild(d);
+      el.style.width=cellSize+'px';el.style.height=cellSize+'px';
+      el.style.fontSize=(cellSize*0.5)+'px';
+      el.style.background=bg;el.style.border='1px solid '+bdr;
+      el.textContent=txt;
+      idx++;
     }
   }
 }
