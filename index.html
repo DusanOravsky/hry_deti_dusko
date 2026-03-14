@@ -4276,7 +4276,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.6';
+const APP_VERSION = '12.7';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16328,16 +16328,24 @@ function ngCellClick(r,c){
     NG.firstClick=false;
     NG.timer=setInterval(()=>{NG.time++;$('ngTime').textContent=NG.time;},1000);
   }
+  // Skip cells in error animation state
+  if(NG.player[r][c]===3)return;
   if(NG.markMode){
-    NG.player[r][c]=NG.player[r][c]===2?0:2;
+    // Mark mode: toggle X on empty/X cells, unfill filled cells
+    if(NG.player[r][c]===1){NG.player[r][c]=0;}
+    else{NG.player[r][c]=NG.player[r][c]===2?0:2;}
     playSound('click');
   } else {
     if(NG.player[r][c]===1){
       // Unfill — always allowed
       NG.player[r][c]=0;
       playSound('click');
+    } else if(NG.player[r][c]===2){
+      // Un-mark X — always allowed (no error)
+      NG.player[r][c]=0;
+      playSound('click');
     } else {
-      // Fill — check if correct
+      // Fill empty cell — check if correct
       if(NG.solution[r][c]===1){
         NG.player[r][c]=1;
         playSound('correct');
@@ -16397,13 +16405,13 @@ function ngRender(){
   const totalCols=maxRowClues+s;
   const cellSize=Math.floor(Math.min(340,window.innerWidth*0.88)/totalCols);
   const clueFS=Math.max(9,Math.min(14,cellSize*0.5));
-  const expectedCells=(maxColClues+s)*totalCols;
   board.style.gridTemplateColumns='repeat('+maxRowClues+','+cellSize+'px) repeat('+s+','+cellSize+'px)';
   board.style.gridTemplateRows='repeat('+maxColClues+','+cellSize+'px) repeat('+s+','+cellSize+'px)';
   board.style.gap='1px';
   board.style.maxWidth=((cellSize+1)*totalCols)+'px';
-  // Build DOM only when grid size changed
-  if(board.children.length!==expectedCells){
+  // Build DOM (clue layout varies per puzzle, always rebuild)
+  if(!board._ngSize||board._ngSize!==s||board._ngMaxR!==maxRowClues||board._ngMaxC!==maxColClues){
+    board._ngSize=s;board._ngMaxR=maxRowClues;board._ngMaxC=maxColClues;
     board.innerHTML='';
     for(let cr=0;cr<maxColClues;cr++){
       for(let rc=0;rc<maxRowClues;rc++){
