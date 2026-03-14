@@ -2298,6 +2298,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="game-btn" id="unoGameBtn" style="background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(46,204,113,0.3))"><span class="game-btn-icon">🎴</span><span class="game-btn-label">Uno</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="solitaireBtn" style="background:linear-gradient(135deg,rgba(26,35,126,0.3),rgba(40,53,147,0.3))"><span class="game-btn-icon">🂡</span><span class="game-btn-label">Solitaire</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="nimGameBtn" style="background:linear-gradient(135deg,rgba(139,69,19,0.3),rgba(210,180,140,0.3))"><span class="game-btn-icon">🪨</span><span class="game-btn-label">Nim</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="nonogramBtn" style="background:linear-gradient(135deg,rgba(156,39,176,0.3),rgba(103,58,183,0.3))"><span class="game-btn-icon">🖼️</span><span class="game-btn-label">Nonogram</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="sudokuBtn" style="background:linear-gradient(135deg,rgba(33,150,243,0.3),rgba(3,169,244,0.3))"><span class="game-btn-icon">🔢</span><span class="game-btn-label">Sudoku</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="tournamentBtn" style="background:linear-gradient(135deg,rgba(255,215,0,0.35),rgba(255,140,0,0.35));border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:16px"><span class="game-btn-icon">🏆</span><span class="game-btn-label">Turnaj</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="statsBtn" style="background:linear-gradient(135deg,rgba(44,62,80,0.3),rgba(52,152,219,0.2))"><span class="game-btn-icon">📊</span><span class="game-btn-label">Štatistiky</span><span class="game-btn-dot"></span></button>
     </nav>
@@ -4235,7 +4237,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <span>⏱ <span id="ngTime">0</span></span>
     </div>
     <div class="status" id="ngStatus">Klikni Štart!</div>
-    <div style="text-align:center"><div id="ngBoard" style="display:inline-grid;user-select:none;background:rgba(255,255,255,0.1);padding:3px;border-radius:6px;border:2px solid rgba(255,255,255,0.2)"></div></div>
+    <div style="text-align:center"><div id="ngBoard" style="display:inline-grid;user-select:none;touch-action:manipulation;background:rgba(255,255,255,0.1);padding:3px;border-radius:6px;border:2px solid rgba(255,255,255,0.2)"></div></div>
     <div class="celebration" id="ngCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
       <button class="action-btn primary-btn" onclick="resetNonogram()">🔄 Nová hra</button>
@@ -4276,7 +4278,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.7';
+const APP_VERSION = '12.8';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16434,7 +16436,14 @@ function ngRender(){
         const d=document.createElement('div');
         d.style.cssText='display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:2px;cursor:pointer;user-select:none;color:inherit;transition:background 0.1s;';
         d.addEventListener('click',((rr,cc)=>()=>ngCellClick(rr,cc))(r,c));
-        d.addEventListener('contextmenu',((rr,cc)=>e=>{e.preventDefault();if(!NG.started||NG.gameOver||NG.won)return;NG.player[rr][cc]=NG.player[rr][cc]===2?0:2;playSound('click');ngRender();})(r,c));
+        d.addEventListener('contextmenu',((rr,cc)=>e=>{e.preventDefault();if(!NG.started||NG.gameOver||NG.won)return;if(NG.player[rr][cc]===3)return;NG.player[rr][cc]=NG.player[rr][cc]===2?0:2;playSound('click');ngRender();})(r,c));
+        // Long-press for mobile (contextmenu unreliable on touch)
+        (function(rr,cc){
+          let lpt=0;
+          d.addEventListener('pointerdown',e=>{lpt=setTimeout(()=>{lpt=-1;e.preventDefault();if(!NG.started||NG.gameOver||NG.won)return;if(NG.player[rr][cc]===3)return;NG.player[rr][cc]=NG.player[rr][cc]===2?0:2;playSound('click');ngRender();},400);});
+          d.addEventListener('pointerup',()=>{if(lpt>0)clearTimeout(lpt);});
+          d.addEventListener('pointerleave',()=>{if(lpt>0)clearTimeout(lpt);});
+        })(r,c);
         board.appendChild(d);
       }
     }
