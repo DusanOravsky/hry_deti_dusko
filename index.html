@@ -4282,7 +4282,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.9';
+const APP_VERSION = '13.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4557,7 +4557,7 @@ function onGlobalNameChange() {
 function updateSidebarNames() { onGlobalNameChange(); }
 
 // ===== EMOJI AVATARS =====
-const AVATAR_EMOJIS=['😀','😎','🤩','🥳','😈','👻','🤖','👽','🦊','🐱','🐶','🦁','🐸','🐼','🦄','🐲','🦅','🐝','🐙','🎃','🍀','⭐','🌈','🔥','💎','🎯','🚀','🎸','🎮','👑','🏆','⚡','🌸','🍄','🎪','🫧','🎭','🧸'];
+const AVATAR_EMOJIS=['🔴','🔵','🟢','🟡','🟣','🟠','⚫','⚪','😀','😎','🤩','🥳','😈','👻','🤖','👽','🦊','🐱','🐶','🦁','🐸','🐼','🦄','🐲','🦅','🐝','🐙','🎃','🍀','⭐','🌈','🔥','💎','🎯','🚀','🎸','🎮','👑','🏆','⚡','🌸','🍄','🎪','🫧','🎭','🧸'];
 let _avatarTarget = 0;
 let _p1Avatar = '🔴'; let _p2Avatar = '🔵';
 function loadAvatars(){
