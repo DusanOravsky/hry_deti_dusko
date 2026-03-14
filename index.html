@@ -4261,7 +4261,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <span>⏱ <span id="sdkTime">0</span></span>
     </div>
     <div class="status" id="sdkStatus">Vyplň všetky políčka!</div>
-    <div style="text-align:center"><div id="sdkGrid" style="display:inline-grid;user-select:none;background:rgba(255,255,255,0.15);padding:2px;border-radius:6px;border:2px solid rgba(255,255,255,0.3)"></div></div>
+    <div style="text-align:center"><div id="sdkGrid" style="display:inline-grid;user-select:none;background:rgba(255,255,255,0.15);padding:0;border-radius:4px;border:3px solid rgba(255,255,255,0.5)"></div></div>
     <div id="sdkNumpad" style="display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap"></div>
     <div class="celebration" id="sdkCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
@@ -4276,7 +4276,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '12.5';
+const APP_VERSION = '12.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16661,7 +16661,7 @@ function sdkRender(){
   grid.style.gridTemplateColumns='repeat('+s+','+cellSize+'px)';
   grid.style.gridTemplateRows='repeat('+s+','+cellSize+'px)';
   grid.style.gap='0px';
-  grid.style.width=(cellSize*s+2)+'px';
+  grid.style.width=(cellSize*s)+'px';
   // Build DOM if needed
   if(grid.children.length!==expectedCells){
     grid.innerHTML='';
@@ -16672,6 +16672,8 @@ function sdkRender(){
       grid.appendChild(d);
     }
   }
+  // Selected cell value for highlighting same numbers
+  const selVal=(SDK.selR>=0)?SDK.grid[SDK.selR][SDK.selC]:0;
   // Update cells
   const cells=grid.children;
   for(let r=0;r<s;r++)for(let c=0;c<s;c++){
@@ -16679,24 +16681,32 @@ function sdkRender(){
     const v=SDK.grid[r][c];
     const isSel=r===SDK.selR&&c===SDK.selC;
     const isFixed=SDK.fixed[r][c];
+    // Highlight: same row, col, or box as selected
+    const sameGroup=SDK.selR>=0&&(r===SDK.selR||c===SDK.selC||
+      (Math.floor(r/SDK.boxR)===Math.floor(SDK.selR/SDK.boxR)&&Math.floor(c/SDK.boxC)===Math.floor(SDK.selC/SDK.boxC)));
+    const sameNum=selVal>0&&v===selVal;
     // Background
     let bg;
     if(isSel){
-      bg=isLight?'rgba(79,172,254,0.3)':'rgba(79,172,254,0.4)';
+      bg=isLight?'rgba(79,172,254,0.35)':'rgba(79,172,254,0.45)';
+    } else if(sameNum){
+      bg=isLight?'rgba(79,172,254,0.18)':'rgba(79,172,254,0.25)';
+    } else if(sameGroup){
+      bg=isLight?'rgba(79,172,254,0.08)':'rgba(79,172,254,0.12)';
     } else if(isFixed){
-      bg=isLight?'#e0e0e0':'rgba(255,255,255,0.12)';
+      bg=isLight?'#e8e8e8':'rgba(255,255,255,0.1)';
     } else {
-      bg=isLight?'#fff':'rgba(255,255,255,0.05)';
+      bg=isLight?'#fff':'rgba(255,255,255,0.04)';
     }
     if(SDK.won)bg=isLight?'rgba(76,175,80,0.2)':'rgba(67,233,123,0.2)';
-    // Borders — thicker on box boundaries
-    let bT='1px solid '+(isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.15)');
-    let bR=bT,bB=bT,bL=bT;
-    const thk='2px solid '+(isLight?'#333':'rgba(255,255,255,0.6)');
-    if(r%SDK.boxR===0)bT=thk;
-    if(c%SDK.boxC===0)bL=thk;
-    if(r===s-1)bB=thk;
-    if(c===s-1)bR=thk;
+    // Borders — use border-right/bottom only to avoid doubling
+    const thin=isLight?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.15)';
+    const thick=isLight?'#333':'rgba(255,255,255,0.6)';
+    let bR='1px solid '+thin, bB='1px solid '+thin, bT='none', bL='none';
+    if((c+1)%SDK.boxC===0&&c<s-1)bR='2px solid '+thick;
+    if(c===s-1)bR='none';
+    if((r+1)%SDK.boxR===0&&r<s-1)bB='2px solid '+thick;
+    if(r===s-1)bB='none';
     // Text color
     let clr;
     if(isFixed){clr=isLight?'#333':'#ddd';}
@@ -16709,6 +16719,13 @@ function sdkRender(){
     el.textContent=v>0?v:'';
   }
 }
+// Keyboard support for Sudoku
+document.addEventListener('keydown',e=>{
+  if(currentGameId!=='sudoku'||SDK.gameOver||SDK.won)return;
+  const n=parseInt(e.key);
+  if(n>=1&&n<=SDK.size){sdkNumClick(n);e.preventDefault();}
+  if(e.key==='Backspace'||e.key==='Delete'){sdkNumClick(0);e.preventDefault();}
+});
 resetSudoku();
 
 // =============================================================================
