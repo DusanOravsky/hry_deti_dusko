@@ -2199,12 +2199,6 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button onclick="randomBattle()" style="flex:1;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#ff0080,#ff6600,#ffd200);background-size:200% 200%;animation:gradientShift 2s ease infinite;box-shadow:0 4px 16px rgba(255,0,128,0.4);transition:transform 0.2s">🎲 RANDOM</button>
       <button onclick="startDailyChallenge()" id="dailyChallengeBtn" style="flex:1;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);box-shadow:0 4px 16px rgba(102,126,234,0.4);transition:transform 0.2s">📅 DENNÁ VÝZVA</button>
     </div>
-    <div id="dailyCalendar" style="padding:0 14px 12px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box">
-      <div style="display:flex;gap:6px;justify-content:center;align-items:center">
-        <div style="font-size:0.75em;opacity:0.6;margin-right:4px">Týždeň:</div>
-        <!-- Filled by JS -->
-      </div>
-    </div>
     <div id="catPills" style="display:flex;gap:6px;padding:0 14px 6px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
     <div class="mobile-game-grid" id="mobileGameGrid">
       <!-- filled by JS -->
@@ -3045,6 +3039,19 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
         <div class="stats-tile gold"><div class="stats-tile-val" id="stTourP1Wins">0</div><div class="stats-tile-label" id="stTourP1Label">Hráč 1 vyhral</div></div>
         <div class="stats-tile blue"><div class="stats-tile-val" id="stTourP2Wins">0</div><div class="stats-tile-label" id="stTourP2Label">Hráč 2 vyhral</div></div>
         <div class="stats-tile"><div class="stats-tile-val" id="stTourDraws">0</div><div class="stats-tile-label">Remízy</div></div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h3>📅 Denné výzvy</h3>
+      <div style="margin-bottom:12px">
+        <div class="stats-tile purple" style="display:inline-block;min-width:150px">
+          <div class="stats-tile-val" id="dailyStreakVal">0</div>
+          <div class="stats-tile-label">Aktuálny streak 🔥</div>
+        </div>
+      </div>
+      <div id="dailyCalendar" style="margin-top:16px">
+        <!-- Filled by JS -->
       </div>
     </div>
 
@@ -4303,7 +4310,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '14.5';
+const APP_VERSION = '14.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5126,9 +5133,14 @@ function updateDailyBtn(){
   const btn=$('dailyChallengeBtn');if(!btn)return;
   const state=dailyGetState();
   const today=dailySeed();
+  const streak=_getDailyStreak();
+
   if(state.date===today&&state.completed){
-    btn.textContent='✅ SPLNENÉ ('+(_getDailyStreak())+'🔥)';
+    btn.textContent='✅ SPLNENÉ '+(streak>0?'🔥'+streak:'');
     btn.style.background='linear-gradient(135deg,#43e97b,#38f9d7)';
+  } else {
+    btn.textContent='📅 DENNÁ VÝZVA'+(streak>0?' 🔥'+streak:'');
+    btn.style.background='linear-gradient(135deg,#667eea,#764ba2)';
   }
 }
 
@@ -5145,24 +5157,32 @@ function renderDailyCalendar(){
     history.forEach(d=>completedDates.add(d));
   }catch(e){}
 
-  // Build calendar for last 7 days
-  let html='<div style="font-size:0.75em;opacity:0.6;margin-right:4px">Týždeň:</div>';
-  for(let i=6;i>=0;i--){
+  // Update streak display
+  const streakEl=$('dailyStreakVal');
+  if(streakEl) streakEl.textContent=_getDailyStreak();
+
+  // Build calendar for last 30 days (in rows of 7)
+  const days=30;
+  let html='<div style="font-size:0.85em;opacity:0.7;margin-bottom:8px">Posledných 30 dní:</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">';
+
+  for(let i=days-1;i>=0;i--){
     const day=today-i;
     const isCompleted=completedDates.has(day);
     const isToday=day===today;
     const date=new Date((day)*86400000);
-    const dayName=['Ne','Po','Ut','St','Št','Pi','So'][date.getDay()];
+    const dateStr=date.getDate()+'.'+(date.getMonth()+1);
 
-    const bgColor=isCompleted?'rgba(67,233,123,0.3)':'rgba(255,255,255,0.1)';
+    const bgColor=isCompleted?'rgba(67,233,123,0.3)':'rgba(255,255,255,0.08)';
     const border=isToday?'2px solid #667eea':'1px solid rgba(255,255,255,0.15)';
-    const icon=isCompleted?'✅':'';
+    const icon=isCompleted?'✅':'·';
 
-    html+=`<div style="flex:1;min-width:40px;padding:6px 4px;border-radius:8px;background:${bgColor};border:${border};text-align:center;font-size:0.75em;transition:all 0.2s" title="${dayName}">
-      <div style="opacity:0.6;font-size:0.85em">${dayName}</div>
-      <div style="font-size:1.3em;margin-top:2px">${icon||'·'}</div>
+    html+=`<div style="padding:8px 4px;border-radius:8px;background:${bgColor};border:${border};text-align:center;font-size:0.7em;transition:all 0.2s" title="${dateStr}">
+      <div style="opacity:0.5;font-size:0.8em">${dateStr}</div>
+      <div style="font-size:1.4em;margin-top:2px">${icon}</div>
     </div>`;
   }
+  html+='</div>';
   cal.innerHTML=html;
 }
 
@@ -5546,6 +5566,7 @@ function renderStats() {
   $('stTourP2Label').textContent = globalP2 + ' vyhral';
   renderAchievements();
   renderLeaderboard();
+  renderDailyCalendar();
 }
 
 // ===== LEADERBOARD (Top 5 solo scores) =====
@@ -18210,7 +18231,6 @@ function renderMobileGrid() {
   html += sorted.map((g,i)=>_renderGameCard(g,i+offset)).join('');
   grid.innerHTML = html;
   updateDailyBtn();
-  renderDailyCalendar();
 }
 
 function _updateMobileChips() {
