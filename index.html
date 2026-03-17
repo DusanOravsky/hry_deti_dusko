@@ -4331,7 +4331,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '15.1';
+const APP_VERSION = '15.2';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4452,6 +4452,7 @@ function toggleSound() {
   const label = soundEnabled ? '🔊' : '🔇';
   const opacity = soundEnabled ? '1' : '0.5';
   document.querySelectorAll('#soundToggle, #soundToggleDesktop').forEach(el => { if(el) { el.textContent = label; el.style.opacity = opacity; } });
+  try { localStorage.setItem('hrajmesi_sound', soundEnabled ? '1' : '0'); } catch(e) {}
 }
 
 function toggleVibration() {
@@ -4469,6 +4470,39 @@ function toggleVibration() {
       }
     }
   });
+  try { localStorage.setItem('hrajmesi_vibration', vibrationEnabled ? '1' : '0'); } catch(e) {}
+}
+
+function loadSoundSettings() {
+  try {
+    // Load sound preference
+    const savedSound = localStorage.getItem('hrajmesi_sound');
+    if(savedSound !== null) {
+      soundEnabled = savedSound === '1';
+      const label = soundEnabled ? '🔊' : '🔇';
+      const opacity = soundEnabled ? '1' : '0.5';
+      document.querySelectorAll('#soundToggle, #soundToggleDesktop').forEach(el => { if(el) { el.textContent = label; el.style.opacity = opacity; } });
+    }
+
+    // Load vibration preference
+    const savedVibration = localStorage.getItem('hrajmesi_vibration');
+    if(savedVibration !== null) {
+      vibrationEnabled = savedVibration === '1';
+      const label = vibrationEnabled ? '📳' : '📴';
+      document.querySelectorAll('#vibrationToggle, #vibrationToggleDesktop, #mobileVibrationBtn, #mobileVibrationBtn2').forEach(el => {
+        if(el) {
+          el.textContent = label;
+          if(vibrationEnabled) {
+            el.style.opacity = '1';
+            el.style.background = '';
+          } else {
+            el.style.opacity = '0.4';
+            el.style.background = 'rgba(255,0,0,0.15)';
+          }
+        }
+      });
+    }
+  } catch(e) {}
 }
 
 // ===== FULLSCREEN =====
@@ -15638,6 +15672,7 @@ resetBee();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
+loadSoundSettings();
 $('appVersion').textContent='v'+APP_VERSION;
 const svEl=$('sidebarVersion'); if(svEl) svEl.textContent='v'+APP_VERSION;
 updateWelcomeStats();
