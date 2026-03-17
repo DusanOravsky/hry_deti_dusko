@@ -2139,29 +2139,6 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
   margin: 0 !important;
 }
 
-#fullscreenExitBtn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10001;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  font-size: 1.5em;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-#fullscreenExitBtn:active {
-  background: rgba(255, 255, 255, 0.2);
-}
-
 </style>
 </head>
 <body class="light">
@@ -2169,9 +2146,6 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 <button class="sound-toggle" id="soundToggleDesktop" onclick="toggleSound()" style="display:none">🔊</button>
 <button class="sound-toggle" id="vibrationToggleDesktop" onclick="toggleVibration()" style="display:none">📳</button>
 <canvas id="confettiCanvas"></canvas>
-
-<!-- Fullscreen Exit Button -->
-<button id="fullscreenExitBtn" onclick="document.exitFullscreen()">✕</button>
 
 <!-- Tournament Floating Banner -->
 <div id="tourFloatingBanner" style="display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(255,215,0,0.95),rgba(255,140,0,0.95));color:white;padding:8px 16px;border-radius:20px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:0.85em;font-weight:700;max-width:90vw;text-align:center">
@@ -4357,7 +4331,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '15.0';
+const APP_VERSION = '15.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4503,16 +4477,40 @@ function toggleFullscreen(elementId) {
   if(!element) return;
 
   if (!document.fullscreenElement) {
-    // Enter fullscreen
-    element.requestFullscreen()
+    // Create wrapper for fullscreen with exit button
+    const wrapper = document.createElement('div');
+    wrapper.id = 'fsWrapper';
+    wrapper.style.cssText = 'position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000';
+
+    // Create exit button
+    const exitBtn = document.createElement('button');
+    exitBtn.innerHTML = '✕';
+    exitBtn.style.cssText = 'position:absolute;top:20px;right:20px;z-index:10001;background:rgba(0,0,0,0.7);color:white;border:2px solid rgba(255,255,255,0.3);border-radius:50%;width:50px;height:50px;font-size:1.5em;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)';
+    exitBtn.onclick = () => document.exitFullscreen();
+
+    // Store original parent and next sibling for restoration
+    element._fsOriginalParent = element.parentNode;
+    element._fsOriginalNext = element.nextSibling;
+
+    // Move canvas into wrapper and add exit button
+    wrapper.appendChild(element);
+    wrapper.appendChild(exitBtn);
+    document.body.appendChild(wrapper);
+
+    // Enter fullscreen on wrapper
+    wrapper.requestFullscreen()
       .then(() => {
         element.classList.add('fullscreen-active');
-        $('fullscreenExitBtn').style.display = 'flex';
         playSound('click');
       })
       .catch(err => {
         console.log('Fullscreen error:', err);
         showToast('⛶ Fullscreen nie je podporovaný', 2000, 'rgba(245,87,108,0.9)');
+        // Restore on error
+        if(element._fsOriginalParent) {
+          element._fsOriginalParent.insertBefore(element, element._fsOriginalNext);
+          wrapper.remove();
+        }
       });
   } else {
     // Exit fullscreen
@@ -4523,10 +4521,16 @@ function toggleFullscreen(elementId) {
 // Auto-cleanup when exiting fullscreen
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement) {
-    document.querySelectorAll('.fullscreen-active').forEach(el => {
-      el.classList.remove('fullscreen-active');
-    });
-    $('fullscreenExitBtn').style.display = 'none';
+    // Restore canvas to original position
+    const wrapper = $('fsWrapper');
+    if(wrapper) {
+      const canvas = wrapper.querySelector('canvas');
+      if(canvas && canvas._fsOriginalParent) {
+        canvas.classList.remove('fullscreen-active');
+        canvas._fsOriginalParent.insertBefore(canvas, canvas._fsOriginalNext);
+      }
+      wrapper.remove();
+    }
   }
 });
 
