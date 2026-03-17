@@ -4284,7 +4284,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.8';
+const APP_VERSION = '13.9';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4537,10 +4537,10 @@ function onGlobalNameChange() {
   globalP1 = $('globalP1Input').value.trim() || 'Hráč 1';
   globalP2 = $('globalP2Input').value.trim() || 'Hráč 2';
   document.querySelectorAll('[id$="P1Name"]').forEach(el => {
-    if(el.tagName==='DIV') el.textContent = globalP1;
+    if(el.tagName==='DIV') el.textContent = (_p1Avatar || '🔴') + ' ' + globalP1;
   });
   document.querySelectorAll('[id$="P2Name"]').forEach(el => {
-    if(el.tagName==='DIV' && !el.classList.contains('player-name-ai')) el.textContent = globalP2;
+    if(el.tagName==='DIV' && !el.classList.contains('player-name-ai')) el.textContent = (_p2Avatar || '🔵') + ' ' + globalP2;
   });
   ['sidebarP1Label','stP1Label'].forEach(id => {
     const el = $(id);
@@ -4599,7 +4599,7 @@ function setP2Card(nameId, isAI, aiLabel) {
   const el = $(nameId);
   if(!el) return;
   if(isAI) { el.textContent = aiLabel; el.classList.add('player-name-ai'); }
-  else     { el.textContent = globalP2; el.classList.remove('player-name-ai'); }
+  else     { el.textContent = (_p2Avatar || '🔵') + ' ' + globalP2; el.classList.remove('player-name-ai'); }
 }
 
 function activeTurn(card1id, card2id, active) {
