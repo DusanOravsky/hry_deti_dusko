@@ -3619,7 +3619,13 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </ul></div>
     <div class="difficulty-selector" id="ludoPlayerSel">
       <button class="difficulty-btn active" onclick="setLudoPlayers(2,this)">2 hráči</button>
+      <button class="difficulty-btn" onclick="setLudoPlayers(3,this)">3 hráči</button>
       <button class="difficulty-btn" onclick="setLudoPlayers(4,this)">4 hráči</button>
+    </div>
+    <div id="ludoExtraNames" style="display:none;margin:10px 0;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px">
+      <div style="margin-bottom:8px;font-size:0.9em;opacity:0.8">Mená hráčov:</div>
+      <input type="text" id="ludoP3Input" placeholder="Hráč 3" maxlength="15" style="width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:inherit;font-size:0.9em" oninput="onLudoNameChange()">
+      <input type="text" id="ludoP4Input" placeholder="Hráč 4" maxlength="15" style="width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:inherit;font-size:0.9em" oninput="onLudoNameChange()">
     </div>
     <div class="player-info" id="ludoPlayerInfo" style="flex-wrap:wrap;gap:8px">
       <div class="player-card player1 active-turn" id="ludoP1Card" style="min-width:70px;flex:1"><div class="player-name-display" id="ludoP1Name">Hráč 1</div><div style="font-size:1.2em">🔴</div><div class="player-score" id="ludoScore0">0</div></div>
@@ -4284,7 +4290,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '13.9';
+const APP_VERSION = '14.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4522,6 +4528,8 @@ function playSound(type) {
 // ─────────────────────────────────────────────────────────────────────────────
 let globalP1 = 'Hráč 1';
 let globalP2 = 'Hráč 2';
+let globalP3 = 'Hráč 3';
+let globalP4 = 'Hráč 4';
 
 function getP1Name(game) {
   const el = $(game+'P1Name');
@@ -4532,6 +4540,16 @@ function getP2Name(game) {
   const el = $(game+'P2Name');
   if(el && el.classList.contains('player-name-ai')) return el.textContent.trim();
   return globalP2;
+}
+function getP3Name(game) {
+  const el = $(game+'P3Name');
+  if(el && el.classList.contains('player-name-ai')) return el.textContent.trim();
+  return globalP3;
+}
+function getP4Name(game) {
+  const el = $(game+'P4Name');
+  if(el && el.classList.contains('player-name-ai')) return el.textContent.trim();
+  return globalP4;
 }
 function onGlobalNameChange() {
   globalP1 = $('globalP1Input').value.trim() || 'Hráč 1';
@@ -11749,8 +11767,13 @@ function setLudoPlayers(n,btn) {
   LUDO.numPlayers=n;
   document.querySelectorAll('#ludoPlayerSel .difficulty-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  $('ludoP3Card').style.display=n===4?'':'none';
-  $('ludoP4Card').style.display=n===4?'':'none';
+  $('ludoP3Card').style.display=(n>=3)?'':'none';
+  $('ludoP4Card').style.display=(n===4)?'':'none';
+  // Show extra name inputs only in PVP mode with 3-4 players
+  const showExtraNames = welcomeGameMode==='pvp' && n>=3;
+  $('ludoExtraNames').style.display = showExtraNames?'':'none';
+  if(showExtraNames && n===3) $('ludoP4Input').style.display='none';
+  else if(showExtraNames) $('ludoP4Input').style.display='';
   resetLudo();
 }
 const LUDO_PATH = [
@@ -11785,9 +11808,26 @@ const LUDO_BG = ['rgba(239,83,80,','rgba(66,165,245,','rgba(102,187,106,','rgba(
 
 function ludoGetName(p) {
   if(p===0) return getP1Name('lu');
-  if(p===1) return (welcomeGameMode==='ai'&&LUDO.numPlayers>1)?'Počítač':getP2Name('lu');
-  if(welcomeGameMode==='ai') return 'Počítač';
+  if(p===1) {
+    if(welcomeGameMode==='ai') return '🤖 Počítač';
+    return (_p2Avatar||'🔵')+' '+getP2Name('lu');
+  }
+  if(p===2) {
+    if(welcomeGameMode==='ai') return '🤖 Počítač 2';
+    return '🟢 '+getP3Name('lu');
+  }
+  if(p===3) {
+    if(welcomeGameMode==='ai') return '🤖 Počítač 3';
+    return '🟡 '+getP4Name('lu');
+  }
   return 'Hráč '+(p+1);
+}
+
+function onLudoNameChange() {
+  globalP3 = $('ludoP3Input').value.trim() || 'Hráč 3';
+  globalP4 = $('ludoP4Input').value.trim() || 'Hráč 4';
+  if(LUDO.numPlayers>=3) $('ludoP3Name').textContent = '🟢 '+globalP3;
+  if(LUDO.numPlayers>=4) $('ludoP4Name').textContent = '🟡 '+globalP4;
 }
 
 function ludoRel2Coord(p,rel) {
@@ -11802,14 +11842,26 @@ function ludoActiveTurn(p) {
 }
 
 function resetLudo() {
+  // In AI mode, force 2 players only
+  if(welcomeGameMode==='ai') {
+    LUDO.numPlayers = 2;
+    $('ludoPlayerSel').style.display = 'none'; // Hide player selector in AI mode
+  } else {
+    $('ludoPlayerSel').style.display = 'flex'; // Show player selector in PVP mode
+  }
   LUDO.dice=0; LUDO.turn=0; LUDO.rolled=false; LUDO.over=false;
   LUDO.pieces=[];
   for(let i=0;i<LUDO.numPlayers;i++) LUDO.pieces.push([-1,-1,-1,-1]);
   // Show/hide P3/P4 cards
-  $('ludoP3Card').style.display=LUDO.numPlayers===4?'':'none';
-  $('ludoP4Card').style.display=LUDO.numPlayers===4?'':'none';
+  $('ludoP3Card').style.display=(LUDO.numPlayers>=3)?'':'none';
+  $('ludoP4Card').style.display=(LUDO.numPlayers===4)?'':'none';
+  // Show extra name inputs only in PVP mode with 3-4 players
+  const showExtraNames = welcomeGameMode==='pvp' && LUDO.numPlayers>=3;
+  $('ludoExtraNames').style.display = showExtraNames?'':'none';
+  if(showExtraNames && LUDO.numPlayers===3) $('ludoP4Input').style.display='none';
+  else if(showExtraNames) $('ludoP4Input').style.display='';
   // Update names
-  $('ludoP1Name').textContent=ludoGetName(0);
+  $('ludoP1Name').textContent=(_p1Avatar||'🔴')+' '+ludoGetName(0);
   $('ludoP2Name').textContent=ludoGetName(1);
   if(LUDO.numPlayers>=3) $('ludoP3Name').textContent=ludoGetName(2);
   if(LUDO.numPlayers>=4) $('ludoP4Name').textContent=ludoGetName(3);
