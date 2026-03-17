@@ -4399,7 +4399,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '16.5';
+const APP_VERSION = '16.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -17693,6 +17693,25 @@ function setSokDiff(d,btn){
   btn.classList.add('active');
 }
 
+function sokSaveProgress(completedLevel){
+  try{
+    const key='hry_sokoban_progress';
+    const saved=parseInt(localStorage.getItem(key)||'0');
+    if(completedLevel>=saved){
+      localStorage.setItem(key,completedLevel+1); // Save next level to unlock
+    }
+  }catch(e){}
+}
+
+function sokLoadProgress(){
+  try{
+    const key='hry_sokoban_progress';
+    return parseInt(localStorage.getItem(key)||'0');
+  }catch(e){
+    return 0;
+  }
+}
+
 function resetSokoban(fromInit){
   if(SOK.timer){clearInterval(SOK.timer);SOK.timer=null;}
   SOK.moves=0;SOK.moveHistory=[];SOK.time=0;SOK.over=false;SOK.won=false;SOK.aiSolving=false;SOK.aiMoves=[];
@@ -17949,25 +17968,6 @@ function sokCheckWin(){
         },3000);
       }
     }
-  }
-}
-
-function sokSaveProgress(completedLevel){
-  try{
-    const key='hry_sokoban_progress';
-    const saved=parseInt(localStorage.getItem(key)||'0');
-    if(completedLevel>=saved){
-      localStorage.setItem(key,completedLevel+1); // Save next level to unlock
-    }
-  }catch(e){}
-}
-
-function sokLoadProgress(){
-  try{
-    const key='hry_sokoban_progress';
-    return parseInt(localStorage.getItem(key)||'0');
-  }catch(e){
-    return 0;
   }
 }
 
