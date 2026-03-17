@@ -4297,7 +4297,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '14.3';
+const APP_VERSION = '14.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5018,18 +5018,47 @@ function tourReset() {
 
 // ===== DAILY CHALLENGE =====
 const DAILY_GAMES=[
+  // Solo arkádové hry (score challenges)
   {id:'snake',goal:'Dosiahni 15 bodov v Snake',target:15,type:'score'},
   {id:'tetris',goal:'Dosiahni 500 bodov v Tetris',target:500,type:'score'},
+  {id:'racing',goal:'Dosiahni 100 bodov v Pretekoch',target:100,type:'score'},
   {id:'game2048',goal:'Dosiahni 2048 v 2048',target:2048,type:'score'},
   {id:'flappy',goal:'Preleť 10 rúr vo Flappy Bird',target:10,type:'score'},
   {id:'gravityRun',goal:'Dosiahni skóre 50 v Gravity Run',target:50,type:'score'},
+  {id:'doodle',goal:'Dosiahni 500 bodov v Doodle Jump',target:500,type:'score'},
+
+  // Strategické hry (win challenges)
   {id:'minesweeper',goal:'Vyhraj Minesweeper',target:1,type:'win'},
   {id:'chess',goal:'Vyhraj partiu šachu',target:1,type:'win'},
   {id:'connect4',goal:'Vyhraj Connect 4',target:1,type:'win'},
   {id:'reversi',goal:'Vyhraj Reversi',target:1,type:'win'},
   {id:'checkers',goal:'Vyhraj Dámu',target:1,type:'win'},
   {id:'wordle',goal:'Uhádni slovo vo Wordle',target:1,type:'win'},
+  {id:'battleship',goal:'Vyhraj Lodičky',target:1,type:'win'},
+  {id:'ludo',goal:'Vyhraj Človeče nehnevaj sa',target:1,type:'win'},
+  {id:'solitaire',goal:'Vyhraj Solitaire',target:1,type:'win'},
+  {id:'sudoku',goal:'Vyhraj Sudoku',target:1,type:'win'},
+  {id:'nonogram',goal:'Vyhraj Nonogram',target:1,type:'win'},
+  {id:'maze',goal:'Vyhraj Mini Labyrint',target:1,type:'win'},
+  {id:'nimGame',goal:'Vyhraj Nim',target:1,type:'win'},
+  {id:'unoGame',goal:'Vyhraj Uno',target:1,type:'win'},
+  {id:'dotsBoxes',goal:'Vyhraj Bodky a Krabičky',target:1,type:'win'},
+
+  // Akčné PvP hry (win challenges)
   {id:'pong',goal:'Vyhraj Pong',target:1,type:'win'},
+  {id:'tanks',goal:'Vyhraj Tank Battle',target:1,type:'win'},
+  {id:'snakeDuel',goal:'Vyhraj Snake Duel',target:1,type:'win'},
+  {id:'breakout',goal:'Dosiahni level 3 v Breakout',target:3,type:'score'},
+
+  // Rýchle hry (win/score challenges)
+  {id:'ticTacToe',goal:'Vyhraj Piškvorky 3x3',target:1,type:'win'},
+  {id:'rockPaper',goal:'Vyhraj Kameň Papier Nožnice',target:1,type:'win'},
+  {id:'memory',goal:'Vyhraj Pexeso',target:1,type:'win'},
+  {id:'puzzle',goal:'Vyhraj Puzzle Scramble',target:1,type:'win'},
+
+  // Špeciálne výzvy
+  {id:'beeCount',goal:'Uhádni 5 z 5 v Včelách',target:5,type:'score'},
+  {id:'soccer',goal:'Daj 5 z 5 gólov v Penaltách',target:5,type:'score'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
 function dailySeedDisplay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
@@ -12610,6 +12639,7 @@ function doodEndRound() {
     $('p1ScoreDood').textContent = DOOD.score;
     $('doodleStatus').textContent = '🎮 Skóre: ' + DOOD.score;
     addWin(1, 'doodle'); if(DOOD.score > 0) { celebrate('doodleCelebration'); playSound('win'); }
+    dailyCheckComplete('doodle', DOOD.score, false);
   } else {
     $('p2ScoreDood').textContent = DOOD.score;
     const s1 = DOOD.scores[0], s2 = DOOD.scores[1];
@@ -13618,6 +13648,7 @@ function brkGameOver(){
   // Solo/AI mode
   $('brkStatus').textContent='Game Over! Skore: '+BRK.score+' (Level '+BRK.level+')';
   addWin(1,'breakout');
+  dailyCheckComplete('breakout', BRK.level, false);
   if(BRK.score>=50){celebrate('brkCelebration');playSound('win');}
 }
 
@@ -15010,6 +15041,7 @@ function beeShowResult(){
       BEE._resultTimeout=null;
       if(solo){
         addWin(BEE.s1>=3?1:0,'beeCount');
+        dailyCheckComplete('beeCount', BEE.s1, false);
         $('beeStatus').textContent='🏆 Výsledok: '+BEE.s1+'/'+BEE.maxRounds+(BEE.s1===BEE.maxRounds?' — Perfektné! 🌟':BEE.s1>=3?' — Super! 🎉':' — Skús znova! 💪');
         if(BEE.s1>=3) $('beeCelebration').textContent='🎉🐝🎉';
       } else {
@@ -15589,6 +15621,7 @@ function socCheckGoal(){
     if(solo){
       if(SOC.round>=SOC.maxRounds){
         addWin(SOC.s1>=3?1:0,'soccer');
+        dailyCheckComplete('soccer', SOC.s1, false);
         $('socStatus').textContent='🏆 Výsledok: '+SOC.s1+'/'+SOC.maxRounds+(SOC.s1===SOC.maxRounds?' — Perfektné! 🌟':SOC.s1>=3?' — Super! 🎉':' — Skús znova! 💪');
         if(SOC.s1>=3){$('socCelebration').textContent='🎉⚽🎉';celebrate('socCelebration');}
         $('socStartBtn').disabled=false;SOC.running=false;playSound('win');
