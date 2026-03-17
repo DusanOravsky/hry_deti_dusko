@@ -4359,7 +4359,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '15.3';
+const APP_VERSION = '15.4';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -17190,7 +17190,7 @@ function resetAngryBirds(){
   $('abP2Name').textContent=(welcomeGameMode==='ai'?'🤖 Počítač':(_p2Avatar||'🔵')+' '+getP2Name('ab'));
   $('abP1Card').classList.toggle('active-turn',AB.turn===1);
   $('abP2Card').classList.toggle('active-turn',AB.turn===2);
-  $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak!';
+  $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak!';
   $('abCelebration').textContent='';
   applyGameMode();
   abRender();
@@ -17354,7 +17354,7 @@ function abFly(){
           abSwitchTurn();
         }else{
           AB.bird=null;
-          $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak! ('+AB.shots1+'/'+AB.maxShots+')';
+          $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak! ('+AB.shots1+'/'+AB.maxShots+')';
           abRender();
         }
       }else{
@@ -17367,7 +17367,7 @@ function abFly(){
             setTimeout(abAiShoot,800);
           }else{
             AB.bird=null;
-            $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak! ('+AB.shots2+'/'+AB.maxShots+')';
+            $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak! ('+AB.shots2+'/'+AB.maxShots+')';
             abRender();
           }
         }
@@ -17385,7 +17385,7 @@ function abSwitchTurn(){
   AB.bird=null;
   $('abP1Card').classList.remove('active-turn');
   $('abP2Card').classList.add('active-turn');
-  $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak!';
+  $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak!';
   abRender();
   if(welcomeGameMode==='ai'){
     setTimeout(abAiShoot,1000);
@@ -17426,7 +17426,7 @@ function abGameOver(){
   $('abStatus').textContent=msg;
   $('abCelebration').textContent=w===0?'':w===1?'🎉':'🎊';
   playSound(w===0?'draw':'win');
-  confetti();
+  if(w!==0) launchConfetti();
   setTimeout(()=>{$('abCelebration').textContent='';},3000);
 }
 resetAngryBirds();
@@ -18793,7 +18793,7 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
