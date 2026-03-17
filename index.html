@@ -4399,7 +4399,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '16.9';
+const APP_VERSION = '17.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -17574,7 +17574,7 @@ const SOK_LEVELS = [
   ["######","# @  #","# $  #","# .  #","######"],
   [" #### ","## @##","# $  #","# .  #"," ####"],
   ["#####","#@  #","#$  #","#.  #","#####"],
-  ["######","# @$ #","#   .#","######"],
+  ["######","# @  #","# $. #","######"],
   ["#####","#@  #","# $ #","# . #","#####"],
   [" ####","#  @#","# $ #","# . #"," ####"],
   ["#####","# @ #","#  $#","# . #","#####"],
@@ -17642,7 +17642,8 @@ const SOK = {
   turn:1, s1:0, s2:0,
   diff:'easy', aiSolving:false, aiMoves:[],
   cellSize:40, // rendering
-  over:false, won:false
+  over:false, won:false,
+  p1Completed:false, p2Completed:false // PVP: both players must complete each level
 };
 
 function setSokDiff(d,btn){
@@ -17671,9 +17672,15 @@ function sokLoadProgress(){
   }
 }
 
-function resetSokoban(fromInit){
+function resetSokoban(fromInit, keepCompleted){
   if(SOK.timer){clearInterval(SOK.timer);SOK.timer=null;}
   SOK.moves=0;SOK.moveHistory=[];SOK.time=0;SOK.over=false;SOK.won=false;SOK.aiSolving=false;SOK.aiMoves=[];
+
+  // Reset completed flags unless keepCompleted is true
+  if(!keepCompleted){
+    SOK.p1Completed=false;
+    SOK.p2Completed=false;
+  }
 
   // In AI mode, load progress on first init
   if(fromInit && welcomeGameMode==='ai'){
@@ -17733,6 +17740,9 @@ function sokLoadLevel(idx){
 function sokPrevLevel(){
   if(SOK.level>0){
     SOK.level--;
+    // Reset completed flags when changing levels manually
+    SOK.p1Completed=false;
+    SOK.p2Completed=false;
     // In PVP, switch turn when changing levels manually
     if(welcomeGameMode!=='ai'){
       SOK.turn = SOK.turn===1 ? 2 : 1;
@@ -17744,6 +17754,9 @@ function sokPrevLevel(){
 function sokNextLevel(){
   if(SOK.level<SOK_LEVELS.length-1){
     SOK.level++;
+    // Reset completed flags when changing levels manually
+    SOK.p1Completed=false;
+    SOK.p2Completed=false;
     // In PVP, switch turn when changing levels manually
     if(welcomeGameMode!=='ai'){
       SOK.turn = SOK.turn===1 ? 2 : 1;
@@ -17903,28 +17916,56 @@ function sokCheckWin(){
         },2000);
       }
     }else{
-      // PVP mode: track winner
+      // PVP mode: both players must complete each level
       const w=SOK.turn;
-      if(w===1){SOK.s1++;$('p1ScoreSok').textContent=SOK.s1;}
-      else{SOK.s2++;$('p2ScoreSok').textContent=SOK.s2;}
-      addWin(w,'sokoban');
       const name=w===1?getP1Name('sok'):getP2Name('sok');
-      $('sokStatus').textContent='✅ '+name+' vyhral! '+SOK.moves+' ťahov, '+SOK.time+'s';
+
+      // Mark current player as completed
+      if(w===1){
+        SOK.p1Completed=true;
+        SOK.s1++;
+        $('p1ScoreSok').textContent=SOK.s1;
+      }else{
+        SOK.p2Completed=true;
+        SOK.s2++;
+        $('p2ScoreSok').textContent=SOK.s2;
+      }
+      addWin(w,'sokoban');
+
+      $('sokStatus').textContent='✅ '+name+' dokončil level! '+SOK.moves+' ťahov, '+SOK.time+'s';
       $('sokCelebration').textContent='🎉';
       playSound('win');
       launchConfetti();
       setTimeout(()=>{$('sokCelebration').textContent='';},3000);
       $('sokUndoBtn').disabled=true;
-      // Switch turn for next level
-      SOK.turn = SOK.turn===1 ? 2 : 1;
-      // Auto-advance to next level after 3s
-      if(SOK.level<SOK_LEVELS.length-1){
+
+      // Check if both players completed the level
+      if(SOK.p1Completed && SOK.p2Completed){
+        // Both completed → advance to next level
+        if(SOK.level<SOK_LEVELS.length-1){
+          setTimeout(()=>{
+            $('sokStatus').textContent='🎯 Obaja hráči dokončili! Ďalší level...';
+            setTimeout(()=>{
+              SOK.level++;
+              SOK.turn = SOK.turn===1 ? 2 : 1; // Switch turn for next level
+              resetSokoban();
+            },1500);
+          },2000);
+        }else{
+          setTimeout(()=>{
+            $('sokStatus').textContent='🏆 Gratulujem! Dokončili ste všetky levely!';
+          },2000);
+        }
+      }else{
+        // Only one completed → reset level for other player
+        SOK.turn = SOK.turn===1 ? 2 : 1;
+        const nextName=SOK.turn===1?getP1Name('sok'):getP2Name('sok');
         setTimeout(()=>{
-          if(confirm('Level dokončený! Prejsť na ďalší?')){
-            SOK.level++;
-            resetSokoban();
-          }
-        },3000);
+          $('sokStatus').textContent='🔄 Teraz hrá '+nextName+'...';
+          setTimeout(()=>{
+            resetSokoban(false, true); // Keep completed flags
+          },1500);
+        },2000);
       }
     }
   }
