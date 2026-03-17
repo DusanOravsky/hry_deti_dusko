@@ -2163,12 +2163,6 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
         <input class="welcome-name-input" id="wP2Input" value="" maxlength="12" placeholder="Meno hráča 2" oninput="updateWelcomeSub()">
       </div>
     </div>
-    <div id="avatarPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;overflow:hidden" onclick="closeAvatarPicker()">
-      <div style="background:rgba(26,26,46,0.97);border-radius:16px;padding:16px;max-width:320px;width:90%;text-align:center;max-height:80vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
-        <div style="font-weight:700;margin-bottom:10px;font-size:1.1em;color:inherit" id="avatarPickerTitle">Vyber avatar</div>
-        <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:60vh;padding:4px 4px 16px 4px"></div>
-      </div>
-    </div>
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
@@ -2177,6 +2171,15 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
 </div>
+
+<!-- ===== AVATAR PICKER MODAL ===== -->
+<div id="avatarPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;overflow:hidden" onclick="closeAvatarPicker()">
+  <div style="background:rgba(26,26,46,0.97);border-radius:16px;padding:16px;max-width:320px;width:90%;text-align:center;max-height:80vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+    <div style="font-weight:700;margin-bottom:10px;font-size:1.1em;color:inherit" id="avatarPickerTitle">Vyber avatar</div>
+    <div id="avatarPickerGrid" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:60vh;padding:4px 4px 16px 4px"></div>
+  </div>
+</div>
+
 <!-- ===== MOBILE 3-LEVEL NAVIGATION ===== -->
 <div class="mobile-nav">
 
@@ -4310,7 +4313,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '14.6';
+const APP_VERSION = '14.7';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
