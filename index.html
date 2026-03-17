@@ -2179,7 +2179,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 47 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 48 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -2310,6 +2310,8 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button class="game-btn" id="racingBtn" style="background:linear-gradient(135deg,rgba(255,69,0,0.3),rgba(255,165,0,0.25))"><span class="game-btn-icon">🏎️</span><span class="game-btn-label">Preteky</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="game2048Btn" style="background:linear-gradient(135deg,rgba(237,194,46,0.3),rgba(237,130,14,0.3))"><span class="game-btn-icon">🔢</span><span class="game-btn-label">2048</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="flappyBtn" style="background:linear-gradient(135deg,rgba(76,217,100,0.3),rgba(255,204,0,0.3))"><span class="game-btn-icon">🐤</span><span class="game-btn-label">Flappy Bird</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="angryBirdsBtn" style="background:linear-gradient(135deg,rgba(220,53,69,0.3),rgba(135,206,235,0.3))"><span class="game-btn-icon">🐦</span><span class="game-btn-label">Angry Birds</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="sokobanBtn" style="background:linear-gradient(135deg,rgba(139,69,19,0.3),rgba(245,176,65,0.3))"><span class="game-btn-icon">📦</span><span class="game-btn-label">Sokoban</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="cardWarBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.25))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vojna</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="unoGameBtn" style="background:linear-gradient(135deg,rgba(231,76,60,0.3),rgba(46,204,113,0.3))"><span class="game-btn-icon">🎴</span><span class="game-btn-label">Uno</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="solitaireBtn" style="background:linear-gradient(135deg,rgba(26,35,126,0.3),rgba(40,53,147,0.3))"><span class="game-btn-icon">🂡</span><span class="game-btn-label">Solitaire</span><span class="game-btn-dot"></span></button>
@@ -4170,6 +4172,44 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== SOKOBAN ===== -->
+  <div class="game-area" id="sokoban">
+    <div class="rules"><h3>📦 Sokoban:</h3><ul>
+      <li>Tlač boxy (📦) na cieľové políčka (⭐)</li>
+      <li>Nemôžeš ťahať, len tlačiť</li>
+      <li>Nemôžeš tlačiť 2 boxy naraz</li>
+      <li>Ovládanie: WASD / Šípky / Swipe</li>
+      <li>↩️ Undo: vráť ťah späť</li>
+      <li>60 levelov — postupne ťažšie!</li>
+    </ul></div>
+    <div class="ai-difficulty" id="sokDiffWrap" style="display:none;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setSokDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setSokDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setSokDiff('hard',this)">Ťažká</button>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap">
+      <button class="action-btn" onclick="sokPrevLevel()" style="padding:6px 12px;font-size:0.85em">◀ Predošlý</button>
+      <div style="background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:8px;font-size:0.85em;font-weight:bold" id="sokLevelDisplay">Level 1/60</div>
+      <button class="action-btn" onclick="sokNextLevel()" style="padding:6px 12px;font-size:0.85em">Ďalší ▶</button>
+    </div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="sokP1Card"><div class="player-name-display" id="sokP1Name">Hráč 1</div><div class="player-score" id="p1ScoreSok">0</div></div>
+      <div class="player-card player2" id="sokP2Card"><div class="player-name-display" id="sokP2Name">Hráč 2</div><div class="player-score" id="p2ScoreSok">0</div></div>
+    </div>
+    <div class="status" id="sokStatus">Tlač boxy na ⭐!</div>
+    <div style="display:flex;justify-content:center;margin:12px 0;gap:8px;font-size:0.85em">
+      <div style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:6px">Ťahy: <span id="sokMoves">0</span></div>
+      <div style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:6px">Čas: <span id="sokTime">0</span>s</div>
+    </div>
+    <canvas id="sokCanvas" width="400" height="400" style="max-width:min(400px,90vw);width:100%;height:auto;aspect-ratio:1;border-radius:12px;cursor:pointer;touch-action:none"></canvas>
+    <div class="celebration" id="sokCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn" onclick="sokUndo()" id="sokUndoBtn" style="background:rgba(255,193,7,0.3)">↩️ Undo</button>
+      <button class="action-btn primary-btn" onclick="sokHint()" style="background:linear-gradient(135deg,#667eea,#764ba2)">💡 Hint</button>
+      <button class="action-btn danger-btn" onclick="resetSokoban()">🔄 Reset</button>
+    </div>
+  </div>
+
   <!-- ===== WAR (VOJNA) ===== -->
   <div class="game-area" id="cardWar">
     <div class="rules"><h3>🃏 Vojna:</h3><ul>
@@ -4359,7 +4399,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '15.6';
+const APP_VERSION = '16.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4376,7 +4416,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4387,7 +4427,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4802,7 +4842,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4813,7 +4853,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -15784,6 +15824,7 @@ resetPong();
 resetTanks();
 resetSnakeDuel();
 resetBee();
+resetSokoban();
 setWdlLang('sk'); // Init Wordle with Slovak (sets button visual + calls resetWordle)
 updateWelcomeSub();
 loadTheme();
@@ -17523,7 +17564,401 @@ function abGameOver(){
 resetAngryBirds();
 
 // =============================================================================
-// SEKCIA 43: WAR (VOJNA) — kartová hra
+// SEKCIA 43: SOKOBAN (PUSH BOX PUZZLE)
+// =============================================================================
+const SOK_LEVELS = [
+  // Easy (1-10)
+  ["#######","#.@ $.#","#######"],
+  ["########","#.. #  #","#.@$$ .#","#   #  #","########"],
+  ["  ##### ","###   # ","#.@$  # ","### $.# ","#.##$ # ","# # . ##","#$ *$$.#","#   .  #","########"],
+  ["########","#     .#","# .$*@.#","## ###.#"," #     #"," #  #  #"," ####  #","    ####"],
+  ["  ####  ","  #  ###","  #  $ #","### # .#","#  $  .#","# # . .#","#  $####","## @#   "," ####   "],
+  ["  ##### ","###   ##","#  $$ .#","# # @# #","# $  . #","#   #  #","########"],
+  ["#######","#.  . #","# ##  #","# @$$ #","# $   #","##  ###"," ####  "],
+  ["########","#   .. #","# $$#  #","## @ ###"," #$  #  "," #  ##  "," ####   "],
+  [" ###### ","##    ##","# $ .  #","# @##$ #","## #  ##"," # $. # "," #  . # "," ######"],
+  ["#######","#     #","# .*. #","# $$$ #","## @ ##"," #### "],
+  // Medium (11-30)
+  ["  ######","  #    #","  # #  #","### $$ #","#  .$@.#","# # $  #","#   #  #","########"],
+  [" ####### "," #     # ","## $#$ ##","#  .@.  #","# #$#$# #","#  ...  #"," ##   ## ","  #####  "],
+  ["   ####    ","   #  #    ","   #  ####","#### $   #","#  $ $ $ #","# # #### #","# #.@..# #","# #....# #","#   #### #","##### $  #","    #    #","    ######"],
+  ["########","#      #","# $$ # #","#  $.@.#","## # $ #"," #   . #"," #   # #"," #######"],
+  ["  ######  ","  #    #  ","### ## ###","#  $$$ $ #","#  .... @#","#   ## ###","######    "],
+  ["#######  ","#     #  ","# # $ ###","# $@ .$ #","## ##.  #"," #    #.#"," # #### #"," #      #"," ########"],
+  ["    ####  ","#####  #  ","#     $#  ","# ##  $###","# # . .  #","#  $.#$  #","#### @   #","   #  ####","   ####   "],
+  [" ######  "," #    #  ","## # $###","# $  $  #","# .#@#. #","# $  $  #","### # ##","  #    #","  ######"],
+  ["  ####   ","  #  ####","### $$  #","# @$ #  #","# ..  ###","#####$#  ","    #.#  ","    ###  "],
+  ["#######","#  @  #","# # $ #","# $ # #","# # $ #","#  .$.#","## ...#"," ##### "],
+  ["   #####","   #   #","#### $ #","#  $.$##","#  .*.@#","## # ###"," #   #  "," #####  "],
+  [" ######  ","##    ###","#  ## $ #","# $ @$  #","##$####.#"," # #  ..#"," #    ###"," #  ###  "," ####    "],
+  ["  #####  ","###   ###","#  $*$  #","#  .@.  #","#  $*$  #","###   ###","  #####  "],
+  ["########","#   .. #","# # ##$#","#  @ $$#","# # ## #","#   #  #","########"],
+  ["  #### ","  #  # ","###  ##","# $ $ #","# #$. #","# @.. #","#######"],
+  ["########","#      #","# $**$ #","##$  $##"," #.@.# "," #   # "," ##### "],
+  [" ######","##  ..#","# $$# #","#  @$ #","# # . #","#   ###","#####  "],
+  ["  #####  ","###   ###","#  #*#  #","# $. .$ #","## ### ##"," # @$# "," #   # "," ##### "],
+  ["    ####","#####  #","#      #","# $$ # #","##@#  .#"," # $$.##"," #  ..# "," ###### "],
+  ["  ######","  #  . #","### .  #","# $ ## #","#  @$$ #","# #    #","#   ####","#####   "],
+  // Hard (31-60)
+  ["   ####    ","   #  #    ","   #$ #    "," ### $#### ","## . .   ##","#   ##$$  #","# #@   #  #","# ####### #","#         #","###########"],
+  ["############","#   #  #   #","#   $  $   #","## #### $ ##","# $  @  $  #","# .# ## #. #","#  $.  .$  #","## #.##.# ##","#    ##    #","############"],
+  ["    ######   ","#####    ####","#   $ ## $  #","#   ##@##   #","### #....#  #","  # #....# ##","  # $  $ $ # ","  #  ## ## # ","  ##########"],
+  ["   ########  ","  ##  #   #  "," ##  $$#  ###","## # $     .#","#  # ### #..#","# $$  @  #..#","#  # ### ####","#### $   #   ","   #######   "],
+  ["  #########  ","###  #    ###","#  $$. ..$  #","# $  #### $ #","# #  #@##   #","# $ $.  . $ #","## ## #  ## #"," # $  $. .$ #"," #  ##  ##  #"," ###########"],
+  ["  ######   ","###    ####","#  #$$ $  #","# $  @  $ #","## ######.#"," #   #  ..#"," # $ $ #..#"," #  ###  .#"," ##   #  ##","  ######## "],
+  ["   #######  ","   #     #  ","#### #$# #  ","#  $ $ @ ###","#  #.#.#.$ #","## $ $ $ $ #"," #. . . .  #"," ##      ###","  ##    ##  ","   ######   "],
+  ["  #######  "," ##  #  ## ","## $   $ ##","#  # . #  #","# $#.@.#$ #","#  # . #  #","## $   $ ##"," ##  #  ## ","  #######  "],
+  ["##########","#   #    #","# $   #  #","### $#  ##","  #$@$ ##  ","  #  #  #  ","  # $  $###","### #.# $ #","# ...#    #","# ...######","######     "],
+  ["  #######   ","  #  #  #   ","  #  $$ #   ","### $## ####","# @ $  $   #","# ##$## # .#","#  $    . .#","# # #### # #","#   #  #   #","########   #","       #####"],
+  ["############ ","#     #    ##","# $ $ #  $ .#","##$#  ## #..#"," # $ $ $ ...#"," #  @#  ####"," ## #### #  ","  #      #  ","  ########  "],
+  ["  ########  ","  #      #  ","### #### #  ","# $ $  # ###","#   # $#   #","## $$@  #  #"," # #  #    #"," # . .######"," # . .#     "," #####      "],
+  ["    ######  ","#####    #  ","#   $ ## ###","# # ## .   #","# $  . .#  #","###$##.##  #","  #  $ @ ###","  #  ## ##  ","  ####   #  ","     #####  "],
+  ["  ########  ","###  ##  #  ","#  $$@   #  ","#  # ##$####","## #$  $   #"," #   ####$ #"," # #. . .  #"," # ....# ###"," #### $  #  ","    ###  #  ","      ####  "],
+  ["   ######   ","   #    ####"," ###$##$   #"," #   @  #  #","## ##$## ###","#  #    $ .#","# $ $ ###..#","#   ###  ..#","#####   ####","      ###   "],
+  ["############","#   #  #   #","# $$  $   $#","## #  ####.#"," # $#$ ...#"," # @   ...#"," #  # #...#"," #### #### ","    ###     "],
+  ["  #########  ","  #  ##   ###","  #  $$ #$  #"," ##$$## @ $ #"," #  . .###$ #","##$. . .  $ #","# $ $ ##### #","#  ####   # #","### #  #    #","  #    ######","  ######     "],
+  ["  ########","  #  #   #","  # $  $ #","#### ### #","#  $ @$  #","# # $## ##","# .  #...#","# ..  ...#","########.#","       ###"],
+  ["   ######    ","   #    #    "," ###$## #####","##  $  $    #","# @ # ###  $#","# ##  ##  # #","# $ $ $ $ . #","### ## #..  #","  # .  ...###","  # ...###   ","  ######     "],
+  ["########","#  #   #","#  $$$ #","## $$###"," # @   #"," ##$  ##"," # . ..#"," #  ...#"," #######"],
+  ["    #####   ","    #   ####","##### # $  #","#   # $  $ #","# $$#  ##$ #","### @##  ###","# .... ..#  ","# ....  .#  ","#########   "],
+  ["  #######  "," ##  #  ## ","## $   $ ##","#  # . #  #","# $#.@.#$ #","#  # . #  #","## $   $ ##"," ##  #  ## ","  #######  "],
+  ["  #########  ","  #   #   #  ","###$$   $$###","#  . .@. .  #","# # ##$## # #","# $  $ $  $ #","##    #    ##","  ######### "],
+  ["   ######    ","  ##    #    "," ##  ## #### "," #  $  $$  ##","## $#####   #","# @$     #  #","# # $# ### ##","# .  #...  # ","#  ......  # ","###########  "],
+  ["  ######  ","  #    ### ","  # $ $  ##","###  ##$  #","# @ $ . ..#","# #$# ....#","#  $ #....#","#   #######","#####      "],
+  ["   ######  ","   #    #  ","####$##$#  ","#  $  $  # ","#  ####  ##","##@....$.# ","  #....$ # ","  #######  "],
+  ["    #####  ","    #   ###","#####$#$  #","#   $   $ #","#  ####  ##","### @ #.  #","  # ....$ #","  # ....$ #","  ########"],
+  ["  ######  "," ##    ## ","## $ ## ##","#  $$ $$##","#  @ .   #","### #.#  #","  #  .####","  # ...#  ","  ######  "],
+  ["   ########  ","   #  #   #  ","#### $  $ #  ","#  $ ## # ###","#  $..$.$   #","## ####$### #"," #  @..   $ #"," # ## ..$ ###"," #  ######   "," ####        "],
+  ["  #######  ","###  #  ###","#  $ $.$  #","# # $. .# #","# @ #####.#","##$ $   ..#"," # $$# #..#"," #   #  ..#"," ###   ####","   #####   "]
+];
+
+const SOK = {
+  canvas:null, ctx:null,
+  level:0, // current level index (0-59)
+  grid:[], // 2D array of cells
+  w:0, h:0, // grid dimensions
+  px:0, py:0, // player position
+  boxes:[], // [{x,y}]
+  targets:[], // [{x,y}]
+  moves:0, moveHistory:[], // undo stack
+  time:0, timer:null, startTime:0,
+  turn:1, s1:0, s2:0,
+  diff:'easy', aiSolving:false, aiMoves:[],
+  cellSize:40, // rendering
+  over:false, won:false
+};
+
+function setSokDiff(d,btn){
+  SOK.diff=d;
+  saveDiff('sokoban',d);
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function resetSokoban(){
+  if(SOK.timer){clearInterval(SOK.timer);SOK.timer=null;}
+  SOK.moves=0;SOK.moveHistory=[];SOK.time=0;SOK.over=false;SOK.won=false;SOK.aiSolving=false;SOK.aiMoves=[];
+  sokLoadLevel(SOK.level);
+  $('sokMoves').textContent='0';
+  $('sokTime').textContent='0';
+  $('sokP1Name').textContent=getP1Name('sok');
+  $('sokP2Name').textContent=getP2Name('sok');
+  $('sokP1Score').textContent=SOK.s1;
+  $('sokP2Score').textContent=SOK.s2;
+  $('sokStatus').textContent='Tlač boxy na ⭐!';
+  $('sokLevelDisplay').textContent='Level '+(SOK.level+1)+'/60';
+  $('sokCelebration').textContent='';
+  $('sokUndoBtn').disabled=false;
+  if(welcomeGameMode==='ai'){
+    $('sokP2Name').textContent='Počítač';
+    $('sokP2Name').classList.add('player-name-ai');
+  }else{
+    $('sokP2Name').classList.remove('player-name-ai');
+  }
+  activeTurn('sokP1Card','sokP2Card',SOK.turn);
+  sokRender();
+}
+
+function sokLoadLevel(idx){
+  if(idx<0||idx>=SOK_LEVELS.length){idx=0;}
+  SOK.level=idx;
+  const lines=SOK_LEVELS[idx];
+  SOK.h=lines.length;
+  SOK.w=lines[0].length;
+  SOK.grid=[];
+  SOK.boxes=[];
+  SOK.targets=[];
+  for(let y=0;y<SOK.h;y++){
+    SOK.grid[y]=[];
+    for(let x=0;x<SOK.w;x++){
+      const ch=lines[y][x]||' ';
+      if(ch==='@'||ch==='+'){SOK.px=x;SOK.py=y;SOK.grid[y][x]=(ch==='+'?'.':' ');}
+      else if(ch==='$'||ch==='*'){SOK.boxes.push({x,y});SOK.grid[y][x]=(ch==='*'?'.':' ');}
+      else{SOK.grid[y][x]=ch;}
+      if(ch==='.'||ch==='+'||ch==='*')SOK.targets.push({x,y});
+    }
+  }
+  // Calculate cell size to fit canvas
+  const canvasSize=400;
+  SOK.cellSize=Math.min(40,Math.floor(canvasSize/Math.max(SOK.w,SOK.h)));
+}
+
+function sokPrevLevel(){
+  if(SOK.level>0){
+    SOK.level--;
+    SOK.s1=0;SOK.s2=0;
+    resetSokoban();
+  }
+}
+
+function sokNextLevel(){
+  if(SOK.level<SOK_LEVELS.length-1){
+    SOK.level++;
+    SOK.s1=0;SOK.s2=0;
+    resetSokoban();
+  }
+}
+
+function sokRender(){
+  const c=SOK.canvas||$('sokCanvas');if(!c)return;SOK.canvas=c;
+  const ctx=c.getContext('2d');SOK.ctx=ctx;
+  const cs=SOK.cellSize;
+  const w=SOK.w*cs,h=SOK.h*cs;
+  const ox=(c.width-w)/2,oy=(c.height-h)/2;
+  // Background
+  ctx.fillStyle=document.body.classList.contains('light')?'#e8f4f8':'#1a1a2e';
+  ctx.fillRect(0,0,c.width,c.height);
+  // Grid
+  for(let y=0;y<SOK.h;y++)for(let x=0;x<SOK.w;x++){
+    const cell=SOK.grid[y][x];
+    const cx=ox+x*cs,cy=oy+y*cs;
+    if(cell===' '){
+      ctx.fillStyle=document.body.classList.contains('light')?'#d6eaf8':'#16213e';
+    }else if(cell==='#'){
+      ctx.fillStyle='#555';
+    }else if(cell==='.'){
+      ctx.fillStyle=document.body.classList.contains('light')?'#fef5e7':'#2c3e50';
+      ctx.fillRect(cx,cy,cs,cs);
+      // Target star
+      ctx.fillStyle='#f39c12';
+      ctx.font='bold '+(cs*0.5)+'px Arial';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('⭐',cx+cs/2,cy+cs/2);
+      continue;
+    }else{
+      ctx.fillStyle=document.body.classList.contains('light')?'#fef5e7':'#2c3e50';
+    }
+    ctx.fillRect(cx,cy,cs,cs);
+    // Grid lines
+    ctx.strokeStyle='rgba(255,255,255,0.1)';
+    ctx.strokeRect(cx,cy,cs,cs);
+  }
+  // Boxes
+  ctx.font='bold '+(cs*0.65)+'px Arial';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  SOK.boxes.forEach(b=>{
+    const cx=ox+b.x*cs,cy=oy+b.y*cs;
+    const onTarget=SOK.targets.some(t=>t.x===b.x&&t.y===b.y);
+    // Box
+    ctx.fillStyle=onTarget?'#27ae60':'#8b4513';
+    ctx.fillRect(cx+cs*0.1,cy+cs*0.1,cs*0.8,cs*0.8);
+    ctx.strokeStyle=onTarget?'#1e8449':'#6f3609';
+    ctx.lineWidth=2;
+    ctx.strokeRect(cx+cs*0.1,cy+cs*0.1,cs*0.8,cs*0.8);
+    // Emoji
+    ctx.fillStyle=onTarget?'white':'#d4a574';
+    ctx.fillText('📦',cx+cs/2,cy+cs/2);
+  });
+  // Player
+  const px=ox+SOK.px*cs,py=oy+SOK.py*cs;
+  ctx.fillStyle='#3498db';
+  ctx.beginPath();
+  ctx.arc(px+cs/2,py+cs/2,cs*0.35,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle='#2980b9';
+  ctx.lineWidth=2;
+  ctx.stroke();
+  // Eyes
+  ctx.fillStyle='white';
+  ctx.beginPath();
+  ctx.arc(px+cs*0.4,py+cs*0.4,cs*0.08,0,Math.PI*2);
+  ctx.arc(px+cs*0.6,py+cs*0.4,cs*0.08,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath();
+  ctx.arc(px+cs*0.4,py+cs*0.4,cs*0.04,0,Math.PI*2);
+  ctx.arc(px+cs*0.6,py+cs*0.4,cs*0.04,0,Math.PI*2);
+  ctx.fill();
+}
+
+function sokMove(dx,dy){
+  if(SOK.over||SOK.won||SOK.aiSolving)return;
+  const nx=SOK.px+dx,ny=SOK.py+dy;
+  if(nx<0||nx>=SOK.w||ny<0||ny>=SOK.h)return;
+  const cell=SOK.grid[ny][nx];
+  if(cell==='#')return;
+  // Check if pushing box
+  const boxIdx=SOK.boxes.findIndex(b=>b.x===nx&&b.y===ny);
+  if(boxIdx>=0){
+    const bx=nx+dx,by=ny+dy;
+    if(bx<0||bx>=SOK.w||by<0||by>=SOK.h)return;
+    if(SOK.grid[by][bx]==='#')return;
+    if(SOK.boxes.some(b=>b.x===bx&&b.y===by))return; // Can't push 2 boxes
+    // Save state for undo
+    SOK.moveHistory.push({px:SOK.px,py:SOK.py,boxes:SOK.boxes.map(b=>({x:b.x,y:b.y}))});
+    // Move box
+    SOK.boxes[boxIdx].x=bx;
+    SOK.boxes[boxIdx].y=by;
+  }else{
+    // Just move player
+    SOK.moveHistory.push({px:SOK.px,py:SOK.py,boxes:SOK.boxes.map(b=>({x:b.x,y:b.y}))});
+  }
+  SOK.px=nx;SOK.py=ny;
+  SOK.moves++;
+  $('sokMoves').textContent=SOK.moves;
+  // Start timer on first move
+  if(!SOK.timer){
+    SOK.startTime=Date.now();
+    SOK.timer=setInterval(()=>{
+      SOK.time=Math.floor((Date.now()-SOK.startTime)/1000);
+      $('sokTime').textContent=SOK.time;
+    },1000);
+  }
+  playSound('move');
+  sokRender();
+  sokCheckWin();
+}
+
+function sokUndo(){
+  if(SOK.moveHistory.length===0)return;
+  const state=SOK.moveHistory.pop();
+  SOK.px=state.px;SOK.py=state.py;
+  SOK.boxes=state.boxes;
+  if(SOK.moves>0)SOK.moves--;
+  $('sokMoves').textContent=SOK.moves;
+  playSound('click');
+  sokRender();
+}
+
+function sokCheckWin(){
+  const allOnTarget=SOK.boxes.every(b=>SOK.targets.some(t=>t.x===b.x&&t.y===b.y));
+  if(allOnTarget){
+    SOK.won=true;
+    SOK.over=true;
+    if(SOK.timer){clearInterval(SOK.timer);SOK.timer=null;}
+    const w=SOK.turn;
+    if(w===1){SOK.s1++;$('p1ScoreSok').textContent=SOK.s1;}
+    else{SOK.s2++;$('p2ScoreSok').textContent=SOK.s2;}
+    addWin(w,'sokoban');
+    const name=w===1?getP1Name('sok'):getP2Name('sok');
+    $('sokStatus').textContent='✅ '+name+' vyhral! '+SOK.moves+' ťahov, '+SOK.time+'s';
+    $('sokCelebration').textContent='🎉';
+    playSound('win');
+    launchConfetti();
+    setTimeout(()=>{$('sokCelebration').textContent='';},3000);
+    $('sokUndoBtn').disabled=true;
+    // Auto-advance to next level after 3s
+    if(SOK.level<SOK_LEVELS.length-1){
+      setTimeout(()=>{
+        if(confirm('Level dokončený! Prejsť na ďalší?')){
+          sokNextLevel();
+        }
+      },3000);
+    }
+  }
+}
+
+function sokHint(){
+  if(SOK.aiSolving||SOK.over)return;
+  $('sokStatus').textContent='💭 Počítám...';
+  SOK.aiSolving=true;
+  // Simple hint: suggest one move via BFS
+  setTimeout(()=>{
+    const move=sokAIFindMove();
+    if(move){
+      $('sokStatus').textContent='💡 Hint: Posuň sa '+(['↑','↓','←','→'][move])+'!';
+      playSound('click');
+    }else{
+      $('sokStatus').textContent='🤔 Nepomôžem, skús undo!';
+    }
+    SOK.aiSolving=false;
+  },100);
+}
+
+function sokAIFindMove(){
+  // BFS to find shortest solution, return first move direction
+  const key=s=>`${s.px},${s.py},${s.boxes.map(b=>b.x+','+b.y).sort().join(';')}`;
+  const start={px:SOK.px,py:SOK.py,boxes:SOK.boxes.map(b=>({x:b.x,y:b.y})),path:[]};
+  const queue=[start];
+  const visited=new Set([key(start)]);
+  const dirs=[[0,-1],[0,1],[-1,0],[1,0]]; // up,down,left,right
+  let iterations=0;
+  const maxIter=SOK.diff==='easy'?500:SOK.diff==='medium'?2000:5000;
+  while(queue.length>0&&iterations++<maxIter){
+    const s=queue.shift();
+    // Check win
+    if(s.boxes.every(b=>SOK.targets.some(t=>t.x===b.x&&t.y===b.y))){
+      return s.path[0]; // Return first move direction
+    }
+    // Try all 4 directions
+    for(let d=0;d<4;d++){
+      const [dx,dy]=dirs[d];
+      const nx=s.px+dx,ny=s.py+dy;
+      if(nx<0||nx>=SOK.w||ny<0||ny>=SOK.h)continue;
+      if(SOK.grid[ny][nx]==='#')continue;
+      const boxIdx=s.boxes.findIndex(b=>b.x===nx&&b.y===ny);
+      let newBoxes=s.boxes.map(b=>({x:b.x,y:b.y}));
+      if(boxIdx>=0){
+        const bx=nx+dx,by=ny+dy;
+        if(bx<0||bx>=SOK.w||by<0||by>=SOK.h)continue;
+        if(SOK.grid[by][bx]==='#')continue;
+        if(newBoxes.some(b=>b.x===bx&&b.y===by))continue;
+        newBoxes[boxIdx]={x:bx,y:by};
+      }
+      const newS={px:nx,py:ny,boxes:newBoxes,path:[...s.path,d]};
+      const k=key(newS);
+      if(!visited.has(k)){
+        visited.add(k);
+        queue.push(newS);
+      }
+    }
+  }
+  return null; // No solution found
+}
+
+// Keyboard controls
+document.addEventListener('keydown',e=>{
+  if(currentGameId!=='sokoban'||SOK.over)return;
+  if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){sokMove(0,-1);e.preventDefault();}
+  else if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){sokMove(0,1);e.preventDefault();}
+  else if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){sokMove(-1,0);e.preventDefault();}
+  else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){sokMove(1,0);e.preventDefault();}
+  else if(e.key==='z'||e.key==='Z'){sokUndo();}
+});
+
+// Touch/swipe controls
+(function(){
+  let sx,sy;
+  const cv=()=>$('sokCanvas');
+  document.addEventListener('touchstart',e=>{
+    if(cv()&&cv().contains(e.target)){
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+    }
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!sx||!cv()||!cv().contains(e.changedTouches[0].target))return;
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    sx=null;
+    if(Math.abs(dx)<20&&Math.abs(dy)<20)return;
+    if(Math.abs(dx)>Math.abs(dy)){sokMove(dx>0?1:-1,0);}
+    else{sokMove(0,dy>0?1:-1);}
+  },{passive:true});
+})();
+
+resetSokoban();
+
+// =============================================================================
+// SEKCIA 44: WAR (VOJNA) — kartová hra
 // =============================================================================
 const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150,_epoch:0};
 const WAR_SUITS = ['♠','♥','♦','♣'];
@@ -17714,7 +18149,7 @@ function warQuickStep(){
 resetWar();
 
 // =============================================================================
-// SEKCIA 43: UNO LIGHT
+// SEKCIA 45: UNO LIGHT
 // =============================================================================
 const UNO_COLORS = ['red','blue','green','yellow'];
 const UNO_COLOR_CSS = {red:'#e74c3c',blue:'#3498db',green:'#2ecc71',yellow:'#f1c40f',wild:'#8e44ad'};
@@ -18486,6 +18921,7 @@ const MOBILE_GAMES = [
   { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo', cat:'logic' },
   { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
   { id:'angryBirds',   label:'Angry Birds',    icon:'🐦', grad:'rgba(220,53,69,0.3),rgba(135,206,235,0.3)', mode:'both', cat:'arcade' },
+  { id:'sokoban',      label:'Sokoban',        icon:'📦', grad:'rgba(139,69,19,0.3),rgba(245,176,65,0.3)', mode:'both', cat:'logic' },
   { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
@@ -18563,6 +18999,8 @@ function stopAllGames(){
   if(typeof FLAP!=='undefined'){if(FLAP.raf){cancelAnimationFrame(FLAP.raf);FLAP.raf=null;}FLAP.running=false;}
   // Angry Birds
   if(typeof AB!=='undefined'){if(AB.raf){cancelAnimationFrame(AB.raf);AB.raf=null;}AB.over=true;AB.birdFlying=false;}
+  // Sokoban
+  if(typeof SOK!=='undefined'&&SOK.timer){clearInterval(SOK.timer);SOK.timer=null;}
   // War AI auto-play
   if(typeof WAR!=='undefined'){if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}WAR.over=true;WAR.animating=false;}
   // Uno AI
