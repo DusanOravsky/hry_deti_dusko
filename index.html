@@ -4359,7 +4359,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '15.5';
+const APP_VERSION = '15.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4835,7 +4835,13 @@ const gStats = {
 };
 
 function saveStats() {
-  try { localStorage.setItem(STATS_KEY, JSON.stringify(gStats)); } catch(e) {}
+  try {
+    localStorage.setItem(STATS_KEY, JSON.stringify(gStats));
+  } catch(e) {
+    if(e.name === 'QuotaExceededError') {
+      showToast('⚠️ Nedostatok miesta! Vymaž históriu hier v Štatistikách.', 5000, 'rgba(220,53,69,0.9)');
+    }
+  }
 }
 function loadStats() {
   try {
@@ -5026,6 +5032,36 @@ function tourClearSelection() {
   tourUpdateCount();
 }
 
+function tourSaveState() {
+  try {
+    sessionStorage.setItem('hry_tournament', JSON.stringify({
+      active: TOUR.active,
+      games: TOUR.games,
+      currentIndex: TOUR.currentIndex,
+      scores: TOUR.scores,
+      results: TOUR.results
+    }));
+  } catch(e) {}
+}
+function tourLoadState() {
+  try {
+    const saved = sessionStorage.getItem('hry_tournament');
+    if(!saved) return false;
+    const data = JSON.parse(saved);
+    if(!data.active) return false;
+    TOUR.active = data.active;
+    TOUR.games = data.games;
+    TOUR.currentIndex = data.currentIndex;
+    TOUR.scores = data.scores;
+    TOUR.results = data.results;
+    $('tourSetup').style.display = 'none';
+    $('tourActive').style.display = 'block';
+    $('tourP1Name').textContent = globalP1;
+    $('tourP2Name').textContent = globalP2;
+    tourUpdateLeaderboard();
+    return true;
+  } catch(e) { return false; }
+}
 function tourStart() {
   const checks = document.querySelectorAll('.tour-game-check:checked');
   if(checks.length < 2 || checks.length > 6) return;
@@ -5041,6 +5077,7 @@ function tourStart() {
   $('tourP1Name').textContent = globalP1;
   $('tourP2Name').textContent = globalP2;
   tourUpdateLeaderboard();
+  tourSaveState();
   tourNextGame();
 }
 
@@ -5173,6 +5210,7 @@ function tourReset() {
   $('tourActive').style.display = 'none';
   $('tourVictory').style.display = 'none';
   tourClearSelection();
+  try { sessionStorage.removeItem('hry_tournament'); } catch(e) {}
 }
 
 // ===== DAILY CHALLENGE =====
@@ -5415,6 +5453,7 @@ function addWin(w, gameId) {
 
     // Update leaderboard display immediately
     tourUpdateLeaderboard();
+    tourSaveState();
 
     // Move to next game after delay
     TOUR.currentIndex++;
@@ -5513,7 +5552,11 @@ function checkAchievements() {
     if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); }
   }
   if(newlyUnlocked.length>0) {
-    try{localStorage.setItem('hry_achievements', JSON.stringify(_unlockedAch));}catch(e){}
+    try{
+      localStorage.setItem('hry_achievements', JSON.stringify(_unlockedAch));
+    }catch(e){
+      if(e.name === 'QuotaExceededError') showToast('⚠️ Nedostatok miesta!', 3000, 'rgba(220,53,69,0.9)');
+    }
     showAchievementToast(newlyUnlocked[0]);
   }
 }
@@ -6378,7 +6421,7 @@ $('gnSecretInput').addEventListener('keypress', e=>{ if(e.key==='Enter') confirm
 const MEM = {
   diff:'easy', mode:'pvp', aiDiff:'easy',
   cards:[], flipped:[], matched:[],
-  player:1, s1:0, s2:0, locked:false, aiMemory:{}
+  player:1, s1:0, s2:0, locked:false, aiMemory:{}, _aiTimeouts:[]
 };
 const memThemes = {
   ovocie:['🍎','🍌','🍊','🍓','🍇','🍉','🍑','🥝','🍒','🥭','🍍','🫐','🍋','🍈','🥥','🍆','🥑','🌽'],
@@ -6510,13 +6553,13 @@ function aiMemTurn() {
   if(pick1<0) pick1=available[Math.floor(Math.random()*available.length)];
 
   // === STEP 1: flip first card (visible pause before) ===
-  setTimeout(()=>{
+  const t1 = setTimeout(()=>{
     MEM.aiMemory[pick1]=MEM.cards[pick1];
     cards[pick1].textContent=MEM.cards[pick1]; cards[pick1].classList.add('flipped');
     playSound('click');
 
     // === STEP 2: pause so player can see the first card ===
-    setTimeout(()=>{
+    const t2 = setTimeout(()=>{
       // Find matching second card
       if(pick2<0 && MEM.aiDiff==='hard') {
         const match=Object.entries(MEM.aiMemory).find(([i,v])=>Number(i)!==pick1&&v===MEM.cards[pick1]&&!MEM.matched.includes(Number(i)));
@@ -6531,7 +6574,7 @@ function aiMemTurn() {
       playSound('click');
 
       // === STEP 3: pause to show both cards before resolving ===
-      setTimeout(()=>{
+      const t3 = setTimeout(()=>{
         if(MEM.cards[pick1]===MEM.cards[pick2]) {
           MEM.matched.push(pick1,pick2);
           cards[pick1].classList.add('matched'); cards[pick2].classList.add('matched');
@@ -6539,7 +6582,8 @@ function aiMemTurn() {
           MEM.s2++;$('p2ScoreMem').textContent=MEM.s2;
           if(!memCheckEnd()){
             $('memStatus').textContent='Počítač myslí...';
-            setTimeout(aiMemTurn, MEM.aiDiff==='hard' ? 800 : 1000);
+            const t4 = setTimeout(aiMemTurn, MEM.aiDiff==='hard' ? 800 : 1000);
+            MEM._aiTimeouts.push(t4);
           }
         } else {
           cards[pick1].textContent='?'; cards[pick1].classList.remove('flipped');
@@ -6549,10 +6593,14 @@ function aiMemTurn() {
           $('memStatus').textContent=getP1Name('mem')+' na rade!';
         }
       }, 900);
+      MEM._aiTimeouts.push(t3);
     }, MEM.aiDiff==='hard' ? 600 : 800); // pause between card 1 and card 2
+    MEM._aiTimeouts.push(t2);
   }, 600); // initial "thinking" pause before first flip
+  MEM._aiTimeouts.push(t1);
 }
 function resetMem() {
+  MEM._aiTimeouts.forEach(clearTimeout); MEM._aiTimeouts=[];
   MEM.s1=0; MEM.s2=0; MEM.player=1; MEM.locked=false; MEM.aiMemory={};
   $('p1ScoreMem').textContent='0';
   $('p2ScoreMem').textContent='0';
@@ -11898,7 +11946,7 @@ function resetTetris(){
   if(next)next.innerHTML='';
 }
 document.addEventListener('keydown',e=>{
-  if(!TET.running)return;
+  if(!TET.running||currentGameId!=='tetris')return;
   if(e.key==='ArrowLeft'){tetMove(-1);e.preventDefault();}
   if(e.key==='ArrowRight'){tetMove(1);e.preventDefault();}
   if(e.key==='ArrowUp'){tetRotate();e.preventDefault();}
@@ -11928,6 +11976,19 @@ function resetSnake(){
 }
 function snakePlaceFood(){
   const occupied=new Set(SNK.body.map(b=>b.x+','+b.y));
+  const totalCells=SNK.W*SNK.H;
+  // Early exit if grid is >90% full — pick from empty cells directly
+  if(occupied.size>totalCells*0.9){
+    const empty=[];
+    for(let x=0;x<SNK.W;x++)for(let y=0;y<SNK.H;y++){
+      const key=x+','+y;
+      if(!occupied.has(key))empty.push({x,y});
+    }
+    if(empty.length>0)SNK.food=empty[Math.floor(Math.random()*empty.length)];
+    else SNK.food={x:0,y:0}; // Game won (entire grid filled)
+    return;
+  }
+  // Normal random placement with retry limit
   let tries=0;
   do{SNK.food={x:Math.floor(Math.random()*SNK.W),y:Math.floor(Math.random()*SNK.H)};tries++;}
   while(occupied.has(SNK.food.x+','+SNK.food.y)&&tries<400);
@@ -12011,7 +12072,7 @@ function togglePauseSnake(){
   }
 }
 document.addEventListener('keydown',e=>{
-  if(!SNK.running)return;
+  if(!SNK.running||currentGameId!=='snake')return;
   if(e.key==='ArrowLeft'){snakeSetDir('left');e.preventDefault();}
   if(e.key==='ArrowRight'){snakeSetDir('right');e.preventDefault();}
   if(e.key==='ArrowUp'){snakeSetDir('up');e.preventDefault();}
@@ -12588,7 +12649,17 @@ function doodGenPlatforms() {
       const maxX = Math.min(wallOff + areaW - DOOD_PW, prevX + maxDx);
       x = minX + Math.random() * (maxX - minX);
     } else {
-      x = wallOff + Math.random() * (areaW - DOOD_PW);
+      // Limit horizontal distance to prevent overlaps and ensure reachability
+      const maxDx = 150; // max jump distance
+      const minDx = 30;  // min spacing to prevent overlap
+      const minX = Math.max(wallOff, prevX - maxDx);
+      const maxX = Math.min(wallOff + areaW - DOOD_PW, prevX + maxDx);
+      // Ensure minimum spacing
+      let attempts = 0;
+      do {
+        x = minX + Math.random() * (maxX - minX);
+        attempts++;
+      } while(Math.abs(x - prevX) < minDx && attempts < 10);
     }
     prevX = x;
     let type = 'normal';
@@ -12619,7 +12690,16 @@ function doodAddPlatforms() {
       const maxX = Math.min(wallOff + DOOD.W - wallOff*2 - DOOD_PW, topPlat.x + maxDx);
       x = minX + Math.random() * (maxX - minX);
     } else {
-      x = wallOff + Math.random() * (DOOD.W - wallOff*2 - DOOD_PW);
+      const topPlat = DOOD.platforms.reduce((best,p) => p.y < best.y ? p : best, DOOD.platforms[0]);
+      const maxDx = 150;
+      const minDx = 30;
+      const minX = Math.max(wallOff, topPlat.x - maxDx);
+      const maxX = Math.min(wallOff + DOOD.W - wallOff*2 - DOOD_PW, topPlat.x + maxDx);
+      let attempts = 0;
+      do {
+        x = minX + Math.random() * (maxX - minX);
+        attempts++;
+      } while(Math.abs(x - topPlat.x) < minDx && attempts < 10);
     }
     const h = Math.abs(y);
     let type = 'normal';
@@ -12930,7 +13010,7 @@ document.addEventListener('keyup', e => {
 // =============================================================================
 // SEKCIA 30: PUZZLE SCRAMBLE (canvas-based image puzzle)
 // =============================================================================
-const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null };
+const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null, _aiTimeout:null };
 
 function pzDrawScene(canvas, theme) {
   const s=canvas.width, ctx=canvas.getContext('2d');
@@ -13230,7 +13310,7 @@ function pzPlayerDone() {
   } else if(PZ.player===1 && welcomeGameMode==='ai') {
     $('pzStatus').textContent='✅ '+name+': '+PZ.times[0].toFixed(1)+'s. Počítač skladá...';
     PZ.player=2; PZ.solved=false;
-    setTimeout(()=>{ startPuzzle(); setTimeout(puzzleAI,500); },1500);
+    PZ._aiTimeout = setTimeout(()=>{ startPuzzle(); PZ._aiTimeout = setTimeout(puzzleAI,500); },1500);
   } else {
     pzCompare();
   }
@@ -13275,7 +13355,7 @@ function puzzleAI() {
 // =============================================================================
 // SEKCIA 31: MINI LABYRINT (MAZE)
 // =============================================================================
-const MZ = { grid:null, cols:15, rows:15, px:0, py:0, ex:14, ey:14, player:1, times:[0,0], timer:null, startTime:0, done:false, s1:0, s2:0, mazeData:null, cellSize:20, aiSolving:false, diff:'easy' };
+const MZ = { grid:null, cols:15, rows:15, px:0, py:0, ex:14, ey:14, player:1, times:[0,0], timer:null, startTime:0, done:false, s1:0, s2:0, mazeData:null, cellSize:20, aiSolving:false, diff:'easy', _aiTimeout:null };
 function setMZDiff(d,btn) { MZ.diff=d; saveDiff('maze',d); document.querySelectorAll('#mzAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetMaze() {
@@ -13380,7 +13460,7 @@ function mazeDone() {
   } else if(MZ.player===1 && welcomeGameMode==='ai') {
     $('mzStatus').textContent='✅ '+name+': '+MZ.times[0].toFixed(1)+'s. Počítač rieši...';
     MZ.player=2;
-    setTimeout(()=>{ startMaze(); setTimeout(mazeAI,500); },1500);
+    MZ._aiTimeout = setTimeout(()=>{ startMaze(); MZ._aiTimeout = setTimeout(mazeAI,500); },1500);
   } else {
     mzCompare();
   }
@@ -15631,7 +15711,7 @@ function resetWordle() {
     WDL.pvpPhase = 'guess';
     setP2Card('wdlP2Name', false);
     if(MP.isHost) {
-      WDL.secret = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+      WDL.secret = WORDLE_WORDS.length > 0 ? WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)] : 'SLOVO';
       mpSend({type:'wdl-start',secret:WDL.secret,lang:WDL._lang||'sk'});
       $('wdlStatus').textContent = 'Obaja hádajte! Pokus 1/6';
     } else {
@@ -15640,7 +15720,7 @@ function resetWordle() {
     activeTurn('wdlP1Card', 'wdlP2Card', 0);
   } else if(welcomeGameMode === 'ai') {
     // AI mode: random word
-    WDL.secret = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+    WDL.secret = WORDLE_WORDS.length > 0 ? WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)] : 'SLOVO';
     WDL.pvpPhase = 'guess';
     $('wdlStatus').textContent = getP1Name('wdl') + ' — uhádni slovo! Pokus 1/6';
     activeTurn('wdlP1Card', 'wdlP2Card', 1);
@@ -15673,6 +15753,12 @@ loadStats();
 loadSavedNames();
 loadAvatars();
 updateSidebarNames();
+// Try to restore tournament state after refresh
+setTimeout(() => {
+  if(tourLoadState()) {
+    showToast('🏆 Turnaj obnovený!', 3000, 'rgba(67,233,123,0.9)');
+  }
+}, 500);
 
 // Initialize all games (now with correct player names)
 resetDB();
@@ -17344,7 +17430,7 @@ function abFly(){
       }
     });
     // Check out of bounds
-    if(AB.bird.x<0||AB.bird.x>AB.W||AB.bird.y>AB.H-30){
+    if(AB.bird.x<0||AB.bird.x>AB.W||AB.bird.y<0||AB.bird.y>AB.H-30){
       AB.birdFlying=false;
       playSound('wrong');
       if(AB.turn===1){
@@ -18441,14 +18527,18 @@ function stopAllGames(){
   if(typeof SD!=='undefined'&&SD.timer){clearInterval(SD.timer);SD.timer=null;SD.running=false;}
   // Puzzle timer
   if(typeof PZ!=='undefined'&&PZ.timer){clearInterval(PZ.timer);PZ.timer=null;}
+  if(typeof PZ!=='undefined'&&PZ._aiTimeout){clearTimeout(PZ._aiTimeout);PZ._aiTimeout=null;}
   // Maze timer
   if(typeof MZ!=='undefined'&&MZ.timer){clearInterval(MZ.timer);MZ.timer=null;}
+  if(typeof MZ!=='undefined'&&MZ._aiTimeout){clearTimeout(MZ._aiTimeout);MZ._aiTimeout=null;}
   // Spam Click timer
   if(typeof SC!=='undefined'&&SC.timer){clearInterval(SC.timer);SC.timer=null;SC.running=false;}
   // Quiz timer
   if(typeof QUIZ!=='undefined'&&QUIZ.timerInterval){clearTimeout(QUIZ.timerInterval);QUIZ.timerInterval=null;}
   // Reaction timer
   if(typeof REAC!=='undefined'&&REAC.timeout){clearTimeout(REAC.timeout);REAC.timeout=null;}
+  // Pexeso AI timeouts
+  if(typeof MEM!=='undefined'&&MEM._aiTimeouts){MEM._aiTimeouts.forEach(clearTimeout);MEM._aiTimeouts=[];}
   // Chess voice recognition
   if(typeof chessVoiceStop==='function'&&chVoiceActive){chessVoiceStop();}
   // Chess timer
@@ -19058,10 +19148,14 @@ function mpAlert(msg, duration) {
   setTimeout(() => t.remove(), duration || 3000);
 }
 function mpCreateRoom() {
-  // Cleanup any previous peer
-  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
-  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  // Cleanup any previous peer (prevent race condition by nulling first)
+  const oldPeer = MP.peer;
+  const oldConn = MP.connection;
+  MP.peer = null;
+  MP.connection = null;
   MP.isConnected = false;
+  if(oldConn) { try { oldConn.close(); } catch(e) {} }
+  if(oldPeer) { try { oldPeer.destroy(); } catch(e) {} }
 
   const roomCode = 'HR' + Math.random().toString(36).substr(2, 6).toUpperCase();
   MP.roomCode = roomCode;
@@ -19145,10 +19239,14 @@ function mpJoinRoom() {
     return;
   }
 
-  // Cleanup any previous peer
-  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
-  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  // Cleanup any previous peer (prevent race condition by nulling first)
+  const oldPeer = MP.peer;
+  const oldConn = MP.connection;
+  MP.peer = null;
+  MP.connection = null;
   MP.isConnected = false;
+  if(oldConn) { try { oldConn.close(); } catch(e) {} }
+  if(oldPeer) { try { oldPeer.destroy(); } catch(e) {} }
 
   MP.roomCode = code;
   MP.isHost = false;
@@ -19165,10 +19263,14 @@ function mpJoinRoom() {
 }
 
 function mpJoinWithConfig(code, statusEl, config) {
-  // Cleanup previous attempt
-  if(MP.peer) { try { MP.peer.destroy(); } catch(e) {} MP.peer = null; }
-  if(MP.connection) { try { MP.connection.close(); } catch(e) {} MP.connection = null; }
+  // Cleanup previous attempt (prevent race condition by nulling first)
+  const oldPeer = MP.peer;
+  const oldConn = MP.connection;
+  MP.peer = null;
+  MP.connection = null;
   MP.isConnected = false;
+  if(oldConn) { try { oldConn.close(); } catch(e) {} }
+  if(oldPeer) { try { oldPeer.destroy(); } catch(e) {} }
 
   const useTurn = config === TURN_CONFIG;
   const stunTimeout = useTurn ? 15000 : 8000;
