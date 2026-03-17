@@ -4313,7 +4313,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '14.7';
+const APP_VERSION = '14.8';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5159,6 +5159,12 @@ function renderDailyCalendar(){
     const history=JSON.parse(localStorage.getItem('hry_daily_history')||'[]');
     history.forEach(d=>completedDates.add(d));
   }catch(e){}
+
+  // CRITICAL: If today's challenge is completed in state but not in history, add it
+  if(state.date===today && state.completed && !completedDates.has(today)){
+    dailySaveHistory(today);
+    completedDates.add(today);
+  }
 
   // Update streak display
   const streakEl=$('dailyStreakVal');
