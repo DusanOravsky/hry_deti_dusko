@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v14.2
+- **Current version**: v14.3
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -48,6 +48,8 @@ resetWordle(); // welcomeGameMode check works
   - `'always'` = always shown (Stats)
   - `mp:true` = has online multiplayer support (shows globe badge)
 - `welcomeGameMode` — `'pvp'` (default) or `'ai'`
+- `globalP1`, `globalP2`, `globalP3`, `globalP4` — player names (P1/P2 from welcome, P3/P4 for Ludo)
+- `_p1Avatar`, `_p2Avatar`, `_p3Avatar`, `_p4Avatar` — emoji avatars for all 4 players (stored in localStorage)
 - `GAME_NAMES` object — display names for each game
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
@@ -64,7 +66,7 @@ resetWordle(); // welcomeGameMode check works
 - Sach [MP] (AI: easy/medium/hard, complete official rules: check/checkmate, castling, en passant, pawn promotion dialog, 50-move rule, legal move filtering)
 - Dama [MP] (AI: easy/medium/hard)
 - Lodicky (Battleship) [MP] (AI: easy/medium/hard)
-- Clovece nehnevaj sa [MP] (AI: easy/medium/hard, PVP: 2/3/4 hráči s vlastnými menami)
+- Clovece nehnevaj sa [MP] (AI: easy/medium/hard, PVP: 2/3/4 hráči s vlastnými menami a avatármi pre P3/P4)
 - Puzzle Scramble (canvas, 3x3/4x4/5x5)
 - Mini Labyrint (AI: easy/medium/hard — hard:30ms, medium:80ms, easy:180ms)
 - Reversi/Othello (AI: easy/medium/hard)
@@ -153,7 +155,7 @@ resetWordle(); // welcomeGameMode check works
 - **Game categories**: 6 categories (Všetky, Doskové, Arkádové, Slovné, Logické, Zábavné), `GAME_CATS` array, `cat` property on MOBILE_GAMES, horizontal scrollable pills
 - **Confetti on wins**: Canvas confetti animation on any win via `addWin()`, 150 particles, 2.5s duration
 - **Daily Challenge**: Random game challenge each day, streak tracking in localStorage, daily button on welcome + sidebar
-- **Emoji Avatars**: 20 emoji avatars per player, stored in localStorage, shown on welcome screen + game cards
+- **Emoji Avatars**: 46 emoji options for all 4 players (P1/P2 on welcome screen, P3/P4 in Ludo), stored in localStorage, shown in game cards
 - **Top 5 Leaderboard**: Solo games (Tetris, Snake, Racing, Gravity Run, 2048, Flappy Bird) track top 5 scores in localStorage
 - **Wordle MP**: Simultaneous guessing mode, both players see own board, tie-breaking logic (fewer rows wins, equal = draw)
 - **2048**: Classic sliding tile puzzle, 4x4 grid, swipe + arrows, merge tiles to reach 2048, high score + leaderboard
