@@ -2179,7 +2179,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 46 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 47 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -4142,6 +4142,34 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== ANGRY BIRDS ===== -->
+  <div class="game-area" id="angryBirds">
+    <div class="rules"><h3>🐦 Angry Birds:</h3><ul>
+      <li>Ťahaj prak myšou/prstom a pusť!</li>
+      <li>Čím ďalej ťaháš, tým silnejší výstrel</li>
+      <li>Rozbíjaj kocky — každá dáva body</li>
+      <li>5 pokusov pre každého hráča</li>
+      <li>Kto získa viac bodov, vyhráva!</li>
+    </ul></div>
+    <div class="player-info" id="abPlayerInfo">
+      <div class="player-card player1 active-turn" id="abP1Card"><div class="player-name-display" id="abP1Name">Hráč 1</div><div class="player-score" id="abP1Score">0</div></div>
+      <div class="player-card player2" id="abP2Card"><div class="player-name-display" id="abP2Name">Hráč 2</div><div class="player-score" id="abP2Score">0</div></div>
+    </div>
+    <div id="abDiffWrap" style="display:flex;justify-content:center;gap:8px;margin-bottom:8px">
+      <button class="difficulty-btn active" onclick="setAbDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setAbDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setAbDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="status" id="abStatus">Hráč 1 - Ťahaj prak!</div>
+    <canvas id="abCanvas" width="400" height="300" style="display:block;margin:10px auto;max-width:min(400px,90vw);border-radius:12px;background:#87CEEB;touch-action:none"></canvas>
+    <div class="celebration" id="abCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="startAngryBirds()">▶️ Nová hra</button>
+      <button class="action-btn" onclick="toggleFullscreen('abCanvas')">⛶ Fullscreen</button>
+      <button class="action-btn danger-btn" onclick="resetAngryBirds()">🔄 Reset</button>
+    </div>
+  </div>
+
   <!-- ===== WAR (VOJNA) ===== -->
   <div class="game-area" id="cardWar">
     <div class="rules"><h3>🃏 Vojna:</h3><ul>
@@ -4331,7 +4359,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '15.2';
+const APP_VERSION = '15.3';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4348,7 +4376,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4359,7 +4387,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -4774,7 +4802,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -4785,7 +4813,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -5340,6 +5368,7 @@ function restoreAllDiffs(){
     ['mathDuel','mdDiffSel',setMDDiff],
     ['hangman','hmDiffSel',setHMDiff],
     ['unoGame','unoAISel',setUnoDiff],
+    ['angryBirds','abDiffWrap',setAbDiff],
   ];
   map.forEach(([gId,selId,setFn])=>{
     const d=loadDiff(gId); if(!d) return;
@@ -17129,7 +17158,281 @@ document.addEventListener('keydown',e=>{
 resetSudoku();
 
 // =============================================================================
-// SEKCIA 42: WAR (VOJNA) — kartová hra
+// SEKCIA 42: ANGRY BIRDS
+// =============================================================================
+const AB = {
+  W:400,H:300,
+  turn:1,s1:0,s2:0,
+  shots1:0,shots2:0,maxShots:5,
+  diff:'easy',
+  slingX:80,slingY:200,
+  bird:null,birdFlying:false,
+  drag:false,dragX:0,dragY:0,
+  boxes:[],
+  raf:null,over:false
+};
+
+function setAbDiff(d,btn){
+  AB.diff=d;saveDiff('angryBirds',d);
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function resetAngryBirds(){
+  if(AB.raf){cancelAnimationFrame(AB.raf);AB.raf=null;}
+  AB.turn=1;AB.s1=0;AB.s2=0;AB.shots1=0;AB.shots2=0;AB.over=false;
+  AB.bird=null;AB.birdFlying=false;AB.drag=false;
+  AB.boxes=[];
+  abGenerateLevel();
+  $('abP1Score').textContent='0';
+  $('abP2Score').textContent='0';
+  $('abP1Name').textContent=(_p1Avatar||'🔴')+' '+getP1Name('ab');
+  $('abP2Name').textContent=(welcomeGameMode==='ai'?'🤖 Počítač':(_p2Avatar||'🔵')+' '+getP2Name('ab'));
+  $('abP1Card').classList.toggle('active-turn',AB.turn===1);
+  $('abP2Card').classList.toggle('active-turn',AB.turn===2);
+  $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak!';
+  $('abCelebration').textContent='';
+  applyGameMode();
+  abRender();
+}
+
+function abGenerateLevel(){
+  AB.boxes=[];
+  // Stack of boxes on right side
+  const startX=280;const startY=220;const boxW=30;const boxH=20;
+  for(let row=0;row<6;row++){
+    for(let col=0;col<3;col++){
+      AB.boxes.push({x:startX+col*boxW,y:startY-row*boxH,w:boxW,h:boxH,hp:1});
+    }
+  }
+}
+
+function startAngryBirds(){
+  resetAngryBirds();
+}
+
+function abRender(){
+  const c=$('abCanvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  const W=AB.W,H=AB.H;
+  // Sky
+  ctx.fillStyle='#87CEEB';ctx.fillRect(0,0,W,H);
+  // Ground
+  ctx.fillStyle='#8B4513';ctx.fillRect(0,H-30,W,30);
+  ctx.fillStyle='#228B22';ctx.fillRect(0,H-35,W,5);
+  // Sling base
+  ctx.fillStyle='#654321';ctx.fillRect(AB.slingX-5,AB.slingY,10,40);
+  // Boxes
+  AB.boxes.forEach(b=>{
+    const alpha=b.hp>0?1:0.3;
+    ctx.fillStyle=`rgba(139,69,19,${alpha})`;
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+    ctx.strokeStyle=`rgba(101,67,33,${alpha})`;ctx.lineWidth=2;
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+  });
+  // Sling
+  ctx.strokeStyle='#8B4513';ctx.lineWidth=4;
+  if(AB.drag){
+    ctx.beginPath();ctx.moveTo(AB.slingX-10,AB.slingY-10);ctx.lineTo(AB.dragX,AB.dragY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(AB.slingX+10,AB.slingY-10);ctx.lineTo(AB.dragX,AB.dragY);ctx.stroke();
+  }else if(!AB.birdFlying){
+    ctx.beginPath();ctx.moveTo(AB.slingX-10,AB.slingY-10);ctx.lineTo(AB.slingX,AB.slingY-30);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(AB.slingX+10,AB.slingY-10);ctx.lineTo(AB.slingX,AB.slingY-30);ctx.stroke();
+  }
+  // Bird
+  if(AB.bird){
+    const angle=AB.birdFlying?Math.atan2(AB.bird.vy,AB.bird.vx):0;
+    ctx.save();ctx.translate(AB.bird.x,AB.bird.y);ctx.rotate(angle);
+    // Body
+    ctx.fillStyle='#FF0000';ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#8B0000';ctx.lineWidth=2;ctx.stroke();
+    // Eye
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(4,-2,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='black';ctx.beginPath();ctx.arc(5,-2,2,0,Math.PI*2);ctx.fill();
+    // Beak
+    ctx.fillStyle='#FFA500';ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(14,2);ctx.lineTo(8,4);ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+}
+
+const abCanvas=$('abCanvas');
+if(abCanvas){
+  let startX=0,startY=0;
+  abCanvas.addEventListener('mousedown',e=>{
+    if(AB.over||AB.birdFlying||AB.drag)return;
+    if(welcomeGameMode==='ai'&&AB.turn===2)return;
+    const rect=abCanvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(AB.W/rect.width);
+    const my=(e.clientY-rect.top)*(AB.H/rect.height);
+    const dx=mx-AB.slingX,dy=my-AB.slingY;
+    if(Math.sqrt(dx*dx+dy*dy)<40){
+      AB.drag=true;startX=mx;startY=my;AB.dragX=mx;AB.dragY=my;
+      AB.bird={x:mx,y:my,vx:0,vy:0};
+      abRender();
+    }
+  });
+  abCanvas.addEventListener('mousemove',e=>{
+    if(!AB.drag)return;
+    const rect=abCanvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(AB.W/rect.width);
+    const my=(e.clientY-rect.top)*(AB.H/rect.height);
+    AB.dragX=mx;AB.dragY=my;
+    AB.bird.x=mx;AB.bird.y=my;
+    abRender();
+  });
+  abCanvas.addEventListener('mouseup',e=>{
+    if(!AB.drag)return;
+    AB.drag=false;
+    const dx=(AB.slingX-AB.dragX)*0.3;
+    const dy=(AB.slingY-30-AB.dragY)*0.3;
+    AB.bird.vx=dx;AB.bird.vy=dy;
+    AB.birdFlying=true;
+    abFly();
+  });
+  // Touch events
+  abCanvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    if(AB.over||AB.birdFlying||AB.drag)return;
+    if(welcomeGameMode==='ai'&&AB.turn===2)return;
+    const rect=abCanvas.getBoundingClientRect();
+    const mx=(e.touches[0].clientX-rect.left)*(AB.W/rect.width);
+    const my=(e.touches[0].clientY-rect.top)*(AB.H/rect.height);
+    const dx=mx-AB.slingX,dy=my-AB.slingY;
+    if(Math.sqrt(dx*dx+dy*dy)<40){
+      AB.drag=true;startX=mx;startY=my;AB.dragX=mx;AB.dragY=my;
+      AB.bird={x:mx,y:my,vx:0,vy:0};
+      abRender();
+    }
+  });
+  abCanvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(!AB.drag)return;
+    const rect=abCanvas.getBoundingClientRect();
+    const mx=(e.touches[0].clientX-rect.left)*(AB.W/rect.width);
+    const my=(e.touches[0].clientY-rect.top)*(AB.H/rect.height);
+    AB.dragX=mx;AB.dragY=my;
+    AB.bird.x=mx;AB.bird.y=my;
+    abRender();
+  });
+  abCanvas.addEventListener('touchend',e=>{
+    e.preventDefault();
+    if(!AB.drag)return;
+    AB.drag=false;
+    const dx=(AB.slingX-AB.dragX)*0.3;
+    const dy=(AB.slingY-30-AB.dragY)*0.3;
+    AB.bird.vx=dx;AB.bird.vy=dy;
+    AB.birdFlying=true;
+    abFly();
+  });
+}
+
+function abFly(){
+  const step=()=>{
+    if(!AB.birdFlying){abRender();return;}
+    AB.bird.vy+=0.5; // gravity
+    AB.bird.x+=AB.bird.vx;
+    AB.bird.y+=AB.bird.vy;
+    // Check box collisions
+    AB.boxes.forEach(b=>{
+      if(b.hp>0){
+        if(AB.bird.x>b.x&&AB.bird.x<b.x+b.w&&AB.bird.y>b.y&&AB.bird.y<b.y+b.h){
+          b.hp=0;
+          if(AB.turn===1)AB.s1++;else AB.s2++;
+          playSound('hit');
+          vibrate(50);
+        }
+      }
+    });
+    // Check out of bounds
+    if(AB.bird.x<0||AB.bird.x>AB.W||AB.bird.y>AB.H-30){
+      AB.birdFlying=false;
+      playSound('wrong');
+      if(AB.turn===1){
+        AB.shots1++;
+        $('abP1Score').textContent=AB.s1;
+        if(AB.shots1>=AB.maxShots){
+          abSwitchTurn();
+        }else{
+          AB.bird=null;
+          $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak! ('+AB.shots1+'/'+AB.maxShots+')';
+          abRender();
+        }
+      }else{
+        AB.shots2++;
+        $('abP2Score').textContent=AB.s2;
+        if(AB.shots2>=AB.maxShots){
+          abGameOver();
+        }else{
+          if(welcomeGameMode==='ai'){
+            setTimeout(abAiShoot,800);
+          }else{
+            AB.bird=null;
+            $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak! ('+AB.shots2+'/'+AB.maxShots+')';
+            abRender();
+          }
+        }
+      }
+      return;
+    }
+    abRender();
+    AB.raf=requestAnimationFrame(step);
+  };
+  step();
+}
+
+function abSwitchTurn(){
+  AB.turn=2;
+  AB.bird=null;
+  $('abP1Card').classList.remove('active-turn');
+  $('abP2Card').classList.add('active-turn');
+  $('abStatus').textContent=getActiveName('ab')+' — Ťahaj prak!';
+  abRender();
+  if(welcomeGameMode==='ai'){
+    setTimeout(abAiShoot,1000);
+  }
+}
+
+function abAiShoot(){
+  if(AB.over||AB.turn!==2)return;
+  // AI picks a target box
+  const alive=AB.boxes.filter(b=>b.hp>0);
+  if(alive.length===0){abGameOver();return;}
+  const target=alive[Math.floor(Math.random()*alive.length)];
+  const targetX=target.x+target.w/2;
+  const targetY=target.y+target.h/2;
+  // Calculate trajectory
+  const dx=targetX-AB.slingX;
+  const dy=targetY-(AB.slingY-30);
+  // Add some error based on difficulty
+  let error=0;
+  if(AB.diff==='easy')error=40;
+  else if(AB.diff==='medium')error=20;
+  else error=10;
+  const vx=dx/40+(Math.random()-0.5)*error;
+  const vy=(dy/40-5)+(Math.random()-0.5)*error;
+  AB.bird={x:AB.slingX,y:AB.slingY-30,vx,vy};
+  AB.birdFlying=true;
+  playSound('click');
+  abFly();
+}
+
+function abGameOver(){
+  AB.over=true;
+  let w=0;
+  if(AB.s1>AB.s2)w=1;
+  else if(AB.s2>AB.s1)w=2;
+  addWin(w,'ab');
+  const msg=w===0?'Remíza! '+AB.s1+' : '+AB.s2:(w===1?getP1Name('ab'):getP2Name('ab'))+' vyhral! '+AB.s1+' : '+AB.s2;
+  $('abStatus').textContent=msg;
+  $('abCelebration').textContent=w===0?'':w===1?'🎉':'🎊';
+  playSound(w===0?'draw':'win');
+  confetti();
+  setTimeout(()=>{$('abCelebration').textContent='';},3000);
+}
+resetAngryBirds();
+
+// =============================================================================
+// SEKCIA 43: WAR (VOJNA) — kartová hra
 // =============================================================================
 const WAR = {deck1:[],deck2:[],card1:null,card2:null,pile:[],over:false,animating:false,_timer:null,rounds:0,maxRounds:150,_epoch:0};
 const WAR_SUITS = ['♠','♥','♦','♣'];
@@ -18091,6 +18394,7 @@ const MOBILE_GAMES = [
   { id:'gravityRun',   label:'Gravity Run',    icon:'🌀', grad:'rgba(26,26,46,0.4),rgba(108,92,231,0.3)', mode:'solo', cat:'arcade' },
   { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo', cat:'logic' },
   { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
+  { id:'angryBirds',   label:'Angry Birds',    icon:'🐦', grad:'rgba(220,53,69,0.3),rgba(135,206,235,0.3)', mode:'both', cat:'arcade' },
   { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
@@ -18162,6 +18466,8 @@ function stopAllGames(){
   if(typeof MS!=='undefined'&&MS.timer){clearInterval(MS.timer);MS.timer=null;}
   // Flappy Bird
   if(typeof FLAP!=='undefined'){if(FLAP.raf){cancelAnimationFrame(FLAP.raf);FLAP.raf=null;}FLAP.running=false;}
+  // Angry Birds
+  if(typeof AB!=='undefined'){if(AB.raf){cancelAnimationFrame(AB.raf);AB.raf=null;}AB.over=true;AB.birdFlying=false;}
   // War AI auto-play
   if(typeof WAR!=='undefined'){if(WAR._timer){clearTimeout(WAR._timer);WAR._timer=null;}WAR.over=true;WAR.animating=false;}
   // Uno AI
