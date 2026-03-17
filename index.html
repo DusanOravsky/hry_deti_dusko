@@ -4290,7 +4290,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '14.0';
+const APP_VERSION = '14.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11807,17 +11807,18 @@ const LUDO_COL = ['#ef5350','#42a5f5','#66bb6a','#fdd835'];
 const LUDO_BG = ['rgba(239,83,80,','rgba(66,165,245,','rgba(102,187,106,','rgba(253,216,53,'];
 
 function ludoGetName(p) {
-  if(p===0) return getP1Name('lu');
+  // Returns name WITH avatar for all players (consistent with other games)
+  if(p===0) return (_p1Avatar||'🔴')+' '+getP1Name('lu');
   if(p===1) {
     if(welcomeGameMode==='ai') return '🤖 Počítač';
     return (_p2Avatar||'🔵')+' '+getP2Name('lu');
   }
   if(p===2) {
-    if(welcomeGameMode==='ai') return '🤖 Počítač 2';
+    if(welcomeGameMode==='ai') return '🤖 Počítač';
     return '🟢 '+getP3Name('lu');
   }
   if(p===3) {
-    if(welcomeGameMode==='ai') return '🤖 Počítač 3';
+    if(welcomeGameMode==='ai') return '🤖 Počítač';
     return '🟡 '+getP4Name('lu');
   }
   return 'Hráč '+(p+1);
@@ -11826,8 +11827,8 @@ function ludoGetName(p) {
 function onLudoNameChange() {
   globalP3 = $('ludoP3Input').value.trim() || 'Hráč 3';
   globalP4 = $('ludoP4Input').value.trim() || 'Hráč 4';
-  if(LUDO.numPlayers>=3) $('ludoP3Name').textContent = '🟢 '+globalP3;
-  if(LUDO.numPlayers>=4) $('ludoP4Name').textContent = '🟡 '+globalP4;
+  if(LUDO.numPlayers>=3) $('ludoP3Name').textContent = ludoGetName(2);
+  if(LUDO.numPlayers>=4) $('ludoP4Name').textContent = ludoGetName(3);
 }
 
 function ludoRel2Coord(p,rel) {
@@ -11860,8 +11861,8 @@ function resetLudo() {
   $('ludoExtraNames').style.display = showExtraNames?'':'none';
   if(showExtraNames && LUDO.numPlayers===3) $('ludoP4Input').style.display='none';
   else if(showExtraNames) $('ludoP4Input').style.display='';
-  // Update names
-  $('ludoP1Name').textContent=(_p1Avatar||'🔴')+' '+ludoGetName(0);
+  // Update names (ludoGetName now includes avatars for all players)
+  $('ludoP1Name').textContent=ludoGetName(0);
   $('ludoP2Name').textContent=ludoGetName(1);
   if(LUDO.numPlayers>=3) $('ludoP3Name').textContent=ludoGetName(2);
   if(LUDO.numPlayers>=4) $('ludoP4Name').textContent=ludoGetName(3);
@@ -18230,10 +18231,19 @@ function applyGameMode(mode) {
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','ludoP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
+    // Ludo: force 2 players in AI mode, hide P3/P4 cards and player selector
+    LUDO.numPlayers = 2;
+    $('ludoP3Card').style.display='none';
+    $('ludoP4Card').style.display='none';
+    $('ludoPlayerSel').style.display='none';
+    $('ludoExtraNames').style.display='none';
+  } else {
+    // Ludo: show player selector in PVP mode (cards shown based on selection)
+    $('ludoPlayerSel').style.display='flex';
   }
   // Hide player cards for solo games in AI mode (like Tetris/Snake/Racing)
   ['doodPlayerInfo','wdlPlayerInfo','beePlayerInfo','socPlayerInfo'].forEach(id => {
