@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v14.3
+- **Current version**: v14.5
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -154,7 +154,7 @@ resetWordle(); // welcomeGameMode check works
 - **AI difficulty persistence**: `saveDiff(gameId,d)` / `loadDiff(gameId)` save to `localStorage('hry_diff_'+gameId)`, `restoreAllDiffs()` on page load
 - **Game categories**: 6 categories (Všetky, Doskové, Arkádové, Slovné, Logické, Zábavné), `GAME_CATS` array, `cat` property on MOBILE_GAMES, horizontal scrollable pills
 - **Confetti on wins**: Canvas confetti animation on any win via `addWin()`, 150 particles, 2.5s duration
-- **Daily Challenge**: Random game challenge each day, streak tracking in localStorage, daily button on welcome + sidebar
+- **Daily Challenge**: 32 games rotation (was 12), streak tracking, visual 7-day calendar on welcome screen (green=completed), history stored in localStorage (30 days)
 - **Emoji Avatars**: 46 emoji options for all 4 players (P1/P2 on welcome screen, P3/P4 in Ludo), stored in localStorage, shown in game cards
 - **Top 5 Leaderboard**: Solo games (Tetris, Snake, Racing, Gravity Run, 2048, Flappy Bird) track top 5 scores in localStorage
 - **Wordle MP**: Simultaneous guessing mode, both players see own board, tie-breaking logic (fewer rows wins, equal = draw)
