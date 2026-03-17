@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v16.0
+- **Current version**: v17.1
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -79,7 +79,7 @@ resetWordle(); // welcomeGameMode check works
 - Uno (AI: easy/medium/hard, color/number matching, wild, +2, +4 Wild Draw Four, skip, reverse, UNO! callout)
 - Nim (AI: easy/medium/hard, 4 piles 1/3/5/7, take 1-3, misère — last stone loses, Grundy XOR strategy)
 - Angry Birds (AI: easy/medium/hard, canvas, drag & release slingshot, parabolic physics, destructible boxes, 5 shots per player)
-- Sokoban (AI: easy/medium/hard, 60 levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression)
+- Sokoban (AI: easy/medium/hard, 50 levels with walls/corridors, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, PVP: both players complete each level before advancing)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -344,7 +344,7 @@ Key game state objects and their patterns:
 - `G48` — 2048 (grid 4x4, score, best, won, over)
 - `FLAP` — Flappy Bird (canvas, bird, pipes, score, best, running, raf)
 - `AB` — Angry Birds (W:400, H:300, turn, s1, s2, shots1, shots2, maxShots:5, diff, slingX, slingY, bird, birdFlying, drag, dragX, dragY, boxes, raf, over)
-- `SOK` — Sokoban (level:0-59, grid[][], w, h, px, py, boxes[{x,y}], targets[{x,y}], moves, moveHistory[], time, timer, turn, s1, s2, diff, aiSolving, cellSize, over, won)
+- `SOK` — Sokoban (level:0-49, grid[][], w, h, px, py, boxes[{x,y}], targets[{x,y}], moves, moveHistory[], time, timer, turn, s1, s2, diff, aiSolving, cellSize, over, won, p1Completed, p2Completed)
 - `NG` — Nonogram (size, pattern, solution[][], player[][], errors, maxErrors:3, started, timer)
 - `SDK` — Sudoku (grid[][], solution[][], given[][], selected, diff, errors, timer)
 
@@ -398,6 +398,7 @@ GitHub Pages auto-deploys from main branch. Git credentials are configured via `
 - **Topbar disappearing**: `#mobileGameView` and `#mobileGamePicker` need `position:fixed`.
 - **Mode selectors in games**: Hidden via `applyGameMode()` when mode chosen from welcome screen.
 - **Games running in background**: All game loops must be added to `stopAllGames()` and stopped on navigation.
+- **Sokoban level validation (v17.1)**: 14 of 50 levels have incorrect box/target counts and may be unsolvable (levels 23, 30, 31, 34-36, 38, 40, 42-43, 45, 47-49). PVP mode works correctly (both players complete each level), but these specific levels need replacement with validated puzzles.
 
 ### MP-Specific Issues
 
