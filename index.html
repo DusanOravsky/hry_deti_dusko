@@ -19346,10 +19346,10 @@ function simonShowSequence() {
   SIMON.showing = true;
   SIMON._showIndex = 0;
 
-  // Disable buttons during show
+  // Make buttons look inactive during show (but NOT disabled)
   for(let i=0; i<4; i++) {
-    $('simonBtn'+i).disabled = true;
-    $('simonBtn'+i).style.opacity = '0.5';
+    $('simonBtn'+i).style.opacity = '0.6';
+    $('simonBtn'+i).style.cursor = 'wait';
   }
 
   simonShowNextColor();
@@ -19360,12 +19360,19 @@ function simonShowNextColor() {
     // Sequence shown, player's turn
     SIMON.showing = false;
     SIMON.playerTurn = true;
-    $('simonStatus').textContent = `Tvoj ťah! (${SIMON.sequence.length} ${SIMON.sequence.length===1?'farba':'farieb'})`;
 
-    // Enable buttons
+    const word = SIMON.sequence.length === 1 ? 'farbu' : (SIMON.sequence.length < 5 ? 'farby' : 'farieb');
+    $('simonStatus').textContent = `⚡ TVOJ ŤAH! Zopakuj ${SIMON.sequence.length} ${word}`;
+    $('simonStatus').style.color = '#2ecc71';
+    $('simonStatus').style.fontWeight = 'bold';
+
+    // Enable buttons - make them clearly active
     for(let i=0; i<4; i++) {
-      $('simonBtn'+i).disabled = false;
-      $('simonBtn'+i).style.opacity = '1';
+      const btn = $('simonBtn'+i);
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.style.pointerEvents = 'auto';
     }
     return;
   }
@@ -19387,7 +19394,7 @@ function simonShowNextColor() {
 
   SIMON._timeout = setTimeout(() => {
     btn.style.transform = '';
-    btn.style.opacity = '0.5';
+    btn.style.opacity = '1';
     btn.style.boxShadow = '';
 
     SIMON._timeout = setTimeout(() => {
@@ -19400,11 +19407,18 @@ function simonShowNextColor() {
 function simonPlayerClick(colorIdx) {
   // If game not started yet, start it on first click
   if(!SIMON.showing && !SIMON.playerTurn && !SIMON.over && SIMON.sequence.length === 0) {
-    simonStart();
+    $('simonStatus').textContent = '🎮 Spúšťam hru...';
+    setTimeout(() => simonStart(), 100);
     return;
   }
 
-  if(!SIMON.playerTurn || SIMON.showing || SIMON.over) return;
+  // Ignore clicks during sequence show or when game over
+  if(!SIMON.playerTurn || SIMON.showing || SIMON.over) {
+    if(SIMON.showing) {
+      $('simonStatus').textContent = '👀 Sleduj sekvenciu!';
+    }
+    return;
+  }
 
   const btn = $('simonBtn' + colorIdx);
 
