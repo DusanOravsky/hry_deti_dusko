@@ -4496,7 +4496,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '18.0';
+const APP_VERSION = '18.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -19324,10 +19324,6 @@ function mobileGoTo(level, gameId) {
     if(gameId === 'stats') renderStats();
     if(gameId === 'tournament') tourRenderSetup();
     content.scrollTop = 0;
-    // Show tutorial on first game launch
-    if(gameId !== 'stats' && gameId !== 'tournament') {
-      maybeShowTutorial(gameId);
-    }
   }
   _mobileLevel = level;
   _updateMobileToggles();
@@ -19781,10 +19777,8 @@ function closeMPModalOnOverlay(event) {
   }
 }
 
-// ===== RULES MODAL & TUTORIAL FUNCTIONS =====
-let _tutorialSeen; try { _tutorialSeen = JSON.parse(localStorage.getItem('hry_tutorial_seen')||'[]'); } catch(e) { _tutorialSeen = []; }
-
-function showRules(gameId, forceShow) {
+// ===== RULES MODAL FUNCTIONS =====
+function showRules(gameId) {
   const gameArea = $(gameId);
   if (!gameArea) return;
 
@@ -19793,23 +19787,9 @@ function showRules(gameId, forceShow) {
 
   const overlay = $('rulesOverlay');
   const content = $('rulesModalContent');
-  const tutorialBadge = $('tutorialBadge');
-  const tutorialFooter = $('tutorialFooter');
 
   // Clone rules HTML to modal
   content.innerHTML = rulesDiv.innerHTML;
-
-  // Check if this is first time showing this game
-  const isFirstTime = !_tutorialSeen.includes(gameId) || forceShow;
-
-  if(isFirstTime && !forceShow) {
-    tutorialBadge.style.display = 'block';
-    tutorialFooter.style.display = 'flex';
-    tutorialFooter.dataset.gameId = gameId;
-  } else {
-    tutorialBadge.style.display = 'none';
-    tutorialFooter.style.display = 'none';
-  }
 
   // Show modal
   overlay.classList.add('active');
@@ -19821,37 +19801,9 @@ function closeRules() {
   playSound('click');
 }
 
-function closeTutorial() {
-  const tutorialFooter = $('tutorialFooter');
-  const gameId = tutorialFooter.dataset.gameId;
-  const dontShow = $('tutorialDontShow').checked;
-
-  if(dontShow && gameId) {
-    _tutorialSeen.push(gameId);
-    try {
-      localStorage.setItem('hry_tutorial_seen', JSON.stringify(_tutorialSeen));
-    } catch(e) {}
-  }
-
-  closeRules();
-}
-
 function closeRulesOnOverlay(event) {
   if(event.target === $('rulesOverlay')) {
-    // If tutorial is showing, close it properly
-    const tutorialFooter = $('tutorialFooter');
-    if(tutorialFooter && tutorialFooter.style.display !== 'none') {
-      closeTutorial();
-    } else {
-      closeRules();
-    }
-  }
-}
-
-// Auto-show tutorial on first game launch
-function maybeShowTutorial(gameId) {
-  if(!_tutorialSeen.includes(gameId)) {
-    setTimeout(() => showRules(gameId), 500);
+    closeRules();
   }
 }
 
@@ -21281,12 +21233,7 @@ if('serviceWorker' in navigator) {
 <div class="rules-overlay" id="rulesOverlay" onclick="closeRulesOnOverlay(event)">
   <div class="rules-modal" onclick="event.stopPropagation()">
     <button class="rules-close" onclick="closeRules()">✕</button>
-    <div id="tutorialBadge" class="tutorial-badge" style="display:none">🎓 PRVÉ SPUSTENIE</div>
     <div id="rulesModalContent"></div>
-    <div id="tutorialFooter" class="tutorial-footer" style="display:none">
-      <label><input type="checkbox" id="tutorialDontShow"> Nezobrazovať znova</label>
-      <button class="primary-btn" onclick="closeTutorial()">Začať hrať! 🎮</button>
-    </div>
   </div>
 </div>
 

@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v18.0
+- **Current version**: v18.1
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -348,11 +348,10 @@ Key game state objects and their patterns:
 - `NG` — Nonogram (size, pattern, solution[][], player[][], errors, maxErrors:3, started, timer)
 - `SDK` — Sudoku (grid[][], solution[][], given[][], selected, diff, errors, timer)
 
-## New Features (v18.0)
+## New Features (v18.0-18.1)
 
 - **Search/Filter**: Quick search input in game picker, real-time filtering by game name, clear button (✕), auto-clears on category change
 - **Seasonal achievements**: 6 new achievements (Christmas Dec 20-Jan 6, Easter Mar 20-Apr, Summer Jun-Aug, Halloween Oct), tracks plays per season per year in `localStorage('hry_seasonal_plays')`, functions: `_isSeason()`, `_getSeasonalPlays()`, `_incrementSeasonalPlay()`
-- **Tutorial overlay**: Auto-shows rules modal on first game launch, pulsing "🎓 PRVÉ SPUSTENIE" badge, "Don't show again" checkbox, footer with "Začať hrať!" button, tracking in `localStorage('hry_tutorial_seen')`, functions: `maybeShowTutorial()`, `closeTutorial()`
 - **Game preview animations**: Hover effects on game cards, icon animations on hover (bounce/spin/pulse/wiggle), 4 keyframes: `gameIconHover`, `gameIconBounce`, `gameIconSpin`, `gameIconPulse`
 
 ## Performance Optimization
