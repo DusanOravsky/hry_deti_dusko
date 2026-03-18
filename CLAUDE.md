@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v18.1
+- **Current version**: v19.0
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -55,7 +55,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (48 total)
+## Games (50 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -80,6 +80,7 @@ resetWordle(); // welcomeGameMode check works
 - Nim (AI: easy/medium/hard, 4 piles 1/3/5/7, take 1-3, misère — last stone loses, Grundy XOR strategy)
 - Angry Birds (AI: easy/medium/hard, canvas, drag & release slingshot, parabolic physics, destructible boxes, 5 shots per player)
 - Sokoban (AI: easy/medium/hard, 15 hand-crafted verified levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, PVP: both players complete each level before advancing)
+- Mancala (AI: easy/medium/hard, Kalaha variant, stone distribution, capture mechanics, extra turns, minimax evaluation for hard AI)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -105,7 +106,8 @@ resetWordle(); // welcomeGameMode check works
 - Solitaire / Klondike (7 tableau columns, 4 foundations, stock/waste, click-to-select, undo, auto-complete, timer)
 - Nonogram / Picross (5x5, 8 predefined patterns, error limit 3, long-press for X marks)
 - Sudoku (easy/medium/hard, backtracking generator, group highlighting, keyboard input)
-- Statistiky + Achievement system (43 achievements, split reset: stats vs achievements)
+- Color Switch (canvas, endless runner with color-matching mechanics, rotating obstacles, gravity jump physics, high score)
+- Statistiky + Achievement system (49 achievements with progress bars, split reset: stats vs achievements)
 
 ## Features (v13-v114, v4.0+)
 
@@ -145,7 +147,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "47 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "50 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -176,6 +178,9 @@ resetWordle(); // welcomeGameMode check works
 - **Sound & Vibration Persistence**: Settings saved to localStorage ('hry_sound', 'hry_vibration'), restored on page load via `loadSoundSettings()`, prevents frustrating reset-to-defaults on reload
 - **Angry Birds**: Slingshot physics game, drag & release mechanics, parabolic bird flight with gravity, destructible box towers, PvP: 5 shots per player, AI: varying accuracy based on difficulty
 - **Sokoban**: Classic push-box puzzle, 15 hand-crafted verified levels (progressive difficulty), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
+- **Achievement Progress Bars**: All 49 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
+- **Color Switch**: Endless runner where ball changes color, must pass through matching obstacle segments, rotating circle/square/cross obstacles, tap/space to jump against gravity, increasing difficulty with speed, high score tracking in localStorage
+- **Mancala**: Classic Kalaha board game, 6 pits + store per player, counter-clockwise stone distribution, capture mechanics (landing in empty pit captures opposite), extra turn on landing in own store, AI with 3 difficulties (easy=random, medium=prefers extra turns/captures, hard=minimax with board evaluation)
 
 ## Adding a New Game
 

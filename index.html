@@ -1461,8 +1461,20 @@ body.light .stats-section h3 { border-bottom-color:rgba(0,0,0,0.08); }
 .achievement-icon { font-size:1.8em; line-height:1; }
 .achievement-name { font-size:0.75em; font-weight:700; margin-top:4px; color:rgba(255,255,255,0.85); }
 .achievement-desc { font-size:0.65em; opacity:0.5; margin-top:2px; }
+.ach-progress-bar {
+  height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin-top:8px; overflow:hidden;
+}
+.ach-progress-fill {
+  height:100%; background:linear-gradient(90deg,#667eea,#764ba2); border-radius:3px;
+  transition:width 0.3s ease;
+}
+.ach-progress-text {
+  font-size:0.6em; color:rgba(255,255,255,0.6); margin-top:4px; font-weight:600;
+}
 .achievement.unlocked .achievement-name { color:#ffd200; }
 body.light .achievement { background:rgba(0,0,0,0.03); border-color:rgba(0,0,0,0.08); }
+body.light .ach-progress-bar { background:rgba(0,0,0,0.08); }
+body.light .ach-progress-text { color:rgba(0,0,0,0.5); }
 body.light .achievement.unlocked { background:rgba(255,210,0,0.1); border-color:rgba(255,180,0,0.3); }
 body.light .achievement-name { color:#333; }
 body.light .achievement.unlocked .achievement-name { color:#b8860b; }
@@ -2230,6 +2242,52 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
   border-radius: 0 !important;
   border: none !important;
   margin: 0 !important;
+}
+
+/* MANCALA */
+.man-pit {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(210,180,140,0.3);
+  border: 3px solid rgba(139,69,19,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: inherit;
+}
+.man-pit:hover {
+  background: rgba(210,180,140,0.5);
+  transform: scale(1.1);
+  border-color: rgba(139,69,19,0.8);
+}
+.man-store {
+  width: 80px;
+  height: 120px;
+  border-radius: 16px;
+  background: rgba(210,180,140,0.3);
+  border: 3px solid rgba(139,69,19,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  font-weight: 800;
+  color: inherit;
+}
+body.light .man-pit {
+  background: rgba(210,180,140,0.4);
+  border-color: rgba(139,69,19,0.6);
+}
+body.light .man-pit:hover {
+  background: rgba(210,180,140,0.6);
+}
+body.light .man-store {
+  background: rgba(210,180,140,0.4);
+  border-color: rgba(139,69,19,0.6);
 }
 
 </style>
@@ -4307,6 +4365,90 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
     </div>
   </div>
 
+  <!-- ===== MANCALA (KALAHA) ===== -->
+  <div class="game-area" id="mancala">
+    <div class="rules"><h3>🌰 Mancala:</h3><ul>
+      <li>Klasická africká hra pre 2 hráčov</li>
+      <li>Klikni na jamku — rozlož kamene po smere</li>
+      <li>Posledný kameň do tvojho skladu = hraj znova!</li>
+      <li>Posledný kameň do prázdnej jamky = ukradni protihráčovi!</li>
+      <li>Víťazí ten kto má viac kameňov v sklade</li>
+    </ul></div>
+    <div class="ai-difficulty" id="manDiffWrap" style="display:none;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setManDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setManDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setManDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info">
+      <div class="player-card player1" id="manP1Card">
+        <div class="player-name-display" id="manP1Name">Hráč 1</div>
+        <div class="player-score" id="manP1Score">0</div>
+      </div>
+      <div class="player-card player2" id="manP2Card">
+        <div class="player-name-display" id="manP2Name">Hráč 2</div>
+        <div class="player-score" id="manP2Score">0</div>
+      </div>
+    </div>
+    <div class="status" id="manStatus">Vyber jamku</div>
+    <div style="max-width:600px;margin:20px auto;padding:20px;background:rgba(139,69,19,0.15);border-radius:20px;border:2px solid rgba(139,69,19,0.3)">
+      <!-- P2 side (top, reversed) -->
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px">
+        <div onclick="manClickPit(12)" class="man-pit" id="manPit12">4</div>
+        <div onclick="manClickPit(11)" class="man-pit" id="manPit11">4</div>
+        <div onclick="manClickPit(10)" class="man-pit" id="manPit10">4</div>
+        <div onclick="manClickPit(9)" class="man-pit" id="manPit9">4</div>
+        <div onclick="manClickPit(8)" class="man-pit" id="manPit8">4</div>
+        <div onclick="manClickPit(7)" class="man-pit" id="manPit7">4</div>
+      </div>
+      <!-- Stores -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="man-store" id="manPit13" style="background:rgba(155,89,182,0.3);border-color:rgba(155,89,182,0.5)">0</div>
+        <div style="text-align:center;font-size:0.85em;opacity:0.6">↻</div>
+        <div class="man-store" id="manPit6" style="background:rgba(231,76,60,0.3);border-color:rgba(231,76,60,0.5)">0</div>
+      </div>
+      <!-- P1 side (bottom) -->
+      <div style="display:flex;gap:8px;justify-content:center">
+        <div onclick="manClickPit(0)" class="man-pit" id="manPit0">4</div>
+        <div onclick="manClickPit(1)" class="man-pit" id="manPit1">4</div>
+        <div onclick="manClickPit(2)" class="man-pit" id="manPit2">4</div>
+        <div onclick="manClickPit(3)" class="man-pit" id="manPit3">4</div>
+        <div onclick="manClickPit(4)" class="man-pit" id="manPit4">4</div>
+        <div onclick="manClickPit(5)" class="man-pit" id="manPit5">4</div>
+      </div>
+    </div>
+    <div class="celebration" id="manCelebration"></div>
+    <div class="buttons-group" style="margin-top:16px">
+      <button class="action-btn primary-btn" onclick="resetMancala()">🔄 Nová hra</button>
+    </div>
+  </div>
+
+  <!-- ===== COLOR SWITCH ===== -->
+  <div class="game-area" id="colorSwitch">
+    <div class="rules"><h3>🌈 Color Switch:</h3><ul>
+      <li>Tap/Space pre skok</li>
+      <li>Lopta mení farby — prejdi len cez rovnakú farbu!</li>
+      <li>Zle farba = koniec hry</li>
+      <li>Zbieraj body za prechod cez prekážky</li>
+      <li>Hra je endless — ako dlho vydržíš?</li>
+    </ul></div>
+    <div class="status" id="colsStatus">Tap na začatie!</div>
+    <div style="display:flex;justify-content:space-around;margin:12px 0;gap:12px;max-width:300px;margin-left:auto;margin-right:auto">
+      <div style="text-align:center">
+        <div style="font-size:0.75em;opacity:0.6">Skóre</div>
+        <div style="font-size:1.8em;font-weight:800;color:#667eea" id="colsScore">0</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:0.75em;opacity:0.6">Rekord</div>
+        <div style="font-size:1.8em;font-weight:800;color:#f5576c" id="colsBest">0</div>
+      </div>
+    </div>
+    <canvas id="colsCanvas" width="320" height="480" onclick="colsJump()" style="max-width:min(320px,90vw);width:100%;height:auto;aspect-ratio:320/480;border-radius:16px;cursor:pointer;background:#1a1a2e;border:2px solid rgba(102,126,234,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.3);touch-action:none"></canvas>
+    <div class="celebration" id="colsCelebration"></div>
+    <div class="buttons-group" style="margin-top:16px">
+      <button class="action-btn primary-btn" onclick="resetColorSwitch()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   <!-- ===== WAR (VOJNA) ===== -->
   <div class="game-area" id="cardWar">
     <div class="rules"><h3>🃏 Vojna:</h3><ul>
@@ -4496,7 +4638,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '18.1';
+const APP_VERSION = '19.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4524,7 +4666,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', colorSwitch:'Color Switch', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -5630,57 +5772,57 @@ function refreshRecordUI() {
 }
 // ===== ACHIEVEMENT SYSTEM =====
 const ACHIEVEMENTS = [
-  { id:'first',    icon:'🎯', name:'Prvy krok',       desc:'Odohraj prvu hru',          check:()=>gStats.total>=1 },
-  { id:'win10',    icon:'🏆', name:'Desiatka',        desc:'Vyhraj 10 hier',            check:()=>gStats.p1+gStats.p2>=10 },
-  { id:'win50',    icon:'🏆', name:'Polstovka',       desc:'Vyhraj 50 hier',            check:()=>gStats.p1+gStats.p2>=50 },
-  { id:'win100',   icon:'💎', name:'Stovka',          desc:'Vyhraj 100 hier',           check:()=>gStats.p1+gStats.p2>=100 },
-  { id:'games5',   icon:'🎮', name:'Prieskumnik',     desc:'Skus 5 roznych hier',       check:()=>Object.keys(gStats.perGame).length>=5 },
-  { id:'games15',  icon:'🌟', name:'Znalec',          desc:'Skus 15 roznych hier',      check:()=>Object.keys(gStats.perGame).length>=15 },
-  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=Object.keys(GAME_NAMES).length-1 },
-  { id:'draw5',    icon:'🤝', name:'Mierotvorec',     desc:'Dosiahni 5 remiz',          check:()=>gStats.draws>=5 },
-  { id:'streak3',  icon:'🔥', name:'Seria 3',         desc:'Vyhraj 3x za sebou',        check:()=>_getWinStreak()>=3 },
-  { id:'streak5',  icon:'🔥', name:'Seria 5',         desc:'Vyhraj 5x za sebou',        check:()=>_getWinStreak()>=5 },
-  { id:'streak10', icon:'💪', name:'Neporazitelny',   desc:'Vyhraj 10x za sebou',       check:()=>_getWinStreak()>=10 },
-  { id:'fav1',     icon:'⭐', name:'Favorit',         desc:'Pridaj favoritnu hru',      check:()=>_favorites.length>=1 },
-  { id:'total100', icon:'🎲', name:'Maraton',         desc:'Odohraj 100 hier celkovo',  check:()=>gStats.total>=100 },
-  { id:'pexeso5',  icon:'🧠', name:'Pexeso majster',  desc:'Vyhraj 5x Pexeso',         check:()=>(gStats.perGame.memory?.p1||0)+(gStats.perGame.memory?.p2||0)>=5 },
-  { id:'chess5',   icon:'♟️', name:'Sachista',         desc:'Vyhraj 5x Sach',           check:()=>(gStats.perGame.chess?.p1||0)+(gStats.perGame.chess?.p2||0)>=5 },
-  { id:'bs5',      icon:'🚢', name:'Admiral',         desc:'Vyhraj 5x Lodicky',        check:()=>(gStats.perGame.battleship?.p1||0)+(gStats.perGame.battleship?.p2||0)>=5 },
-  { id:'tour1',    icon:'🏆', name:'Prvy turnaj',     desc:'Dokonci prvy turnaj',      check:()=>(gStats.tournaments?.played||0)>=1 },
-  { id:'tour5',    icon:'🏆', name:'Turnajovy veteran', desc:'Dokonci 5 turnajov',     check:()=>(gStats.tournaments?.played||0)>=5 },
-  { id:'tourWin3', icon:'👑', name:'Turnajovy sampion', desc:'Vyhraj 3 turnaje',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=3 },
-  { id:'tourWin10',icon:'💎', name:'Turnajovy kral',  desc:'Vyhraj 10 turnajov',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=10 },
+  { id:'first',    icon:'🎯', name:'Prvy krok',       desc:'Odohraj prvu hru',          check:()=>gStats.total>=1, progress:()=>({cur:gStats.total,max:1}) },
+  { id:'win10',    icon:'🏆', name:'Desiatka',        desc:'Vyhraj 10 hier',            check:()=>gStats.p1+gStats.p2>=10, progress:()=>({cur:gStats.p1+gStats.p2,max:10}) },
+  { id:'win50',    icon:'🏆', name:'Polstovka',       desc:'Vyhraj 50 hier',            check:()=>gStats.p1+gStats.p2>=50, progress:()=>({cur:gStats.p1+gStats.p2,max:50}) },
+  { id:'win100',   icon:'💎', name:'Stovka',          desc:'Vyhraj 100 hier',           check:()=>gStats.p1+gStats.p2>=100, progress:()=>({cur:gStats.p1+gStats.p2,max:100}) },
+  { id:'games5',   icon:'🎮', name:'Prieskumnik',     desc:'Skus 5 roznych hier',       check:()=>Object.keys(gStats.perGame).length>=5, progress:()=>({cur:Object.keys(gStats.perGame).length,max:5}) },
+  { id:'games15',  icon:'🌟', name:'Znalec',          desc:'Skus 15 roznych hier',      check:()=>Object.keys(gStats.perGame).length>=15, progress:()=>({cur:Object.keys(gStats.perGame).length,max:15}) },
+  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=Object.keys(GAME_NAMES).length-1, progress:()=>({cur:Object.keys(gStats.perGame).length,max:Object.keys(GAME_NAMES).length-1}) },
+  { id:'draw5',    icon:'🤝', name:'Mierotvorec',     desc:'Dosiahni 5 remiz',          check:()=>gStats.draws>=5, progress:()=>({cur:gStats.draws,max:5}) },
+  { id:'streak3',  icon:'🔥', name:'Seria 3',         desc:'Vyhraj 3x za sebou',        check:()=>_getWinStreak()>=3, progress:()=>({cur:_getWinStreak(),max:3}) },
+  { id:'streak5',  icon:'🔥', name:'Seria 5',         desc:'Vyhraj 5x za sebou',        check:()=>_getWinStreak()>=5, progress:()=>({cur:_getWinStreak(),max:5}) },
+  { id:'streak10', icon:'💪', name:'Neporazitelny',   desc:'Vyhraj 10x za sebou',       check:()=>_getWinStreak()>=10, progress:()=>({cur:_getWinStreak(),max:10}) },
+  { id:'fav1',     icon:'⭐', name:'Favorit',         desc:'Pridaj favoritnu hru',      check:()=>_favorites.length>=1, progress:()=>({cur:_favorites.length,max:1}) },
+  { id:'total100', icon:'🎲', name:'Maraton',         desc:'Odohraj 100 hier celkovo',  check:()=>gStats.total>=100, progress:()=>({cur:gStats.total,max:100}) },
+  { id:'pexeso5',  icon:'🧠', name:'Pexeso majster',  desc:'Vyhraj 5x Pexeso',         check:()=>(gStats.perGame.memory?.p1||0)+(gStats.perGame.memory?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.memory?.p1||0)+(gStats.perGame.memory?.p2||0),max:5}) },
+  { id:'chess5',   icon:'♟️', name:'Sachista',         desc:'Vyhraj 5x Sach',           check:()=>(gStats.perGame.chess?.p1||0)+(gStats.perGame.chess?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.chess?.p1||0)+(gStats.perGame.chess?.p2||0),max:5}) },
+  { id:'bs5',      icon:'🚢', name:'Admiral',         desc:'Vyhraj 5x Lodicky',        check:()=>(gStats.perGame.battleship?.p1||0)+(gStats.perGame.battleship?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.battleship?.p1||0)+(gStats.perGame.battleship?.p2||0),max:5}) },
+  { id:'tour1',    icon:'🏆', name:'Prvy turnaj',     desc:'Dokonci prvy turnaj',      check:()=>(gStats.tournaments?.played||0)>=1, progress:()=>({cur:(gStats.tournaments?.played||0),max:1}) },
+  { id:'tour5',    icon:'🏆', name:'Turnajovy veteran', desc:'Dokonci 5 turnajov',     check:()=>(gStats.tournaments?.played||0)>=5, progress:()=>({cur:(gStats.tournaments?.played||0),max:5}) },
+  { id:'tourWin3', icon:'👑', name:'Turnajovy sampion', desc:'Vyhraj 3 turnaje',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=3, progress:()=>({cur:(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0),max:3}) },
+  { id:'tourWin10',icon:'💎', name:'Turnajovy kral',  desc:'Vyhraj 10 turnajov',       check:()=>(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0)>=10, progress:()=>({cur:(gStats.tournaments?.p1Wins||0)+(gStats.tournaments?.p2Wins||0),max:10}) },
   // Per-game achievements
-  { id:'tetris1k', icon:'🧱', name:'Tetris tisícka',   desc:'Dosiahni 1000 v Tetris',  check:()=>parseInt(localStorage.getItem('hry_tetris')||'0')>=1000 },
-  { id:'tetris5k', icon:'🧱', name:'Tetris mág',       desc:'Dosiahni 5000 v Tetris',  check:()=>parseInt(localStorage.getItem('hry_tetris')||'0')>=5000 },
-  { id:'snake20',  icon:'🐍', name:'Had',              desc:'Snake: 20+ bodov',         check:()=>parseInt(localStorage.getItem('hry_snakeBest')||'0')>=20 },
-  { id:'snake50',  icon:'🐍', name:'Anakondaluk',       desc:'Snake: 50+ bodov',         check:()=>parseInt(localStorage.getItem('hry_snakeBest')||'0')>=50 },
-  { id:'g2048',    icon:'🔢', name:'2048!',            desc:'Dosiahni dlaždicu 2048',   check:()=>parseInt(localStorage.getItem('hry_2048_best')||'0')>=2048 },
-  { id:'g4096',    icon:'🔢', name:'4096!',            desc:'Dosiahni dlaždicu 4096',   check:()=>parseInt(localStorage.getItem('hry_2048_best')||'0')>=4096 },
-  { id:'flap10',   icon:'🐤', name:'Vtáčik',           desc:'Flappy: preleť 10 rúr',    check:()=>parseInt(localStorage.getItem('hry_flappy_best')||'0')>=10 },
-  { id:'flap25',   icon:'🐤', name:'Letec',            desc:'Flappy: preleť 25 rúr',    check:()=>parseInt(localStorage.getItem('hry_flappy_best')||'0')>=25 },
-  { id:'grav100',  icon:'🌀', name:'Graviták',         desc:'Gravity Run: 100+ bodov',  check:()=>parseInt(localStorage.getItem('hry_grav_best')||'0')>=100 },
-  { id:'dood500',  icon:'🤸', name:'Skáčik',           desc:'Doodle Jump: 500+ bodov',  check:()=>parseInt(localStorage.getItem('hry_doodleBest')||'0')>=500 },
-  { id:'c4_10',    icon:'🔴', name:'Štvorkar',         desc:'Vyhraj 10x Connect 4',     check:()=>(gStats.perGame.connect4?.p1||0)+(gStats.perGame.connect4?.p2||0)>=10 },
-  { id:'rev10',    icon:'🔄', name:'Reversi stratég',  desc:'Vyhraj 10x Reversi',       check:()=>(gStats.perGame.reversi?.p1||0)+(gStats.perGame.reversi?.p2||0)>=10 },
-  { id:'dk10',     icon:'⬤',  name:'Dámista',          desc:'Vyhraj 10x Dámu',          check:()=>(gStats.perGame.checkers?.p1||0)+(gStats.perGame.checkers?.p2||0)>=10 },
-  { id:'ludo10',   icon:'🎲', name:'Človeče expert',   desc:'Vyhraj 10x Človeče',       check:()=>(gStats.perGame.ludo?.p1||0)+(gStats.perGame.ludo?.p2||0)>=10 },
-  { id:'rps20',    icon:'🪨', name:'KPN šampión',      desc:'Vyhraj 20x Kameň Papier',  check:()=>(gStats.perGame.rockPaper?.p1||0)+(gStats.perGame.rockPaper?.p2||0)>=20 },
-  { id:'wdl10',    icon:'🟩', name:'Slovíčkár',        desc:'Vyhraj 10x Wordle',        check:()=>(gStats.perGame.wordle?.p1||0)+(gStats.perGame.wordle?.p2||0)>=10 },
-  { id:'reac200',  icon:'⚡', name:'Blesk',            desc:'Reakcia pod 200ms',         check:()=>{const r=gStats.records;return(r.reacP1!==null&&r.reacP1<200)||(r.reacP2!==null&&r.reacP2<200);} },
-  { id:'daily3',   icon:'🔥', name:'Denný streak 3',   desc:'3-dňový denný streak',     check:()=>_getDailyStreak()>=3 },
-  { id:'daily7',   icon:'🔥', name:'Týždňový streak',  desc:'7-dňový denný streak',     check:()=>_getDailyStreak()>=7 },
-  { id:'daily30',  icon:'🌟', name:'Mesačný streak',   desc:'30-dňový denný streak',    check:()=>_getDailyStreak()>=30 },
-  { id:'ms5',      icon:'💣', name:'Mínolovník',       desc:'Vyhraj 5x Minesweeper',    check:()=>(gStats.perGame.minesweeper?.p1||0)>=5 },
-  { id:'tnk10',    icon:'💥', name:'Tankový veliteľ',  desc:'Vyhraj 10x Tank Battle',   check:()=>(gStats.perGame.tanks?.p1||0)+(gStats.perGame.tanks?.p2||0)>=10 },
-  { id:'brk10',    icon:'🏓', name:'Búrač',            desc:'Vyhraj 10x Breakout',      check:()=>(gStats.perGame.breakout?.p1||0)+(gStats.perGame.breakout?.p2||0)>=10 },
+  { id:'tetris1k', icon:'🧱', name:'Tetris tisícka',   desc:'Dosiahni 1000 v Tetris',  check:()=>parseInt(localStorage.getItem('hry_tetris')||'0')>=1000, progress:()=>({cur:parseInt(localStorage.getItem('hry_tetris')||'0'),max:1000}) },
+  { id:'tetris5k', icon:'🧱', name:'Tetris mág',       desc:'Dosiahni 5000 v Tetris',  check:()=>parseInt(localStorage.getItem('hry_tetris')||'0')>=5000, progress:()=>({cur:parseInt(localStorage.getItem('hry_tetris')||'0'),max:5000}) },
+  { id:'snake20',  icon:'🐍', name:'Had',              desc:'Snake: 20+ bodov',         check:()=>parseInt(localStorage.getItem('hry_snakeBest')||'0')>=20, progress:()=>({cur:parseInt(localStorage.getItem('hry_snakeBest')||'0'),max:20}) },
+  { id:'snake50',  icon:'🐍', name:'Anakondaluk',       desc:'Snake: 50+ bodov',         check:()=>parseInt(localStorage.getItem('hry_snakeBest')||'0')>=50, progress:()=>({cur:parseInt(localStorage.getItem('hry_snakeBest')||'0'),max:50}) },
+  { id:'g2048',    icon:'🔢', name:'2048!',            desc:'Dosiahni dlaždicu 2048',   check:()=>parseInt(localStorage.getItem('hry_2048_best')||'0')>=2048, progress:()=>({cur:parseInt(localStorage.getItem('hry_2048_best')||'0'),max:2048}) },
+  { id:'g4096',    icon:'🔢', name:'4096!',            desc:'Dosiahni dlaždicu 4096',   check:()=>parseInt(localStorage.getItem('hry_2048_best')||'0')>=4096, progress:()=>({cur:parseInt(localStorage.getItem('hry_2048_best')||'0'),max:4096}) },
+  { id:'flap10',   icon:'🐤', name:'Vtáčik',           desc:'Flappy: preleť 10 rúr',    check:()=>parseInt(localStorage.getItem('hry_flappy_best')||'0')>=10, progress:()=>({cur:parseInt(localStorage.getItem('hry_flappy_best')||'0'),max:10}) },
+  { id:'flap25',   icon:'🐤', name:'Letec',            desc:'Flappy: preleť 25 rúr',    check:()=>parseInt(localStorage.getItem('hry_flappy_best')||'0')>=25, progress:()=>({cur:parseInt(localStorage.getItem('hry_flappy_best')||'0'),max:25}) },
+  { id:'grav100',  icon:'🌀', name:'Graviták',         desc:'Gravity Run: 100+ bodov',  check:()=>parseInt(localStorage.getItem('hry_grav_best')||'0')>=100, progress:()=>({cur:parseInt(localStorage.getItem('hry_grav_best')||'0'),max:100}) },
+  { id:'dood500',  icon:'🤸', name:'Skáčik',           desc:'Doodle Jump: 500+ bodov',  check:()=>parseInt(localStorage.getItem('hry_doodleBest')||'0')>=500, progress:()=>({cur:parseInt(localStorage.getItem('hry_doodleBest')||'0'),max:500}) },
+  { id:'c4_10',    icon:'🔴', name:'Štvorkar',         desc:'Vyhraj 10x Connect 4',     check:()=>(gStats.perGame.connect4?.p1||0)+(gStats.perGame.connect4?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.connect4?.p1||0)+(gStats.perGame.connect4?.p2||0),max:10}) },
+  { id:'rev10',    icon:'🔄', name:'Reversi stratég',  desc:'Vyhraj 10x Reversi',       check:()=>(gStats.perGame.reversi?.p1||0)+(gStats.perGame.reversi?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.reversi?.p1||0)+(gStats.perGame.reversi?.p2||0),max:10}) },
+  { id:'dk10',     icon:'⬤',  name:'Dámista',          desc:'Vyhraj 10x Dámu',          check:()=>(gStats.perGame.checkers?.p1||0)+(gStats.perGame.checkers?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.checkers?.p1||0)+(gStats.perGame.checkers?.p2||0),max:10}) },
+  { id:'ludo10',   icon:'🎲', name:'Človeče expert',   desc:'Vyhraj 10x Človeče',       check:()=>(gStats.perGame.ludo?.p1||0)+(gStats.perGame.ludo?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.ludo?.p1||0)+(gStats.perGame.ludo?.p2||0),max:10}) },
+  { id:'rps20',    icon:'🪨', name:'KPN šampión',      desc:'Vyhraj 20x Kameň Papier',  check:()=>(gStats.perGame.rockPaper?.p1||0)+(gStats.perGame.rockPaper?.p2||0)>=20, progress:()=>({cur:(gStats.perGame.rockPaper?.p1||0)+(gStats.perGame.rockPaper?.p2||0),max:20}) },
+  { id:'wdl10',    icon:'🟩', name:'Slovíčkár',        desc:'Vyhraj 10x Wordle',        check:()=>(gStats.perGame.wordle?.p1||0)+(gStats.perGame.wordle?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.wordle?.p1||0)+(gStats.perGame.wordle?.p2||0),max:10}) },
+  { id:'reac200',  icon:'⚡', name:'Blesk',            desc:'Reakcia pod 200ms',         check:()=>{const r=gStats.records;return(r.reacP1!==null&&r.reacP1<200)||(r.reacP2!==null&&r.reacP2<200);}, progress:()=>{const r=gStats.records;const best=r.reacP1!==null&&r.reacP2!==null?Math.min(r.reacP1,r.reacP2):(r.reacP1||r.reacP2||999);return{cur:Math.max(0,200-best),max:200}} },
+  { id:'daily3',   icon:'🔥', name:'Denný streak 3',   desc:'3-dňový denný streak',     check:()=>_getDailyStreak()>=3, progress:()=>({cur:_getDailyStreak(),max:3}) },
+  { id:'daily7',   icon:'🔥', name:'Týždňový streak',  desc:'7-dňový denný streak',     check:()=>_getDailyStreak()>=7, progress:()=>({cur:_getDailyStreak(),max:7}) },
+  { id:'daily30',  icon:'🌟', name:'Mesačný streak',   desc:'30-dňový denný streak',    check:()=>_getDailyStreak()>=30, progress:()=>({cur:_getDailyStreak(),max:30}) },
+  { id:'ms5',      icon:'💣', name:'Mínolovník',       desc:'Vyhraj 5x Minesweeper',    check:()=>(gStats.perGame.minesweeper?.p1||0)>=5, progress:()=>({cur:(gStats.perGame.minesweeper?.p1||0),max:5}) },
+  { id:'tnk10',    icon:'💥', name:'Tankový veliteľ',  desc:'Vyhraj 10x Tank Battle',   check:()=>(gStats.perGame.tanks?.p1||0)+(gStats.perGame.tanks?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.tanks?.p1||0)+(gStats.perGame.tanks?.p2||0),max:10}) },
+  { id:'brk10',    icon:'🏓', name:'Búrač',            desc:'Vyhraj 10x Breakout',      check:()=>(gStats.perGame.breakout?.p1||0)+(gStats.perGame.breakout?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.breakout?.p1||0)+(gStats.perGame.breakout?.p2||0),max:10}) },
   // SEASONAL ACHIEVEMENTS
-  { id:'xmas',     icon:'🎄', name:'Vianočný hráč',    desc:'Hraj počas Vianoc (dec)',   check:()=>_isSeason('xmas') && gStats.total>=1 },
-  { id:'xmas10',   icon:'🎅', name:'Santa Claus',      desc:'10 hier počas Vianoc',      check:()=>_isSeason('xmas') && _getSeasonalPlays('xmas')>=10 },
-  { id:'easter',   icon:'🐰', name:'Veľkonočný zajko', desc:'Hraj na Veľkú noc (apr)',   check:()=>_isSeason('easter') && gStats.total>=1 },
-  { id:'easter10', icon:'🥚', name:'Zberač vajíčok',   desc:'10 hier počas Veľkej noci', check:()=>_isSeason('easter') && _getSeasonalPlays('easter')>=10 },
-  { id:'summer',   icon:'☀️', name:'Letný hráč',       desc:'Hraj v lete (jún-aug)',     check:()=>_isSeason('summer') && gStats.total>=1 },
-  { id:'halloween',icon:'🎃', name:'Halloween duch',   desc:'Hraj na Halloween (okt)',   check:()=>_isSeason('halloween') && gStats.total>=1 },
+  { id:'xmas',     icon:'🎄', name:'Vianočný hráč',    desc:'Hraj počas Vianoc (dec)',   check:()=>_isSeason('xmas') && gStats.total>=1, progress:()=>({cur:_isSeason('xmas')?Math.min(gStats.total,1):0,max:1}) },
+  { id:'xmas10',   icon:'🎅', name:'Santa Claus',      desc:'10 hier počas Vianoc',      check:()=>_isSeason('xmas') && _getSeasonalPlays('xmas')>=10, progress:()=>({cur:_getSeasonalPlays('xmas'),max:10}) },
+  { id:'easter',   icon:'🐰', name:'Veľkonočný zajko', desc:'Hraj na Veľkú noc (apr)',   check:()=>_isSeason('easter') && gStats.total>=1, progress:()=>({cur:_isSeason('easter')?Math.min(gStats.total,1):0,max:1}) },
+  { id:'easter10', icon:'🥚', name:'Zberač vajíčok',   desc:'10 hier počas Veľkej noci', check:()=>_isSeason('easter') && _getSeasonalPlays('easter')>=10, progress:()=>({cur:_getSeasonalPlays('easter'),max:10}) },
+  { id:'summer',   icon:'☀️', name:'Letný hráč',       desc:'Hraj v lete (jún-aug)',     check:()=>_isSeason('summer') && gStats.total>=1, progress:()=>({cur:_isSeason('summer')?Math.min(gStats.total,1):0,max:1}) },
+  { id:'halloween',icon:'🎃', name:'Halloween duch',   desc:'Hraj na Halloween (okt)',   check:()=>_isSeason('halloween') && gStats.total>=1, progress:()=>({cur:_isSeason('halloween')?Math.min(gStats.total,1):0,max:1}) },
 ];
 
 let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
@@ -5749,10 +5891,30 @@ function renderAchievements() {
   if(!el) return;
   el.innerHTML = ACHIEVEMENTS.map(a => {
     const unlocked = _unlockedAch.includes(a.id);
+    let progressHTML = '';
+
+    if(!unlocked && a.progress) {
+      try {
+        const p = a.progress();
+        const cur = Math.min(p.cur, p.max); // cap at max
+        const pct = p.max > 0 ? Math.floor((cur / p.max) * 100) : 0;
+        progressHTML = `
+          <div class="ach-progress-bar">
+            <div class="ach-progress-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="ach-progress-text">${cur}/${p.max} (${pct}%)</div>
+        `;
+      } catch(e) {
+        // If progress fails, just don't show it
+        progressHTML = '';
+      }
+    }
+
     return `<div class="achievement${unlocked?' unlocked':''}">
       <div class="achievement-icon">${unlocked?a.icon:'🔒'}</div>
       <div class="achievement-name">${a.name}</div>
       <div class="achievement-desc">${a.desc}</div>
+      ${progressHTML}
     </div>`;
   }).join('');
 }
@@ -19086,6 +19248,539 @@ window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 updateOnlineStatus();
 
+// =============================================================================
+// SEKCIA 46: COLOR SWITCH (ENDLESS RUNNER)
+// =============================================================================
+const COLS = {
+  canvas: null, ctx: null,
+  W: 320, H: 480,
+  ball: {y:0, vy:0, r:12, color:0}, // color: 0=red, 1=yellow, 2=blue, 3=purple
+  obstacles: [], // {y, type, rotation}
+  score: 0, best: 0,
+  running: false, gameOver: false,
+  raf: null,
+  colors: ['#e74c3c','#f1c40f','#3498db','#9b59b6'],
+  colorNames: ['🔴','🟡','🔵','🟣'],
+  gravity: 0.6,
+  jumpPower: -12,
+  scrollSpeed: 2.5,
+  nextObstacleY: 150
+};
+
+function resetColorSwitch() {
+  if(COLS.raf) { cancelAnimationFrame(COLS.raf); COLS.raf=null; }
+  COLS.ball = {y: COLS.H * 0.7, vy: 0, r: 12, color: Math.floor(Math.random()*4)};
+  COLS.obstacles = [];
+  COLS.score = 0;
+  COLS.running = false;
+  COLS.gameOver = false;
+  COLS.scrollSpeed = 2.5;
+  COLS.nextObstacleY = 150;
+
+  // Load best score
+  try {
+    COLS.best = parseInt(localStorage.getItem('hry_colorswitch_best')||'0');
+  } catch(e) { COLS.best = 0; }
+
+  $('colsScore').textContent = '0';
+  $('colsBest').textContent = COLS.best;
+  $('colsStatus').textContent = 'Tap na začatie!';
+  $('colsCelebration').textContent = '';
+
+  colsRender();
+}
+
+function colsStart() {
+  if(COLS.running || COLS.gameOver) return;
+  COLS.running = true;
+  $('colsStatus').textContent = 'Tap na skok!';
+  colsLoop();
+}
+
+function colsJump() {
+  if(!COLS.running) { colsStart(); return; }
+  if(COLS.gameOver) { resetColorSwitch(); return; }
+  COLS.ball.vy = COLS.jumpPower;
+  playSound('click');
+  vibrateIfEnabled(20);
+}
+
+function colsLoop() {
+  if(!COLS.running || COLS.gameOver) return;
+
+  // Physics
+  COLS.ball.vy += COLS.gravity;
+  COLS.ball.y += COLS.ball.vy;
+
+  // Boundaries (ball can't leave screen vertically for too long)
+  if(COLS.ball.y < -50) COLS.ball.y = -50;
+  if(COLS.ball.y > COLS.H + 50) colsGameOver();
+
+  // Scroll obstacles
+  for(let obs of COLS.obstacles) {
+    obs.y += COLS.scrollSpeed;
+    obs.rotation += 0.01;
+  }
+
+  // Remove off-screen obstacles
+  COLS.obstacles = COLS.obstacles.filter(o => o.y < COLS.H + 100);
+
+  // Spawn new obstacles
+  if(COLS.obstacles.length === 0 || COLS.obstacles[COLS.obstacles.length-1].y > COLS.nextObstacleY) {
+    colsSpawnObstacle();
+    COLS.nextObstacleY = 120 + Math.random() * 80; // 120-200px gap
+  }
+
+  // Collision detection
+  for(let obs of COLS.obstacles) {
+    if(colsCheckCollision(obs)) {
+      colsGameOver();
+      return;
+    }
+
+    // Score when passing obstacle
+    if(!obs.passed && COLS.ball.y + COLS.ball.r < obs.y - 60) {
+      obs.passed = true;
+      COLS.score++;
+      $('colsScore').textContent = COLS.score;
+      playSound('correct');
+
+      // Speed up slightly
+      COLS.scrollSpeed = Math.min(4.5, 2.5 + COLS.score * 0.05);
+
+      // Change ball color randomly
+      COLS.ball.color = Math.floor(Math.random() * 4);
+    }
+  }
+
+  colsRender();
+  COLS.raf = requestAnimationFrame(colsLoop);
+}
+
+function colsSpawnObstacle() {
+  // Types: 0=rotating square, 1=rotating cross, 2=horizontal bars
+  const type = Math.floor(Math.random() * 3);
+  COLS.obstacles.push({
+    y: -80,
+    type: type,
+    rotation: Math.random() * Math.PI * 2,
+    passed: false,
+    size: 80
+  });
+}
+
+function colsCheckCollision(obs) {
+  const dx = COLS.W/2 - COLS.W/2; // ball is always centered horizontally
+  const dy = COLS.ball.y - obs.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  // Simple radius check with obstacle center
+  if(dist < 60) {
+    // Check if ball color matches obstacle segment
+    const angle = Math.atan2(dy, dx) + obs.rotation;
+    const segment = Math.floor(((angle + Math.PI) / (Math.PI*2)) * 4) % 4;
+
+    // If colors don't match = collision
+    return segment !== COLS.ball.color;
+  }
+
+  return false;
+}
+
+function colsGameOver() {
+  COLS.gameOver = true;
+  COLS.running = false;
+  if(COLS.raf) { cancelAnimationFrame(COLS.raf); COLS.raf=null; }
+
+  // Update best score
+  if(COLS.score > COLS.best) {
+    COLS.best = COLS.score;
+    try {
+      localStorage.setItem('hry_colorswitch_best', COLS.best);
+    } catch(e) {}
+    $('colsBest').textContent = COLS.best;
+    $('colsStatus').textContent = '🎉 Nový rekord: '+COLS.score+'!';
+    $('colsCelebration').textContent = '🎉';
+    launchConfetti();
+  } else {
+    $('colsStatus').textContent = 'Game Over! Skóre: '+COLS.score;
+    $('colsCelebration').textContent = '💥';
+  }
+
+  playSound('wrong');
+  vibrateIfEnabled(200);
+  setTimeout(()=>{ $('colsCelebration').textContent=''; }, 2000);
+}
+
+function colsRender() {
+  const c = COLS.canvas || $('colsCanvas');
+  if(!c) return;
+  COLS.canvas = c;
+  const ctx = c.getContext('2d');
+  COLS.ctx = ctx;
+
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, 0, COLS.H);
+  grad.addColorStop(0, document.body.classList.contains('light') ? '#e8f4f8' : '#1a1a2e');
+  grad.addColorStop(1, document.body.classList.contains('light') ? '#d6eaf8' : '#0f3460');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, COLS.W, COLS.H);
+
+  // Obstacles
+  for(let obs of COLS.obstacles) {
+    colsDrawObstacle(ctx, obs);
+  }
+
+  // Ball
+  ctx.save();
+  ctx.translate(COLS.W/2, COLS.ball.y);
+  ctx.beginPath();
+  ctx.arc(0, 0, COLS.ball.r, 0, Math.PI*2);
+  ctx.fillStyle = COLS.colors[COLS.ball.color];
+  ctx.fill();
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Ball color indicator
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(COLS.colorNames[COLS.ball.color], 0, 0);
+  ctx.restore();
+}
+
+function colsDrawObstacle(ctx, obs) {
+  ctx.save();
+  ctx.translate(COLS.W/2, obs.y);
+  ctx.rotate(obs.rotation);
+
+  const size = obs.size;
+  const thickness = 12;
+
+  if(obs.type === 0) {
+    // Rotating square with 4 colored segments
+    for(let i=0; i<4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, size/2, i*Math.PI/2, (i+1)*Math.PI/2);
+      ctx.closePath();
+      ctx.fillStyle = COLS.colors[i];
+      ctx.fill();
+      ctx.strokeStyle = document.body.classList.contains('light') ? '#333' : '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  } else if(obs.type === 1) {
+    // Rotating cross
+    for(let i=0; i<4; i++) {
+      ctx.save();
+      ctx.rotate(i*Math.PI/2);
+      ctx.fillStyle = COLS.colors[i];
+      ctx.fillRect(-thickness/2, -size/2, thickness, size/2);
+      ctx.strokeStyle = document.body.classList.contains('light') ? '#333' : '#fff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-thickness/2, -size/2, thickness, size/2);
+      ctx.restore();
+    }
+  } else {
+    // Horizontal bars
+    for(let i=0; i<4; i++) {
+      ctx.fillStyle = COLS.colors[i];
+      const barY = -40 + i * 20;
+      ctx.fillRect(-size/2, barY, size, 15);
+      ctx.strokeStyle = document.body.classList.contains('light') ? '#333' : '#fff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-size/2, barY, size, 15);
+    }
+  }
+
+  ctx.restore();
+}
+
+// Touch/click controls
+document.addEventListener('keydown', e => {
+  if(currentGameId !== 'colorSwitch') return;
+  if(e.key === ' ' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    colsJump();
+  }
+});
+
+resetColorSwitch();
+
+// =============================================================================
+// SEKCIA 47: MANCALA (KALAHA)
+// =============================================================================
+const MAN = {
+  pits: [4,4,4,4,4,4,0,4,4,4,4,4,4,0], // 0-5=P1 pits, 6=P1 store, 7-12=P2 pits, 13=P2 store
+  turn: 1, // 1=P1, 2=P2
+  s1: 0, s2: 0,
+  over: false,
+  diff: 'medium',
+  _aiTimeout: null,
+  animating: false
+};
+
+function setManDiff(d,btn){
+  MAN.diff=d;
+  saveDiff('mancala',d);
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function resetMancala() {
+  if(MAN._aiTimeout) { clearTimeout(MAN._aiTimeout); MAN._aiTimeout=null; }
+  MAN.pits = [4,4,4,4,4,4,0,4,4,4,4,4,4,0];
+  MAN.turn = 1;
+  MAN.over = false;
+  MAN.animating = false;
+  $('manP1Name').textContent = getP1Name('mancala');
+  $('manP2Name').textContent = getP2Name('mancala');
+  $('manP1Score').textContent = MAN.s1;
+  $('manP2Score').textContent = MAN.s2;
+  $('manStatus').textContent = getP1Name('mancala') + ' je na ťahu';
+  $('manCelebration').textContent = '';
+  activeTurn('manP1Card','manP2Card',MAN.turn);
+
+  // AI difficulty
+  const savedDiff = loadDiff('mancala');
+  if(savedDiff) {
+    MAN.diff = savedDiff;
+    const btns = document.querySelectorAll('#manDiffWrap .difficulty-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    btns.forEach(b => { if(b.textContent.includes(savedDiff==='easy'?'Ľahká':savedDiff==='medium'?'Stredná':'Ťažká')) b.classList.add('active'); });
+  }
+
+  // Show/hide AI difficulty and P2 card
+  const diffWrap = $('manDiffWrap');
+  const p2Card = $('manP2Card');
+  if(welcomeGameMode === 'ai') {
+    if(diffWrap) diffWrap.style.display = 'flex';
+    if(p2Card) {
+      p2Card.style.display = '';
+      $('manP2Name').classList.add('player-name-ai');
+      $('manP2Name').textContent = 'Počítač';
+    }
+  } else {
+    if(diffWrap) diffWrap.style.display = 'none';
+    if(p2Card) {
+      p2Card.style.display = '';
+      $('manP2Name').classList.remove('player-name-ai');
+      $('manP2Name').textContent = getP2Name('mancala');
+    }
+  }
+
+  manRender();
+}
+
+function manClickPit(idx) {
+  if(MAN.over || MAN.animating) return;
+
+  // Check if it's valid move
+  if(MAN.turn === 1) {
+    if(idx < 0 || idx > 5) return; // P1 can only click 0-5
+  } else {
+    if(idx < 7 || idx > 12) return; // P2 can only click 7-12
+  }
+
+  // Check if AI mode and wrong player
+  if(welcomeGameMode === 'ai' && MAN.turn === 2) return;
+
+  // Check if pit is empty
+  if(MAN.pits[idx] === 0) {
+    playSound('wrong');
+    return;
+  }
+
+  manMakeMove(idx);
+}
+
+function manMakeMove(idx) {
+  MAN.animating = true;
+  let stones = MAN.pits[idx];
+  MAN.pits[idx] = 0;
+
+  let currentIdx = idx;
+  const isP1 = MAN.turn === 1;
+  const opponentStore = isP1 ? 13 : 6;
+
+  // Distribute stones
+  while(stones > 0) {
+    currentIdx = (currentIdx + 1) % 14;
+
+    // Skip opponent's store
+    if(currentIdx === opponentStore) continue;
+
+    MAN.pits[currentIdx]++;
+    stones--;
+  }
+
+  playSound('move');
+  manRender();
+
+  // Check special rules
+  let extraTurn = false;
+
+  // Rule 1: Last stone in own store = extra turn
+  const ownStore = isP1 ? 6 : 13;
+  if(currentIdx === ownStore) {
+    extraTurn = true;
+  }
+
+  // Rule 2: Last stone in empty pit on own side = capture
+  if(!extraTurn) {
+    const onOwnSide = isP1 ? (currentIdx >= 0 && currentIdx <= 5) : (currentIdx >= 7 && currentIdx <= 12);
+    if(onOwnSide && MAN.pits[currentIdx] === 1) {
+      const oppositeIdx = 12 - currentIdx;
+      const captured = MAN.pits[oppositeIdx];
+      if(captured > 0) {
+        MAN.pits[ownStore] += captured + 1; // Own stone + captured
+        MAN.pits[currentIdx] = 0;
+        MAN.pits[oppositeIdx] = 0;
+        playSound('correct');
+      }
+    }
+  }
+
+  // Check if game over
+  const p1Empty = MAN.pits.slice(0,6).every(p => p === 0);
+  const p2Empty = MAN.pits.slice(7,13).every(p => p === 0);
+
+  if(p1Empty || p2Empty) {
+    // Collect remaining stones
+    const p1Remaining = MAN.pits.slice(0,6).reduce((a,b)=>a+b,0);
+    const p2Remaining = MAN.pits.slice(7,13).reduce((a,b)=>a+b,0);
+    MAN.pits[6] += p1Remaining;
+    MAN.pits[13] += p2Remaining;
+    for(let i=0; i<6; i++) MAN.pits[i] = 0;
+    for(let i=7; i<13; i++) MAN.pits[i] = 0;
+
+    manGameOver();
+    return;
+  }
+
+  // Switch turn or extra turn
+  if(extraTurn) {
+    $('manStatus').textContent = (isP1 ? getP1Name('mancala') : getP2Name('mancala')) + ' hrá znova! 🎉';
+  } else {
+    MAN.turn = MAN.turn === 1 ? 2 : 1;
+    $('manStatus').textContent = (MAN.turn === 1 ? getP1Name('mancala') : getP2Name('mancala')) + ' je na ťahu';
+    activeTurn('manP1Card','manP2Card',MAN.turn);
+  }
+
+  MAN.animating = false;
+  manRender();
+
+  // AI move
+  if(welcomeGameMode === 'ai' && MAN.turn === 2 && !MAN.over) {
+    MAN._aiTimeout = setTimeout(() => {
+      if(MAN.over) return;
+      const move = manAI();
+      if(move !== -1) manMakeMove(move);
+    }, 600);
+  }
+}
+
+function manAI() {
+  // Find valid moves for P2 (indices 7-12)
+  const validMoves = [];
+  for(let i=7; i<=12; i++) {
+    if(MAN.pits[i] > 0) validMoves.push(i);
+  }
+  if(validMoves.length === 0) return -1;
+
+  if(MAN.diff === 'easy') {
+    // Random move
+    return validMoves[Math.floor(Math.random() * validMoves.length)];
+  } else if(MAN.diff === 'medium') {
+    // Prefer moves that land in store (extra turn)
+    for(let idx of validMoves) {
+      const stones = MAN.pits[idx];
+      const landing = (idx + stones) % 14;
+      if(landing === 13) return idx; // Lands in P2 store
+    }
+    // Otherwise random
+    return validMoves[Math.floor(Math.random() * validMoves.length)];
+  } else {
+    // Hard: minimax-like evaluation
+    let bestMove = -1;
+    let bestScore = -Infinity;
+
+    for(let idx of validMoves) {
+      const score = manEvaluateMove(idx);
+      if(score > bestScore) {
+        bestScore = score;
+        bestMove = idx;
+      }
+    }
+    return bestMove;
+  }
+}
+
+function manEvaluateMove(idx) {
+  // Simple heuristic: difference in stores + extra turn bonus + capture bonus
+  const stones = MAN.pits[idx];
+  const landing = (idx + stones) % 14;
+
+  let score = 0;
+
+  // Extra turn bonus
+  if(landing === 13) score += 10;
+
+  // Capture bonus
+  if(landing >= 7 && landing <= 12 && MAN.pits[landing] === 0) {
+    const oppositeIdx = 12 - landing;
+    score += MAN.pits[oppositeIdx] * 2;
+  }
+
+  // Maximize own stones
+  score += stones;
+
+  return score;
+}
+
+function manGameOver() {
+  MAN.over = true;
+  const p1Score = MAN.pits[6];
+  const p2Score = MAN.pits[13];
+
+  let winner = 0;
+  if(p1Score > p2Score) winner = 1;
+  else if(p2Score > p1Score) winner = 2;
+
+  if(winner === 1) {
+    MAN.s1++;
+    $('manP1Score').textContent = MAN.s1;
+  } else if(winner === 2) {
+    MAN.s2++;
+    $('manP2Score').textContent = MAN.s2;
+  }
+
+  addWin(winner, 'mancala');
+
+  const msg = winner === 0
+    ? '🤝 Remíza! ' + p1Score + ' : ' + p2Score
+    : (winner === 1 ? getP1Name('mancala') : getP2Name('mancala')) + ' vyhral! ' + p1Score + ' : ' + p2Score;
+
+  $('manStatus').textContent = msg;
+  $('manCelebration').textContent = winner === 0 ? '🤝' : winner === 1 ? '🎉' : '🎊';
+  playSound(winner === 0 ? 'draw' : 'win');
+  if(winner !== 0) launchConfetti();
+  setTimeout(() => { $('manCelebration').textContent = ''; }, 3000);
+}
+
+function manRender() {
+  // Update pit displays
+  for(let i=0; i<14; i++) {
+    const el = $('manPit'+i);
+    if(el) el.textContent = MAN.pits[i];
+  }
+}
+
+resetMancala();
+
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
@@ -19149,6 +19844,8 @@ const MOBILE_GAMES = [
   { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
   { id:'nonogram',     label:'Nonogram',       icon:'🖼️', grad:'rgba(156,39,176,0.3),rgba(103,58,183,0.3)', mode:'solo', cat:'logic' },
   { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
+  { id:'colorSwitch',  label:'Color Switch',   icon:'🌈', grad:'rgba(231,76,60,0.3),rgba(155,89,182,0.3)', mode:'solo', cat:'arcade' },
+  { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -19235,6 +19932,10 @@ function stopAllGames(){
   if(typeof SDK!=='undefined'&&SDK.timer){clearInterval(SDK.timer);SDK.timer=null;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
+  // Color Switch
+  if(typeof COLS!=='undefined'){if(COLS.raf){cancelAnimationFrame(COLS.raf);COLS.raf=null;}COLS.running=false;COLS.gameOver=true;}
+  // Mancala
+  if(typeof MAN!=='undefined'){if(MAN._aiTimeout){clearTimeout(MAN._aiTimeout);MAN._aiTimeout=null;}MAN.over=true;}
   // QR scanner
   if(typeof mpStopScan==='function') mpStopScan();
 }
