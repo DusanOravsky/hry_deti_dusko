@@ -19370,18 +19370,38 @@ function colsSpawnObstacle() {
 }
 
 function colsCheckCollision(obs) {
-  const dx = COLS.W/2 - COLS.W/2; // ball is always centered horizontally
+  const dx = 0; // ball and obstacle both centered at COLS.W/2
   const dy = COLS.ball.y - obs.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
 
-  // Simple radius check with obstacle center
-  if(dist < 60) {
-    // Check if ball color matches obstacle segment
-    const angle = Math.atan2(dy, dx) + obs.rotation;
-    const segment = Math.floor(((angle + Math.PI) / (Math.PI*2)) * 4) % 4;
+  if(obs.type === 2) {
+    // Horizontal bars - check Y position within bars
+    if(Math.abs(dx) < obs.size/2 + COLS.ball.r && dist < 50) {
+      const relY = dy; // relative Y to obstacle center
+      const barIndex = Math.floor((relY + 40) / 20);
+      if(barIndex >= 0 && barIndex < 4) {
+        return barIndex !== COLS.ball.color;
+      }
+    }
+  } else {
+    // Rotating obstacles (pie chart or cross)
+    if(dist < 45) {
+      // Angle from obstacle center to ball
+      let angle = Math.atan2(dy, dx);
 
-    // If colors don't match = collision
-    return segment !== COLS.ball.color;
+      // Subtract rotation to get angle in obstacle's local coordinate system
+      angle = angle - obs.rotation;
+
+      // Normalize to 0-2PI range
+      while(angle < 0) angle += Math.PI * 2;
+      while(angle >= Math.PI * 2) angle -= Math.PI * 2;
+
+      // Determine which segment (0-3)
+      const segment = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
+
+      // Collision if colors don't match
+      return segment !== COLS.ball.color;
+    }
   }
 
   return false;
