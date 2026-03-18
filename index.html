@@ -19386,7 +19386,7 @@ function simonShowNextColor() {
   btn.style.boxShadow = '0 0 30px ' + SIMON.colors[colorIdx];
 
   playSound('click');
-  vibrateIfEnabled(50);
+  vibrate(50);
 
   // Get delay based on difficulty
   const delays = { easy: 800, medium: 500, hard: 300 };
@@ -19432,7 +19432,7 @@ function simonPlayerClick(colorIdx) {
   btn.style.boxShadow = '0 0 30px ' + SIMON.colors[colorIdx];
 
   playSound('click');
-  vibrateIfEnabled(30);
+  vibrate(30);
 
   setTimeout(() => {
     btn.style.transform = '';
@@ -19494,7 +19494,7 @@ function simonGameOver(won) {
   }
 
   playSound('wrong');
-  vibrateIfEnabled(200);
+  vibrate(200);
 
   const finalScore = SIMON.level - 1;
 
