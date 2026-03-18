@@ -2330,7 +2330,7 @@ body.light .man-store {
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 48 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 50 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -4655,7 +4655,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', colorSwitch:'colorSwitchBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -5081,7 +5081,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',colorSwitch:'cols',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -5092,7 +5092,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',colorSwitch:'cols',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -20313,14 +20313,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','manDiffWrap'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','manP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
