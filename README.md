@@ -171,6 +171,17 @@ Aktualna verzia: **v19.4**
 
 ### Changelog
 
+**v19.4** (2026-03-18) - Simon Says 9 colors + Mancala
+- 🔊 **Simon Says** — Memory sequence game 4/6/9 colors (🔴🔵🟢🟡🟠🟣🟤⚫🩷)
+  - AI mode: difficulty determines colors + speed (easy=4/800ms, medium=6/500ms, hard=9/300ms)
+  - PVP mode: separate selectors for color count + speed
+  - Grid adapts: 2×2 (4 colors), 2×3 (6 colors), 3×3 (9 colors)
+- 🌰 **Mancala (Kalaha)** — Classic African board game
+  - Stone distribution counter-clockwise, capture mechanics, extra turns
+  - AI: easy (random), medium (prefers captures), hard (minimax evaluation)
+- 📊 **Achievement Progress Bars** — All 49 achievements show X/Y progress with percentages
+- Celkovo 50 hier
+
 **v11.5** (2026-03-11) - Solitaire + Nim + War/Uno improvements
 - 🂡 **Solitaire (Klondike)** — 7 stlpcov, 4 kopky od Esa po Krala, click-to-select, undo, auto-complete, casovac
 - 🪨 **Nim** — klasicka strategicka hra, 4 hromadky (1,3,5,7), odober 1-3, kto vezme posledny prehra
@@ -179,7 +190,6 @@ Aktualna verzia: **v19.4**
 - 🎴 **Uno vylepsenia** — Wild Draw Four (+4) karty, UNO! callout pri poslednej karte
   - +4 len ak hrac nema karty zhodnej farby (oficialne pravidla)
 - Bugfixy: War epoch pattern (stale timeouts), Solitaire undo na vsetkych move types, win sounds
-- Celkovo 50 hier
 
 **v10.0** (2026-03-11) - War + Uno + Categories + Difficulty Persistence
 - 🃏 **Vojna (War)** — kartova hra, vyššia karta berie, vojna pri zhode, AI auto-flip
