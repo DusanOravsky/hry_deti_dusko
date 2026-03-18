@@ -4435,10 +4435,11 @@ body.light .man-store {
       <li><b>AI mode:</b> Samostatná hra, koľko úrovní zvládneš?</li>
       <li><b>Chyba = koniec!</b> Tvoje skóre je počet správnych úrovní</li>
     </ul></div>
-    <div class="ai-difficulty" id="simonDiffWrap" style="display:none;margin-bottom:10px">
-      <button class="difficulty-btn active" onclick="setSimonDiff('easy',this)">Ľahká (4 farby)</button>
-      <button class="difficulty-btn" onclick="setSimonDiff('medium',this)">Stredná (4 farby)</button>
-      <button class="difficulty-btn" onclick="setSimonDiff('hard',this)">Ťažká (6 farieb)</button>
+    <div class="ai-difficulty" id="simonDiffWrap" style="display:flex;margin-bottom:10px">
+      <span style="font-size:0.85em;opacity:0.7;margin-right:8px" id="simonDiffLabel">Rýchlosť:</span>
+      <button class="difficulty-btn active" onclick="setSimonDiff('easy',this)"><span class="simon-diff-ai">Ľahká (4 farby)</span><span class="simon-diff-pvp" style="display:none">Ľahká</span></button>
+      <button class="difficulty-btn" onclick="setSimonDiff('medium',this)"><span class="simon-diff-ai">Stredná (4 farby)</span><span class="simon-diff-pvp" style="display:none">Stredná</span></button>
+      <button class="difficulty-btn" onclick="setSimonDiff('hard',this)"><span class="simon-diff-ai">Ťažká (6 farieb)</span><span class="simon-diff-pvp" style="display:none">Ťažká</span></button>
     </div>
     <div class="ai-difficulty" id="simonColorWrap" style="display:none;margin-bottom:10px">
       <span style="font-size:0.85em;opacity:0.7;margin-right:8px">Počet farieb:</span>
@@ -19305,6 +19306,20 @@ function setSimonDiff(d, btn) {
   }
 }
 
+function simonUpdateModeUI() {
+  // Update diff button labels based on mode
+  const aiLabels = document.querySelectorAll('.simon-diff-ai');
+  const pvpLabels = document.querySelectorAll('.simon-diff-pvp');
+
+  if(welcomeGameMode === 'ai') {
+    aiLabels.forEach(el => el.style.display = '');
+    pvpLabels.forEach(el => el.style.display = 'none');
+  } else {
+    aiLabels.forEach(el => el.style.display = 'none');
+    pvpLabels.forEach(el => el.style.display = '');
+  }
+}
+
 function setSimonColors(num, btn) {
   SIMON.numColors = num;
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
@@ -19366,6 +19381,7 @@ function resetSimon() {
   }
 
   simonUpdateGrid();
+  simonUpdateModeUI();
   updateSimonTurnIndicator();
 }
 
@@ -20426,14 +20442,16 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','simonDiffWrap','manDiffWrap'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','manDiffWrap'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
-  // Simon color selector - only in PVP mode
+  // Simon Says - show both selectors in both modes
+  const simonDiffEl = $('simonDiffWrap');
+  if(simonDiffEl) simonDiffEl.style.display = 'flex'; // Always visible
   const simonColorEl = $('simonColorWrap');
-  if(simonColorEl) simonColorEl.style.display = mode==='ai' ? 'none' : 'flex';
+  if(simonColorEl) simonColorEl.style.display = mode==='ai' ? 'none' : 'flex'; // Only in PVP
   // Update P2 names for AI mode
   if(mode==='ai') {
     ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','simonP2Name','manP2Name'].forEach(id => {
