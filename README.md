@@ -1,12 +1,12 @@
 # Hrajme si - Lukasko & Natalka
 
-Offline herna zbierka pre deti. Single-file PWA so 44 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
+Offline herna zbierka pre deti. Single-file PWA so 50 hrami pre dvoch hracov, proti pocitacu, alebo **online cez internet**.
 
 ## Live
 
 https://dusanoravsky.github.io/hry_deti_dusko/
 
-## Hry (44)
+## Hry (50)
 
 ### 2 hraci aj vs Pocitac (mode: both)
 | Hra | Online MP | AI Difficulty |
@@ -31,6 +31,10 @@ https://dusanoravsky.github.io/hry_deti_dusko/
 | Futbal (canvas, penaltova strelba, sipka+sila, brankár) | - | Yes (easy/medium/hard) |
 | Uno — farby+cisla, wild, +2, +4 Wild Draw Four, skip, reverse, UNO! callout | - | Yes (easy/medium/hard) |
 | Nim — 4 hromadky (1,3,5,7), odober 1-3, posledny prehra | - | Yes (easy/medium/hard, Grundy XOR) |
+| Angry Birds — Prak, parabolicky let, destruktivne krabice | - | Yes (easy/medium/hard) |
+| Sokoban — Push-box puzzle, 15 hand-crafted levels, undo, BFS hint solver | - | Yes (easy/medium/hard) |
+| Simon Says — Memory sequence 4/6/9 colors, watch & repeat | - | Yes (easy/medium/hard speed) |
+| Mancala — Kalaha board game, stone distribution, capture mechanics | - | Yes (easy/medium/hard, minimax) |
 
 ### Len 2 hraci (mode: pvp)
 | Hra |
@@ -163,7 +167,7 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v11.5**
+Aktualna verzia: **v19.4**
 
 ### Changelog
 
@@ -175,7 +179,7 @@ Aktualna verzia: **v11.5**
 - 🎴 **Uno vylepsenia** — Wild Draw Four (+4) karty, UNO! callout pri poslednej karte
   - +4 len ak hrac nema karty zhodnej farby (oficialne pravidla)
 - Bugfixy: War epoch pattern (stale timeouts), Solitaire undo na vsetkych move types, win sounds
-- Celkovo 44 hier
+- Celkovo 50 hier
 
 **v10.0** (2026-03-11) - War + Uno + Categories + Difficulty Persistence
 - 🃏 **Vojna (War)** — kartova hra, vyššia karta berie, vojna pri zhode, AI auto-flip

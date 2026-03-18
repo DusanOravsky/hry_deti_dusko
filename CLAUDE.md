@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.3
+- **Current version**: v19.4
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -179,7 +179,7 @@ resetWordle(); // welcomeGameMode check works
 - **Angry Birds**: Slingshot physics game, drag & release mechanics, parabolic bird flight with gravity, destructible box towers, PvP: 5 shots per player, AI: varying accuracy based on difficulty
 - **Sokoban**: Classic push-box puzzle, 15 hand-crafted verified levels (progressive difficulty), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
 - **Achievement Progress Bars**: All 49 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
-- **Simon Says**: Memory sequence game with 4 or 6 colored buttons (🔴🔵🟢🟡🟠🟣), watch and repeat the pattern, each round adds one color, AI mode: difficulty determines colors + speed (easy/medium=4 colors, hard=6 colors), PVP mode: separate color selector (4/6) + speed (easy/medium/hard), alternating turns with highest level winner
+- **Simon Says**: Memory sequence game with 4, 6, or 9 colored buttons (🔴🔵🟢🟡🟠🟣🟤⚫🩷), watch and repeat the pattern, each round adds one color, AI mode: difficulty determines colors + speed (easy=4 colors/800ms, medium=6 colors/500ms, hard=9 colors/300ms), PVP mode: separate selectors for color count (4/6/9) + speed (easy/medium/hard), alternating turns with highest level winner, grid adapts: 2×2 (4), 2×3 (6), 3×3 (9)
 - **Mancala**: Classic Kalaha board game, 6 pits + store per player, counter-clockwise stone distribution, capture mechanics (landing in empty pit captures opposite), extra turn on landing in own store, AI with 3 difficulties (easy=random, medium=prefers extra turns/captures, hard=minimax with board evaluation)
 
 ## Adding a New Game
