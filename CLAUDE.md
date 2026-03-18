@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~19000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v17.2
+- **Current version**: v17.3
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -79,7 +79,7 @@ resetWordle(); // welcomeGameMode check works
 - Uno (AI: easy/medium/hard, color/number matching, wild, +2, +4 Wild Draw Four, skip, reverse, UNO! callout)
 - Nim (AI: easy/medium/hard, 4 piles 1/3/5/7, take 1-3, misère — last stone loses, Grundy XOR strategy)
 - Angry Birds (AI: easy/medium/hard, canvas, drag & release slingshot, parabolic physics, destructible boxes, 5 shots per player)
-- Sokoban (AI: easy/medium/hard, 20 classic verified levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, PVP: both players complete each level before advancing)
+- Sokoban (AI: easy/medium/hard, 10 original Hiroyuki Imabayashi levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, PVP: both players complete each level before advancing)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -175,7 +175,7 @@ resetWordle(); // welcomeGameMode check works
 - **Fullscreen mode**: Canvas games (Snake, Doodle Jump, Breakout, Gravity Run, Flappy Bird, Angry Birds) have fullscreen button (⛶), wrapper-based approach with exit button overlay, auto-cleanup on exit
 - **Sound & Vibration Persistence**: Settings saved to localStorage ('hry_sound', 'hry_vibration'), restored on page load via `loadSoundSettings()`, prevents frustrating reset-to-defaults on reload
 - **Angry Birds**: Slingshot physics game, drag & release mechanics, parabolic bird flight with gravity, destructible box towers, PvP: 5 shots per player, AI: varying accuracy based on difficulty
-- **Sokoban**: Classic push-box puzzle, 20 classic verified levels (easy→hard progression), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
+- **Sokoban**: Classic push-box puzzle, 10 original Hiroyuki Imabayashi levels (progressive difficulty), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
 
 ## Adding a New Game
 
@@ -344,7 +344,7 @@ Key game state objects and their patterns:
 - `G48` — 2048 (grid 4x4, score, best, won, over)
 - `FLAP` — Flappy Bird (canvas, bird, pipes, score, best, running, raf)
 - `AB` — Angry Birds (W:400, H:300, turn, s1, s2, shots1, shots2, maxShots:5, diff, slingX, slingY, bird, birdFlying, drag, dragX, dragY, boxes, raf, over)
-- `SOK` — Sokoban (level:0-19, grid[][], w, h, px, py, boxes[{x,y}], targets[{x,y}], moves, moveHistory[], time, timer, turn, s1, s2, diff, aiSolving, cellSize, over, won, p1Completed, p2Completed)
+- `SOK` — Sokoban (level:0-9, grid[][], w, h, px, py, boxes[{x,y}], targets[{x,y}], moves, moveHistory[], time, timer, turn, s1, s2, diff, aiSolving, cellSize, over, won, p1Completed, p2Completed)
 - `NG` — Nonogram (size, pattern, solution[][], player[][], errors, maxErrors:3, started, timer)
 - `SDK` — Sudoku (grid[][], solution[][], given[][], selected, diff, errors, timer)
 
