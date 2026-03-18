@@ -202,6 +202,7 @@ body.light {
   .mobile-player-chip { padding:10px 16px; font-size:0.95em; border-radius:12px; }
   .mobile-game-card { padding:24px 16px; border-radius:20px; }
   .mobile-game-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+  .mobile-game-card:hover .mobile-game-icon { animation:gameIconHover 0.6s ease-in-out; }
   .mobile-game-card-icon { font-size:2.8em; }
   .mobile-game-card-name { font-size:0.9em; }
   #mobileGameContent {
@@ -319,6 +320,55 @@ body.light .mobile-player-chip { color:#333; background:rgba(0,0,0,0.04); }
 .cat-pill.active{background:linear-gradient(135deg,rgba(102,126,234,0.4),rgba(118,75,162,0.4));border-color:rgba(102,126,234,0.6);transform:scale(1.05)}
 .light .cat-pill{border-color:rgba(0,0,0,0.12);background:rgba(0,0,0,0.04)}
 .light .cat-pill.active{background:linear-gradient(135deg,rgba(102,126,234,0.25),rgba(118,75,162,0.25));border-color:rgba(102,126,234,0.5)}
+.game-search-box {
+  padding:0 14px 10px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;position:relative;
+}
+.game-search-box input {
+  width:100%;padding:12px 40px 12px 16px;border:2px solid rgba(255,255,255,0.15);
+  border-radius:14px;background:rgba(255,255,255,0.06);color:inherit;font-size:0.95em;
+  outline:none;transition:all 0.3s;font-family:inherit;
+}
+.game-search-box input:focus {
+  border-color:rgba(102,126,234,0.6);background:rgba(255,255,255,0.1);
+  box-shadow:0 0 0 3px rgba(102,126,234,0.15);
+}
+.game-search-box input::placeholder { color:rgba(255,255,255,0.4); }
+#clearSearchBtn {
+  position:absolute;right:24px;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,0.1);border:none;border-radius:50%;
+  width:28px;height:28px;cursor:pointer;font-size:0.9em;color:inherit;
+  display:flex;align-items:center;justify-content:center;transition:all 0.2s;
+}
+#clearSearchBtn:hover { background:rgba(255,255,255,0.2);transform:translateY(-50%) scale(1.1); }
+body.light .game-search-box input {
+  border-color:rgba(0,0,0,0.12);background:rgba(0,0,0,0.03);
+}
+body.light .game-search-box input:focus {
+  border-color:rgba(102,126,234,0.5);background:rgba(255,255,255,0.9);
+  box-shadow:0 0 0 3px rgba(102,126,234,0.1);
+}
+body.light .game-search-box input::placeholder { color:rgba(0,0,0,0.35); }
+body.light #clearSearchBtn { background:rgba(0,0,0,0.06); }
+body.light #clearSearchBtn:hover { background:rgba(0,0,0,0.12); }
+/* Game icon hover animations */
+@keyframes gameIconHover {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.15) rotate(-8deg); }
+  50% { transform: scale(1.2) rotate(8deg); }
+  75% { transform: scale(1.15) rotate(-8deg); }
+}
+@keyframes gameIconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes gameIconSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes gameIconPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
 .mobile-game-grid {
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -1708,6 +1758,49 @@ body.light .rules-modal {
   color: rgba(255,255,255,1);
   transform: scale(1.2);
 }
+.tutorial-badge {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 16px;
+  animation: pulseTutorial 2s ease-in-out infinite;
+}
+@keyframes pulseTutorial {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+.tutorial-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.tutorial-footer label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+}
+.tutorial-footer input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+body.light .tutorial-footer {
+  border-top-color: rgba(0,0,0,0.1);
+}
+body.light .tutorial-footer label {
+  color: rgba(0,0,0,0.6);
+}
 body.light .rules-close {
   color: rgba(0,0,0,0.4);
 }
@@ -2216,6 +2309,10 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
       <button onclick="startDailyChallenge()" id="dailyChallengeBtn" style="flex:1;padding:14px;border:none;border-radius:14px;font-size:1.1em;font-weight:800;color:white;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);box-shadow:0 4px 16px rgba(102,126,234,0.4);transition:transform 0.2s">📅 DENNÁ VÝZVA</button>
     </div>
     <div id="catPills" style="display:flex;gap:6px;padding:0 14px 6px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+    <div class="game-search-box">
+      <input type="text" id="gameSearchInput" placeholder="🔍 Hľadaj hru..." onkeyup="filterGames()" autocomplete="off">
+      <button id="clearSearchBtn" onclick="clearSearch()" style="display:none">✕</button>
+    </div>
     <div class="mobile-game-grid" id="mobileGameGrid">
       <!-- filled by JS -->
     </div>
@@ -4399,7 +4496,7 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '17.5';
+const APP_VERSION = '18.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5478,6 +5575,9 @@ function addWin(w, gameId) {
   $('p2Wins').textContent     = gStats.p2;
   saveStats();
   updateWelcomeStats();
+  // Track seasonal plays
+  const seasons = ['xmas', 'easter', 'summer', 'halloween'];
+  for(const s of seasons) { if(_isSeason(s)) _incrementSeasonalPlay(s); }
   checkAchievements();
   // Universal confetti on wins (not draws)
   if(w===1||w===2) launchConfetti();
@@ -5574,9 +5674,42 @@ const ACHIEVEMENTS = [
   { id:'ms5',      icon:'💣', name:'Mínolovník',       desc:'Vyhraj 5x Minesweeper',    check:()=>(gStats.perGame.minesweeper?.p1||0)>=5 },
   { id:'tnk10',    icon:'💥', name:'Tankový veliteľ',  desc:'Vyhraj 10x Tank Battle',   check:()=>(gStats.perGame.tanks?.p1||0)+(gStats.perGame.tanks?.p2||0)>=10 },
   { id:'brk10',    icon:'🏓', name:'Búrač',            desc:'Vyhraj 10x Breakout',      check:()=>(gStats.perGame.breakout?.p1||0)+(gStats.perGame.breakout?.p2||0)>=10 },
+  // SEASONAL ACHIEVEMENTS
+  { id:'xmas',     icon:'🎄', name:'Vianočný hráč',    desc:'Hraj počas Vianoc (dec)',   check:()=>_isSeason('xmas') && gStats.total>=1 },
+  { id:'xmas10',   icon:'🎅', name:'Santa Claus',      desc:'10 hier počas Vianoc',      check:()=>_isSeason('xmas') && _getSeasonalPlays('xmas')>=10 },
+  { id:'easter',   icon:'🐰', name:'Veľkonočný zajko', desc:'Hraj na Veľkú noc (apr)',   check:()=>_isSeason('easter') && gStats.total>=1 },
+  { id:'easter10', icon:'🥚', name:'Zberač vajíčok',   desc:'10 hier počas Veľkej noci', check:()=>_isSeason('easter') && _getSeasonalPlays('easter')>=10 },
+  { id:'summer',   icon:'☀️', name:'Letný hráč',       desc:'Hraj v lete (jún-aug)',     check:()=>_isSeason('summer') && gStats.total>=1 },
+  { id:'halloween',icon:'🎃', name:'Halloween duch',   desc:'Hraj na Halloween (okt)',   check:()=>_isSeason('halloween') && gStats.total>=1 },
 ];
 
 let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
+let _seasonalPlays; try { _seasonalPlays = JSON.parse(localStorage.getItem('hry_seasonal_plays')||'{}'); } catch(e) { _seasonalPlays = {}; }
+
+function _isSeason(season) {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  const day = now.getDate();
+
+  if(season === 'xmas') return month === 12 && day >= 20 || month === 1 && day <= 6; // Dec 20 - Jan 6
+  if(season === 'easter') return month === 4 || (month === 3 && day >= 20); // Late March to April
+  if(season === 'summer') return month >= 6 && month <= 8; // June-August
+  if(season === 'halloween') return month === 10; // October
+  return false;
+}
+
+function _getSeasonalPlays(season) {
+  const key = season + '_' + new Date().getFullYear();
+  return _seasonalPlays[key] || 0;
+}
+
+function _incrementSeasonalPlay(season) {
+  const key = season + '_' + new Date().getFullYear();
+  _seasonalPlays[key] = (_seasonalPlays[key] || 0) + 1;
+  try {
+    localStorage.setItem('hry_seasonal_plays', JSON.stringify(_seasonalPlays));
+  } catch(e) {}
+}
 
 function _getWinStreak() {
   let streak=0;
@@ -19191,6 +19324,10 @@ function mobileGoTo(level, gameId) {
     if(gameId === 'stats') renderStats();
     if(gameId === 'tournament') tourRenderSetup();
     content.scrollTop = 0;
+    // Show tutorial on first game launch
+    if(gameId !== 'stats' && gameId !== 'tournament') {
+      maybeShowTutorial(gameId);
+    }
   }
   _mobileLevel = level;
   _updateMobileToggles();
@@ -19246,6 +19383,11 @@ function _renderCatPills() {
 function selectCat(catId) {
   _selectedCat = catId;
   _renderCatPills();
+  // Clear search when category changes
+  const input = $('gameSearchInput');
+  const clearBtn = $('clearSearchBtn');
+  if(input) input.value = '';
+  if(clearBtn) clearBtn.style.display = 'none';
   renderMobileGrid();
 }
 
@@ -19283,6 +19425,66 @@ function renderMobileGrid() {
   html += sorted.map((g,i)=>_renderGameCard(g,i+offset)).join('');
   grid.innerHTML = html;
   updateDailyBtn();
+}
+
+function filterGames() {
+  const input = $('gameSearchInput');
+  const clearBtn = $('clearSearchBtn');
+  const searchText = input.value.toLowerCase().trim();
+
+  // Show/hide clear button
+  if(clearBtn) clearBtn.style.display = searchText ? 'flex' : 'none';
+
+  // If empty search, render normal grid
+  if(!searchText) {
+    renderMobileGrid();
+    return;
+  }
+
+  // Filter games by name
+  const grid = $('mobileGameGrid');
+  if(!grid) return;
+
+  let filtered = MOBILE_GAMES.filter(g => {
+    if(g.mode==='always') return true;
+    if(g.mode==='solo') return !welcomeGameMode || welcomeGameMode==='' || welcomeGameMode==='ai';
+    if(welcomeGameMode==='ai') return g.mode==='both';
+    if(welcomeGameMode==='pvp') return g.mode==='both' || g.mode==='pvp';
+    return true;
+  });
+
+  // Category filter
+  if(_selectedCat !== 'all') {
+    filtered = filtered.filter(g => g.cat === _selectedCat || g.mode === 'always');
+  }
+
+  // Search filter - check game name
+  filtered = filtered.filter(g => {
+    const gameName = GAME_NAMES[g.id] || g.id;
+    return gameName.toLowerCase().includes(searchText);
+  });
+
+  // Favorites first, then rest
+  const favs = filtered.filter(g=>_favorites.includes(g.id));
+  const rest = filtered.filter(g=>!_favorites.includes(g.id));
+  const sorted = [...favs, ...rest];
+
+  let html = '';
+  if(sorted.length === 0) {
+    html = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);font-size:1.1em">🔍 Žiadne výsledky pre "'+searchText+'"</div>';
+  } else {
+    html = sorted.map((g,i)=>_renderGameCard(g,i)).join('');
+  }
+  grid.innerHTML = html;
+}
+
+function clearSearch() {
+  const input = $('gameSearchInput');
+  const clearBtn = $('clearSearchBtn');
+  if(input) input.value = '';
+  if(clearBtn) clearBtn.style.display = 'none';
+  renderMobileGrid();
+  if(input) input.focus();
 }
 
 function _updateMobileChips() {
@@ -19579,8 +19781,10 @@ function closeMPModalOnOverlay(event) {
   }
 }
 
-// ===== RULES MODAL FUNCTIONS =====
-function showRules(gameId) {
+// ===== RULES MODAL & TUTORIAL FUNCTIONS =====
+let _tutorialSeen; try { _tutorialSeen = JSON.parse(localStorage.getItem('hry_tutorial_seen')||'[]'); } catch(e) { _tutorialSeen = []; }
+
+function showRules(gameId, forceShow) {
   const gameArea = $(gameId);
   if (!gameArea) return;
 
@@ -19589,9 +19793,23 @@ function showRules(gameId) {
 
   const overlay = $('rulesOverlay');
   const content = $('rulesModalContent');
+  const tutorialBadge = $('tutorialBadge');
+  const tutorialFooter = $('tutorialFooter');
 
   // Clone rules HTML to modal
   content.innerHTML = rulesDiv.innerHTML;
+
+  // Check if this is first time showing this game
+  const isFirstTime = !_tutorialSeen.includes(gameId) || forceShow;
+
+  if(isFirstTime && !forceShow) {
+    tutorialBadge.style.display = 'block';
+    tutorialFooter.style.display = 'flex';
+    tutorialFooter.dataset.gameId = gameId;
+  } else {
+    tutorialBadge.style.display = 'none';
+    tutorialFooter.style.display = 'none';
+  }
 
   // Show modal
   overlay.classList.add('active');
@@ -19603,9 +19821,37 @@ function closeRules() {
   playSound('click');
 }
 
+function closeTutorial() {
+  const tutorialFooter = $('tutorialFooter');
+  const gameId = tutorialFooter.dataset.gameId;
+  const dontShow = $('tutorialDontShow').checked;
+
+  if(dontShow && gameId) {
+    _tutorialSeen.push(gameId);
+    try {
+      localStorage.setItem('hry_tutorial_seen', JSON.stringify(_tutorialSeen));
+    } catch(e) {}
+  }
+
+  closeRules();
+}
+
 function closeRulesOnOverlay(event) {
   if(event.target === $('rulesOverlay')) {
-    closeRules();
+    // If tutorial is showing, close it properly
+    const tutorialFooter = $('tutorialFooter');
+    if(tutorialFooter && tutorialFooter.style.display !== 'none') {
+      closeTutorial();
+    } else {
+      closeRules();
+    }
+  }
+}
+
+// Auto-show tutorial on first game launch
+function maybeShowTutorial(gameId) {
+  if(!_tutorialSeen.includes(gameId)) {
+    setTimeout(() => showRules(gameId), 500);
   }
 }
 
@@ -21035,7 +21281,12 @@ if('serviceWorker' in navigator) {
 <div class="rules-overlay" id="rulesOverlay" onclick="closeRulesOnOverlay(event)">
   <div class="rules-modal" onclick="event.stopPropagation()">
     <button class="rules-close" onclick="closeRules()">✕</button>
+    <div id="tutorialBadge" class="tutorial-badge" style="display:none">🎓 PRVÉ SPUSTENIE</div>
     <div id="rulesModalContent"></div>
+    <div id="tutorialFooter" class="tutorial-footer" style="display:none">
+      <label><input type="checkbox" id="tutorialDontShow"> Nezobrazovať znova</label>
+      <button class="primary-btn" onclick="closeTutorial()">Začať hrať! 🎮</button>
+    </div>
   </div>
 </div>
 
