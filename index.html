@@ -4425,30 +4425,44 @@ body.light .man-store {
     </div>
   </div>
 
-  <!-- ===== COLOR SWITCH ===== -->
-  <div class="game-area" id="colorSwitch">
-    <div class="rules"><h3>🌈 Color Switch:</h3><ul>
-      <li>Tap/Space pre skok</li>
-      <li>Lopta mení farby — prejdi len cez rovnakú farbu!</li>
-      <li>Zle farba = koniec hry</li>
-      <li>Zbieraj body za prechod cez prekážky</li>
-      <li>Hra je endless — ako dlho vydržíš?</li>
+  <!-- ===== SIMON SAYS ===== -->
+  <div class="game-area" id="simonSays">
+    <div class="rules"><h3>🔊 Simon Says:</h3><ul>
+      <li><b>Sleduj sekvenciu farieb</b> a zapamätaj si ju</li>
+      <li><b>Zopakuj</b> sekvenciu kliknutím na farebné tlačidlá</li>
+      <li>Každé kolo sa <b>pridá jedna nová farba</b></li>
+      <li><b>PVP:</b> Striedajú sa hráči, kto vydrží dlhšie vyhráva</li>
+      <li><b>AI mode:</b> Samostatná hra, koľko úrovní zvládneš?</li>
+      <li><b>Chyba = koniec!</b> Tvoje skóre je počet správnych úrovní</li>
     </ul></div>
-    <div class="status" id="colsStatus">Tap na začatie!</div>
-    <div style="display:flex;justify-content:space-around;margin:12px 0;gap:12px;max-width:300px;margin-left:auto;margin-right:auto">
-      <div style="text-align:center">
-        <div style="font-size:0.75em;opacity:0.6">Skóre</div>
-        <div style="font-size:1.8em;font-weight:800;color:#667eea" id="colsScore">0</div>
+    <div class="ai-difficulty" id="simonDiffWrap" style="display:none;margin-bottom:10px">
+      <button class="difficulty-btn active" onclick="setSimonDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setSimonDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setSimonDiff('hard',this)">Ťažká</button>
+    </div>
+    <div class="player-info" id="simonPlayerInfo">
+      <div class="player-card player1" id="simonP1Card">
+        <div class="player-name-display" id="simonP1Name">Hráč 1</div>
+        <div class="player-score" id="simonP1Score">0</div>
       </div>
-      <div style="text-align:center">
-        <div style="font-size:0.75em;opacity:0.6">Rekord</div>
-        <div style="font-size:1.8em;font-weight:800;color:#f5576c" id="colsBest">0</div>
+      <div class="player-card player2" id="simonP2Card">
+        <div class="player-name-display" id="simonP2Name">Hráč 2</div>
+        <div class="player-score" id="simonP2Score">0</div>
       </div>
     </div>
-    <canvas id="colsCanvas" width="320" height="480" onclick="colsJump()" style="max-width:min(320px,90vw);width:100%;height:auto;aspect-ratio:320/480;border-radius:16px;cursor:pointer;background:#1a1a2e;border:2px solid rgba(102,126,234,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.3);touch-action:none"></canvas>
-    <div class="celebration" id="colsCelebration"></div>
+    <div class="status" id="simonStatus">Stlač Štart!</div>
+    <div style="max-width:320px;margin:20px auto">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <button class="simon-btn" id="simonBtn0" onclick="simonPlayerClick(0)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(231,76,60,0.5);background:linear-gradient(135deg, rgba(231,76,60,0.3), rgba(192,57,43,0.3));cursor:pointer;transition:all 0.15s" disabled>🔴</button>
+        <button class="simon-btn" id="simonBtn1" onclick="simonPlayerClick(1)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(52,152,219,0.5);background:linear-gradient(135deg, rgba(52,152,219,0.3), rgba(41,128,185,0.3));cursor:pointer;transition:all 0.15s" disabled>🔵</button>
+        <button class="simon-btn" id="simonBtn2" onclick="simonPlayerClick(2)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(46,204,113,0.5);background:linear-gradient(135deg, rgba(46,204,113,0.3), rgba(39,174,96,0.3));cursor:pointer;transition:all 0.15s" disabled>🟢</button>
+        <button class="simon-btn" id="simonBtn3" onclick="simonPlayerClick(3)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(241,196,15,0.5);background:linear-gradient(135deg, rgba(241,196,15,0.3), rgba(243,156,18,0.3));cursor:pointer;transition:all 0.15s" disabled>🟡</button>
+      </div>
+    </div>
+    <div class="celebration" id="simonCelebration"></div>
     <div class="buttons-group" style="margin-top:16px">
-      <button class="action-btn primary-btn" onclick="resetColorSwitch()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="simonStart()">▶️ Štart</button>
+      <button class="action-btn" onclick="resetSimon()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4658,7 +4672,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', colorSwitch:'colorSwitchBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4669,7 +4683,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', colorSwitch:'Color Switch', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -5084,7 +5098,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',colorSwitch:'cols',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -5095,7 +5109,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',colorSwitch:'cols',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -19252,286 +19266,283 @@ window.addEventListener('offline', updateOnlineStatus);
 updateOnlineStatus();
 
 // =============================================================================
-// SEKCIA 46: COLOR SWITCH (ENDLESS RUNNER)
+// SEKCIA 46: SIMON SAYS (MEMORY SEQUENCE)
 // =============================================================================
-const COLS = {
-  canvas: null, ctx: null,
-  W: 320, H: 480,
-  ball: {y:0, vy:0, r:12, color:0}, // color: 0=red, 1=yellow, 2=blue, 3=purple
-  obstacles: [], // {y, type, rotation}
-  score: 0, best: 0,
-  running: false, gameOver: false,
-  raf: null,
-  colors: ['#e74c3c','#f1c40f','#3498db','#9b59b6'],
-  colorNames: ['🔴','🟡','🔵','🟣'],
-  gravity: 0.6,
-  jumpPower: -12,
-  scrollSpeed: 2.5,
-  nextObstacleY: 150
+const SIMON = {
+  sequence: [], // Array of 0-3 (red, blue, green, yellow)
+  playerInput: [],
+  level: 1,
+  showing: false,
+  playerTurn: false,
+  turn: 1, // 1=P1, 2=P2 (PVP mode)
+  s1: 0, s2: 0, // highest level reached
+  over: false,
+  diff: 'medium',
+  colors: ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f'],
+  colorNames: ['Červená', 'Modrá', 'Zelená', 'Žltá'],
+  _timeout: null,
+  _showIndex: 0
 };
 
-function resetColorSwitch() {
-  if(COLS.raf) { cancelAnimationFrame(COLS.raf); COLS.raf=null; }
-  COLS.ball = {y: COLS.H * 0.7, vy: 0, r: 12, color: Math.floor(Math.random()*4)};
-  COLS.obstacles = [];
-  COLS.score = 0;
-  COLS.running = false;
-  COLS.gameOver = false;
-  COLS.scrollSpeed = 2.5;
-  COLS.nextObstacleY = 150;
-
-  // Load best score
-  try {
-    COLS.best = parseInt(localStorage.getItem('hry_colorswitch_best')||'0');
-  } catch(e) { COLS.best = 0; }
-
-  $('colsScore').textContent = '0';
-  $('colsBest').textContent = COLS.best;
-  $('colsStatus').textContent = 'Tap na začatie!';
-  $('colsCelebration').textContent = '';
-
-  colsRender();
+function setSimonDiff(d, btn) {
+  SIMON.diff = d;
+  saveDiff('simonSays', d);
+  btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
-function colsStart() {
-  if(COLS.running || COLS.gameOver) return;
-  COLS.running = true;
-  $('colsStatus').textContent = 'Tap na skok!';
-  colsLoop();
+function resetSimon() {
+  if(SIMON._timeout) { clearTimeout(SIMON._timeout); SIMON._timeout = null; }
+  SIMON.sequence = [];
+  SIMON.playerInput = [];
+  SIMON.level = 1;
+  SIMON.showing = false;
+  SIMON.playerTurn = false;
+  SIMON.turn = 1;
+  SIMON.s1 = 0;
+  SIMON.s2 = 0;
+  SIMON.over = false;
+  SIMON._showIndex = 0;
+
+  $('simonStatus').textContent = 'Stlač Štart!';
+  $('simonP1Score').textContent = '0';
+  $('simonP2Score').textContent = '0';
+  $('simonCelebration').textContent = '';
+
+  const p1Name = getActiveP1Name('simonSays');
+  const p2Name = welcomeGameMode === 'ai' ? 'Počítač' : getActiveP2Name('simonSays');
+  $('simonP1Name').textContent = p1Name;
+  $('simonP2Name').textContent = p2Name;
+
+  // Disable buttons
+  for(let i=0; i<4; i++) {
+    $('simonBtn'+i).disabled = true;
+    $('simonBtn'+i).style.opacity = '0.5';
+  }
+
+  updateSimonTurnIndicator();
 }
 
-function colsJump() {
-  if(!COLS.running) { colsStart(); return; }
-  if(COLS.gameOver) { resetColorSwitch(); return; }
-  COLS.ball.vy = COLS.jumpPower;
+function simonStart() {
+  if(SIMON.showing || SIMON.playerTurn) return;
+
+  SIMON.sequence = [];
+  SIMON.level = 1;
+  SIMON.over = false;
+  SIMON.playerInput = [];
+
+  simonAddToSequence();
+}
+
+function simonAddToSequence() {
+  SIMON.sequence.push(Math.floor(Math.random() * 4));
+  SIMON.playerInput = [];
+  $('simonStatus').textContent = `Úroveň ${SIMON.level} - Sleduj!`;
+
+  simonShowSequence();
+}
+
+function simonShowSequence() {
+  SIMON.showing = true;
+  SIMON._showIndex = 0;
+
+  // Disable buttons during show
+  for(let i=0; i<4; i++) {
+    $('simonBtn'+i).disabled = true;
+    $('simonBtn'+i).style.opacity = '0.5';
+  }
+
+  simonShowNextColor();
+}
+
+function simonShowNextColor() {
+  if(SIMON._showIndex >= SIMON.sequence.length) {
+    // Sequence shown, player's turn
+    SIMON.showing = false;
+    SIMON.playerTurn = true;
+    $('simonStatus').textContent = `Tvoj ťah! (${SIMON.sequence.length} ${SIMON.sequence.length===1?'farba':'farieb'})`;
+
+    // Enable buttons
+    for(let i=0; i<4; i++) {
+      $('simonBtn'+i).disabled = false;
+      $('simonBtn'+i).style.opacity = '1';
+    }
+    return;
+  }
+
+  const colorIdx = SIMON.sequence[SIMON._showIndex];
+  const btn = $('simonBtn' + colorIdx);
+
+  // Flash button
+  btn.style.transform = 'scale(1.1)';
+  btn.style.opacity = '1';
+  btn.style.boxShadow = '0 0 30px ' + SIMON.colors[colorIdx];
+
   playSound('click');
-  vibrateIfEnabled(20);
+  vibrateIfEnabled(50);
+
+  // Get delay based on difficulty
+  const delays = { easy: 800, medium: 500, hard: 300 };
+  const delay = delays[SIMON.diff] || 500;
+
+  SIMON._timeout = setTimeout(() => {
+    btn.style.transform = '';
+    btn.style.opacity = '0.5';
+    btn.style.boxShadow = '';
+
+    SIMON._timeout = setTimeout(() => {
+      SIMON._showIndex++;
+      simonShowNextColor();
+    }, 200);
+  }, delay);
 }
 
-function colsLoop() {
-  if(!COLS.running || COLS.gameOver) return;
+function simonPlayerClick(colorIdx) {
+  if(!SIMON.playerTurn || SIMON.showing || SIMON.over) return;
 
-  // Physics
-  COLS.ball.vy += COLS.gravity;
-  COLS.ball.y += COLS.ball.vy;
+  const btn = $('simonBtn' + colorIdx);
 
-  // Boundaries (ball can't leave screen vertically for too long)
-  if(COLS.ball.y < -50) COLS.ball.y = -50;
-  if(COLS.ball.y > COLS.H + 50) colsGameOver();
+  // Flash button
+  btn.style.transform = 'scale(1.1)';
+  btn.style.boxShadow = '0 0 30px ' + SIMON.colors[colorIdx];
 
-  // Scroll obstacles
-  for(let obs of COLS.obstacles) {
-    obs.y += COLS.scrollSpeed;
-    obs.rotation += 0.01;
+  playSound('click');
+  vibrateIfEnabled(30);
+
+  setTimeout(() => {
+    btn.style.transform = '';
+    btn.style.boxShadow = '';
+  }, 200);
+
+  SIMON.playerInput.push(colorIdx);
+
+  // Check if correct so far
+  const idx = SIMON.playerInput.length - 1;
+  if(SIMON.playerInput[idx] !== SIMON.sequence[idx]) {
+    // Wrong!
+    simonGameOver(false);
+    return;
   }
 
-  // Remove off-screen obstacles
-  COLS.obstacles = COLS.obstacles.filter(o => o.y < COLS.H + 100);
+  // Check if sequence complete
+  if(SIMON.playerInput.length === SIMON.sequence.length) {
+    // Correct! Next level
+    SIMON.level++;
+    SIMON.playerTurn = false;
 
-  // Spawn new obstacles
-  if(COLS.obstacles.length === 0 || COLS.obstacles[COLS.obstacles.length-1].y > COLS.nextObstacleY) {
-    colsSpawnObstacle();
-    COLS.nextObstacleY = 120 + Math.random() * 80; // 120-200px gap
-  }
+    playSound('correct');
+    $('simonStatus').textContent = '✅ Správne! Ďalšia úroveň...';
 
-  // Collision detection
-  for(let obs of COLS.obstacles) {
-    if(colsCheckCollision(obs)) {
-      colsGameOver();
-      return;
-    }
-
-    // Score when passing obstacle
-    if(!obs.passed && COLS.ball.y + COLS.ball.r < obs.y - 60) {
-      obs.passed = true;
-      COLS.score++;
-      $('colsScore').textContent = COLS.score;
-      playSound('correct');
-
-      // Speed up slightly
-      COLS.scrollSpeed = Math.min(4.5, 2.5 + COLS.score * 0.05);
-
-      // Change ball color randomly
-      COLS.ball.color = Math.floor(Math.random() * 4);
-    }
-  }
-
-  colsRender();
-  COLS.raf = requestAnimationFrame(colsLoop);
-}
-
-function colsSpawnObstacle() {
-  // Types: 0=rotating square, 1=rotating cross, 2=horizontal bars
-  const type = Math.floor(Math.random() * 3);
-  COLS.obstacles.push({
-    y: -80,
-    type: type,
-    rotation: Math.random() * Math.PI * 2,
-    passed: false,
-    size: 80
-  });
-}
-
-function colsCheckCollision(obs) {
-  const dx = 0; // ball and obstacle both centered at COLS.W/2
-  const dy = COLS.ball.y - obs.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-
-  if(obs.type === 2) {
-    // Horizontal bars - check Y position within bars
-    if(Math.abs(dx) < obs.size/2 + COLS.ball.r && dist < 50) {
-      const relY = dy; // relative Y to obstacle center
-      const barIndex = Math.floor((relY + 40) / 20);
-      if(barIndex >= 0 && barIndex < 4) {
-        return barIndex !== COLS.ball.color;
+    // Update score
+    if(welcomeGameMode === 'ai') {
+      SIMON.s1 = SIMON.level - 1;
+      $('simonP1Score').textContent = SIMON.s1;
+    } else {
+      if(SIMON.turn === 1) {
+        SIMON.s1 = SIMON.level - 1;
+        $('simonP1Score').textContent = SIMON.s1;
+      } else {
+        SIMON.s2 = SIMON.level - 1;
+        $('simonP2Score').textContent = SIMON.s2;
       }
     }
-  } else {
-    // Rotating obstacles (pie chart or cross)
-    if(dist < 45) {
-      // Angle from obstacle center to ball
-      let angle = Math.atan2(dy, dx);
 
-      // Subtract rotation to get angle in obstacle's local coordinate system
-      angle = angle - obs.rotation;
-
-      // Normalize to 0-2PI range
-      while(angle < 0) angle += Math.PI * 2;
-      while(angle >= Math.PI * 2) angle -= Math.PI * 2;
-
-      // Determine which segment (0-3)
-      const segment = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
-
-      // Collision if colors don't match
-      return segment !== COLS.ball.color;
-    }
+    SIMON._timeout = setTimeout(() => {
+      simonAddToSequence();
+    }, 1500);
   }
-
-  return false;
 }
 
-function colsGameOver() {
-  COLS.gameOver = true;
-  COLS.running = false;
-  if(COLS.raf) { cancelAnimationFrame(COLS.raf); COLS.raf=null; }
+function simonGameOver(won) {
+  SIMON.over = true;
+  SIMON.playerTurn = false;
 
-  // Update best score
-  if(COLS.score > COLS.best) {
-    COLS.best = COLS.score;
-    try {
-      localStorage.setItem('hry_colorswitch_best', COLS.best);
-    } catch(e) {}
-    $('colsBest').textContent = COLS.best;
-    $('colsStatus').textContent = '🎉 Nový rekord: '+COLS.score+'!';
-    $('colsCelebration').textContent = '🎉';
-    launchConfetti();
-  } else {
-    $('colsStatus').textContent = 'Game Over! Skóre: '+COLS.score;
-    $('colsCelebration').textContent = '💥';
+  if(SIMON._timeout) {
+    clearTimeout(SIMON._timeout);
+    SIMON._timeout = null;
+  }
+
+  // Disable buttons
+  for(let i=0; i<4; i++) {
+    $('simonBtn'+i).disabled = true;
+    $('simonBtn'+i).style.opacity = '0.5';
   }
 
   playSound('wrong');
   vibrateIfEnabled(200);
-  setTimeout(()=>{ $('colsCelebration').textContent=''; }, 2000);
-}
 
-function colsRender() {
-  const c = COLS.canvas || $('colsCanvas');
-  if(!c) return;
-  COLS.canvas = c;
-  const ctx = c.getContext('2d');
-  COLS.ctx = ctx;
+  const finalScore = SIMON.level - 1;
 
-  // Background
-  const grad = ctx.createLinearGradient(0, 0, 0, COLS.H);
-  grad.addColorStop(0, document.body.classList.contains('light') ? '#e8f4f8' : '#1a1a2e');
-  grad.addColorStop(1, document.body.classList.contains('light') ? '#d6eaf8' : '#0f3460');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, COLS.W, COLS.H);
-
-  // Obstacles
-  for(let obs of COLS.obstacles) {
-    colsDrawObstacle(ctx, obs);
-  }
-
-  // Ball
-  ctx.save();
-  ctx.translate(COLS.W/2, COLS.ball.y);
-  ctx.beginPath();
-  ctx.arc(0, 0, COLS.ball.r, 0, Math.PI*2);
-  ctx.fillStyle = COLS.colors[COLS.ball.color];
-  ctx.fill();
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  // Ball color indicator
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 14px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(COLS.colorNames[COLS.ball.color], 0, 0);
-  ctx.restore();
-}
-
-function colsDrawObstacle(ctx, obs) {
-  ctx.save();
-  ctx.translate(COLS.W/2, obs.y);
-  ctx.rotate(obs.rotation);
-
-  const size = obs.size;
-  const thickness = 12;
-
-  if(obs.type === 0) {
-    // Rotating square with 4 colored segments
-    for(let i=0; i<4; i++) {
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, size/2, i*Math.PI/2, (i+1)*Math.PI/2);
-      ctx.closePath();
-      ctx.fillStyle = COLS.colors[i];
-      ctx.fill();
-      ctx.strokeStyle = document.body.classList.contains('light') ? '#333' : '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-  } else if(obs.type === 1) {
-    // Rotating cross
-    for(let i=0; i<4; i++) {
-      ctx.save();
-      ctx.rotate(i*Math.PI/2);
-      ctx.fillStyle = COLS.colors[i];
-      ctx.fillRect(-thickness/2, -size/2, thickness, size/2);
-      ctx.strokeStyle = document.body.classList.contains('light') ? '#333' : '#fff';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(-thickness/2, -size/2, thickness, size/2);
-      ctx.restore();
-    }
+  if(welcomeGameMode === 'ai') {
+    // Solo mode
+    $('simonStatus').textContent = `❌ Koniec! Dosiahol si úroveň ${finalScore}`;
+    $('simonCelebration').textContent = '💥';
   } else {
-    // Horizontal bars
-    for(let i=0; i<4; i++) {
-      ctx.fillStyle = COLS.colors[i];
-      const barY = -40 + i * 20;
-      ctx.fillRect(-size/2, barY, size, 15);
-      ctx.strokeStyle = document.body.classList.contains('light') ? '#333' : '#fff';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-size/2, barY, size, 15);
+    // PVP mode
+    if(SIMON.turn === 1) {
+      SIMON.s1 = finalScore;
+      $('simonP1Score').textContent = SIMON.s1;
+      $('simonStatus').textContent = `❌ ${getActiveP1Name('simonSays')} dosiahol úroveň ${finalScore}. Ťah ${getActiveP2Name('simonSays')}!`;
+
+      // Switch to P2
+      SIMON.turn = 2;
+      SIMON.level = 1;
+      SIMON.sequence = [];
+      SIMON.over = false;
+      updateSimonTurnIndicator();
+
+      SIMON._timeout = setTimeout(() => {
+        simonStart();
+      }, 2000);
+      return;
+    } else {
+      // P2 finished
+      SIMON.s2 = finalScore;
+      $('simonP2Score').textContent = SIMON.s2;
+
+      // Determine winner
+      let winner = 0;
+      if(SIMON.s1 > SIMON.s2) {
+        winner = 1;
+        $('simonStatus').textContent = `🎉 ${getActiveP1Name('simonSays')} vyhráva! (${SIMON.s1} vs ${SIMON.s2})`;
+      } else if(SIMON.s2 > SIMON.s1) {
+        winner = 2;
+        $('simonStatus').textContent = `🎉 ${getActiveP2Name('simonSays')} vyhráva! (${SIMON.s2} vs ${SIMON.s1})`;
+      } else {
+        $('simonStatus').textContent = `🤝 Remíza! Obaja dosiahli úroveň ${SIMON.s1}`;
+      }
+
+      $('simonCelebration').textContent = winner === 0 ? '🤝' : '🎉';
+      if(winner > 0) launchConfetti();
+
+      addWin(winner, 'simonSays');
     }
   }
 
-  ctx.restore();
+  setTimeout(() => { $('simonCelebration').textContent = ''; }, 2500);
 }
 
-// Touch/click controls
-document.addEventListener('keydown', e => {
-  if(currentGameId !== 'colorSwitch') return;
-  if(e.key === ' ' || e.key === 'ArrowUp') {
-    e.preventDefault();
-    colsJump();
-  }
-});
+function updateSimonTurnIndicator() {
+  const p1Card = $('simonP1Card');
+  const p2Card = $('simonP2Card');
+  if(!p1Card || !p2Card) return;
 
-resetColorSwitch();
+  if(welcomeGameMode === 'ai') {
+    p2Card.style.display = 'none';
+    p1Card.style.opacity = '1';
+    return;
+  }
+
+  if(SIMON.turn === 1) {
+    p1Card.style.opacity = '1';
+    p2Card.style.opacity = '0.4';
+  } else {
+    p1Card.style.opacity = '0.4';
+    p2Card.style.opacity = '1';
+  }
+}
+
+resetSimon();
 
 // =============================================================================
 // SEKCIA 47: MANCALA (KALAHA)
@@ -19867,7 +19878,7 @@ const MOBILE_GAMES = [
   { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
   { id:'nonogram',     label:'Nonogram',       icon:'🖼️', grad:'rgba(156,39,176,0.3),rgba(103,58,183,0.3)', mode:'solo', cat:'logic' },
   { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
-  { id:'colorSwitch',  label:'Color Switch',   icon:'🌈', grad:'rgba(231,76,60,0.3),rgba(155,89,182,0.3)', mode:'solo', cat:'arcade' },
+  { id:'simonSays',    label:'Simon Says',     icon:'🔊', grad:'rgba(231,76,60,0.3),rgba(52,152,219,0.3)', mode:'both', cat:'logic' },
   { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -19955,8 +19966,8 @@ function stopAllGames(){
   if(typeof SDK!=='undefined'&&SDK.timer){clearInterval(SDK.timer);SDK.timer=null;}
   // Tournament timeout
   if(typeof TOUR!=='undefined'&&TOUR._timeout){clearTimeout(TOUR._timeout);TOUR._timeout=null;}
-  // Color Switch
-  if(typeof COLS!=='undefined'){if(COLS.raf){cancelAnimationFrame(COLS.raf);COLS.raf=null;}COLS.running=false;COLS.gameOver=true;}
+  // Simon Says
+  if(typeof SIMON!=='undefined'){if(SIMON._timeout){clearTimeout(SIMON._timeout);SIMON._timeout=null;}SIMON.over=true;SIMON.showing=false;SIMON.playerTurn=false;}
   // Mancala
   if(typeof MAN!=='undefined'){if(MAN._aiTimeout){clearTimeout(MAN._aiTimeout);MAN._aiTimeout=null;}MAN.over=true;}
   // QR scanner
@@ -20336,14 +20347,14 @@ function applyGameMode(mode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','manDiffWrap'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','simonDiffWrap','manDiffWrap'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
   });
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','manP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','simonP2Name','manP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
@@ -20358,7 +20369,7 @@ function applyGameMode(mode) {
     $('ludoPlayerSel').style.display='flex';
   }
   // Hide player cards for solo games in AI mode (like Tetris/Snake/Racing)
-  ['doodPlayerInfo','wdlPlayerInfo','beePlayerInfo','socPlayerInfo'].forEach(id => {
+  ['doodPlayerInfo','wdlPlayerInfo','beePlayerInfo','socPlayerInfo','simonPlayerInfo'].forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });

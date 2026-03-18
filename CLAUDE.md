@@ -80,6 +80,7 @@ resetWordle(); // welcomeGameMode check works
 - Nim (AI: easy/medium/hard, 4 piles 1/3/5/7, take 1-3, misère — last stone loses, Grundy XOR strategy)
 - Angry Birds (AI: easy/medium/hard, canvas, drag & release slingshot, parabolic physics, destructible boxes, 5 shots per player)
 - Sokoban (AI: easy/medium/hard, 15 hand-crafted verified levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, PVP: both players complete each level before advancing)
+- Simon Says (AI: easy/medium/hard, memory sequence game, 4 colored buttons, increasing difficulty, PVP: alternating turns with highest level wins)
 - Mancala (AI: easy/medium/hard, Kalaha variant, stone distribution, capture mechanics, extra turns, minimax evaluation for hard AI)
 
 ### 2 Players Only (mode:'pvp')
@@ -106,7 +107,6 @@ resetWordle(); // welcomeGameMode check works
 - Solitaire / Klondike (7 tableau columns, 4 foundations, stock/waste, click-to-select, undo, auto-complete, timer)
 - Nonogram / Picross (5x5, 8 predefined patterns, error limit 3, long-press for X marks)
 - Sudoku (easy/medium/hard, backtracking generator, group highlighting, keyboard input)
-- Color Switch (canvas, endless runner with color-matching mechanics, rotating obstacles, gravity jump physics, high score)
 - Statistiky + Achievement system (49 achievements with progress bars, split reset: stats vs achievements)
 
 ## Features (v13-v114, v4.0+)
@@ -179,7 +179,7 @@ resetWordle(); // welcomeGameMode check works
 - **Angry Birds**: Slingshot physics game, drag & release mechanics, parabolic bird flight with gravity, destructible box towers, PvP: 5 shots per player, AI: varying accuracy based on difficulty
 - **Sokoban**: Classic push-box puzzle, 15 hand-crafted verified levels (progressive difficulty), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
 - **Achievement Progress Bars**: All 49 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
-- **Color Switch**: Endless runner where ball changes color, must pass through matching obstacle segments, rotating circle/square/cross obstacles, tap/space to jump against gravity, increasing difficulty with speed, high score tracking in localStorage
+- **Simon Says**: Memory sequence game with 4 colored buttons (🔴🔵🟢🟡), watch and repeat the pattern, each round adds one color, AI difficulty affects show speed (easy:800ms, medium:500ms, hard:300ms), PVP mode alternating turns with highest level winner
 - **Mancala**: Classic Kalaha board game, 6 pits + store per player, counter-clockwise stone distribution, capture mechanics (landing in empty pit captures opposite), extra turn on landing in own store, AI with 3 difficulties (easy=random, medium=prefers extra turns/captures, hard=minimax with board evaluation)
 
 ## Adding a New Game
