@@ -4438,13 +4438,14 @@ body.light .man-store {
     <div class="ai-difficulty" id="simonDiffWrap" style="display:flex;margin-bottom:10px">
       <span style="font-size:0.85em;opacity:0.7;margin-right:8px" id="simonDiffLabel">Rýchlosť:</span>
       <button class="difficulty-btn active" onclick="setSimonDiff('easy',this)"><span class="simon-diff-ai">Ľahká (4 farby)</span><span class="simon-diff-pvp" style="display:none">Ľahká</span></button>
-      <button class="difficulty-btn" onclick="setSimonDiff('medium',this)"><span class="simon-diff-ai">Stredná (4 farby)</span><span class="simon-diff-pvp" style="display:none">Stredná</span></button>
-      <button class="difficulty-btn" onclick="setSimonDiff('hard',this)"><span class="simon-diff-ai">Ťažká (6 farieb)</span><span class="simon-diff-pvp" style="display:none">Ťažká</span></button>
+      <button class="difficulty-btn" onclick="setSimonDiff('medium',this)"><span class="simon-diff-ai">Stredná (6 farieb)</span><span class="simon-diff-pvp" style="display:none">Stredná</span></button>
+      <button class="difficulty-btn" onclick="setSimonDiff('hard',this)"><span class="simon-diff-ai">Ťažká (9 farieb)</span><span class="simon-diff-pvp" style="display:none">Ťažká</span></button>
     </div>
     <div class="ai-difficulty" id="simonColorWrap" style="display:none;margin-bottom:10px">
       <span style="font-size:0.85em;opacity:0.7;margin-right:8px">Počet farieb:</span>
-      <button class="difficulty-btn active" onclick="setSimonColors(4,this)">4 farby</button>
-      <button class="difficulty-btn" onclick="setSimonColors(6,this)">6 farieb</button>
+      <button class="difficulty-btn active" onclick="setSimonColors(4,this)">4</button>
+      <button class="difficulty-btn" onclick="setSimonColors(6,this)">6</button>
+      <button class="difficulty-btn" onclick="setSimonColors(9,this)">9</button>
     </div>
     <div class="player-info" id="simonPlayerInfo">
       <div class="player-card player1" id="simonP1Card">
@@ -4465,6 +4466,9 @@ body.light .man-store {
         <button class="simon-btn" id="simonBtn3" onclick="simonPlayerClick(3)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(241,196,15,0.5);background:linear-gradient(135deg, rgba(241,196,15,0.3), rgba(243,156,18,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto">🟡</button>
         <button class="simon-btn" id="simonBtn4" onclick="simonPlayerClick(4)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(255,152,0,0.5);background:linear-gradient(135deg, rgba(255,152,0,0.3), rgba(251,140,0,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto;display:none">🟠</button>
         <button class="simon-btn" id="simonBtn5" onclick="simonPlayerClick(5)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(155,89,182,0.5);background:linear-gradient(135deg, rgba(155,89,182,0.3), rgba(142,68,173,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto;display:none">🟣</button>
+        <button class="simon-btn" id="simonBtn6" onclick="simonPlayerClick(6)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(121,85,72,0.5);background:linear-gradient(135deg, rgba(121,85,72,0.3), rgba(93,64,55,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto;display:none">🟤</button>
+        <button class="simon-btn" id="simonBtn7" onclick="simonPlayerClick(7)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(66,66,66,0.5);background:linear-gradient(135deg, rgba(66,66,66,0.3), rgba(33,33,33,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto;display:none">⚫</button>
+        <button class="simon-btn" id="simonBtn8" onclick="simonPlayerClick(8)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(233,30,99,0.5);background:linear-gradient(135deg, rgba(233,30,99,0.3), rgba(194,24,91,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto;display:none">🩷</button>
       </div>
     </div>
     <div class="celebration" id="simonCelebration"></div>
@@ -19277,7 +19281,7 @@ updateOnlineStatus();
 // SEKCIA 46: SIMON SAYS (MEMORY SEQUENCE)
 // =============================================================================
 const SIMON = {
-  sequence: [], // Array of 0-5 (red, blue, green, yellow, orange, purple)
+  sequence: [], // Array of 0-8 (red, blue, green, yellow, orange, purple, brown, black, pink)
   playerInput: [],
   level: 1,
   showing: false,
@@ -19286,9 +19290,9 @@ const SIMON = {
   s1: 0, s2: 0, // highest level reached
   over: false,
   diff: 'medium',
-  numColors: 4, // 4 or 6
-  colors: ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#ff9800', '#9b59b6'],
-  colorNames: ['Červená', 'Modrá', 'Zelená', 'Žltá', 'Oranžová', 'Fialová'],
+  numColors: 4, // 4, 6, or 9
+  colors: ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#ff9800', '#9b59b6', '#795548', '#424242', '#e91e63'],
+  colorNames: ['Červená', 'Modrá', 'Zelená', 'Žltá', 'Oranžová', 'Fialová', 'Hnedá', 'Čierna', 'Ružová'],
   _timeout: null,
   _showIndex: 0
 };
@@ -19299,9 +19303,11 @@ function setSimonDiff(d, btn) {
   btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
-  // In AI mode, hard = 6 colors, easy/medium = 4 colors
+  // In AI mode, difficulty determines number of colors
   if(welcomeGameMode === 'ai') {
-    SIMON.numColors = (d === 'hard') ? 6 : 4;
+    if(d === 'easy') SIMON.numColors = 4;
+    else if(d === 'medium') SIMON.numColors = 6;
+    else if(d === 'hard') SIMON.numColors = 9;
     simonUpdateGrid();
   }
 }
@@ -19329,15 +19335,21 @@ function setSimonColors(num, btn) {
 
 function simonUpdateGrid() {
   // Show/hide buttons based on numColors
-  for(let i=0; i<6; i++) {
+  for(let i=0; i<9; i++) {
     const btn = $('simonBtn'+i);
     if(btn) btn.style.display = (i < SIMON.numColors) ? '' : 'none';
   }
 
-  // Update grid layout: 2x2 for 4 colors, 2x3 for 6 colors
+  // Update grid layout: 2x2 for 4 colors, 2x3 for 6 colors, 3x3 for 9 colors
   const grid = $('simonBtnGrid');
   if(grid) {
-    grid.style.gridTemplateColumns = SIMON.numColors === 4 ? '1fr 1fr' : '1fr 1fr 1fr';
+    if(SIMON.numColors === 4) {
+      grid.style.gridTemplateColumns = '1fr 1fr';
+    } else if(SIMON.numColors === 6) {
+      grid.style.gridTemplateColumns = '1fr 1fr 1fr';
+    } else if(SIMON.numColors === 9) {
+      grid.style.gridTemplateColumns = '1fr 1fr 1fr';
+    }
   }
 }
 
@@ -19356,7 +19368,9 @@ function resetSimon() {
 
   // Set default numColors based on mode
   if(welcomeGameMode === 'ai') {
-    SIMON.numColors = (SIMON.diff === 'hard') ? 6 : 4;
+    if(SIMON.diff === 'easy') SIMON.numColors = 4;
+    else if(SIMON.diff === 'medium') SIMON.numColors = 6;
+    else if(SIMON.diff === 'hard') SIMON.numColors = 9;
   } else {
     SIMON.numColors = SIMON.numColors || 4; // Keep user's choice in PVP
   }
@@ -19372,7 +19386,7 @@ function resetSimon() {
   $('simonP2Name').textContent = p2Name;
 
   // Enable buttons so user can click to start
-  for(let i=0; i<6; i++) {
+  for(let i=0; i<9; i++) {
     const btn = $('simonBtn'+i);
     if(btn) {
       btn.disabled = false;
@@ -19555,7 +19569,7 @@ function simonGameOver(won) {
   }
 
   // Disable buttons
-  for(let i=0; i<6; i++) {
+  for(let i=0; i<9; i++) {
     const btn = $('simonBtn'+i);
     if(btn) {
       btn.disabled = true;
