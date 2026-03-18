@@ -4452,11 +4452,11 @@ body.light .man-store {
     </div>
     <div class="status" id="simonStatus">Stlač Štart!</div>
     <div style="max-width:320px;margin:20px auto">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <button class="simon-btn" id="simonBtn0" onclick="simonPlayerClick(0)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(231,76,60,0.5);background:linear-gradient(135deg, rgba(231,76,60,0.3), rgba(192,57,43,0.3));cursor:pointer;transition:all 0.15s">🔴</button>
-        <button class="simon-btn" id="simonBtn1" onclick="simonPlayerClick(1)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(52,152,219,0.5);background:linear-gradient(135deg, rgba(52,152,219,0.3), rgba(41,128,185,0.3));cursor:pointer;transition:all 0.15s">🔵</button>
-        <button class="simon-btn" id="simonBtn2" onclick="simonPlayerClick(2)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(46,204,113,0.5);background:linear-gradient(135deg, rgba(46,204,113,0.3), rgba(39,174,96,0.3));cursor:pointer;transition:all 0.15s">🟢</button>
-        <button class="simon-btn" id="simonBtn3" onclick="simonPlayerClick(3)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(241,196,15,0.5);background:linear-gradient(135deg, rgba(241,196,15,0.3), rgba(243,156,18,0.3));cursor:pointer;transition:all 0.15s">🟡</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;pointer-events:auto">
+        <button class="simon-btn" id="simonBtn0" onclick="simonPlayerClick(0)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(231,76,60,0.5);background:linear-gradient(135deg, rgba(231,76,60,0.3), rgba(192,57,43,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto">🔴</button>
+        <button class="simon-btn" id="simonBtn1" onclick="simonPlayerClick(1)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(52,152,219,0.5);background:linear-gradient(135deg, rgba(52,152,219,0.3), rgba(41,128,185,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto">🔵</button>
+        <button class="simon-btn" id="simonBtn2" onclick="simonPlayerClick(2)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(46,204,113,0.5);background:linear-gradient(135deg, rgba(46,204,113,0.3), rgba(39,174,96,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto">🟢</button>
+        <button class="simon-btn" id="simonBtn3" onclick="simonPlayerClick(3)" style="height:120px;border-radius:16px;font-size:2em;border:4px solid rgba(241,196,15,0.5);background:linear-gradient(135deg, rgba(241,196,15,0.3), rgba(243,156,18,0.3));cursor:pointer;transition:all 0.15s;pointer-events:auto">🟡</button>
       </div>
     </div>
     <div class="celebration" id="simonCelebration"></div>
@@ -19405,21 +19405,26 @@ function simonShowNextColor() {
 }
 
 function simonPlayerClick(colorIdx) {
+  console.log('SIMON CLICK:', colorIdx, 'showing:', SIMON.showing, 'playerTurn:', SIMON.playerTurn, 'over:', SIMON.over, 'seq.len:', SIMON.sequence.length);
+
   // If game not started yet, start it on first click
   if(!SIMON.showing && !SIMON.playerTurn && !SIMON.over && SIMON.sequence.length === 0) {
     $('simonStatus').textContent = '🎮 Spúšťam hru...';
+    console.log('Starting game...');
     setTimeout(() => simonStart(), 100);
     return;
   }
 
   // Ignore clicks during sequence show or when game over
   if(!SIMON.playerTurn || SIMON.showing || SIMON.over) {
+    console.log('BLOCKED - showing:', SIMON.showing, 'playerTurn:', SIMON.playerTurn, 'over:', SIMON.over);
     if(SIMON.showing) {
       $('simonStatus').textContent = '👀 Sleduj sekvenciu!';
     }
     return;
   }
 
+  console.log('Processing click');
   const btn = $('simonBtn' + colorIdx);
 
   // Flash button
