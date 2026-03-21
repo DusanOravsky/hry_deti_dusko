@@ -351,7 +351,7 @@ body.light .game-search-box input::placeholder { color:rgba(0,0,0,0.35); }
 body.light #clearSearchBtn { background:rgba(0,0,0,0.06); }
 body.light #clearSearchBtn:hover { background:rgba(0,0,0,0.12); }
 /* Minesweeper grid - light mode */
-body.light #msGrid { background:rgba(80,120,200,0.12) !important; border-color:rgba(80,120,200,0.35) !important; }
+body.light #msGrid { background:transparent !important; border-color:rgba(100,140,200,0.4) !important; }
 /* Game icon hover animations */
 @keyframes gameIconHover {
   0%, 100% { transform: scale(1) rotate(0deg); }
@@ -3443,9 +3443,9 @@ body.light .man-store {
       <div class="maze-dir-btn empty"></div>
     </div>
     <div class="celebration" id="mzCelebration">🎉</div>
-    <div class="buttons-group" style="margin-top:24px">
-      <button class="action-btn primary-btn" onclick="startMaze()">▶️ Štart</button>
-      <button class="action-btn danger-btn" onclick="resetMaze()">🔄 Nová hra</button>
+    <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:10px">
+      <button class="action-btn primary-btn" onclick="startMaze()" style="width:180px">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetMaze()" style="width:180px">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4678,7 +4678,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.6';
+const APP_VERSION = '19.7';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -17123,7 +17123,7 @@ function msRenderGrid(){
     for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
       const d=document.createElement('div');
       d.dataset.r=r;d.dataset.c=c;
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;border:1px solid rgba(80,120,210,0.5);';
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;border:1px solid rgba(255,255,255,0.25);';
       d.addEventListener('click',()=>msCellClick(r,c));
       d.addEventListener('contextmenu',(e)=>{e.preventDefault();if(MS.started&&!MS.gameOver&&!MS.won&&!MS.firstClick){msFlag(r,c);msRenderGrid();}});
       grid.appendChild(d);
@@ -17149,7 +17149,7 @@ function msRenderGrid(){
     } else if(cell.flagged){
       el.textContent='🚩';el.style.background='rgba(255,193,7,0.35)';el.style.color='';el.style.borderColor='rgba(255,193,7,0.5)';
     } else {
-      el.textContent='';el.style.background='rgba(80,120,210,0.65)';el.style.color='';el.style.borderColor='rgba(80,120,210,0.5)';
+      el.textContent='';el.style.background='rgba(100,140,200,0.35)';el.style.color='';el.style.borderColor='rgba(255,255,255,0.25)';
     }
   }
 }
