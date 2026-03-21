@@ -4673,7 +4673,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.14';
+const APP_VERSION = '19.15';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -21364,7 +21364,9 @@ function _mpHandleMessageInner(data) {
   // Piškvorky move synchronization
   if(data.type === 'ttt-move') {
     console.log('Received TTT move:', data);
-    if(TTT.over || TTT.board[data.index]) return;
+    if(TTT.over) return;
+    if(typeof data.index !== 'number' || data.index < 0 || data.index >= TTT.board.length) return;
+    if(TTT.board[data.index]) return;
 
     stopTurnTimer('ttt');
     playSound('click');
@@ -21420,7 +21422,9 @@ function _mpHandleMessageInner(data) {
 
   // Piškvorky 10x10/15x15 move synchronization
   if(data.type === 'psk15-move') {
-    if(PSK15.over || PSK15.board[data.index]) return;
+    if(PSK15.over) return;
+    if(typeof data.index !== 'number' || data.index < 0 || data.index >= PSK15.board.length) return;
+    if(PSK15.board[data.index]) return;
     playSound('move');
     PSK15.board[data.index] = data.player;
     renderPsk15();
@@ -21479,6 +21483,7 @@ function _mpHandleMessageInner(data) {
 
   // RPS choice synchronization
   if(data.type === 'rps-choice') {
+    if(!['rock','paper','scissors'].includes(data.choice)) return;
     MP._rpsOpponentChoice = data.choice;
     if(MP._rpsMyChoice) {
       const myC = MP._rpsMyChoice, opC = MP._rpsOpponentChoice;
@@ -21528,6 +21533,7 @@ function _mpHandleMessageInner(data) {
     if(MEM.locked||MEM.flipped.includes(data.index)||MEM.matched.includes(data.index)) return;
     MEM.flipped.push(data.index);
     const cards=document.querySelectorAll('#memBoard .memory-card');
+    if(!cards[data.index]) return;
     cards[data.index].textContent=MEM.cards[data.index]; cards[data.index].classList.add('flipped');
     playSound('flip');
     if(MEM.flipped.length===2) {
@@ -21557,6 +21563,7 @@ function _mpHandleMessageInner(data) {
 
   // Pexeso board sync (guest receives board from host)
   if(data.type === 'mem-board') {
+    if(!Array.isArray(data.cards) || data.cards.length === 0) return;
     MEM.cards = data.cards;
     MEM.diff = data.diff;
     MEM.flipped=[]; MEM.matched=[]; MEM.s1=0; MEM.s2=0; MEM.locked=false;
@@ -21587,6 +21594,7 @@ function _mpHandleMessageInner(data) {
 
   // Človeče dice + move sync
   if(data.type === 'ludo-roll') {
+    if(typeof data.dice !== 'number' || data.dice < 1 || data.dice > 6) return;
     LUDO.dice = data.dice; LUDO.rolled = true;
     const diceE=['⚀','⚁','⚂','⚃','⚄','⚅'];
     $('ludoDiceVal').textContent=diceE[LUDO.dice-1];
