@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.25';
+const APP_VERSION = '19.26';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6942,8 +6942,7 @@ function makeGuess() {
 }
 function resetGN() {
   GN.secret=0; GN.attempts=0;
-  $('p1ScoreGN').textContent='0';
-  $('p2ScoreGN').textContent='0';
+  if(!MP.isConnected) { GN.s1=0; GN.s2=0; $('p1ScoreGN').textContent='0'; $('p2ScoreGN').textContent='0'; }
   $('gnStatus').textContent='Začnime!';
   $('gnFeedback').textContent='';
   $('gnSecretError').textContent='';
