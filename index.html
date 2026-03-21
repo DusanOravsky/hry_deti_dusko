@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.22';
+const APP_VERSION = '19.23';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6503,8 +6503,9 @@ function clickTTT(i) {
     TTT.over=true;
     w.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));
     playSound('win');
-    if(w.w==='X'){TTT.s1++;$('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
-    else{TTT.s2++;$('tttStatus').textContent='🎉 '+(TTT.mode==='ai'?'Počítač':getTTTPlayerName('O'))+' vyhral!';addWin(2);celebrate('tttCelebration');popScore('p2ScoreTTT');}
+    const tttW=getTTTActiveCard(w.w);
+    if(tttW===1){TTT.s1++;$('tttStatus').textContent='🎉 '+getTTTPlayerName(w.w)+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
+    else{TTT.s2++;$('tttStatus').textContent='🎉 '+(TTT.mode==='ai'?'Počítač':getTTTPlayerName(w.w))+' vyhral!';addWin(2);celebrate('tttCelebration');popScore('p2ScoreTTT');}
     $('p1ScoreTTT').textContent=TTT.s1;
     $('p2ScoreTTT').textContent=TTT.s2;
     renderTTT(); return;
@@ -6700,8 +6701,9 @@ function clickPsk15(i) {
   const w=checkPsk15Win();
   if(w){
     PSK15.over=true;
-    if(w==='X'){PSK15.s1++;$('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';addWin(1);celebrate('psk15Celebration');}
-    else{PSK15.s2++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Počítač':getTTTPlayerName('O'))+' vyhral!';addWin(2);celebrate('psk15Celebration');}
+    const psk15W=getTTTActiveCard(w);
+    if(psk15W===1){PSK15.s1++;$('tttStatus').textContent='🎉 '+getTTTPlayerName(w)+' vyhral!';addWin(1);celebrate('psk15Celebration');}
+    else{PSK15.s2++;$('tttStatus').textContent='🎉 '+(PSK15.mode==='ai'?'Počítač':getTTTPlayerName(w))+' vyhral!';addWin(2);celebrate('psk15Celebration');}
     $('p1ScorePsk15').textContent=PSK15.s1;
     $('p2ScorePsk15').textContent=PSK15.s2;
     renderPsk15(); return;
@@ -6917,16 +6919,17 @@ function makeGuess() {
   }
   GN.attempts++;
   const fb=$('gnFeedback');
+  const gnHostGuesses = !MP.isConnected || (MP.gnRound % 2 !== 0);
   if(val===GN.secret) {
     fb.textContent=`🎉 Správne! Číslo bolo ${GN.secret}. Uhádol si na ${GN.attempts}. pokus!`;
-    GN.s1++; addWin(1); celebrate('gnCelebration'); playSound('win');
-    $('p1ScoreGN').textContent=GN.s1;
+    if(gnHostGuesses){GN.s1++;addWin(1);$('p1ScoreGN').textContent=GN.s1;}else{GN.s2++;addWin(2);$('p2ScoreGN').textContent=GN.s2;}
+    celebrate('gnCelebration'); playSound('win');
     $('gnStatus').textContent='✅ Výborne!';
     gnShowBoxes(false,false,false,false);
   } else if(GN.maxTries>0 && GN.attempts>=GN.maxTries) {
     fb.textContent=`😢 Koniec! Číslo bolo ${GN.secret}. Minuli sa ti pokusy!`;
-    GN.s2++; addWin(2); playSound('wrong');
-    $('p2ScoreGN').textContent=GN.s2;
+    if(gnHostGuesses){GN.s2++;addWin(2);$('p2ScoreGN').textContent=GN.s2;}else{GN.s1++;addWin(1);$('p1ScoreGN').textContent=GN.s1;}
+    playSound('wrong');
     $('gnStatus').textContent='❌ Nevyhral si!';
     gnShowBoxes(false,false,false,false);
   } else {
@@ -20488,6 +20491,26 @@ const AZQ_ALL = [
   {e:'🦭',n:'Tuleň',h:['Žijem na súši aj vo vode','Mám hrubú tukovú vrstvu','Vydávam hlasné štekacie zvuky','Som cicavec zo studených oblastí']},
   {e:'🐒',n:'Opica',h:['Som príbuzná človeka','Viem používať jednoduché nástroje','Žijem v skupinách','Jem ovocie a hmyz']},
   {e:'🦃',n:'Moriak',h:['Som veľký vták','Vydávam charakteristický hlas','Žijem na farmách','Slávny vďaka Dňu vďakyvzdania']},
+  {e:'🐎',n:'Kôň',h:['Ľudia ma jazdia tisícky rokov','Mám kopytá a hrivu','Viem bežať veľmi rýchlo','Som symbolom slobody a sily']},
+  {e:'🐖',n:'Prasa',h:['Mám zvláštny rypáčik','Váľam sa v blate aby som sa ochladil','Vydávam chrochtavý zvuk','Jem takmer všetko']},
+  {e:'🐑',n:'Ovca',h:['Mám hustú vlnu','Vydávam zvuk mé-mé','Žijem v stádach na pastvinách','Z mojej vlny sa robí oblečenie']},
+  {e:'🐐',n:'Koza',h:['Viem liezť po skalách a strmých svahoch','Vydávam zvuk meee','Jem trávu aj kríčky','Mám rožky a bradku']},
+  {e:'🦌',n:'Jeleň',h:['Samec má veľké parohy','Žijem v lese','Vydávam rykavý zvuk','Som symbol hrdosti prírody']},
+  {e:'🐕',n:'Pes',h:['Som verný priateľ človeka','Vydávam štekavý zvuk','Mám citlivý čuch','Pochádza z divého vlka']},
+  {e:'🐈',n:'Mačka',h:['Vydávam priadivý zvuk','Mám ostré zatiahnucie pazúry','Lov je môj inštinkt','Vidím dobre v tme']},
+  {e:'🐇',n:'Zajac',h:['Mám dlhé uši a krátky chvostík','Skáčem pomocou silných zadných nôh','Žijem v nore','Jem trávu a mrkvu']},
+  {e:'🦫',n:'Bobor',h:['Staviam hrádze na riekach z konárov','Mám plochý chvost ako lopata','Viem dobre plávať','Mám veľmi silné zuby na hryzenie dreva']},
+  {e:'🦩',n:'Plameniak',h:['Mám výraznú ružovú farbu peria','Stojím na jednej nohe','Žijem pri slaných jazerách','Som dlhonohý vták zo subtropov']},
+  {e:'🦚',n:'Páv',h:['Samec má nádherný farebný chvost','Rozkladám chvost ako vejár','Mám pierka s \"okom\"','Som jeden z najkrajších vtákov sveta']},
+  {e:'🦆',n:'Kačka',h:['Vydávam zvuk kváka-kváka','Viem plávať aj lietať','Mám vodoodpudivé perie','Živím sa pri rybníkoch a riekach']},
+  {e:'🦢',n:'Labuť',h:['Som elegant vôd — biela a štíhla','Zostanem verná partnerovi celý život','Viem byť agresívna pri ochrane hniezda','Mám dlhý krk a pláva na vodných plochách']},
+  {e:'🐝',n:'Včela',h:['Vyrábam med','Žijem v úli v kolónii','Mám prúžkované telo a žihadlo','Opeľujem kvety']},
+  {e:'🦎',n:'Jašterica',h:['Som plaz s dlhým chvostom','Chvost mi dorastie späť ak ho stratím','Opaľujem sa na skalách','Vydávam jazyk na cítenie okolja']},
+  {e:'🐳',n:'Veľryba',h:['Som najväčší živočích na Zemi','Dýcham vzduch cez dychací otvor','Som cicavec žijúci v mori','Vydávam piesne pod vodou']},
+  {e:'🦀',n:'Krab',h:['Mám desať nôh a dva kliešte','Chodím bokom','Žijem na morskom dne','Mám tvrdý pancier na tele']},
+  {e:'🦞',n:'Langusta',h:['Žijem v mori pri skalnatom dne','Mám dlhé fúzy a tvrdý pancier','Som príbuzná krévety','Považujú ma za pochúťku']},
+  {e:'🐓',n:'Kohút',h:['Oznamujem ráno kikiríkaním','Mám farebné perie a hrebeň','Som samec sliepky','Žijem na farmách']},
+  {e:'🦙',n:'Lama',h:['Žijem v Andách v Južnej Amerike','Ľudia ma využívajú ako nosného zvieraťa','Mám dlhý krk a husté vlnité rúno','Keď som naštvaná pľujem']},
 ];
 const AZQ = {
   deck:[], idx:0, hintIdx:0, options:[],
@@ -20549,8 +20572,11 @@ function azqUpdateHintBtn() {
 function azqShowAnimal() {
   const a=AZQ.deck[AZQ.idx];
   AZQ.hintIdx=0; AZQ.answered=false;
-  $('azqAnimalEmoji').textContent=a.e;
-  $('azqAnimalEmoji').style.filter=azqGetFilter(0);
+  const azqEl=$('azqAnimalEmoji');
+  azqEl.style.transition='none';
+  azqEl.style.filter=azqGetFilter(0);
+  azqEl.textContent=a.e;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ azqEl.style.transition='filter 0.5s ease'; }));
   $('azqHintBox').innerHTML='';
   $('azqNextBtn').style.display='none';
   $('azqRoundNum').textContent=AZQ.idx+1;
@@ -22029,15 +22055,16 @@ function _mpHandleMessageInner(data) {
       TTT.over = true;
       w.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));
       playSound('win');
-      if(w.w==='X'){
+      const tttW=getTTTActiveCard(w.w);
+      if(tttW===1){
         TTT.s1++;
-        $('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';
+        $('tttStatus').textContent='🎉 '+getTTTPlayerName(w.w)+' vyhral!';
         addWin(1);
         celebrate('tttCelebration');
         popScore('p1ScoreTTT');
       } else {
         TTT.s2++;
-        $('tttStatus').textContent='🎉 '+getTTTPlayerName('O')+' vyhral!';
+        $('tttStatus').textContent='🎉 '+getTTTPlayerName(w.w)+' vyhral!';
         addWin(2);
         celebrate('tttCelebration');
         popScore('p2ScoreTTT');
@@ -22082,13 +22109,14 @@ function _mpHandleMessageInner(data) {
     const w = checkPsk15Win();
     if(w) {
       PSK15.over = true;
-      if(w==='X'){
+      const psk15W=getTTTActiveCard(w);
+      if(psk15W===1){
         PSK15.s1++;
-        $('tttStatus').textContent='🎉 '+getTTTPlayerName('X')+' vyhral!';
+        $('tttStatus').textContent='🎉 '+getTTTPlayerName(w)+' vyhral!';
         addWin(1); celebrate('psk15Celebration'); popScore('p1ScorePsk15');
       } else {
         PSK15.s2++;
-        $('tttStatus').textContent='🎉 '+getTTTPlayerName('O')+' vyhral!';
+        $('tttStatus').textContent='🎉 '+getTTTPlayerName(w)+' vyhral!';
         addWin(2); celebrate('psk15Celebration'); popScore('p2ScorePsk15');
       }
       $('p1ScorePsk15').textContent=PSK15.s1;
@@ -22425,7 +22453,7 @@ function _mpHandleMessageInner(data) {
     const iWon = (data.winner==='host'&&MP.isHost)||(data.winner==='guest'&&!MP.isHost);
     const name = iWon ? MP.myName : MP.opponentName;
     $('bsStatus').textContent='🎉 '+name+' vyhral!';
-    addWin(iWon?1:2,'battleship');
+    addWin(iWon?(MP.isHost?1:2):(MP.isHost?2:1),'battleship');
     if(iWon){playSound('win');celebrate('bsCelebration');}
     bsRenderGame();
   }
