@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.19';
+const APP_VERSION = '19.20';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -20357,6 +20357,7 @@ function agaAIAsk(i) {
 }
 function agaAskPVP() {
   if(AGA.pendingQ) return;
+  if(MP.isConnected && mpAGAIsThinker()) return;
   const v=$('agaQInput').value.trim(); if(!v) return;
   AGA.pendingQ=v;
   if(MP.isConnected) {
@@ -20398,12 +20399,16 @@ function agaRenderHistory() {
   if(!AGA.history.length){box.innerHTML='<div style="opacity:0.4;text-align:center;padding:6px;font-size:0.85em">História otázok</div>';return;}
   box.innerHTML=AGA.history.slice().reverse().map((h,ri)=>`<div style="padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between"><span style="opacity:0.8;font-size:0.88em">${AGA.history.length-ri}. ${escHtml(h.q)}</span><span style="font-weight:700;color:${h.a==='Áno'?'#2ecc71':'#e74c3c'};margin-left:8px;flex-shrink:0">${h.a}</span></div>`).join('');
 }
-function agaShowGuessInput() { $('agaGuessInput').value=''; agaShowPhase('guessing'); }
+function agaShowGuessInput() {
+  if(MP.isConnected && mpAGAIsThinker()) return;
+  $('agaGuessInput').value=''; agaShowPhase('guessing');
+}
 function agaBackToPlay() { if(AGA.qLeft>0) agaShowPhase('playing'); }
 function agaNorm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
 function agaSubmitGuess() {
   const guess=$('agaGuessInput').value.trim(); if(!guess) return;
   if(MP.isConnected) {
+    if(mpAGAIsThinker()) return;
     mpSend({type:'aga-guess',guess:guess});
     $('agaGuessInput').disabled=true;
     $('agaStatus').textContent='Čakám na výsledok...';
