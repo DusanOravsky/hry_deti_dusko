@@ -167,9 +167,15 @@ Verzia sa nastavuje v `index.html` (`APP_VERSION`) a musi byt synchronizovana s 
 
 Format: `hrajmesi-vN`
 
-Aktualna verzia: **v19.4**
+Aktualna verzia: **v19.16**
 
 ### Changelog
+
+**v19.16** (2026-03-21) - Bugfixy z code review
+- Fix: Spam Click — `startSC()` nemazal stary `setInterval` pri restarte, stary casovac stale bezal a corrupted state. Opravene ulozenym + mazanim `SC.timer` aj `SC._switchTimeout`
+- Fix: Angry Birds — P2 / AI teraz zacina kazde kolo s cerstve vygenerovanym polom krabic (nie tam kde P1 skoncil)
+- Fix: AB/BS/C4 AI `setTimeout` ulozeny a mazany v `stopAllGames()` — ziadne ghost AI pohyby po navigacii prec
+- Fix: MP input validacia — TTT, PSK15, Connect4, RPS, Pexeso (board sync + flip), Battleship, Ludo kocka — vsetky kontroluju bounds/typy pred pouzitim dat od supera
 
 **v19.4** (2026-03-18) - Simon Says 9 colors + Mancala
 - 🔊 **Simon Says** — Memory sequence game 4/6/9 colors (🔴🔵🟢🟡🟠🟣🟤⚫🩷)
