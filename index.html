@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.23';
+const APP_VERSION = '19.24';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -20462,7 +20462,7 @@ resetAGA();
 // ===== ZVIERACI KVIZ =====
 const AZQ_ALL = [
   {e:'🐘',n:'Slon',h:['Som najväčší suchozemský živočích','Mám veľmi dlhý chobot a veľké uši','Žijem v Afrike alebo Ázii','Som sivý s klmi z kosti']},
-  {e:'🦁',n:'Lev',h:['Volajú ma kráľ zvierat','Samec má veľkú hrivu okolo hlavy','Žijem v skupinách — svorka','Som dravec z Afriky']},
+  {e:'🦁',n:'Lev',h:['Volajú ma kráľ zvierat','Samec má veľkú hrivu okolo hlavy','Žijem v skupinách — tľupa','Som dravec z Afriky']},
   {e:'🐯',n:'Tiger',h:['Som najväčšia mačkovitá šelma','Mám oranžovú srsť s čiernymi pruhmi','Viem dobre plávať','Žijem v Ázii']},
   {e:'🦒',n:'Žirafa',h:['Som najvyšší živočích na Zemi','Mám nezvyčajne dlhý krk','Mám hnedo-biele škvrny','Žijem v africkom savane']},
   {e:'🐬',n:'Delfín',h:['Som veľmi inteligentné morské zviera','Viem skákať nad hladinu vody','Vydávam klikavé zvuky','Som cicavec, nie ryba']},
@@ -20480,7 +20480,7 @@ const AZQ_ALL = [
   {e:'🦈',n:'Žralok',h:['Som vrcholový predátor v oceáne','Mám niekoľko radov zubov','Musím stále plávať','Som ryba, nie cicavec']},
   {e:'🦉',n:'Sova',h:['Vidím dobre v tme','Dokážem otáčať hlavu o 270°','Lovím v noci','Vydávam zvuk „hú hú"']},
   {e:'🦘',n:'Klokan',h:['Žijem v Austrálii','Nosím mláďa vo vrecku na bruchu','Pohybujem sa skokmi','Mám silné zadné nohy']},
-  {e:'🐸',n:'Žaba',h:['Ako mláďa som žubrienka','Viem skákať veľmi ďaleko','Žijem pri vode aj na súši','Vydávam kvákaní zvuk']},
+  {e:'🐸',n:'Žaba',h:['Ako mláďa som žubrienka','Viem skákať veľmi ďaleko','Žijem pri vode aj na súši','Vydávam zvuk kre-ke-ke']},
   {e:'🐺',n:'Vlk',h:['Žijem v smečke s hierarchiou','Vyjúvam na mesiac','Som predkom domáceho psa','Žijem v lese alebo na stepi']},
   {e:'🐍',n:'Had',h:['Nemám nohy','Pohybujem sa vlnením tela','Prehltujem korisť celú','Pravidelne zvlékam kožu']},
   {e:'🦜',n:'Papagáj',h:['Dokážem napodobňovať ľudskú reč','Mám farebné perie','Žijem v tropických oblastiach','Som obľúbený domáci miláčik']},
@@ -20496,19 +20496,19 @@ const AZQ_ALL = [
   {e:'🐑',n:'Ovca',h:['Mám hustú vlnu','Vydávam zvuk mé-mé','Žijem v stádach na pastvinách','Z mojej vlny sa robí oblečenie']},
   {e:'🐐',n:'Koza',h:['Viem liezť po skalách a strmých svahoch','Vydávam zvuk meee','Jem trávu aj kríčky','Mám rožky a bradku']},
   {e:'🦌',n:'Jeleň',h:['Samec má veľké parohy','Žijem v lese','Vydávam rykavý zvuk','Som symbol hrdosti prírody']},
-  {e:'🐕',n:'Pes',h:['Som verný priateľ človeka','Vydávam štekavý zvuk','Mám citlivý čuch','Pochádza z divého vlka']},
-  {e:'🐈',n:'Mačka',h:['Vydávam priadivý zvuk','Mám ostré zatiahnucie pazúry','Lov je môj inštinkt','Vidím dobre v tme']},
+  {e:'🐕',n:'Pes',h:['Som verný priateľ človeka','Vydávam štekavý zvuk','Mám citlivý čuch','Pochádzam z divého vlka']},
+  {e:'🐈',n:'Mačka',h:['Vydávam priadivý zvuk','Mám ostré zatiahnuteľné pazúry','Lov je môj inštinkt','Vidím dobre v tme']},
   {e:'🐇',n:'Zajac',h:['Mám dlhé uši a krátky chvostík','Skáčem pomocou silných zadných nôh','Žijem v nore','Jem trávu a mrkvu']},
   {e:'🦫',n:'Bobor',h:['Staviam hrádze na riekach z konárov','Mám plochý chvost ako lopata','Viem dobre plávať','Mám veľmi silné zuby na hryzenie dreva']},
   {e:'🦩',n:'Plameniak',h:['Mám výraznú ružovú farbu peria','Stojím na jednej nohe','Žijem pri slaných jazerách','Som dlhonohý vták zo subtropov']},
   {e:'🦚',n:'Páv',h:['Samec má nádherný farebný chvost','Rozkladám chvost ako vejár','Mám pierka s \"okom\"','Som jeden z najkrajších vtákov sveta']},
   {e:'🦆',n:'Kačka',h:['Vydávam zvuk kváka-kváka','Viem plávať aj lietať','Mám vodoodpudivé perie','Živím sa pri rybníkoch a riekach']},
-  {e:'🦢',n:'Labuť',h:['Som elegant vôd — biela a štíhla','Zostanem verná partnerovi celý život','Viem byť agresívna pri ochrane hniezda','Mám dlhý krk a pláva na vodných plochách']},
+  {e:'🦢',n:'Labuť',h:['Som elegant vôd — biela a štíhla','Zostanem verná partnerovi celý život','Viem byť agresívna pri ochrane hniezda','Mám dlhý krk a plávam na vodných plochách']},
   {e:'🐝',n:'Včela',h:['Vyrábam med','Žijem v úli v kolónii','Mám prúžkované telo a žihadlo','Opeľujem kvety']},
-  {e:'🦎',n:'Jašterica',h:['Som plaz s dlhým chvostom','Chvost mi dorastie späť ak ho stratím','Opaľujem sa na skalách','Vydávam jazyk na cítenie okolja']},
+  {e:'🦎',n:'Jašterica',h:['Som plaz s dlhým chvostom','Chvost mi dorastie späť ak ho stratím','Opaľujem sa na skalách','Vysúvam jazyk na cítenie okolia']},
   {e:'🐳',n:'Veľryba',h:['Som najväčší živočích na Zemi','Dýcham vzduch cez dychací otvor','Som cicavec žijúci v mori','Vydávam piesne pod vodou']},
   {e:'🦀',n:'Krab',h:['Mám desať nôh a dva kliešte','Chodím bokom','Žijem na morskom dne','Mám tvrdý pancier na tele']},
-  {e:'🦞',n:'Langusta',h:['Žijem v mori pri skalnatom dne','Mám dlhé fúzy a tvrdý pancier','Som príbuzná krévety','Považujú ma za pochúťku']},
+  {e:'🦞',n:'Langusta',h:['Žijem v mori pri skalnatom dne','Mám dlhé fúzy a tvrdý pancier','Som príbuzná krevety','Považujú ma za pochúťku']},
   {e:'🐓',n:'Kohút',h:['Oznamujem ráno kikiríkaním','Mám farebné perie a hrebeň','Som samec sliepky','Žijem na farmách']},
   {e:'🦙',n:'Lama',h:['Žijem v Andách v Južnej Amerike','Ľudia ma využívajú ako nosného zvieraťa','Mám dlhý krk a husté vlnité rúno','Keď som naštvaná pľujem']},
 ];
