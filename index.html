@@ -2233,15 +2233,12 @@ body.light .welcome-mode-btn.active { background:linear-gradient(135deg,#667eea,
 
 /* ===== FULLSCREEN MODE ===== */
 .fullscreen-active {
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: 100vw !important;
-  max-height: 100vh !important;
-  object-fit: contain;
+  max-width: none !important;
   background: #000 !important;
   border-radius: 0 !important;
   border: none !important;
   margin: 0 !important;
+  display: block !important;
 }
 
 /* MANCALA */
@@ -4676,7 +4673,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.11';
+const APP_VERSION = '19.12';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4880,12 +4877,21 @@ function toggleFullscreen(elementId) {
     wrapper.requestFullscreen()
       .then(() => {
         element.classList.add('fullscreen-active');
+        // Scale canvas maintaining aspect ratio
+        const aspect = element.width / element.height;
+        const sw = window.screen.width, sh = window.screen.height;
+        if(sw / sh > aspect) {
+          element.style.height = sh + 'px';
+          element.style.width = (sh * aspect) + 'px';
+        } else {
+          element.style.width = sw + 'px';
+          element.style.height = (sw / aspect) + 'px';
+        }
         playSound('click');
       })
       .catch(err => {
         console.log('Fullscreen error:', err);
         showToast('⛶ Fullscreen nie je podporovaný', 2000, 'rgba(245,87,108,0.9)');
-        // Restore on error
         if(element._fsOriginalParent) {
           element._fsOriginalParent.insertBefore(element, element._fsOriginalNext);
           wrapper.remove();
@@ -4900,12 +4906,13 @@ function toggleFullscreen(elementId) {
 // Auto-cleanup when exiting fullscreen
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement) {
-    // Restore canvas to original position
     const wrapper = $('fsWrapper');
     if(wrapper) {
       const canvas = wrapper.querySelector('canvas');
       if(canvas && canvas._fsOriginalParent) {
         canvas.classList.remove('fullscreen-active');
+        canvas.style.width = '';
+        canvas.style.height = '';
         canvas._fsOriginalParent.insertBefore(canvas, canvas._fsOriginalNext);
       }
       wrapper.remove();
@@ -20496,7 +20503,7 @@ function setWelcomeMode(mode) {
   }
 }
 
-function applyGameMode(mode) {
+function applyGameMode(mode = welcomeGameMode) {
   // Switch all games that support vs PC mode
   const games = ['ticTacToe','rockPaper','guessNum','memory','connect4'];
   games.forEach(gId => {
