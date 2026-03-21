@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.18';
+const APP_VERSION = '19.19';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -20244,6 +20244,7 @@ function mpAGAIsThinker() {
   return (MP.isHost && hostThinks) || (!MP.isHost && !hostThinks);
 }
 function applyAGAMPStart() {
+  document.querySelectorAll('#animalGuess .mode-btn').forEach(b=>b.style.display='none');
   const isThinker = mpAGAIsThinker();
   const opponent = MP.opponentName || (MP.isHost ? globalP2 : globalP1);
   if(isThinker) {
@@ -20265,14 +20266,17 @@ function resetAGA() {
   agaUpdateNames();
   if(MP.isConnected) {
     applyAGAMPStart();
-  } else if(welcomeGameMode==='ai') {
-    agaShowPhase('ai_intro');
-    $('agaStatus').textContent='Myslím si zviera...';
   } else {
-    agaShowPhase('setup');
-    const n2=getActiveP2Name('animalGuess');
-    $('agaSetupText').textContent='🤫 '+n2+': Myslí na zviera ('+getActiveP1Name('animalGuess')+' sa nepozerá!)';
-    $('agaStatus').textContent='Hráč 2 myslí na zviera';
+    document.querySelectorAll('#animalGuess .mode-btn').forEach(b=>b.style.display='');
+    if(welcomeGameMode==='ai') {
+      agaShowPhase('ai_intro');
+      $('agaStatus').textContent='Myslím si zviera...';
+    } else {
+      agaShowPhase('setup');
+      const n2=getActiveP2Name('animalGuess');
+      $('agaSetupText').textContent='🤫 '+n2+': Myslí na zviera ('+getActiveP1Name('animalGuess')+' sa nepozerá!)';
+      $('agaStatus').textContent='Hráč 2 myslí na zviera';
+    }
   }
   $('agaSecretInput').value=''; $('agaSecretError').textContent='';
 }
@@ -20281,6 +20285,7 @@ function agaUpdateNames() {
   $('agaP2Name').textContent=welcomeGameMode==='ai'?'Počítač':getActiveP2Name('animalGuess');
 }
 function setAGAMode(m, btn) {
+  if(MP.isConnected) return;
   document.querySelectorAll('#animalGuess .mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   resetAGA();
@@ -20320,6 +20325,7 @@ function agaStartPlaying() {
   agaShowPhase('playing');
   $('agaQLeft').textContent=20;
   $('agaAnswerBlock').style.display='none'; $('agaQInput').value='';
+  $('agaMPThinkerView').style.display='none'; $('agaMPGuesserWait').style.display='none';
   const isAI=welcomeGameMode==='ai';
   $('agaPVPQuestions').style.display=isAI?'none':'';
   $('agaAIQBox').style.display=isAI?'':'none';
