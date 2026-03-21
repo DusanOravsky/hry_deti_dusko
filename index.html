@@ -350,6 +350,8 @@ body.light .game-search-box input:focus {
 body.light .game-search-box input::placeholder { color:rgba(0,0,0,0.35); }
 body.light #clearSearchBtn { background:rgba(0,0,0,0.06); }
 body.light #clearSearchBtn:hover { background:rgba(0,0,0,0.12); }
+/* Minesweeper grid - light mode */
+body.light #msGrid { background:rgba(80,120,200,0.12) !important; border-color:rgba(80,120,200,0.35) !important; }
 /* Game icon hover animations */
 @keyframes gameIconHover {
   0%, 100% { transform: scale(1) rotate(0deg); }
@@ -2847,6 +2849,10 @@ body.light .man-store {
         <div class="bs-grid-wrap"><div class="bs-grid-label" id="bsEnemyLabel">Nepriateľ</div><div class="bs-grid" id="bsEnemyGrid"></div></div>
         <div class="bs-grid-wrap"><div class="bs-grid-label" id="bsMyLabel">Moja doska</div><div class="bs-grid" id="bsMyGrid"></div></div>
       </div>
+      <div id="bsShipStatus" style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-top:12px;padding:8px 14px;background:rgba(128,128,128,0.07);border-radius:12px;font-size:0.85em">
+        <div><div style="text-align:center;font-weight:700;margin-bottom:5px;opacity:0.7">🎯 Súperove lode</div><div id="bsEnemyShipStatus"></div></div>
+        <div><div style="text-align:center;font-weight:700;margin-bottom:5px;opacity:0.7">🛡️ Moje lode</div><div id="bsMyShipStatus"></div></div>
+      </div>
     </div>
     <div class="buttons-group"><button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('battleship'):resetBS()">🔄 Nová hra</button></div>
   </div>
@@ -3781,11 +3787,16 @@ body.light .man-store {
     </div>
     <div class="status" id="snakeStatus">Pripravení? Štart!</div>
     <canvas id="snakeCanvas" width="320" height="320" style="display:block;margin:10px auto;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:#1a1a2e;touch-action:none"></canvas>
-    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap">
-      <button class="action-btn" onclick="snakeSetDir('left')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">◀</button>
-      <button class="action-btn" onclick="snakeSetDir('up')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▲</button>
-      <button class="action-btn" onclick="snakeSetDir('down')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▼</button>
-      <button class="action-btn" onclick="snakeSetDir('right')" style="width:60px;padding:12px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▶</button>
+    <div style="display:grid;grid-template-columns:repeat(3,60px);grid-template-rows:repeat(3,60px);gap:4px;justify-content:center;margin:10px auto 0">
+      <div></div>
+      <button class="action-btn" onclick="snakeSetDir('up')" style="width:60px;height:60px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▲</button>
+      <div></div>
+      <button class="action-btn" onclick="snakeSetDir('left')" style="width:60px;height:60px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">◀</button>
+      <div></div>
+      <button class="action-btn" onclick="snakeSetDir('right')" style="width:60px;height:60px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▶</button>
+      <div></div>
+      <button class="action-btn" onclick="snakeSetDir('down')" style="width:60px;height:60px;font-size:1.5em;background:rgba(67,233,123,0.3);border:2px solid rgba(67,233,123,0.6);border-radius:12px">▼</button>
+      <div></div>
     </div>
     <div class="celebration" id="snakeCelebration">🎉</div>
     <div class="buttons-group">
@@ -4667,7 +4678,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.4';
+const APP_VERSION = '19.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -8642,7 +8653,7 @@ function resetQuiz() {
 const BS = {
   boards:[null,null], hits:[null,null],
   currSetup:0, selectedShip:null, orientH:true,
-  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy', enemySunk:new Set()
+  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy', enemySunk:new Set(), enemySunkShipIds:new Set()
 };
 function setBSDiff(d,btn) { BS.diff=d; saveDiff('battleship',d); document.querySelectorAll('#bsAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
@@ -8651,7 +8662,7 @@ function setBSDiff(d,btn) { BS.diff=d; saveDiff('battleship',d); document.queryS
 function resetBS() {
   BS.boards=[Array(100).fill(0),Array(100).fill(0)];
   BS.hits=[Array(100).fill(0),Array(100).fill(0)];
-  BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false; BS.aiHits=[]; BS.aiMode='hunt'; BS.enemySunk=new Set();
+  BS.placedShips=[[],[]]; BS.currSetup=0; BS.selectedShip=null; BS.orientH=true; BS.turn=1; BS.over=false; BS.aiHits=[]; BS.aiMode='hunt'; BS.enemySunk=new Set(); BS.enemySunkShipIds=new Set();
   MP._meReady=false; MP._opponentReady=false;
   $('bsSetupArea').style.display='block';
   $('bsGameArea').style.display='none';
@@ -8818,6 +8829,51 @@ function bsRenderGame() {
     }
   }
   activeTurn('bsP1Card','bsP2Card',BS.turn);
+  bsRenderShipStatus();
+}
+function bsRenderShipStatus() {
+  const viewAs = (welcomeGameMode==='ai'||MP.isConnected) ? (MP.isConnected?(MP.isHost?1:2):1) : BS.turn;
+  const oppBoardIdx = MP.isConnected ? (MP.isHost ? 1 : 0) : (viewAs===1?1:0);
+  const myBoardIdx  = MP.isConnected ? (MP.isHost ? 0 : 1) : (viewAs===1?0:1);
+  function renderShips(el, boardIdx, isEnemy) {
+    el.innerHTML='';
+    for(let shipId=1;shipId<=bsShipDefs.length;shipId++){
+      const def=bsShipDefs[shipId-1];
+      const cells=[];
+      for(let j=0;j<100;j++) if(BS.boards[boardIdx][j]===shipId) cells.push(j);
+      let sunk, hitCount;
+      if(isEnemy && MP.isConnected){
+        sunk=BS.enemySunkShipIds.has(shipId); hitCount=sunk?def.size:0;
+      } else {
+        hitCount=cells.filter(j=>BS.hits[boardIdx][j]===2).length;
+        sunk=cells.length>0&&hitCount===def.size;
+      }
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:5px;margin-bottom:3px';
+      const em=document.createElement('span');
+      em.style.cssText='font-size:1em;width:1.8em;text-align:center'+(sunk?';opacity:0.4':'');
+      em.textContent=sunk?'💀':def.emoji;
+      row.appendChild(em);
+      const bar=document.createElement('div');
+      bar.style.cssText='display:flex;gap:2px';
+      for(let k=0;k<def.size;k++){
+        const sq=document.createElement('div');
+        let color;
+        if(isEnemy&&MP.isConnected){
+          color=sunk?'#ef4444':'rgba(148,163,184,0.3)';
+        } else {
+          const hit=cells[k]!==undefined&&BS.hits[boardIdx][cells[k]]===2;
+          color=hit?'#ef4444':(isEnemy?'rgba(99,102,241,0.3)':'#22c55e');
+        }
+        sq.style.cssText=`width:11px;height:11px;border-radius:2px;background:${color};border:1px solid rgba(128,128,128,0.2)`;
+        bar.appendChild(sq);
+      }
+      row.appendChild(bar);
+      el.appendChild(row);
+    }
+  }
+  renderShips($('bsEnemyShipStatus'),oppBoardIdx,true);
+  renderShips($('bsMyShipStatus'),myBoardIdx,false);
 }
 function bsShoot(idx) {
   if(BS.over) return;
@@ -13209,6 +13265,8 @@ function doodStep() {
           // Land on platform
           if(p.type === 'breaking') {
             p.broken = true;
+            DOOD.vy = DOOD_JUMP;
+            DOOD.y = p.y - DOOD_PLAYER_R;
             playSound('hit');
           } else if(p.powerup === 'rocket') {
             DOOD.rocketFrames = DOOD_ROCKET_DURATION;
@@ -17065,7 +17123,7 @@ function msRenderGrid(){
     for(let r=0;r<MS.rows;r++)for(let c=0;c<MS.cols;c++){
       const d=document.createElement('div');
       d.dataset.r=r;d.dataset.c=c;
-      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;border:1px solid rgba(255,255,255,0.25);';
+      d.style.cssText='width:'+cellSize+'px;height:'+cellSize+'px;display:flex;align-items:center;justify-content:center;font-size:'+(cellSize>28?'14':'11')+'px;font-weight:bold;border-radius:3px;cursor:pointer;user-select:none;transition:background 0.15s;border:1px solid rgba(80,120,210,0.5);';
       d.addEventListener('click',()=>msCellClick(r,c));
       d.addEventListener('contextmenu',(e)=>{e.preventDefault();if(MS.started&&!MS.gameOver&&!MS.won&&!MS.firstClick){msFlag(r,c);msRenderGrid();}});
       grid.appendChild(d);
@@ -17091,7 +17149,7 @@ function msRenderGrid(){
     } else if(cell.flagged){
       el.textContent='🚩';el.style.background='rgba(255,193,7,0.35)';el.style.color='';el.style.borderColor='rgba(255,193,7,0.5)';
     } else {
-      el.textContent='';el.style.background='rgba(100,140,200,0.35)';el.style.color='';el.style.borderColor='rgba(255,255,255,0.3)';
+      el.textContent='';el.style.background='rgba(80,120,210,0.65)';el.style.color='';el.style.borderColor='rgba(80,120,210,0.5)';
     }
   }
 }
@@ -17815,7 +17873,8 @@ function abFly(){
           abGameOver();
         }else{
           if(welcomeGameMode==='ai'){
-            setTimeout(abAiShoot,800);
+            const abDelay=AB.diff==='easy'?1400:AB.diff==='medium'?950:700;
+            setTimeout(abAiShoot,abDelay);
           }else{
             AB.bird=null;
             $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak! ('+AB.shots2+'/'+AB.maxShots+')';
@@ -17839,7 +17898,8 @@ function abSwitchTurn(){
   $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak!';
   abRender();
   if(welcomeGameMode==='ai'){
-    setTimeout(abAiShoot,1000);
+    const abDelay=AB.diff==='easy'?1800:AB.diff==='medium'?1200:900;
+    setTimeout(abAiShoot,abDelay);
   }
 }
 
@@ -17856,14 +17916,14 @@ function abAiShoot(){
   const dy=targetY-(AB.slingY-30);
   const dist=Math.sqrt(dx*dx+dy*dy);
   const flightTime=Math.max(40,Math.min(70,40+dist/8)); // 40-70 frames
-  // Ballistic equations: x=x0+vx*t, y=y0+vy*t+0.5*g*t^2 (g=0.5)
+  // Discrete Euler: vy updated before y each step, so y(t)=y0+vy0*t+0.25*t*(t+1)
   let vx=dx/flightTime;
-  let vy=(dy-0.25*flightTime*flightTime)/flightTime;
-  // Add error based on difficulty
+  let vy=(dy-0.25*flightTime*(flightTime+1))/flightTime;
+  // Add error based on difficulty (error is velocity jitter, ~errorX*flightTime = pixel spread)
   let errorX=0,errorY=0;
-  if(AB.diff==='easy'){errorX=35;errorY=35;}
-  else if(AB.diff==='medium'){errorX=12;errorY=12;}
-  else{errorX=3;errorY=3;} // hard: very precise
+  if(AB.diff==='easy'){errorX=3;errorY=3;}
+  else if(AB.diff==='medium'){errorX=1.2;errorY=1.2;}
+  else{errorX=0.25;errorY=0.25;} // hard: very precise
   vx+=(Math.random()-0.5)*errorX;
   vy+=(Math.random()-0.5)*errorY;
   AB.bird={x:AB.slingX,y:AB.slingY-30,vx,vy};
@@ -20270,7 +20330,8 @@ function renderMobileGrid() {
 function filterGames() {
   const input = $('gameSearchInput');
   const clearBtn = $('clearSearchBtn');
-  const searchText = input.value.toLowerCase().trim();
+  const normStr = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const searchText = normStr(input.value.trim());
 
   // Show/hide clear button
   if(clearBtn) clearBtn.style.display = searchText ? 'flex' : 'none';
@@ -20298,10 +20359,10 @@ function filterGames() {
     filtered = filtered.filter(g => g.cat === _selectedCat || g.mode === 'always');
   }
 
-  // Search filter - check game name
+  // Search filter - check game name (diacritic + case insensitive)
   filtered = filtered.filter(g => {
     const gameName = GAME_NAMES[g.id] || g.id;
-    return gameName.toLowerCase().includes(searchText);
+    return normStr(gameName).includes(searchText);
   });
 
   // Favorites first, then rest
@@ -21560,14 +21621,14 @@ function _mpHandleMessageInner(data) {
     const isHit = !!BS.boards[myBoard][idx];
     BS.hits[myBoard][idx] = isHit ? 2 : 1;
     // Check if the hit ship is fully sunk
-    let sunkCells = null;
+    let sunkCells = null, sunkShipId = null;
     if(isHit) {
       const shipId = BS.boards[myBoard][idx];
       const cells = [];
       for(let j=0;j<100;j++) if(BS.boards[myBoard][j]===shipId) cells.push(j);
-      if(cells.every(j=>BS.hits[myBoard][j]===2)) sunkCells = cells;
+      if(cells.every(j=>BS.hits[myBoard][j]===2)) { sunkCells = cells; sunkShipId = shipId; }
     }
-    mpSend({ type:'bs-result', index:idx, hit:isHit, sunkCells: sunkCells });
+    mpSend({ type:'bs-result', index:idx, hit:isHit, sunkCells: sunkCells, sunkShipId: sunkShipId });
     playSound(isHit ? 'hit' : 'miss');
     // Only switch turn on miss — hit means opponent shoots again
     if(!isHit) BS.turn = BS.turn===1?2:1;
@@ -21594,7 +21655,7 @@ function _mpHandleMessageInner(data) {
     const oppBoard = MP.isHost ? 1 : 0;
     BS.hits[oppBoard][data.index] = data.hit ? 2 : 1;
     // Store sunk ship cells from opponent
-    if(data.sunkCells) { data.sunkCells.forEach(j=>BS.enemySunk.add(j)); playSound('win'); }
+    if(data.sunkCells) { data.sunkCells.forEach(j=>BS.enemySunk.add(j)); if(data.sunkShipId) BS.enemySunkShipIds.add(data.sunkShipId); playSound('win'); }
     playSound(data.hit ? 'hit' : 'miss');
     $('bsStatus').textContent = data.sunkCells ? '🚢 Potopená!' : (data.hit ? '💥 Zásah! Strieľaj znova!' : '🌊 Vedľa!');
     if(!data.hit) BS.turn = BS.turn===1?2:1;
