@@ -4678,7 +4678,7 @@ body.light .man-store {
       <li>Kedykoľvek môžeš hádať pomocou tlačidla <b>💡 Hádám!</b></li>
       <li>Uhádneš zviera do 20 otázok?</li>
     </ul></div>
-    <div class="player-info">
+    <div class="player-info" id="agaPlayerInfo">
       <div class="player-card player1 active-turn" id="agaP1Card">
         <div class="player-name-display" id="agaP1Name">Hráč 1</div>
         <div class="player-score" id="agaP1Score">0</div>
@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.21';
+const APP_VERSION = '19.22';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -21206,7 +21206,7 @@ function applyGameMode(mode = welcomeGameMode) {
     $('ludoPlayerSel').style.display='flex';
   }
   // Hide player cards for solo games in AI mode (like Tetris/Snake/Racing)
-  ['doodPlayerInfo','wdlPlayerInfo','beePlayerInfo','socPlayerInfo','simonPlayerInfo'].forEach(id => {
+  ['doodPlayerInfo','wdlPlayerInfo','beePlayerInfo','socPlayerInfo','simonPlayerInfo','agaPlayerInfo','azqPlayerInfo'].forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'none' : '';
   });
@@ -22320,38 +22320,47 @@ function _mpHandleMessageInner(data) {
   }
   if(data.type === 'aga-guess') {
     // Thinker evaluates guesser's final guess
+    // P1=host, P2=guest on BOTH devices. hostGuesses when agaRound is odd.
     const guess=data.guess;
     const correct=agaNorm(guess)===agaNorm(AGA.animal)||agaNorm(AGA.animal).startsWith(agaNorm(guess));
     mpSend({type:'aga-result',correct:correct,animal:AGA.animal});
+    const hostGuesses=MP.agaRound%2!==0;
     const guesserName=MP.opponentName||'Súper';
     if(correct){
       $('agaResultText').textContent='🎉 '+guesserName+' uhádol(a)!';
       $('agaResultAnimal').textContent='🐾 '+AGA.animal;
-      AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');
+      if(hostGuesses){AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');}
+      else{AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');}
       playSound('win'); celebrate('agaCelebration'); launchConfetti();
     } else {
       $('agaResultText').textContent='💪 '+guesserName+' neuhádol. Ty si vyhral(a)!';
       $('agaResultAnimal').textContent='🐾 '+escHtml(guess)+' ✗ → '+AGA.animal;
-      AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');
+      if(hostGuesses){AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');}
+      else{AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');}
       playSound('win'); celebrate('agaCelebration'); launchConfetti();
     }
     agaShowPhase('result'); AGA.round++;
   }
   if(data.type === 'aga-result') {
     // Guesser receives result from thinker
+    // P1=host, P2=guest on BOTH devices. hostGuesses when agaRound is odd.
     const correct=data.correct, target=data.animal;
-    $('agaGuessInput').disabled=false;
+    const hostGuesses=MP.agaRound%2!==0;
+    const guesserName=MP.myName||'Ty';
     if(correct){
-      $('agaResultText').textContent='🎉 '+(MP.myName||'Ty')+' si uhádol(a)!';
+      $('agaResultText').textContent='🎉 '+guesserName+' si uhádol(a)!';
       $('agaResultAnimal').textContent='🐾 '+target;
-      AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');
+      if(hostGuesses){AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');}
+      else{AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');}
       playSound('win'); celebrate('agaCelebration'); launchConfetti();
     } else {
       $('agaResultText').textContent='❌ Nie... zviera bolo: '+target;
       $('agaResultAnimal').textContent='🐾 '+($('agaGuessInput').value.trim()||'?')+' ✗ → '+target;
-      AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');
+      if(hostGuesses){AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');}
+      else{AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');}
       playSound('wrong');
     }
+    $('agaGuessInput').disabled=false;
     agaShowPhase('result'); AGA.round++;
   }
 
