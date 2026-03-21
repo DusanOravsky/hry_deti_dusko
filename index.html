@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.26';
+const APP_VERSION = '19.27';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6829,10 +6829,9 @@ function showRPSResult(n1,c1,n2,c2) {
   $('rpsStatus').textContent = RPS.mode==='pvp'?getP1Name('rps')+' — vyber tah!':'Vyber svoj tah!';
 }
 function resetRPS() {
-  RPS.s1=0; RPS.s2=0; RPS.step=1; RPS.p1Choice=null;
+  if(!MP.isConnected) { RPS.s1=0; RPS.s2=0; $('p1ScoreRPS').textContent='0'; $('p2ScoreRPS').textContent='0'; }
+  RPS.step=1; RPS.p1Choice=null;
   RPS.playerHist={rock:0,paper:0,scissors:0};
-  $('p1ScoreRPS').textContent='0';
-  $('p2ScoreRPS').textContent='0';
   $('rpsResult').classList.remove('show');
   $('rpsStatus').textContent='Vyber svoj tah!';
   $('rpsCover').classList.remove('show');
@@ -7141,9 +7140,8 @@ function aiMemTurn() {
 }
 function resetMem() {
   MEM._aiTimeouts.forEach(clearTimeout); MEM._aiTimeouts=[];
-  MEM.s1=0; MEM.s2=0; MEM.player=1; MEM.locked=false; MEM.aiMemory={};
-  $('p1ScoreMem').textContent='0';
-  $('p2ScoreMem').textContent='0';
+  if(!MP.isConnected) { MEM.s1=0; MEM.s2=0; $('p1ScoreMem').textContent='0'; $('p2ScoreMem').textContent='0'; }
+  MEM.player=1; MEM.locked=false; MEM.aiMemory={};
   $('memStatus').textContent=getP1Name('mem')+' na rade!';
   activeTurn('memP1Card','memP2Card',1);
   initMem();
