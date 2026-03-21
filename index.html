@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.27';
+const APP_VERSION = '19.28';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -13007,8 +13007,8 @@ function ludoDoMove(pieceIdx) {
     $('ludoStatus').textContent='🎉 '+pName+' vyhral!';
     LUDO.scores[p]++;
     for(let i=0;i<LUDO.numPlayers;i++) $('ludoScore'+i).textContent=LUDO.scores[i];
-    // Stats: P1 win=1, P2 win=2, others=draw
-    if(p===0) addWin(1,'ludo'); else if(p===1) addWin(2,'ludo'); else addWin(0,'ludo');
+    // Stats: P1 win=1, P2 win=2, others=draw (MP: host may be red or blue depending on round)
+    let ludoStatW; if(MP.isConnected){const hostIsRed=MP.ludoRound%2===0;const hostWon=(p===0&&hostIsRed)||(p===1&&!hostIsRed);ludoStatW=hostWon?1:2;}else{ludoStatW=p===0?1:(p===1?2:0);} addWin(ludoStatW,'ludo');
     playSound('win');celebrate('ludoCelebration');
     renderLudo(); return;
   }
