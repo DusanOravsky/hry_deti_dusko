@@ -4673,7 +4673,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.13';
+const APP_VERSION = '19.14';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -21452,6 +21452,7 @@ function _mpHandleMessageInner(data) {
   if(data.type === 'c4-move') {
     if(C4.over) return;
     const col = data.col, player = data.player;
+    if(col < 0 || col >= 7 || (player !== 1 && player !== 2)) return;
     for(let r=5;r>=0;r--) {
       if(C4.board[col][r]===0) {
         C4.board[col][r]=player; renderC4();
@@ -21523,6 +21524,7 @@ function _mpHandleMessageInner(data) {
 
   // Pexeso (Memory) flip synchronization
   if(data.type === 'mem-flip') {
+    if(data.index < 0 || data.index >= MEM.cards.length) return;
     if(MEM.locked||MEM.flipped.includes(data.index)||MEM.matched.includes(data.index)) return;
     MEM.flipped.push(data.index);
     const cards=document.querySelectorAll('#memBoard .memory-card');
@@ -21628,6 +21630,7 @@ function _mpHandleMessageInner(data) {
   if(data.type === 'bs-shoot') {
     // Opponent shot at our board
     const idx = data.index;
+    if(idx < 0 || idx >= 100) return;
     const myBoard = MP.isHost ? 0 : 1;
     const isHit = !!BS.boards[myBoard][idx];
     BS.hits[myBoard][idx] = isHit ? 2 : 1;
