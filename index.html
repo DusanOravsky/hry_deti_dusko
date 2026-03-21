@@ -715,7 +715,7 @@ body.light .subtitle { color:rgba(0,0,0,0.5); }
 .maze-dir-btn:active { background:rgba(255,255,255,0.25); transform:scale(0.9); }
 .maze-dir-btn.empty { background:transparent; cursor:default; }
 @media(max-width:480px) { .maze-controls { grid-template-columns:repeat(3,50px); grid-template-rows:repeat(3,50px); } .maze-dir-btn { width:50px; height:50px; font-size:1.3em; } }
-body.light .maze-dir-btn { background:rgba(0,0,0,0.08); color:#333; }
+body.light .maze-dir-btn:not(.empty) { background:rgba(0,0,0,0.08); color:#333; }
 body.light .maze-dir-btn:active { background:rgba(0,0,0,0.18); }
 
 /* MODE & DIFFICULTY */
@@ -3443,7 +3443,7 @@ body.light .man-store {
       <div class="maze-dir-btn empty"></div>
     </div>
     <div class="celebration" id="mzCelebration">🎉</div>
-    <div class="buttons-group">
+    <div class="buttons-group" style="margin-top:24px">
       <button class="action-btn primary-btn" onclick="startMaze()">▶️ Štart</button>
       <button class="action-btn danger-btn" onclick="resetMaze()">🔄 Nová hra</button>
     </div>
@@ -4678,7 +4678,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.5';
+const APP_VERSION = '19.6';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
