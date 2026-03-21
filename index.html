@@ -4673,7 +4673,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.15';
+const APP_VERSION = '19.16';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -10651,9 +10651,11 @@ function resetST(){
 // =============================================================================
 // SEKCIA 23: SPAM CLICK
 // =============================================================================
-const SC = { player:1, s1:0, s2:0, count:0, timer:null, running:false, p1Score:0, p2Score:0, over:false };
+const SC = { player:1, s1:0, s2:0, count:0, timer:null, _switchTimeout:null, running:false, p1Score:0, p2Score:0, over:false };
 
 function startSC() {
+  clearInterval(SC.timer); SC.timer=null;
+  clearTimeout(SC._switchTimeout); SC._switchTimeout=null;
   SC.count=0; SC.player=1; SC.s1=0; SC.s2=0; SC.p1Score=0; SC.p2Score=0; SC.over=false;
   $('p1ScoreSC').textContent='0';
   $('p2ScoreSC').textContent='0';
@@ -10692,7 +10694,7 @@ function scRoundEnd() {
     $('p1ScoreSC').textContent=SC.p1Score;
     SC.player=2; SC.waiting=true; activeTurn('scP1Card','scP2Card',2);
     $('scStatus').textContent=getP1Name('sc')+': '+SC.p1Score+' klikov! Teraz '+getP2Name('sc')+'!';
-    setTimeout(startSCRound,1500);
+    SC._switchTimeout=setTimeout(startSCRound,1500);
   } else {
     SC.p2Score=SC.count;
     $('p2ScoreSC').textContent=SC.p2Score;
@@ -10705,7 +10707,9 @@ function scRoundEnd() {
   }
 }
 function resetSC() {
-  clearInterval(SC.timer); SC.running=false; SC.over=false; SC.waiting=false; SC.player=1; SC.count=0;
+  clearInterval(SC.timer); SC.timer=null;
+  clearTimeout(SC._switchTimeout); SC._switchTimeout=null;
+  SC.running=false; SC.over=false; SC.waiting=false; SC.player=1; SC.count=0;
   $('p1ScoreSC').textContent='0';
   $('p2ScoreSC').textContent='0';
   $('scStatus').textContent='Klikni Štart!';
@@ -20096,7 +20100,7 @@ function stopAllGames(){
   if(typeof MZ!=='undefined'&&MZ.timer){clearInterval(MZ.timer);MZ.timer=null;}
   if(typeof MZ!=='undefined'&&MZ._aiTimeout){clearTimeout(MZ._aiTimeout);MZ._aiTimeout=null;}
   // Spam Click timer
-  if(typeof SC!=='undefined'&&SC.timer){clearInterval(SC.timer);SC.timer=null;SC.running=false;}
+  if(typeof SC!=='undefined'){if(SC.timer){clearInterval(SC.timer);SC.timer=null;}if(SC._switchTimeout){clearTimeout(SC._switchTimeout);SC._switchTimeout=null;}SC.running=false;}
   // Quiz timer
   if(typeof QUIZ!=='undefined'&&QUIZ.timerInterval){clearTimeout(QUIZ.timerInterval);QUIZ.timerInterval=null;}
   // Reaction timer
