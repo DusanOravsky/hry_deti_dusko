@@ -2327,7 +2327,7 @@ body.light .man-store {
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 50 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 52 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -4666,6 +4666,148 @@ body.light .man-store {
     </div>
   </div>
 
+  <!-- ===== HÁDAJ ZVIERA ===== -->
+  <div class="game-area" id="animalGuess">
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setAGAMode('pvp',this)">👥 2 Hráči</button>
+      <button class="mode-btn" onclick="setAGAMode('ai',this)">👤 vs. Počítač</button>
+    </div>
+    <div class="rules"><h3>🐾 Hádaj Zviera:</h3><ul>
+      <li><b>2 Hráči:</b> Hráč 2 myslí na zviera → Hráč 1 kladie max 20 otázok (Áno/Nie)</li>
+      <li><b>vs. Počítač:</b> Počítač myslí na zviera → klikaj na otázky z tlačidiel</li>
+      <li>Kedykoľvek môžeš hádať pomocou tlačidla <b>💡 Hádám!</b></li>
+      <li>Uhádneš zviera do 20 otázok?</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="agaP1Card">
+        <div class="player-name-display" id="agaP1Name">Hráč 1</div>
+        <div class="player-score" id="agaP1Score">0</div>
+      </div>
+      <div class="player-card player2" id="agaP2Card">
+        <div class="player-name-display" id="agaP2Name">Hráč 2</div>
+        <div class="player-score" id="agaP2Score">0</div>
+      </div>
+    </div>
+    <div class="status" id="agaStatus">Začnime!</div>
+    <div id="agaSetupBox" style="text-align:center;padding:20px">
+      <p style="font-weight:600;margin-bottom:12px" id="agaSetupText">🤫 Hráč 2: Myslí na zviera (Hráč 1 sa nepozerá!)</p>
+      <div class="guess-input-group">
+        <input type="password" id="agaSecretInput" placeholder="Napíš zviera..." autocomplete="off">
+        <button class="action-btn primary-btn" onclick="agaConfirmSecret()">✅ Potvrdiť</button>
+      </div>
+      <div id="agaSecretError" style="color:#f5576c;margin-top:8px;font-size:0.9em"></div>
+    </div>
+    <div id="agaCover" style="display:none;text-align:center;padding:30px;border-radius:15px;background:rgba(102,126,234,0.15);border:2px solid #667eea">
+      <div style="font-size:2.5em;margin-bottom:10px">🔒</div>
+      <div style="font-size:1.3em;font-weight:700;margin-bottom:8px">Zviera je zadané!</div>
+      <div style="margin-bottom:20px;opacity:0.7" id="agaCoverText">Odovzdaj zariadenie Hráčovi 1</div>
+      <button class="action-btn primary-btn" id="agaCoverBtn" onclick="agaStartPlaying()">▶️ Štart — Hráč 1 hádá</button>
+    </div>
+    <div id="agaAIIntro" style="display:none;text-align:center;padding:20px">
+      <div style="font-size:3em;margin-bottom:8px">🤔</div>
+      <div style="font-size:1.1em;margin-bottom:16px;opacity:0.8">Myslím si zviera... klikaj na otázky!</div>
+      <button class="action-btn primary-btn" onclick="agaStartPlaying()">▶️ Štart</button>
+    </div>
+    <div id="agaPlayBox" style="display:none">
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="font-size:1.4em;font-weight:700" id="agaQLeft">20</span>
+        <span style="opacity:0.7;font-size:0.9em"> otázok zostáva</span>
+      </div>
+      <div id="agaPVPQuestions">
+        <div style="text-align:center;margin-bottom:8px;font-size:0.85em;opacity:0.7">Hráč 1: polož otázku Hráčovi 2 (Áno/Nie)</div>
+        <div class="guess-input-group">
+          <input type="text" id="agaQInput" placeholder="Napr: Žije v Afrike?" autocomplete="off" onkeydown="if(event.key==='Enter')agaAskPVP()">
+          <button class="action-btn primary-btn" onclick="agaAskPVP()">❓ Pýtaj</button>
+        </div>
+        <div id="agaAnswerBlock" style="display:none;margin-top:12px;text-align:center">
+          <div id="agaPendingQ" style="font-weight:600;padding:10px;border-radius:8px;background:rgba(102,126,234,0.15);margin-bottom:10px;font-size:1.05em"></div>
+          <div style="opacity:0.7;margin-bottom:8px;font-size:0.9em" id="agaAnswerPromptName">Hráč 2: Áno alebo Nie?</div>
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button onclick="agaPVPAnswer(true)" class="action-btn" style="background:rgba(46,204,113,0.3);border-color:rgba(46,204,113,0.5);min-width:100px;font-size:1.1em">✅ Áno</button>
+            <button onclick="agaPVPAnswer(false)" class="action-btn" style="background:rgba(231,76,60,0.3);border-color:rgba(231,76,60,0.5);min-width:100px;font-size:1.1em">❌ Nie</button>
+          </div>
+        </div>
+      </div>
+      <div id="agaAIQBox" style="display:none">
+        <div id="agaAIQBtns" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:520px;margin:0 auto"></div>
+      </div>
+      <div id="agaHistory" style="max-height:180px;overflow-y:auto;margin-top:14px;border-radius:10px;background:rgba(255,255,255,0.05);padding:8px;font-size:0.9em"></div>
+      <div style="text-align:center;margin-top:14px">
+        <button class="action-btn primary-btn" onclick="agaShowGuessInput()">💡 Hádám!</button>
+      </div>
+    </div>
+    <div id="agaGuessBox" style="display:none;text-align:center;padding:20px">
+      <div style="font-size:1.1em;font-weight:600;margin-bottom:12px">🎯 Aké je to zviera?</div>
+      <div class="guess-input-group">
+        <input type="text" id="agaGuessInput" placeholder="Napíš zviera..." autocomplete="off" onkeydown="if(event.key==='Enter')agaSubmitGuess()">
+        <button class="action-btn primary-btn" onclick="agaSubmitGuess()">🎯 Hádám!</button>
+      </div>
+      <button class="action-btn" onclick="agaBackToPlay()" style="margin-top:8px;font-size:0.85em">◀ Späť k otázkam</button>
+    </div>
+    <div id="agaResultBox" style="display:none;text-align:center;padding:20px">
+      <div id="agaResultText" style="font-size:1.3em;font-weight:700;margin-bottom:10px"></div>
+      <div id="agaResultAnimal" style="font-size:2.5em;margin-bottom:16px"></div>
+      <button class="action-btn primary-btn" onclick="agaNextRound()">▶️ Ďalšie kolo</button>
+    </div>
+    <div class="celebration" id="agaCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="resetAGA()">🔄 Nová hra</button>
+    </div>
+  </div>
+
+  <!-- ===== ZVIERACI KVIZ ===== -->
+  <div class="game-area" id="animalQuiz">
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setAZQMode('pvp',this)">👥 2 Hráči</button>
+      <button class="mode-btn" onclick="setAZQMode('ai',this)">👤 Sólo</button>
+    </div>
+    <div class="rules"><h3>🦁 Zvierací Kvíz:</h3><ul>
+      <li>Uhádni zviera podľa <b>siluety</b> — tá sa postupne odkrýva</li>
+      <li>Klikaj na <b>💡 Nápoveda</b> pre viac nápovied (každá znižuje body)</li>
+      <li>Čím skôr uhádneš, tým <b>viac bodov</b> dostaneš (4→3→2→1)</li>
+      <li><b>2 Hráči:</b> Striedajú sa pri 10 zvieratách, vyhrá viac bodov</li>
+      <li><b>Sólo:</b> Zbieraj body za 10 zvieratách</li>
+    </ul></div>
+    <div class="player-info" id="azqPlayerInfo">
+      <div class="player-card player1 active-turn" id="azqP1Card">
+        <div class="player-name-display" id="azqP1Name">Hráč 1</div>
+        <div class="player-score" id="azqP1Score">0</div>
+      </div>
+      <div class="player-card player2" id="azqP2Card">
+        <div class="player-name-display" id="azqP2Name">Hráč 2</div>
+        <div class="player-score" id="azqP2Score">0</div>
+      </div>
+    </div>
+    <div class="status" id="azqStatus">Klikni Štart!</div>
+    <div id="azqIntro" style="text-align:center;padding:20px">
+      <button class="action-btn primary-btn" onclick="azqStartGame()">▶️ Štart</button>
+    </div>
+    <div id="azqGame" style="display:none">
+      <div style="text-align:center;margin-bottom:8px;font-size:0.85em;opacity:0.6">
+        Zviera <span id="azqRoundNum">1</span>/10 &bull; <span id="azqHintCount">0</span> nápovied
+      </div>
+      <div style="text-align:center;margin:16px 0">
+        <div id="azqAnimalEmoji" style="font-size:5em;line-height:1.2;transition:filter 0.5s ease;filter:brightness(0) blur(12px)">🐾</div>
+      </div>
+      <div style="text-align:center;margin-bottom:6px;font-size:0.85em;font-weight:600" id="azqPointsLabel" style="opacity:0.7">Správna odpoveď = 4 body</div>
+      <div id="azqHintBox" style="max-width:420px;margin:0 auto 10px;min-height:30px"></div>
+      <div style="text-align:center;margin-bottom:12px">
+        <button id="azqHintBtn" class="action-btn" onclick="azqRevealHint()" style="background:rgba(255,152,0,0.3);border-color:rgba(255,152,0,0.5)">💡 Nápoveda (zostane 3 body)</button>
+      </div>
+      <div id="azqOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:0 auto"></div>
+    </div>
+    <div id="azqNextBtn" style="display:none;text-align:center;margin-top:14px">
+      <button class="action-btn primary-btn" onclick="azqNextAnimal()">▶️ Ďalšie zviera</button>
+    </div>
+    <div id="azqGameOver" style="display:none;text-align:center;padding:20px">
+      <div id="azqFinalText" style="font-size:1.3em;font-weight:700;margin-bottom:16px"></div>
+    </div>
+    <div class="celebration" id="azqCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="resetAZQ()">🔄 Nová hra</button>
+    </div>
+  </div>
+
   </div><!-- end main-content -->
 </div><!-- end container -->
 <script>
@@ -4673,7 +4815,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.16';
+const APP_VERSION = '19.17';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -4690,7 +4832,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', animalGuess:'animalGuessBtn', animalQuiz:'animalQuizBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -4701,7 +4843,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', animalGuess:'Hádaj Zviera', animalQuiz:'Zvierací Kvíz', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -5126,7 +5268,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -5137,7 +5279,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -8068,7 +8210,31 @@ quizDB.animals.push(
   {q:'Koľko druhov dinosaurov existovalo?',a:['Viac ako 700','Okolo 100','Okolo 300','Menej ako 50'],c:0},
   {q:'Čo jedia medvede panda?',a:['Bambus','Ryby','Med','Mäso'],c:0},
   {q:'Ako sa nazýva mláďa leva?',a:['Levíča','Mláďa','Levča','Levíček'],c:0},
-  {q:'Koľko kamaráti má mravec?',a:['Milióny','Tisíce','Stovky','Desiatky'],c:0}
+  {q:'Koľko kamaráti má mravec?',a:['Milióny','Tisíce','Stovky','Desiatky'],c:0},
+  {q:'Aký vták nedokáže lietať?',a:['Tučniak','Sokol','Orol','Vrabec'],c:0},
+  {q:'Kde žije klokan?',a:['Austrália','Afrika','Ázia','Amerika'],c:0},
+  {q:'Čo je skupina levov?',a:['Smečka','Svorka','Stádo','Kŕdeľ'],c:0},
+  {q:'Koľko nôh má krab?',a:['10','8','6','12'],c:0},
+  {q:'Aké zviera má chobot?',a:['Slon','Tapír','Hroch','Nosorožec'],c:0},
+  {q:'Čo jedia pandas?',a:['Bambus','Eukalyptus','Trávu','Listy'],c:0},
+  {q:'Ktoré zviera má najdlhší krk?',a:['Žirafa','Pštros','Ťava','Kôň'],c:0},
+  {q:'Ako sa volá mláďa koňa?',a:['Žriebä','Teľa','Šteniatko','Mäčiatko'],c:0},
+  {q:'Aké zviera dokáže meniť farbu kože?',a:['Chameleón','Gecko','Jašterica','Korytnačka'],c:0},
+  {q:'Koľko rokov môže žiť korytnačka?',a:['Aj 150 rokov','20 rokov','50 rokov','80 rokov'],c:0},
+  {q:'Čo je skupina vlkov?',a:['Svorka','Stádo','Smečka','Kŕdeľ'],c:0},
+  {q:'Ktoré zviera je symbol múdrosti?',a:['Sova','Orol','Havran','Líška'],c:0},
+  {q:'Čo jedia koaly?',a:['Eukalyptus','Bambus','Trávu','Ovocie'],c:0},
+  {q:'Koľko sŕdc má chobotnica?',a:['3','1','2','4'],c:0},
+  {q:'Kde žije ľadový medveď?',a:['Arktída','Antarktída','Kanada','Sibír'],c:0},
+  {q:'Aké zviera sa nazýva „kráľ džungle"?',a:['Lev','Tiger','Leopard','Jaguar'],c:0},
+  {q:'Koľko nôh má hmyz?',a:['6','8','4','10'],c:0},
+  {q:'Ktorý vták vie napodobňovať ľudský hlas?',a:['Papagáj','Sova','Vrabec','Holub'],c:0},
+  {q:'Ako sa volá samec kury?',a:['Kohút','Kanec','Baran','Byk'],c:0},
+  {q:'Čo konzumuje kolibřík?',a:['Nektár z kvetov','Hmyz','Semená','Listy'],c:0},
+  {q:'Kde žije panda veľká?',a:['Čína','Japonsko','India','Kórea'],c:0},
+  {q:'Koľko rokov žije slon v prírode?',a:['60–70','30–40','80–90','20–30'],c:0},
+  {q:'Aké zviera je najrýchlejšie na súši?',a:['Gepard','Lev','Tiger','Kôň'],c:0},
+  {q:'Čo je súhrnný názov pre zvieratá, ktoré sú aktívne v noci?',a:['Nočné zvieratá','Denné zvieratá','Zimné zvieratá','Morské zvieratá'],c:0}
 );
 
 // ===== EXTRA QUESTIONS — SLOVAKIA =====
@@ -19995,6 +20161,398 @@ function manRender() {
 
 resetMancala();
 
+// ===== HÁDAJ ZVIERA =====
+const AGA_ANIMALS = [
+  {n:'Pes',        ma:1,bi:0,re:0,in:0,B:0,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Mačka',      ma:1,bi:0,re:0,in:0,B:0,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:1,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Slon',       ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:1,af:1,st:0,sp:0,mn:0,tr:1,cl:0,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Lev',        ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:0,af:1,st:0,sp:0,mn:1,tr:0,cl:1,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Tiger',      ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:1,af:0,st:1,sp:0,mn:0,tr:0,cl:1,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Žirafa',     ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:0,af:1,st:0,sp:1,mn:0,tr:0,cl:0,sh:0,hr:1,dg:0,aq:0,ro:0},
+  {n:'Zebra',      ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:0,af:1,st:1,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Opica',      ma:1,bi:0,re:0,in:0,B:0,d:0,l:2,fl:0,sw:0,af:1,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Králik',     ma:1,bi:0,re:0,in:0,B:0,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:1},
+  {n:'Kôň',        ma:1,bi:0,re:0,in:0,B:1,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:1,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Krava',      ma:1,bi:0,re:0,in:0,B:1,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:1,mn:0,tr:0,cl:0,sh:0,hr:1,dg:0,aq:0,ro:0},
+  {n:'Ovca',       ma:1,bi:0,re:0,in:0,B:0,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:1,hr:0,dg:0,aq:0,ro:0},
+  {n:'Vlk',        ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:1,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Medveď',     ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:1,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Líška',      ma:1,bi:0,re:0,in:0,B:0,d:0,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Jeleň',      ma:1,bi:0,re:0,in:0,B:1,d:0,l:4,fl:0,sw:0,af:0,st:0,sp:1,mn:0,tr:0,cl:0,sh:0,hr:1,dg:0,aq:0,ro:0},
+  {n:'Ježko',      ma:1,bi:0,re:0,in:0,B:0,d:0,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:1,hr:0,dg:0,aq:0,ro:0},
+  {n:'Delfín',     ma:1,bi:0,re:0,in:0,B:1,d:0,l:0,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:1,ro:0},
+  {n:'Žralok',     ma:0,bi:0,re:1,in:0,B:1,d:0,l:0,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:1,sh:1,hr:0,dg:1,aq:1,ro:0},
+  {n:'Orol',       ma:0,bi:1,re:0,in:0,B:1,d:0,l:2,fl:1,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:1,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Papagáj',    ma:0,bi:1,re:0,in:0,B:0,d:1,l:2,fl:1,sw:0,af:1,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Tučniak',    ma:0,bi:1,re:0,in:0,B:0,d:0,l:2,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Pštros',     ma:0,bi:1,re:0,in:0,B:1,d:0,l:2,fl:0,sw:0,af:1,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Krokodíl',   ma:0,bi:0,re:1,in:0,B:1,d:0,l:4,fl:0,sw:1,af:1,st:0,sp:0,mn:0,tr:0,cl:1,sh:1,hr:0,dg:1,aq:0,ro:0},
+  {n:'Had',        ma:0,bi:0,re:1,in:0,B:0,d:0,l:0,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:1,hr:0,dg:1,aq:0,ro:0},
+  {n:'Korytnačka', ma:0,bi:0,re:1,in:0,B:0,d:1,l:4,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:1,hr:0,dg:0,aq:0,ro:0},
+  {n:'Žaba',       ma:0,bi:0,re:1,in:0,B:0,d:0,l:4,fl:0,sw:1,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:1,ro:0},
+  {n:'Motýľ',      ma:0,bi:0,re:0,in:1,B:0,d:0,l:6,fl:1,sw:0,af:0,st:0,sp:1,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:0},
+  {n:'Pavúk',      ma:0,bi:0,re:0,in:1,B:0,d:0,l:8,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:1,aq:0,ro:0},
+  {n:'Myš',        ma:1,bi:0,re:0,in:0,B:0,d:1,l:4,fl:0,sw:0,af:0,st:0,sp:0,mn:0,tr:0,cl:0,sh:0,hr:0,dg:0,aq:0,ro:1},
+];
+const AGA_QUESTIONS = [
+  {t:'Je to cicavec?', p:'ma'},
+  {t:'Je to vták?', p:'bi'},
+  {t:'Je to plaz, ryba alebo obojživelník?', p:'re'},
+  {t:'Je to hmyz alebo pavúk?', p:'in'},
+  {t:'Je väčší ako labrador?', p:'B'},
+  {t:'Je to domáce zviera / bežný miláčik?', p:'d'},
+  {t:'Vie lietať?', p:'fl'},
+  {t:'Vie plávať alebo žije vo vode?', p:'sw'},
+  {t:'Žije v Afrike?', p:'af'},
+  {t:'Má štyri nohy?', p:'l4'},
+  {t:'Má pruhy?', p:'st'},
+  {t:'Má škvrny alebo fľaky?', p:'sp'},
+  {t:'Má hrivu?', p:'mn'},
+  {t:'Má chobot?', p:'tr'},
+  {t:'Má pazúry alebo tesáky?', p:'cl'},
+  {t:'Má škrupinu, tvrdý kryt alebo šupiny?', p:'sh'},
+  {t:'Má rohy alebo parohy?', p:'hr'},
+  {t:'Je nebezpečné pre ľudí?', p:'dg'},
+  {t:'Žije hlavne vo vode?', p:'aq'},
+  {t:'Je to hlodavec alebo zajacovec?', p:'ro'},
+];
+function agaAIAnswer(p, a) {
+  if(p==='l4') return a.l===4 ? 'Áno' : 'Nie';
+  return a[p] ? 'Áno' : 'Nie';
+}
+const AGA = {
+  phase:'setup', animal:'', aiAnimal:null,
+  thinker:2, qLeft:20, s1:0, s2:0, round:0, history:[], usedQ:new Set(), pendingQ:''
+};
+function resetAGA() {
+  AGA.phase='setup'; AGA.animal=''; AGA.aiAnimal=null;
+  AGA.thinker=2; AGA.qLeft=20; AGA.round=0; AGA.history=[]; AGA.usedQ=new Set(); AGA.pendingQ='';
+  AGA.s1=0; AGA.s2=0;
+  $('agaP1Score').textContent='0'; $('agaP2Score').textContent='0';
+  $('agaP1Card').classList.add('active-turn'); $('agaP2Card').classList.remove('active-turn');
+  agaUpdateNames();
+  if(welcomeGameMode==='ai') {
+    agaShowPhase('ai_intro');
+    $('agaStatus').textContent='Myslím si zviera...';
+  } else {
+    agaShowPhase('setup');
+    const n2=getActiveP2Name('animalGuess');
+    $('agaSetupText').textContent='🤫 '+n2+': Myslí na zviera ('+getActiveP1Name('animalGuess')+' sa nepozerá!)';
+    $('agaStatus').textContent='Hráč 2 myslí na zviera';
+  }
+  $('agaSecretInput').value=''; $('agaSecretError').textContent='';
+}
+function agaUpdateNames() {
+  $('agaP1Name').textContent=getActiveP1Name('animalGuess');
+  $('agaP2Name').textContent=welcomeGameMode==='ai'?'Počítač':getActiveP2Name('animalGuess');
+}
+function setAGAMode(m, btn) {
+  document.querySelectorAll('#animalGuess .mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetAGA();
+}
+function agaShowPhase(phase) {
+  ['agaSetupBox','agaCover','agaAIIntro','agaPlayBox','agaGuessBox','agaResultBox'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});
+  AGA.phase=phase;
+  const map={setup:'agaSetupBox',cover:'agaCover',ai_intro:'agaAIIntro',playing:'agaPlayBox',guessing:'agaGuessBox',result:'agaResultBox'};
+  if(map[phase]) $(map[phase]).style.display='';
+}
+function agaConfirmSecret() {
+  const v=$('agaSecretInput').value.trim();
+  if(!v){$('agaSecretError').textContent='Napíš zviera!';return;}
+  AGA.animal=v; $('agaSecretError').textContent='';
+  const g=3-AGA.thinker;
+  $('agaCoverText').textContent='Odovzdaj zariadenie Hráčovi '+g;
+  $('agaCoverBtn').textContent='▶️ Štart — Hráč '+g+' hádá';
+  agaShowPhase('cover');
+}
+function agaStartPlaying() {
+  if(welcomeGameMode==='ai') AGA.aiAnimal=AGA_ANIMALS[Math.floor(Math.random()*AGA_ANIMALS.length)];
+  AGA.qLeft=20; AGA.history=[]; AGA.usedQ=new Set(); AGA.pendingQ='';
+  agaShowPhase('playing');
+  $('agaQLeft').textContent=20;
+  $('agaAnswerBlock').style.display='none'; $('agaQInput').value='';
+  const isAI=welcomeGameMode==='ai';
+  $('agaPVPQuestions').style.display=isAI?'none':'';
+  $('agaAIQBox').style.display=isAI?'':'none';
+  if(isAI) { $('agaStatus').textContent=getActiveP1Name('animalGuess')+' — klikaj na otázky!'; agaBuildAIQBtns(); }
+  else $('agaStatus').textContent='Hráč '+(3-AGA.thinker)+' — klaď otázky (Áno/Nie)!';
+  agaRenderHistory();
+}
+function agaBuildAIQBtns() {
+  const box=$('agaAIQBtns'); box.innerHTML='';
+  AGA_QUESTIONS.forEach((q,i)=>{
+    const b=document.createElement('button');
+    b.className='action-btn';
+    b.style.cssText='font-size:0.8em;padding:5px 10px;border-radius:8px;margin:2px';
+    b.textContent=q.t;
+    if(AGA.usedQ.has(i)){b.disabled=true;b.style.opacity='0.3';}
+    b.onclick=()=>agaAIAsk(i);
+    box.appendChild(b);
+  });
+}
+function agaAIAsk(i) {
+  if(AGA.usedQ.has(i)||AGA.qLeft<=0) return;
+  AGA.usedQ.add(i); AGA.qLeft--;
+  const q=AGA_QUESTIONS[i];
+  const ans=agaAIAnswer(q.p,AGA.aiAnimal);
+  AGA.history.push({q:q.t,a:ans});
+  agaRenderHistory(); $('agaQLeft').textContent=AGA.qLeft;
+  agaBuildAIQBtns(); playSound('click');
+  if(AGA.qLeft<=0){$('agaStatus').textContent='Otázky vyčerpané — hádaj!';agaShowGuessInput();}
+}
+function agaAskPVP() {
+  if(AGA.pendingQ) return;
+  const v=$('agaQInput').value.trim(); if(!v) return;
+  AGA.pendingQ=v;
+  $('agaPendingQ').textContent='"'+escHtml(v)+'"';
+  $('agaAnswerPromptName').textContent=getActiveP2Name('animalGuess')+': Áno alebo Nie?';
+  $('agaAnswerBlock').style.display=''; $('agaQInput').value=''; $('agaQInput').disabled=true;
+  playSound('click');
+}
+function agaPVPAnswer(yes) {
+  if(!AGA.pendingQ) return;
+  AGA.qLeft--; const ans=yes?'Áno':'Nie';
+  AGA.history.push({q:AGA.pendingQ,a:ans}); AGA.pendingQ='';
+  $('agaAnswerBlock').style.display='none'; $('agaQInput').disabled=false;
+  $('agaQLeft').textContent=AGA.qLeft;
+  agaRenderHistory(); playSound(yes?'correct':'wrong');
+  if(AGA.qLeft<=0){$('agaStatus').textContent='Otázky vyčerpané — hádaj!';agaShowGuessInput();}
+}
+function agaRenderHistory() {
+  const box=$('agaHistory');
+  if(!AGA.history.length){box.innerHTML='<div style="opacity:0.4;text-align:center;padding:6px;font-size:0.85em">História otázok</div>';return;}
+  box.innerHTML=AGA.history.slice().reverse().map((h,ri)=>`<div style="padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between"><span style="opacity:0.8;font-size:0.88em">${AGA.history.length-ri}. ${escHtml(h.q)}</span><span style="font-weight:700;color:${h.a==='Áno'?'#2ecc71':'#e74c3c'};margin-left:8px;flex-shrink:0">${h.a}</span></div>`).join('');
+}
+function agaShowGuessInput() { $('agaGuessInput').value=''; agaShowPhase('guessing'); }
+function agaBackToPlay() { if(AGA.qLeft>0) agaShowPhase('playing'); }
+function agaNorm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+function agaSubmitGuess() {
+  const guess=$('agaGuessInput').value.trim(); if(!guess) return;
+  const target=welcomeGameMode==='ai'?AGA.aiAnimal.n:AGA.animal;
+  const correct=agaNorm(guess)===agaNorm(target)||agaNorm(target).startsWith(agaNorm(guess));
+  const p1guess=AGA.thinker===2||welcomeGameMode==='ai';
+  const gName=p1guess?getActiveP1Name('animalGuess'):getActiveP2Name('animalGuess');
+  if(correct){
+    $('agaResultText').textContent='🎉 '+gName+' uhádol(a)!';
+    $('agaResultAnimal').textContent='🐾 '+target;
+    if(p1guess){AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');}
+    else{AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');}
+    playSound('win'); celebrate('agaCelebration'); launchConfetti();
+  } else {
+    $('agaResultText').textContent='❌ Nie... zviera bolo: '+target;
+    $('agaResultAnimal').textContent='🐾 '+escHtml(guess)+' ✗ → '+target;
+    playSound('wrong');
+    if(welcomeGameMode!=='ai'){
+      if(AGA.thinker===1){AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');}
+      else{AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');}
+    } else addWin(0,'animalGuess');
+  }
+  agaShowPhase('result'); AGA.round++;
+}
+function agaNextRound() {
+  if(welcomeGameMode==='ai'){
+    AGA.aiAnimal=null;
+    $('agaStatus').textContent='Myslím si nové zviera...';
+    agaShowPhase('ai_intro');
+  } else {
+    AGA.thinker=3-AGA.thinker;
+    const g=3-AGA.thinker, t=AGA.thinker;
+    $('agaSetupText').textContent='🤫 Hráč '+t+': Myslí na zviera (Hráč '+g+' sa nepozerá!)';
+    $('agaStatus').textContent='Kolo '+(AGA.round+1)+' — Hráč '+t+' myslí';
+    $('agaSecretInput').value=''; $('agaSecretError').textContent='';
+    agaShowPhase('setup');
+  }
+  const p1guesser=AGA.thinker===2;
+  $('agaP1Card').classList.toggle('active-turn',p1guesser);
+  $('agaP2Card').classList.toggle('active-turn',!p1guesser);
+}
+resetAGA();
+
+// ===== ZVIERACI KVIZ =====
+const AZQ_ALL = [
+  {e:'🐘',n:'Slon',h:['Som najväčší suchozemský živočích','Mám veľmi dlhý chobot a veľké uši','Žijem v Afrike alebo Ázii','Som sivý s klmi z kosti']},
+  {e:'🦁',n:'Lev',h:['Volajú ma kráľ zvierat','Samec má veľkú hrivu okolo hlavy','Žijem v skupinách — svorka','Som dravec z Afriky']},
+  {e:'🐯',n:'Tiger',h:['Som najväčšia mačkovitá šelma','Mám oranžovú srsť s čiernymi pruhmi','Viem dobre plávať','Žijem v Ázii']},
+  {e:'🦒',n:'Žirafa',h:['Som najvyšší živočích na Zemi','Mám nezvyčajne dlhý krk','Mám hnedo-biele škvrny','Žijem v africkom savane']},
+  {e:'🐬',n:'Delfín',h:['Som veľmi inteligentné morské zviera','Viem skákať nad hladinu vody','Vydávam klikavé zvuky','Som cicavec, nie ryba']},
+  {e:'🦅',n:'Orol',h:['Som veľký dravý vták','Mám výnimočne ostrý zrak','Staviam hniezdo na skalách','Som symbol sily a slobody']},
+  {e:'🐧',n:'Tučniak',h:['Som vták, ale neviem lietať','Žijem v studených oblastiach','Veľmi dobre plávam','Mám čierno-bielo sfarbenie']},
+  {e:'🐊',n:'Krokodíl',h:['Som jeden z najväčších plazov','Mám obrovské zuby','Žijem v riekach Afriky a Ázie','Trávim čas vo vode aj na brehu']},
+  {e:'🦓',n:'Zebra',h:['Vyzerám podobne ako kôň','Každý má iný vzor pruhov','Mám čierno-biele pruhy','Žijem v africkom savane']},
+  {e:'🐨',n:'Koala',h:['Žijem v Austrálii','Jem výlučne listy eukalyptu','Spávam väčšinu dňa','Mám mäkké sivé kožušino']},
+  {e:'🐼',n:'Panda',h:['Mám čierno-biele sfarbenie','Jem predovšetkým bambus','Som ohrozený druh','Pochádzam z Číny']},
+  {e:'🦊',n:'Líška',h:['Mám ryšavú srsť a dlhý chlpatý chvost','Som šikovný nočný lovec','Spávam v nore','Jem hlodavce a bobule']},
+  {e:'🐙',n:'Chobotnica',h:['Mám 8 chápadiel','Dokážem meniť farbu kože','Žijem v mori','Nemám kosti — som mäkkýš']},
+  {e:'🦋',n:'Motýľ',h:['Mám farebné krídla s pestrými vzormi','Začal som ako húsenica','Pijem nektár z kvetov','Prechádzam kuklením']},
+  {e:'🦔',n:'Ježko',h:['Mám ostne na chrbte','Keď sa bojím, skrčím sa do guličky','Som nočné zviera','Jem hmyz a červy']},
+  {e:'🐢',n:'Korytnačka',h:['Nosím si dom na chrbte — pancier','Niektorí žijú aj 150 rokov','Pohybujem sa veľmi pomaly','Som jeden z najstarších druhov']},
+  {e:'🦈',n:'Žralok',h:['Som vrcholový predátor v oceáne','Mám niekoľko radov zubov','Musím stále plávať','Som ryba, nie cicavec']},
+  {e:'🦉',n:'Sova',h:['Vidím dobre v tme','Dokážem otáčať hlavu o 270°','Lovím v noci','Vydávam zvuk „hú hú"']},
+  {e:'🦘',n:'Klokan',h:['Žijem v Austrálii','Nosím mláďa vo vrecku na bruchu','Pohybujem sa skokmi','Mám silné zadné nohy']},
+  {e:'🐸',n:'Žaba',h:['Ako mláďa som žubrienka','Viem skákať veľmi ďaleko','Žijem pri vode aj na súši','Vydávam kvákaní zvuk']},
+  {e:'🐺',n:'Vlk',h:['Žijem v smečke s hierarchiou','Vyjúvam na mesiac','Som predkom domáceho psa','Žijem v lese alebo na stepi']},
+  {e:'🐍',n:'Had',h:['Nemám nohy','Pohybujem sa vlnením tela','Prehltujem korisť celú','Pravidelne zvlékam kožu']},
+  {e:'🦜',n:'Papagáj',h:['Dokážem napodobňovať ľudskú reč','Mám farebné perie','Žijem v tropických oblastiach','Som obľúbený domáci miláčik']},
+  {e:'🐪',n:'Ťava',h:['Mám hrby kde si skladujem tuk','Vydržím dlho bez vody','Žijem v púšti','Hovorí sa mi „loď púšte"']},
+  {e:'🦦',n:'Vydra',h:['Milujem plávanie a ryby','Mám hustú vodnú srsť','Spávam chytená za ruky s partnerom','Žijem pri riekach a jazerách']},
+  {e:'🦛',n:'Hroch',h:['Trávim väčšinu dňa vo vode','Som tretí najväčší suchozemský cicavec','Mám veľmi veľké kly','Napriek výzoru viem behať až 30 km/h']},
+  {e:'🦏',n:'Nosorožec',h:['Mám roh na nose','Som jeden z najväčších suchozemských živočíchov','Moja koža je veľmi hrubá','Som ohrozený druh']},
+  {e:'🦭',n:'Tuleň',h:['Žijem na súši aj vo vode','Mám hrubú tukovú vrstvu','Vydávam hlasné štekacie zvuky','Som cicavec zo studených oblastí']},
+  {e:'🐒',n:'Opica',h:['Som príbuzná človeka','Viem používať jednoduché nástroje','Žijem v skupinách','Jem ovocie a hmyz']},
+  {e:'🦃',n:'Moriak',h:['Som veľký vták','Vydávam charakteristický hlas','Žijem na farmách','Slávny vďaka Dňu vďakyvzdania']},
+];
+const AZQ = {
+  deck:[], idx:0, hintIdx:0, options:[],
+  turn:1, s1:0, s2:0, answered:false, phase:'intro', total:10
+};
+function resetAZQ() {
+  AZQ.deck=[]; AZQ.idx=0; AZQ.hintIdx=0; AZQ.options=[];
+  AZQ.turn=1; AZQ.s1=0; AZQ.s2=0; AZQ.answered=false; AZQ.phase='intro';
+  $('azqP1Score').textContent='0'; $('azqP2Score').textContent='0';
+  activeTurn('azqP1Card','azqP2Card',1);
+  azqUpdateNames();
+  $('azqStatus').textContent='Klikni Štart!';
+  $('azqGame').style.display='none';
+  $('azqNextBtn').style.display='none';
+  $('azqGameOver').style.display='none';
+  $('azqIntro').style.display='';
+}
+function setAZQMode(m, btn) {
+  document.querySelectorAll('#animalQuiz .mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetAZQ();
+}
+function azqUpdateNames() {
+  $('azqP1Name').textContent=getActiveP1Name('animalQuiz');
+  $('azqP2Name').textContent=welcomeGameMode==='ai'?'Sólo':getActiveP2Name('animalQuiz');
+}
+function azqStartGame() {
+  const shuffled=[...AZQ_ALL].sort(()=>Math.random()-0.5);
+  AZQ.deck=shuffled.slice(0,AZQ.total);
+  AZQ.idx=0; AZQ.turn=1; AZQ.s1=0; AZQ.s2=0;
+  $('azqP1Score').textContent='0'; $('azqP2Score').textContent='0';
+  activeTurn('azqP1Card','azqP2Card',1);
+  $('azqIntro').style.display='none';
+  $('azqGame').style.display='';
+  $('azqGameOver').style.display='none';
+  AZQ.phase='playing';
+  azqShowAnimal();
+}
+function azqGetFilter(h) {
+  if(h===0) return 'brightness(0) blur(12px)';
+  if(h===1) return 'brightness(0) blur(5px)';
+  if(h===2) return 'brightness(0)';
+  if(h===3) return 'saturate(0) brightness(0.5)';
+  return 'none';
+}
+function azqUpdateHintBtn() {
+  const nextPts=Math.max(4-(AZQ.hintIdx+1),1);
+  const btn=$('azqHintBtn');
+  const lbl=$('azqPointsLabel');
+  const curPts=Math.max(4-AZQ.hintIdx,1);
+  if(lbl) lbl.textContent='Správna odpoveď = '+curPts+' bod'+(curPts===1?'':'y');
+  if(AZQ.hintIdx>=3||AZQ.answered){
+    btn.disabled=true; btn.style.opacity='0.4';
+    btn.textContent='💡 Nápoveda vyčerpaná'; return;
+  }
+  btn.disabled=false; btn.style.opacity='1';
+  btn.textContent='💡 Nápoveda (zostane '+nextPts+' bod'+(nextPts===1?'':'y')+')';
+}
+function azqShowAnimal() {
+  const a=AZQ.deck[AZQ.idx];
+  AZQ.hintIdx=0; AZQ.answered=false;
+  $('azqAnimalEmoji').textContent=a.e;
+  $('azqAnimalEmoji').style.filter=azqGetFilter(0);
+  $('azqHintBox').innerHTML='';
+  $('azqNextBtn').style.display='none';
+  $('azqRoundNum').textContent=AZQ.idx+1;
+  $('azqHintCount').textContent='0';
+  azqUpdateHintBtn();
+  azqBuildOptions();
+  const nm=AZQ.turn===1?getActiveP1Name('animalQuiz'):(welcomeGameMode==='ai'?'Sólo':getActiveP2Name('animalQuiz'));
+  $('azqStatus').textContent=nm+' — Hádaj! (4 body)';
+}
+function azqRevealHint() {
+  if(AZQ.hintIdx>=3||AZQ.answered) return;
+  const a=AZQ.deck[AZQ.idx];
+  AZQ.hintIdx++;
+  $('azqAnimalEmoji').style.filter=azqGetFilter(AZQ.hintIdx);
+  $('azqHintCount').textContent=AZQ.hintIdx;
+  const hint=document.createElement('div');
+  hint.style.cssText='padding:6px 10px;border-radius:8px;background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.3);margin-bottom:6px;font-size:0.95em';
+  hint.textContent=AZQ.hintIdx+'. '+a.h[AZQ.hintIdx-1];
+  $('azqHintBox').appendChild(hint);
+  azqUpdateHintBtn(); playSound('click');
+}
+function azqBuildOptions() {
+  const a=AZQ.deck[AZQ.idx];
+  const others=AZQ_ALL.filter(x=>x.n!==a.n).sort(()=>Math.random()-0.5).slice(0,3);
+  const opts=[a,...others].sort(()=>Math.random()-0.5);
+  AZQ.options=opts;
+  const box=$('azqOptions'); box.innerHTML='';
+  opts.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='action-btn';
+    b.style.cssText='padding:10px;border-radius:10px;font-size:1em;font-weight:600';
+    b.textContent=opt.n; b.id='azqOpt'+i;
+    b.onclick=()=>azqAnswer(i);
+    box.appendChild(b);
+  });
+}
+function azqAnswer(i) {
+  if(AZQ.answered) return;
+  AZQ.answered=true;
+  $('azqAnimalEmoji').style.filter='none';
+  $('azqHintBtn').disabled=true; $('azqHintBtn').style.opacity='0.4';
+  const a=AZQ.deck[AZQ.idx];
+  const correct=AZQ.options[i].n===a.n;
+  const pts=correct?Math.max(4-AZQ.hintIdx,1):0;
+  AZQ.options.forEach((opt,j)=>{
+    const b=$('azqOpt'+j); if(!b) return;
+    b.disabled=true;
+    if(opt.n===a.n) b.style.background='rgba(46,204,113,0.4)';
+    else if(j===i&&!correct) b.style.background='rgba(231,76,60,0.4)';
+  });
+  if(correct){
+    if(AZQ.turn===1){AZQ.s1+=pts;$('azqP1Score').textContent=AZQ.s1;}
+    else{AZQ.s2+=pts;$('azqP2Score').textContent=AZQ.s2;}
+    $('azqStatus').textContent='🎉 Správne! +'+pts+' bod'+(pts===1?'':'y');
+    playSound('win'); celebrate('azqCelebration');
+    if(pts===4) launchConfetti();
+  } else {
+    $('azqStatus').textContent='❌ Nie... bolo to: '+a.n;
+    playSound('wrong');
+  }
+  const lbl=$('azqPointsLabel'); if(lbl) lbl.textContent='';
+  $('azqNextBtn').style.display='';
+}
+function azqNextAnimal() {
+  AZQ.idx++;
+  if(welcomeGameMode!=='ai') { AZQ.turn=3-AZQ.turn; activeTurn('azqP1Card','azqP2Card',AZQ.turn); }
+  if(AZQ.idx>=AZQ.total){ azqGameOver(); return; }
+  $('azqNextBtn').style.display='none';
+  azqShowAnimal();
+}
+function azqGameOver() {
+  AZQ.phase='over';
+  $('azqGame').style.display='none'; $('azqNextBtn').style.display='none';
+  $('azqGameOver').style.display='';
+  let txt;
+  if(welcomeGameMode==='ai'){
+    txt='🎯 Skóre: '+AZQ.s1+' bodov z '+(AZQ.total*4)+' možných';
+    addWin(1,'animalQuiz');
+  } else {
+    if(AZQ.s1>AZQ.s2){txt='🏆 '+getActiveP1Name('animalQuiz')+' vyhráva! ('+AZQ.s1+' vs '+AZQ.s2+')';addWin(1,'animalQuiz');}
+    else if(AZQ.s2>AZQ.s1){txt='🏆 '+getActiveP2Name('animalQuiz')+' vyhráva! ('+AZQ.s2+' vs '+AZQ.s1+')';addWin(2,'animalQuiz');}
+    else{txt='🤝 Remíza! ('+AZQ.s1+' : '+AZQ.s2+')';addWin(0,'animalQuiz');}
+  }
+  $('azqFinalText').textContent=txt;
+  $('azqStatus').textContent='Hra skončila!';
+  launchConfetti();
+}
+resetAZQ();
+
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
@@ -20060,6 +20618,8 @@ const MOBILE_GAMES = [
   { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
   { id:'simonSays',    label:'Simon Says',     icon:'🔊', grad:'rgba(231,76,60,0.3),rgba(52,152,219,0.3)', mode:'both', cat:'logic' },
   { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
+  { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun' },
+  { id:'animalQuiz',   label:'Zvierací Kvíz', icon:'🦁', grad:'rgba(255,152,0,0.3),rgba(255,87,34,0.3)', mode:'both', cat:'fun' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -20515,7 +21075,7 @@ function setWelcomeMode(mode) {
 
 function applyGameMode(mode = welcomeGameMode) {
   // Switch all games that support vs PC mode
-  const games = ['ticTacToe','rockPaper','guessNum','memory','connect4'];
+  const games = ['ticTacToe','rockPaper','guessNum','memory','connect4','animalGuess','animalQuiz'];
   games.forEach(gId => {
     const area = $(gId);
     if(!area) return;
@@ -20544,7 +21104,7 @@ function applyGameMode(mode = welcomeGameMode) {
   if(simonColorEl) simonColorEl.style.display = mode==='ai' ? 'none' : 'flex'; // Only in PVP
   // Update P2 names for AI mode
   if(mode==='ai') {
-    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','simonP2Name','manP2Name'].forEach(id => {
+    ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','simonP2Name','manP2Name','agaP2Name','azqP2Name'].forEach(id => {
       const el = $(id);
       if(el) el.textContent = 'Počítač';
     });
