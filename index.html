@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.28';
+const APP_VERSION = '19.29';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -22506,7 +22506,7 @@ function _mpHandleMessageInner(data) {
       const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
       activeTurn(p1c, p2c, hostIsX ? 1 : 2);
     }
-    if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
+    if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=MP.isHost?1:2;}, ()=>{C4.player=MP.isHost?2:1;}); }
     if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; if(MP.isHost) resetMem(); applyMemMPStart(); }
     if(gameId === 'chess') { if(data.round !== undefined) MP.chRound = data.round; resetChess(); applyChessMPStart(); }
     if(gameId === 'checkers') { if(data.round !== undefined) MP.dkRound = data.round; resetCheckers(); applyCheckersMPStart(); }
@@ -22659,7 +22659,7 @@ function mpRematch(gameId) {
     const p1c = isPsk?'psk15P1Card':'tttP1Card', p2c = isPsk?'psk15P2Card':'tttP2Card';
     activeTurn(p1c, p2c, hostIsX ? 1 : 2);
   }
-  if(gameId === 'connect4') { MP.c4Round++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=1;}, ()=>{C4.player=2;}); }
+  if(gameId === 'connect4') { MP.c4Round++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.c4Round }); resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=MP.isHost?1:2;}, ()=>{C4.player=MP.isHost?2:1;}); }
   if(gameId === 'memory') { MP.memRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.memRound }); resetMem(); applyMemMPStart(); if(MP.isHost) mpSend({type:'mem-board',cards:MEM.cards,diff:MEM.diff}); }
   if(gameId === 'chess') { MP.chRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.chRound }); resetChess(); applyChessMPStart(); }
   if(gameId === 'checkers') { MP.dkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dkRound }); resetCheckers(); applyCheckersMPStart(); }
