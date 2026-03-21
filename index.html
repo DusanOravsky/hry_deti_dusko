@@ -4673,7 +4673,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.12';
+const APP_VERSION = '19.13';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -7091,7 +7091,7 @@ function applyGNMPStart() {
 // =============================================================================
 // SEKCIA 11: CONNECT 4 — stav v objekte C4
 // =============================================================================
-const C4 = { mode:'pvp', diff:'easy', board:[], player:1, over:false, s1:0, s2:0 };
+const C4 = { mode:'pvp', diff:'easy', board:[], player:1, over:false, s1:0, s2:0, _aiTimeout:null };
 
 // ===== CONNECT 4 =====
 
@@ -7195,7 +7195,7 @@ function dropC4(col) {
         startTurnTimer('c4', ()=>c4TimerExpire());
       } else {
         C4.player=2;
-        setTimeout(()=>{
+        C4._aiTimeout=setTimeout(()=>{
           const ai=getC4AIMove();
           for(let r=5;r>=0;r--) if(C4.board[ai][r]===0){
             C4.board[ai][r]=2; renderC4();
@@ -8658,7 +8658,7 @@ function resetQuiz() {
 const BS = {
   boards:[null,null], hits:[null,null],
   currSetup:0, selectedShip:null, orientH:true,
-  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy', enemySunk:new Set(), enemySunkShipIds:new Set()
+  placedShips:[[],[]], turn:1, over:false, s1:0, s2:0, diff:'easy', enemySunk:new Set(), enemySunkShipIds:new Set(), _aiTimeout:null
 };
 function setBSDiff(d,btn) { BS.diff=d; saveDiff('battleship',d); document.querySelectorAll('#bsAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
@@ -8935,7 +8935,7 @@ function bsShoot(idx) {
     if(welcomeGameMode==='ai'&&BS.turn===2) {
       $('bsStatus').textContent='🌊 Minul! Počítač strieľa...';
       bsRenderGame();
-      setTimeout(bsAIShoot,1000);
+      BS._aiTimeout=setTimeout(bsAIShoot,1000);
     } else {
       $('bsStatus').textContent=`🌊 Minul! Odovzdaj tablet → ${nextName} strieľa!`;
       bsRenderGame();
@@ -9041,7 +9041,7 @@ function bsAIShoot() {
       playSound('win');celebrate('bsCelebration');bsRenderGame();return;
     }
     $('bsStatus').textContent='💥 Zásah! '+getP2Name('bs')+' strieľa znova!';
-    setTimeout(bsAIShoot,800);
+    BS._aiTimeout=setTimeout(bsAIShoot,800);
     return;
   }
   playSound('click');
@@ -17683,7 +17683,7 @@ const AB = {
   bird:null,birdFlying:false,
   drag:false,dragX:0,dragY:0,
   boxes:[],
-  raf:null,over:false
+  raf:null,over:false,_aiTimeout:null
 };
 
 function setAbDiff(d,btn){
@@ -17879,7 +17879,7 @@ function abFly(){
         }else{
           if(welcomeGameMode==='ai'){
             const abDelay=AB.diff==='easy'?1400:AB.diff==='medium'?950:700;
-            setTimeout(abAiShoot,abDelay);
+            AB._aiTimeout=setTimeout(abAiShoot,abDelay);
           }else{
             AB.bird=null;
             $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak! ('+AB.shots2+'/'+AB.maxShots+')';
@@ -17898,13 +17898,15 @@ function abFly(){
 function abSwitchTurn(){
   AB.turn=2;
   AB.bird=null;
+  AB.shots2=0;
+  abGenerateLevel();
   $('abP1Card').classList.remove('active-turn');
   $('abP2Card').classList.add('active-turn');
   $('abStatus').textContent=(AB.turn===1?getActiveP1Name('angryBirds'):getActiveP2Name('angryBirds'))+' — Ťahaj prak!';
   abRender();
   if(welcomeGameMode==='ai'){
     const abDelay=AB.diff==='easy'?1800:AB.diff==='medium'?1200:900;
-    setTimeout(abAiShoot,abDelay);
+    AB._aiTimeout=setTimeout(abAiShoot,abDelay);
   }
 }
 
@@ -20119,12 +20121,16 @@ function stopAllGames(){
   if(typeof SOC!=='undefined'){if(SOC.raf){cancelAnimationFrame(SOC.raf);SOC.raf=null;}if(SOC._resultTimeout){clearTimeout(SOC._resultTimeout);SOC._resultTimeout=null;}SOC.running=false;}
   // Gravity Run
   if(typeof GRAV!=='undefined'){if(GRAV.raf){cancelAnimationFrame(GRAV.raf);GRAV.raf=null;}GRAV.running=false;}
+  // Battleship AI
+  if(typeof BS!=='undefined'&&BS._aiTimeout){clearTimeout(BS._aiTimeout);BS._aiTimeout=null;}
+  // Connect4 AI
+  if(typeof C4!=='undefined'&&C4._aiTimeout){clearTimeout(C4._aiTimeout);C4._aiTimeout=null;}
   // Minesweeper
   if(typeof MS!=='undefined'&&MS.timer){clearInterval(MS.timer);MS.timer=null;}
   // Flappy Bird
   if(typeof FLAP!=='undefined'){if(FLAP.raf){cancelAnimationFrame(FLAP.raf);FLAP.raf=null;}FLAP.running=false;}
   // Angry Birds
-  if(typeof AB!=='undefined'){if(AB.raf){cancelAnimationFrame(AB.raf);AB.raf=null;}AB.over=true;AB.birdFlying=false;}
+  if(typeof AB!=='undefined'){if(AB.raf){cancelAnimationFrame(AB.raf);AB.raf=null;}if(AB._aiTimeout){clearTimeout(AB._aiTimeout);AB._aiTimeout=null;}AB.over=true;AB.birdFlying=false;}
   // Sokoban
   if(typeof SOK!=='undefined'&&SOK.timer){clearInterval(SOK.timer);SOK.timer=null;}
   // War AI auto-play
