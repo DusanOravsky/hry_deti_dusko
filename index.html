@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.30';
+const APP_VERSION = '19.31';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11425,7 +11425,7 @@ function chTimeLoss(color) {
   const winner = color === 'w' ? 'b' : 'w';
   const name = getChessColorName(winner);
   $('chStatus').textContent = '⏱️ Čas vypršal! ' + name + ' vyhráva!';
-  const w = winner === 'w' ? 1 : 2;
+  let w; if(MP.isConnected){const hostIsWhite=MP.chRound%2===0;w=(winner==='w')===hostIsWhite?1:2;}else{w=winner==='w'?1:2;}
   if(w===1){CH.s1++;$('p1ScoreCH').textContent=CH.s1;}
   else{CH.s2++;$('p2ScoreCH').textContent=CH.s2;}
   addWin(w,'chess');
