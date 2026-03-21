@@ -4766,7 +4766,7 @@ body.light .man-store {
     </div>
     <div class="celebration" id="agaCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetAGA()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('animalGuess'):resetAGA()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.20';
+const APP_VERSION = '19.21';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -20299,6 +20299,7 @@ function agaShowPhase(phase) {
 function agaConfirmSecret() {
   const v=$('agaSecretInput').value.trim();
   if(!v){$('agaSecretError').textContent='Napíš zviera!';return;}
+  if(MP.isConnected && !mpAGAIsThinker()) return; // only thinker can confirm
   AGA.animal=v; $('agaSecretError').textContent='';
   if(MP.isConnected) {
     mpSend({type:'aga-start'});
