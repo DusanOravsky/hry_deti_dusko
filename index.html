@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.24';
+const APP_VERSION = '19.25';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -20263,8 +20263,7 @@ function applyAGAMPStart() {
 function resetAGA() {
   AGA.phase='setup'; AGA.animal=''; AGA.aiAnimal=null;
   AGA.thinker=2; AGA.qLeft=20; AGA.round=0; AGA.history=[]; AGA.usedQ=new Set(); AGA.pendingQ='';
-  AGA.s1=0; AGA.s2=0;
-  $('agaP1Score').textContent='0'; $('agaP2Score').textContent='0';
+  if(!MP.isConnected) { AGA.s1=0; AGA.s2=0; $('agaP1Score').textContent='0'; $('agaP2Score').textContent='0'; }
   $('agaP1Card').classList.add('active-turn'); $('agaP2Card').classList.remove('active-turn');
   agaUpdateNames();
   if(MP.isConnected) {
