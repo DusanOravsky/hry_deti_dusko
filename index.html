@@ -4830,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.29';
+const APP_VERSION = '19.30';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12126,7 +12126,7 @@ function dkStartAIThinking() {
 }
 function dkWin(color) {
   DK.over=true;
-  const w=color==='r'?1:2;
+  let w; if(MP.isConnected){const hostIsRed=MP.dkRound%2===0;const hostWon=(color==='r'&&hostIsRed)||(color==='b'&&!hostIsRed);w=hostWon?1:2;}else{w=color==='r'?1:2;}
   const name=w===1?getP1Name('dk'):getP2Name('dk');
   if(w===1){DK.s1++;$('p1ScoreDK').textContent=DK.s1;}
   else{DK.s2++;$('p2ScoreDK').textContent=DK.s2;}
