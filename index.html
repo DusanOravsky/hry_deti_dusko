@@ -4703,6 +4703,10 @@ body.light .man-store {
       <div style="margin-bottom:20px;opacity:0.7" id="agaCoverText">Odovzdaj zariadenie Hráčovi 1</div>
       <button class="action-btn primary-btn" id="agaCoverBtn" onclick="agaStartPlaying()">▶️ Štart — Hráč 1 hádá</button>
     </div>
+    <div id="agaMPWait" style="display:none;text-align:center;padding:30px">
+      <div style="font-size:2.5em;margin-bottom:10px">⏳</div>
+      <div style="font-size:1.1em;margin-bottom:8px" id="agaMPWaitText">Čakám kým súper myslí na zviera...</div>
+    </div>
     <div id="agaAIIntro" style="display:none;text-align:center;padding:20px">
       <div style="font-size:3em;margin-bottom:8px">🤔</div>
       <div style="font-size:1.1em;margin-bottom:16px;opacity:0.8">Myslím si zviera... klikaj na otázky!</div>
@@ -4719,6 +4723,7 @@ body.light .man-store {
           <input type="text" id="agaQInput" placeholder="Napr: Žije v Afrike?" autocomplete="off" onkeydown="if(event.key==='Enter')agaAskPVP()">
           <button class="action-btn primary-btn" onclick="agaAskPVP()">❓ Pýtaj</button>
         </div>
+        <div id="agaMPGuesserWait" style="display:none;text-align:center;padding:10px;opacity:0.7;font-style:italic">⏳ Čakám na odpoveď súpera...</div>
         <div id="agaAnswerBlock" style="display:none;margin-top:12px;text-align:center">
           <div id="agaPendingQ" style="font-weight:600;padding:10px;border-radius:8px;background:rgba(102,126,234,0.15);margin-bottom:10px;font-size:1.05em"></div>
           <div style="opacity:0.7;margin-bottom:8px;font-size:0.9em" id="agaAnswerPromptName">Hráč 2: Áno alebo Nie?</div>
@@ -4730,6 +4735,16 @@ body.light .man-store {
       </div>
       <div id="agaAIQBox" style="display:none">
         <div id="agaAIQBtns" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:520px;margin:0 auto"></div>
+      </div>
+      <div id="agaMPThinkerView" style="display:none;text-align:center;padding:12px">
+        <div style="font-size:1.05em;opacity:0.7" id="agaMPThinkerWait">⏳ Čakám na otázku súpera...</div>
+        <div id="agaMPIncomingQ" style="display:none">
+          <div id="agaMPQText" style="font-weight:600;padding:12px;border-radius:10px;background:rgba(102,126,234,0.15);margin-bottom:14px;font-size:1.05em"></div>
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button onclick="agaMPAnswer(true)" class="action-btn" style="background:rgba(46,204,113,0.3);border-color:rgba(46,204,113,0.5);min-width:100px;font-size:1.1em">✅ Áno</button>
+            <button onclick="agaMPAnswer(false)" class="action-btn" style="background:rgba(231,76,60,0.3);border-color:rgba(231,76,60,0.5);min-width:100px;font-size:1.1em">❌ Nie</button>
+          </div>
+        </div>
       </div>
       <div id="agaHistory" style="max-height:180px;overflow-y:auto;margin-top:14px;border-radius:10px;background:rgba(255,255,255,0.05);padding:8px;font-size:0.9em"></div>
       <div style="text-align:center;margin-top:14px">
@@ -4815,7 +4830,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.17';
+const APP_VERSION = '19.18';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -14150,7 +14165,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0,
   _intentionalDisconnect: false,
   _reconnectAttempts: 0,
   _maxReconnectAttempts: 3,
@@ -20224,6 +20239,23 @@ const AGA = {
   phase:'setup', animal:'', aiAnimal:null,
   thinker:2, qLeft:20, s1:0, s2:0, round:0, history:[], usedQ:new Set(), pendingQ:''
 };
+function mpAGAIsThinker() {
+  const hostThinks = MP.agaRound % 2 === 0;
+  return (MP.isHost && hostThinks) || (!MP.isHost && !hostThinks);
+}
+function applyAGAMPStart() {
+  const isThinker = mpAGAIsThinker();
+  const opponent = MP.opponentName || (MP.isHost ? globalP2 : globalP1);
+  if(isThinker) {
+    $('agaSetupText').textContent='🤫 Ty myslíš na zviera ('+opponent+' hádá)';
+    $('agaStatus').textContent=MP.myName+' myslí na zviera...';
+    agaShowPhase('setup');
+  } else {
+    $('agaMPWaitText').textContent='⏳ '+opponent+' myslí na zviera...';
+    $('agaStatus').textContent='Čakám na súpera...';
+    agaShowPhase('mp_wait');
+  }
+}
 function resetAGA() {
   AGA.phase='setup'; AGA.animal=''; AGA.aiAnimal=null;
   AGA.thinker=2; AGA.qLeft=20; AGA.round=0; AGA.history=[]; AGA.usedQ=new Set(); AGA.pendingQ='';
@@ -20231,7 +20263,9 @@ function resetAGA() {
   $('agaP1Score').textContent='0'; $('agaP2Score').textContent='0';
   $('agaP1Card').classList.add('active-turn'); $('agaP2Card').classList.remove('active-turn');
   agaUpdateNames();
-  if(welcomeGameMode==='ai') {
+  if(MP.isConnected) {
+    applyAGAMPStart();
+  } else if(welcomeGameMode==='ai') {
     agaShowPhase('ai_intro');
     $('agaStatus').textContent='Myslím si zviera...';
   } else {
@@ -20252,15 +20286,29 @@ function setAGAMode(m, btn) {
   resetAGA();
 }
 function agaShowPhase(phase) {
-  ['agaSetupBox','agaCover','agaAIIntro','agaPlayBox','agaGuessBox','agaResultBox'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});
+  ['agaSetupBox','agaCover','agaAIIntro','agaPlayBox','agaGuessBox','agaResultBox','agaMPWait'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});
   AGA.phase=phase;
-  const map={setup:'agaSetupBox',cover:'agaCover',ai_intro:'agaAIIntro',playing:'agaPlayBox',guessing:'agaGuessBox',result:'agaResultBox'};
+  const map={setup:'agaSetupBox',cover:'agaCover',ai_intro:'agaAIIntro',playing:'agaPlayBox',guessing:'agaGuessBox',result:'agaResultBox',mp_wait:'agaMPWait'};
   if(map[phase]) $(map[phase]).style.display='';
 }
 function agaConfirmSecret() {
   const v=$('agaSecretInput').value.trim();
   if(!v){$('agaSecretError').textContent='Napíš zviera!';return;}
   AGA.animal=v; $('agaSecretError').textContent='';
+  if(MP.isConnected) {
+    mpSend({type:'aga-start'});
+    AGA.qLeft=20; AGA.history=[]; AGA.usedQ=new Set(); AGA.pendingQ='';
+    agaShowPhase('playing');
+    $('agaQLeft').textContent=20;
+    $('agaPVPQuestions').style.display='none';
+    $('agaAIQBox').style.display='none';
+    $('agaMPThinkerView').style.display='';
+    $('agaMPThinkerWait').style.display='';
+    $('agaMPIncomingQ').style.display='none';
+    agaRenderHistory();
+    $('agaStatus').textContent='Čakám na otázky od súpera...';
+    return;
+  }
   const g=3-AGA.thinker;
   $('agaCoverText').textContent='Odovzdaj zariadenie Hráčovi '+g;
   $('agaCoverBtn').textContent='▶️ Štart — Hráč '+g+' hádá';
@@ -20305,6 +20353,14 @@ function agaAskPVP() {
   if(AGA.pendingQ) return;
   const v=$('agaQInput').value.trim(); if(!v) return;
   AGA.pendingQ=v;
+  if(MP.isConnected) {
+    mpSend({type:'aga-question',q:v});
+    $('agaQInput').value=''; $('agaQInput').disabled=true;
+    $('agaMPGuesserWait').style.display='';
+    $('agaStatus').textContent='Čakám na odpoveď...';
+    playSound('click');
+    return;
+  }
   $('agaPendingQ').textContent='"'+escHtml(v)+'"';
   $('agaAnswerPromptName').textContent=getActiveP2Name('animalGuess')+': Áno alebo Nie?';
   $('agaAnswerBlock').style.display=''; $('agaQInput').value=''; $('agaQInput').disabled=true;
@@ -20319,6 +20375,18 @@ function agaPVPAnswer(yes) {
   agaRenderHistory(); playSound(yes?'correct':'wrong');
   if(AGA.qLeft<=0){$('agaStatus').textContent='Otázky vyčerpané — hádaj!';agaShowGuessInput();}
 }
+function agaMPAnswer(yes) {
+  if(!AGA.pendingQ) return;
+  const ans=yes?'Áno':'Nie';
+  AGA.qLeft--; AGA.history.push({q:AGA.pendingQ,a:ans});
+  agaRenderHistory(); $('agaQLeft').textContent=AGA.qLeft;
+  mpSend({type:'aga-answer',q:AGA.pendingQ,a:ans});
+  AGA.pendingQ='';
+  $('agaMPIncomingQ').style.display='none';
+  $('agaMPThinkerWait').style.display='';
+  $('agaStatus').textContent='Čakám na ďalšiu otázku...';
+  playSound(yes?'correct':'wrong');
+}
 function agaRenderHistory() {
   const box=$('agaHistory');
   if(!AGA.history.length){box.innerHTML='<div style="opacity:0.4;text-align:center;padding:6px;font-size:0.85em">História otázok</div>';return;}
@@ -20329,6 +20397,12 @@ function agaBackToPlay() { if(AGA.qLeft>0) agaShowPhase('playing'); }
 function agaNorm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
 function agaSubmitGuess() {
   const guess=$('agaGuessInput').value.trim(); if(!guess) return;
+  if(MP.isConnected) {
+    mpSend({type:'aga-guess',guess:guess});
+    $('agaGuessInput').disabled=true;
+    $('agaStatus').textContent='Čakám na výsledok...';
+    return;
+  }
   const target=welcomeGameMode==='ai'?AGA.aiAnimal.n:AGA.animal;
   const correct=agaNorm(guess)===agaNorm(target)||agaNorm(target).startsWith(agaNorm(guess));
   const p1guess=AGA.thinker===2||welcomeGameMode==='ai';
@@ -20351,6 +20425,7 @@ function agaSubmitGuess() {
   agaShowPhase('result'); AGA.round++;
 }
 function agaNextRound() {
+  if(MP.isConnected) { mpRematch('animalGuess'); return; }
   if(welcomeGameMode==='ai'){
     AGA.aiAnimal=null;
     $('agaStatus').textContent='Myslím si nové zviera...';
@@ -20618,7 +20693,7 @@ const MOBILE_GAMES = [
   { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
   { id:'simonSays',    label:'Simon Says',     icon:'🔊', grad:'rgba(231,76,60,0.3),rgba(52,152,219,0.3)', mode:'both', cat:'logic' },
   { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
-  { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun' },
+  { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun', mp:true },
   { id:'animalQuiz',   label:'Zvierací Kvíz', icon:'🦁', grad:'rgba(255,152,0,0.3),rgba(255,87,34,0.3)', mode:'both', cat:'fun' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
@@ -22198,6 +22273,76 @@ function _mpHandleMessageInner(data) {
     makeGuess();
   }
 
+  // Hádaj Zviera MP
+  if(data.type === 'aga-start') {
+    // Guesser: thinker entered animal, start asking questions
+    AGA.qLeft=20; AGA.history=[]; AGA.usedQ=new Set(); AGA.pendingQ='';
+    agaShowPhase('playing');
+    $('agaQLeft').textContent=20;
+    $('agaPVPQuestions').style.display='';
+    $('agaAIQBox').style.display='none';
+    $('agaMPThinkerView').style.display='none';
+    $('agaMPGuesserWait').style.display='none';
+    $('agaAnswerBlock').style.display='none';
+    $('agaQInput').value=''; $('agaQInput').disabled=false;
+    agaRenderHistory();
+    $('agaStatus').textContent='Kladieš otázky súperovi (Áno/Nie)!';
+  }
+  if(data.type === 'aga-question') {
+    // Thinker receives question from guesser
+    AGA.pendingQ=data.q;
+    $('agaMPQText').textContent='"'+escHtml(data.q)+'"';
+    $('agaMPThinkerWait').style.display='none';
+    $('agaMPIncomingQ').style.display='';
+    $('agaStatus').textContent='Odpovedz na otázku súpera!';
+  }
+  if(data.type === 'aga-answer') {
+    // Guesser receives answer from thinker
+    AGA.qLeft--; AGA.history.push({q:data.q,a:data.a}); AGA.pendingQ='';
+    $('agaMPGuesserWait').style.display='none';
+    $('agaQInput').disabled=false;
+    $('agaQLeft').textContent=AGA.qLeft;
+    agaRenderHistory(); playSound(data.a==='Áno'?'correct':'wrong');
+    if(AGA.qLeft<=0){$('agaStatus').textContent='Otázky vyčerpané — hádaj!';agaShowGuessInput();}
+    else $('agaStatus').textContent='Kladieš otázky súperovi (Áno/Nie)!';
+  }
+  if(data.type === 'aga-guess') {
+    // Thinker evaluates guesser's final guess
+    const guess=data.guess;
+    const correct=agaNorm(guess)===agaNorm(AGA.animal)||agaNorm(AGA.animal).startsWith(agaNorm(guess));
+    mpSend({type:'aga-result',correct:correct,animal:AGA.animal});
+    const guesserName=MP.opponentName||'Súper';
+    if(correct){
+      $('agaResultText').textContent='🎉 '+guesserName+' uhádol(a)!';
+      $('agaResultAnimal').textContent='🐾 '+AGA.animal;
+      AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');
+      playSound('win'); celebrate('agaCelebration'); launchConfetti();
+    } else {
+      $('agaResultText').textContent='💪 '+guesserName+' neuhádol. Ty si vyhral(a)!';
+      $('agaResultAnimal').textContent='🐾 '+escHtml(guess)+' ✗ → '+AGA.animal;
+      AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');
+      playSound('win'); celebrate('agaCelebration'); launchConfetti();
+    }
+    agaShowPhase('result'); AGA.round++;
+  }
+  if(data.type === 'aga-result') {
+    // Guesser receives result from thinker
+    const correct=data.correct, target=data.animal;
+    $('agaGuessInput').disabled=false;
+    if(correct){
+      $('agaResultText').textContent='🎉 '+(MP.myName||'Ty')+' si uhádol(a)!';
+      $('agaResultAnimal').textContent='🐾 '+target;
+      AGA.s1++;$('agaP1Score').textContent=AGA.s1;addWin(1,'animalGuess');
+      playSound('win'); celebrate('agaCelebration'); launchConfetti();
+    } else {
+      $('agaResultText').textContent='❌ Nie... zviera bolo: '+target;
+      $('agaResultAnimal').textContent='🐾 '+($('agaGuessInput').value.trim()||'?')+' ✗ → '+target;
+      AGA.s2++;$('agaP2Score').textContent=AGA.s2;addWin(2,'animalGuess');
+      playSound('wrong');
+    }
+    agaShowPhase('result'); AGA.round++;
+  }
+
   // Lodičky sync
   if(data.type === 'bs-shoot') {
     // Opponent shot at our board
@@ -22323,6 +22468,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'ludo') { if(data.round !== undefined) MP.ludoRound = data.round; resetLudo(); applyLudoMPStart(); }
     if(gameId === 'battleship') { if(data.round !== undefined) MP.bsRound = data.round; resetBS(); }
     if(gameId === 'guessNum') { if(data.round !== undefined) MP.gnRound = data.round; resetGN(); applyGNMPStart(); }
+    if(gameId === 'animalGuess') { if(data.round !== undefined) MP.agaRound = data.round; resetAGA(); }
     if(gameId === 'snakeDuel') { if(data.round !== undefined) MP.sdRound = data.round; resetSnakeDuel(); SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0'; }
     if(gameId === 'tanks') { if(data.round !== undefined) MP.tnkRound = data.round; resetTanks(); }
     if(gameId === 'pong') { if(data.round !== undefined) MP.pngRound = data.round; resetPong(); }
@@ -22475,6 +22621,7 @@ function mpRematch(gameId) {
   if(gameId === 'ludo') { MP.ludoRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ludoRound }); resetLudo(); applyLudoMPStart(); }
   if(gameId === 'battleship') { MP.bsRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.bsRound }); resetBS(); }
   if(gameId === 'guessNum') { MP.gnRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.gnRound }); resetGN(); applyGNMPStart(); }
+  if(gameId === 'animalGuess') { MP.agaRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.agaRound }); resetAGA(); }
   if(gameId === 'snakeDuel') { MP.sdRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sdRound }); resetSnakeDuel(); SD.s1=0;SD.s2=0;$('p1ScoreSD').textContent='0';$('p2ScoreSD').textContent='0'; }
   if(gameId === 'tanks') { MP.tnkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.tnkRound }); resetTanks(); }
   if(gameId === 'pong') { MP.pngRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.pngRound }); resetPong(); }
