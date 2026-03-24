@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Hrajme si</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
@@ -19,7 +22,7 @@
 html, body { overflow-x:hidden; width:100%; max-width:100vw; }
 
 body {
-  font-family:'Segoe UI',sans-serif;
+  font-family:'Nunito','Segoe UI',sans-serif;
   background: linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
   min-height:100vh;
   padding:16px;
@@ -2352,12 +2355,12 @@ body.light .man-store {
   <!-- LEVEL 2: Game picker -->
   <div id="mobileGamePicker">
     <div class="mobile-topbar">
-      <button class="mobile-back-btn" onclick="mobileBackWithTournamentCheck(1)">‹</button>
+      <button class="mobile-back-btn" onclick="mobileBackWithTournamentCheck(1)" aria-label="Späť">‹</button>
       <span class="mobile-topbar-title">🎮 Vyber hru</span>
       <div class="mobile-topbar-actions">
-        <button class="mobile-topbar-btn" id="mobileThemeBtn" onclick="toggleTheme()">🌙</button>
-        <button class="mobile-topbar-btn" id="mobileSoundBtn" onclick="toggleSound()">🔊</button>
-        <button class="mobile-topbar-btn" id="mobileVibrationBtn" onclick="toggleVibration()">📳</button>
+        <button class="mobile-topbar-btn" id="mobileThemeBtn" onclick="toggleTheme()" aria-label="Prepnúť tému">🌙</button>
+        <button class="mobile-topbar-btn" id="mobileSoundBtn" onclick="toggleSound()" aria-label="Prepnúť zvuk">🔊</button>
+        <button class="mobile-topbar-btn" id="mobileVibrationBtn" onclick="toggleVibration()" aria-label="Prepnúť vibrácie">📳</button>
       </div>
     </div>
     <div class="mobile-player-strip">
@@ -2371,7 +2374,7 @@ body.light .man-store {
     <div id="catPills" style="display:flex;gap:6px;padding:0 14px 6px;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
     <div class="game-search-box">
       <input type="text" id="gameSearchInput" placeholder="🔍 Hľadaj hru..." onkeyup="filterGames()" autocomplete="off">
-      <button id="clearSearchBtn" onclick="clearSearch()" style="display:none">✕</button>
+      <button id="clearSearchBtn" onclick="clearSearch()" style="display:none" aria-label="Vymazať hľadanie">✕</button>
     </div>
     <div class="mobile-game-grid" id="mobileGameGrid">
       <!-- filled by JS -->
@@ -2381,13 +2384,13 @@ body.light .man-store {
   <!-- LEVEL 3: Game view -->
   <div id="mobileGameView">
     <div class="mobile-topbar">
-      <button class="mobile-back-btn" onclick="mobileBackWithTournamentCheck(2)">‹</button>
+      <button class="mobile-back-btn" onclick="mobileBackWithTournamentCheck(2)" aria-label="Späť">‹</button>
       <span class="mobile-topbar-title" id="mobileGameTitle">Hra</span>
       <div class="mobile-topbar-actions">
-        <button class="mobile-topbar-btn" id="mobileHelpBtn" onclick="showRules(currentGameId)" title="Pravidlá">❓</button>
-        <button class="mobile-topbar-btn" id="mobileThemeBtn2" onclick="toggleTheme()">🌙</button>
-        <button class="mobile-topbar-btn" id="mobileSoundBtn2" onclick="toggleSound()">🔊</button>
-        <button class="mobile-topbar-btn" id="mobileVibrationBtn2" onclick="toggleVibration()">📳</button>
+        <button class="mobile-topbar-btn" id="mobileHelpBtn" onclick="showRules(currentGameId)" title="Pravidlá" aria-label="Pravidlá hry">❓</button>
+        <button class="mobile-topbar-btn" id="mobileThemeBtn2" onclick="toggleTheme()" aria-label="Prepnúť tému">🌙</button>
+        <button class="mobile-topbar-btn" id="mobileSoundBtn2" onclick="toggleSound()" aria-label="Prepnúť zvuk">🔊</button>
+        <button class="mobile-topbar-btn" id="mobileVibrationBtn2" onclick="toggleVibration()" aria-label="Prepnúť vibrácie">📳</button>
       </div>
     </div>
     <div id="mobileGameContent">
@@ -4835,7 +4838,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.32';
+const APP_VERSION = '19.33';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
