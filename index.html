@@ -284,6 +284,11 @@ body.light .mobile-topbar-title { color:#222; }
   font-weight:700;
   padding:5px 10px;
   cursor:pointer;
+  min-width:44px;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 }
 body.light .mobile-topbar-btn { background:rgba(0,0,0,0.07); border-color:rgba(0,0,0,0.15); color:#333; }
 
@@ -4830,7 +4835,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.31';
+const APP_VERSION = '19.32';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -21505,7 +21510,7 @@ function mpCreateRoom() {
         mpCheckConnectionType();
         mpUpdateRoleBadge();
         $('mpHostStatus').className = 'mp-status connected';
-        $('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si 🔴 ' + MP.myName + ' (X)</div>';
+        $('mpHostStatus').innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#f5576c">Si 🔴 ' + escHtml(MP.myName) + ' (X)</div>';
         $('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
         // Auto-close modal after connection
@@ -21621,7 +21626,7 @@ function mpJoinWithConfig(code, statusEl, config) {
         mpCheckConnectionType();
         mpUpdateRoleBadge();
         statusEl.className = 'mp-status connected';
-        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si 🔵 ' + MP.myName + ' (O)</div>';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">✅</div><div>Pripojený!</div><div style="margin-top:10px;font-weight:700;color:#4facfe">Si 🔵 ' + escHtml(MP.myName) + ' (O)</div>';
         $('mpDisconnectBtn').classList.remove('mp-hidden');
         updateFloatingMPButton(true);
         // Auto-close modal after connection
