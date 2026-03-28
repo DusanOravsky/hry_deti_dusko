@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~23000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.37
+- **Current version**: v19.43
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -85,13 +85,13 @@ resetWordle(); // welcomeGameMode check works
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
-- Ghost (EN: 531 slov, SK)
+- Ghost [MP] (EN: 531 slov, SK; series score display `#ghostSeriesScore`; host controls language, guest selector disabled in MP; `ghost-letter`, `ghost-challenge`, `ghost-lang` messages; `ghostRound` alternation)
 - Reakcny Test (200ms penalty for early tap)
-- Scramble / Jazykovy Scramble (5/10/15 rounds selector)
+- Scramble / Jazykovy Scramble (5/10/15 rounds selector, timer options: ∞/10s/15s/30s/60s)
+- Bodky a Krabicky [MP] (Dots and Boxes, 5x5 grid; `db-line` message, `dbRound` alternation)
 - Flashcards / Dopln pismeno / Prekladaj vety
 - Spam Click, Matika Duel, Emoji Hadanka
 - Obesenec, Vyssie Nizsie
-- Bodky a Krabicky (Dots and Boxes, 5x5 grid)
 - Doodle Jump (2-player turn-based, canvas, touch + arrows, 2 modes: wrap/wall)
 - Snake Duel [MP] (2 snakes simultaneously, WASD vs arrows, first to 5)
 
@@ -118,7 +118,7 @@ resetWordle(); // welcomeGameMode check works
 - **Offline indicator**: Red banner when device offline, MP button auto-hides
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
-- **Achievement system**: 49 achievements (16 general + 23 per-game + 4 daily + 6 seasonal) checked after every `addWin()`, `toggleFavorite()`, and `dailyCheckComplete()`, toast notification on unlock, displayed in Stats page
+- **Achievement system**: 54 achievements (16 general + 28 per-game + 4 daily + 6 seasonal) checked after every `addWin()`, `toggleFavorite()`, and `dailyCheckComplete()`, toast notification on unlock, displayed in Stats page
 - **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
@@ -158,10 +158,10 @@ resetWordle(); // welcomeGameMode check works
 - **AI difficulty persistence**: `saveDiff(gameId,d)` / `loadDiff(gameId)` save to `localStorage('hry_diff_'+gameId)`, `restoreAllDiffs()` on page load
 - **Game categories**: 6 categories (Všetky, Doskové, Arkádové, Slovné, Logické, Zábavné), `GAME_CATS` array, `cat` property on MOBILE_GAMES, horizontal scrollable pills
 - **Confetti on wins**: Canvas confetti animation on any win via `addWin()`, 150 particles, 2.5s duration
-- **Daily Challenge**: 32 games rotation, streak badge in button (🔥X), 30-day calendar in Stats section (green=completed), history in localStorage
+- **Daily Challenge**: 38 games rotation, streak badge in button (🔥X), 30-day calendar in Stats section (green=completed), history in localStorage
 - **Emoji Avatars**: 46 emoji options for all 4 players (P1/P2 on welcome screen, P3/P4 in Ludo), stored in localStorage, shown in game cards
 - **Top 5 Leaderboard**: Solo games (Tetris, Snake, Racing, Gravity Run, 2048, Flappy Bird) track top 5 scores in localStorage
-- **Wordle MP**: Simultaneous guessing mode, both players see own board, tie-breaking logic (fewer rows wins, equal = draw)
+- **Wordle MP**: Simultaneous guessing mode, both players see own board, tie-breaking logic (fewer rows wins, equal = draw); persistent opponent progress indicator (`#wdlOpponentProg`) updates on each `wdl-guess` message
 - **2048**: Classic sliding tile puzzle, 4x4 grid, swipe + arrows, merge tiles to reach 2048, high score + leaderboard
 - **Flappy Bird**: Canvas game, tap/space/click to flap, pipe obstacles with gap, gravity physics, high score + leaderboard
 - **Animated transitions**: Slide animations (slideInRight/slideOutLeft) between navigation levels, cardPop for game cards
@@ -178,7 +178,7 @@ resetWordle(); // welcomeGameMode check works
 - **Sound & Vibration Persistence**: Settings saved to localStorage ('hry_sound', 'hry_vibration'), restored on page load via `loadSoundSettings()`, prevents frustrating reset-to-defaults on reload
 - **Angry Birds**: Slingshot physics game, drag & release mechanics, parabolic bird flight with gravity, destructible box towers, PvP: 5 shots per player, AI: varying accuracy based on difficulty
 - **Sokoban**: Classic push-box puzzle, 15 hand-crafted verified levels (progressive difficulty), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
-- **Achievement Progress Bars**: All 49 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
+- **Achievement Progress Bars**: All 54 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
 - **Simon Says**: Memory sequence game with 4, 6, or 9 colored buttons (🔴🔵🟢🟡🟠🟣🟤⚫🩷), watch and repeat the pattern, each round adds one color, AI mode: difficulty determines colors + speed (easy=4 colors/800ms, medium=6 colors/500ms, hard=9 colors/300ms), PVP mode: separate selectors for color count (4/6/9) + speed (easy/medium/hard), alternating turns with highest level winner, grid adapts: 2×2 (4), 2×3 (6), 3×3 (9)
 - **Mancala**: Classic Kalaha board game, 6 pits + store per player, counter-clockwise stone distribution, capture mechanics (landing in empty pit captures opposite), extra turn on landing in own store, AI with 3 difficulties (easy=random, medium=prefers extra turns/captures, hard=minimax with board evaluation)
 
@@ -251,7 +251,7 @@ const MP = {
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
   dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
   sdRound: 0, tnkRound: 0, pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0,
-  simonRound: 0, manRound: 0, sokRound: 0,
+  simonRound: 0, manRound: 0, sokRound: 0, ghostRound: 0, dbRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _reconnectAttempts: 0,
@@ -274,9 +274,9 @@ const MP = {
 - `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
 - `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
-**Games with MP Support (19 games):**
+**Games with MP Support (21 games):**
 
-*Turn-based (13 games):*
+*Turn-based (14 games):*
 - Piskvorky — `ttt-move`, alternating start (tttRound)
 - Connect4 — `c4-move`
 - Kamen Papier Noznice — `rps-choice`
@@ -290,9 +290,11 @@ const MP = {
 - Reversi — `rev-move`, alternating black/white per round (revRound); host=black even rounds, guest=black odd rounds
 - Nim — `nim-take` sent from nimSelect() at confirm point (not nimTake to avoid double-send); alternating first player per round (nimRound)
 - Mancala — `mancala-move` sent from manClickPit() (user action), manMakeMove() on receiver; manRound alternation; score reset guard
+- Bodky a Krabičky — `db-line` sent from dbClick() (user action), dbPlaceLine() on receiver; dbRound alternation
 
-*Sequential turn (2 games):*
+*Sequential turn (3 games):*
 - Simon Says — `ss-result` sent on failure; first player sends `{fromTurn, score}`, second sends `{fromTurn, score, winner}`; simonRound alternation; simonStart() has SIMON.over + MP turn guard to prevent waiting player corruption
+- Ghost — `ghost-letter` (sent from ghostAddLetter), `ghost-challenge` (sent from ghostChallenge), `ghost-lang` (host-only lang change); ghostRound alternation; host controls language (guest selector disabled); series score shown in `#ghostSeriesScore`
 - Hádaj Zviera (AGA) — `aga-guess`, agaRound alternation
 
 *Simultaneous (1 game):*
@@ -379,6 +381,22 @@ Key game state objects and their patterns:
 - **Simon Says MP** (v19.36): sequential play — `ss-result` handoff; first player sends `{fromTurn,score}`, second sends `{fromTurn,score,winner}`; `simonRound` alternation; `simonStart()` guards: `SIMON.over` check + MP turn guard (v19.37 fix)
 - **Mancala MP** (v19.36): `mancala-move` sent from `manClickPit()` (action point); `manMakeMove()` called on receiver; `manRound` alternation; score reset guard (`if(!MP.isConnected)`)
 - **Sokoban MP** (v19.36): simultaneous play; `sok-done` sent on completion; each device tracks `p1Completed`/`p2Completed` independently; `sokMPAdvanceLevel()` triggers when both done; level selector hidden in MP; `sokRound` for rematch sync only
+
+## New Features (v19.38–v19.43)
+
+- **Ghost MP** (v19.38–v19.41): `mp:true`, `ghost-letter`/`ghost-challenge`/`ghost-lang` messages; host-only language change (guest selector disabled on connect, re-enabled on disconnect); `ghostRound` alternation; series score display in `#ghostSeriesScore` (hidden when 0-0, shown after first win); score reset guard in `resetGhost()`
+- **Dots & Boxes MP** (v19.38): `mp:true`, `db-line` message sent from `dbClick()` (not `dbPlaceLine()` to avoid double-send); `dbRound` alternation; `applyDBMPStart()` sets initial turn; turn sound plays only when `completed===0` (turn changes), not when player keeps turn after box completion
+- **Sokoban MP rematch score fix** (v19.38): `SOK.s1=0; SOK.s2=0` added to both `mpRematch('sokoban')` and `mp-rematch` receiver
+- **Ghost challenge bug fix** (v19.40): `ghostDoChallenge()` wrong-challenge branch now correctly uses `GHOST.player` (the challenger loses), not `GHOST.player===1?2:1`
+- **Ghost language desync fix** (v19.41): `ghostLangChange()` blocks guests; `ghost-lang` message; language sent in both handshakes; guest selector disabled/re-enabled on connect/disconnect
+- **Scramble timer** (v19.42): Options changed from 30/60/90s to ∞/10s/15s/30s/60s — more intense gameplay
+- **Ludo dice animation** (v19.42): setInterval cycles through random dice faces (⚀–⚅) 7× at 70ms each (~490ms), then settles on final value; applied to both `ludoRoll()` and `ludoDoRollAI()`
+- **Turn-change sounds** (v19.42): `playSound('move')` added at turn transitions in Ghost, Dots & Boxes (only when `completed===0`), Mancala (only when `!extraTurn`), Simon Says local PVP, Simon Says MP receiver
+- **Ghost series score display** (v19.42): `#ghostSeriesScore` div shows "Séria: P1 X – Y P2" after first win, hidden at 0-0; updated in `resetGhost()` and `ghostRoundLoss()`
+- **Wordle MP opponent progress** (v19.42): `#wdlOpponentProg` persistent indicator shows opponent's current guess count (e.g. "Súper: 3/6 ⬜"), updated on each `wdl-guess`, cleared on `wdl-start` and `resetWordle()`
+- **5 new achievements** (v19.42): bee10 (🐝 Včelár, 10×), soc5 (⚽ Futbalista, 5×), fc5 (🃏 Kartičkár, 5×), ml5 (🔡 Pravopisár, 5×), st3 (💬 Prekladateľ, 3×) — total now 54
+- **Daily Challenge +6 games** (v19.43): Ghost, Sokoban, Simon Says, Mancala, Angry Birds, Scramble — total now 38
+- **Tournament +7 games** (v19.43): Wordle, Sokoban, Simon Says, Mancala, Angry Birds, Pong, Tank Battle — total now 29
 
 ## New Features (v18.0–18.1)
 
