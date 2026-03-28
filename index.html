@@ -3716,7 +3716,7 @@ body.light .man-store {
     <div id="revBoard" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-width:340px;margin:10px auto;aspect-ratio:1;background:rgba(255,255,255,0.08);border-radius:10px;padding:3px"></div>
     <div class="celebration" id="revCelebration">🎉</div>
     <div class="buttons-group">
-      <button class="action-btn danger-btn" onclick="resetReversi()">🔄 Nová hra</button>
+      <button class="action-btn danger-btn" onclick="newGameReversi()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4616,7 +4616,7 @@ body.light .man-store {
     <div id="nimTakeInfo" style="text-align:center;min-height:24px;font-size:0.85em;opacity:0.6"></div>
     <div class="celebration" id="nimCelebration"></div>
     <div class="buttons-group" style="margin-top:10px">
-      <button class="action-btn primary-btn" onclick="resetNim()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="newGameNim()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4838,7 +4838,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.33';
+const APP_VERSION = '19.34';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12284,9 +12284,13 @@ function resetReversi(){
   REV.board[27]=2;REV.board[28]=1;REV.board[35]=1;REV.board[36]=2;
   REV.turn=1;REV.over=false;
   renderReversi();
-  $('revStatus').textContent=getP1Name('rev')+' ⚫ je na rade';
-  activeTurn('revP1Card','revP2Card',1);
+  const hostIsBlack=!MP.isConnected||MP.revRound%2===0;
+  const blackName=hostIsBlack?getP1Name('rev'):getP2Name('rev');
+  $('revStatus').textContent=blackName+' ⚫ je na rade';
+  // activeTurn: turn=1=black player; in odd MP rounds black=P2
+  activeTurn('revP1Card','revP2Card',hostIsBlack?1:2);
 }
+function newGameReversi(){if(MP.isConnected)mpRematch('reversi');else resetReversi();}
 function revRC(i){return[Math.floor(i/8),i%8];}
 function revIdx(r,c){return r*8+c;}
 function revFlips(board,idx,player){
@@ -12335,8 +12339,14 @@ function renderReversi(){
 function revClick(idx){
   if(REV.over)return;
   if(welcomeGameMode==='ai'&&REV.turn===2)return;
+  if(MP.isConnected){
+    // myColor: 1=black,2=white; host plays black on even rounds, white on odd
+    const myColor=MP.isHost?(MP.revRound%2===0?1:2):(MP.revRound%2===0?2:1);
+    if(REV.turn!==myColor)return;
+  }
   const flips=revFlips(REV.board,idx,REV.turn);
   if(flips.length===0)return;
+  mpSend({type:'rev-move',idx});
   revPlace(idx,REV.turn,flips);
 }
 function revPlace(idx,player,flips){
@@ -12352,8 +12362,11 @@ function revPlace(idx,player,flips){
     if(valid.length===0){revGameOver();renderReversi();return;}
   }
   renderReversi();
-  activeTurn('revP1Card','revP2Card',REV.turn);
-  $('revStatus').textContent=(REV.turn===1?getActiveP1Name('reversi')+' ⚫':getActiveP2Name('reversi')+' ⚪')+' je na rade';
+  const hostIsBlack=!MP.isConnected||MP.revRound%2===0;
+  const blackName=hostIsBlack?getActiveP1Name('reversi'):getActiveP2Name('reversi');
+  const whiteName=hostIsBlack?getActiveP2Name('reversi'):getActiveP1Name('reversi');
+  $('revStatus').textContent=(REV.turn===1?blackName+' ⚫':whiteName+' ⚪')+' je na rade';
+  activeTurn('revP1Card','revP2Card',REV.turn===1?(hostIsBlack?1:2):(hostIsBlack?2:1));
   if(welcomeGameMode==='ai'&&REV.turn===2&&!REV.over){
     setTimeout(revAI,400);
   }
@@ -12363,8 +12376,11 @@ function revGameOver(){
   const b1=REV.board.filter(x=>x===1).length;
   const b2=REV.board.filter(x=>x===2).length;
   const st=$('revStatus');
-  if(b1>b2){st.textContent=getActiveP1Name('reversi')+' vyhráva! '+b1+':'+b2;addWin(1,'reversi');celebrate('revCelebration');playSound('win');}
-  else if(b2>b1){st.textContent=getActiveP2Name('reversi')+' vyhráva! '+b2+':'+b1;addWin(2,'reversi');celebrate('revCelebration');playSound('win');}
+  const hostIsBlack=!MP.isConnected||MP.revRound%2===0;
+  const blackName=hostIsBlack?getActiveP1Name('reversi'):getActiveP2Name('reversi');
+  const whiteName=hostIsBlack?getActiveP2Name('reversi'):getActiveP1Name('reversi');
+  if(b1>b2){st.textContent=blackName+' vyhráva! '+b1+':'+b2;addWin(hostIsBlack?1:2,'reversi');celebrate('revCelebration');playSound('win');}
+  else if(b2>b1){st.textContent=whiteName+' vyhráva! '+b2+':'+b1;addWin(hostIsBlack?2:1,'reversi');celebrate('revCelebration');playSound('win');}
   else{st.textContent='Remíza! '+b1+':'+b2;addWin(0,'reversi');}
 }
 function revAI(){
@@ -14173,13 +14189,39 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0,
   _intentionalDisconnect: false,
+  _pingInterval: null,
   _reconnectAttempts: 0,
   _maxReconnectAttempts: 3,
   _reconnectTimeout: null
 };
 function mpSend(data){if(MP.isConnected&&MP.connection)try{MP.connection.send(data);}catch(e){console.warn('mpSend:',e);}}
+function mpStartPing(){
+  mpStopPing();
+  MP._pingInterval=setInterval(()=>{if(MP.isConnected)mpSend({type:'mp-ping',ts:Date.now()});},4000);
+}
+function mpStopPing(){
+  if(MP._pingInterval){clearInterval(MP._pingInterval);MP._pingInterval=null;}
+  const el=$('mpPingMs');if(el){el.style.display='none';el.textContent='';}
+}
+function mpChatAppend(name,text,isMe){
+  const box=$('mpChatMessages');if(!box)return;
+  const div=document.createElement('div');
+  div.style.cssText='padding:4px 8px;margin:2px 0;border-radius:8px;font-size:0.82em;max-width:85%;word-break:break-word;'+(isMe?'align-self:flex-end;background:rgba(102,126,234,0.25);text-align:right':'align-self:flex-start;background:rgba(255,255,255,0.07)');
+  div.textContent=(isMe?'Ty':name)+': '+text;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+  // Keep max 40 messages
+  while(box.children.length>40)box.removeChild(box.firstChild);
+}
+function mpChatSend(){
+  const inp=$('mpChatInput');if(!inp)return;
+  const text=inp.value.trim();if(!text||!MP.isConnected)return;
+  mpSend({type:'chat-msg',text});
+  mpChatAppend(MP.myName||'Ja',text,true);
+  inp.value='';
+}
 
 // =============================================================================
 // SEKCIA 33: BODKY A KRABICKY (DOTS AND BOXES)
@@ -19369,7 +19411,10 @@ function setNimDiff(d,btn){NIM.diff=d;saveDiff('nimGame',d);btn.parentElement.qu
 
 function resetNim(){
   if(NIM._timer){clearTimeout(NIM._timer);NIM._timer=null;}
-  NIM.piles=[1,3,5,7];NIM.turn=1;NIM.over=false;NIM.selected=null;
+  NIM.piles=[1,3,5,7];NIM.over=false;NIM.selected=null;
+  // In MP: alternate who goes first; even round = P1(host) starts
+  NIM.turn=MP.isConnected?(MP.nimRound%2===0?1:2):1;
+  if(!MP.isConnected){NIM.s1=0;NIM.s2=0;}
   const n1=getActiveP1Name('nimGame'),n2=getActiveP2Name('nimGame');
   $('nimP1Name').textContent=n1;$('nimP2Name').textContent=n2;
   $('nimP1Score').textContent=NIM.s1;$('nimP2Score').textContent=NIM.s2;
@@ -19379,6 +19424,7 @@ function resetNim(){
   activeTurn('nimP1Card','nimP2Card',NIM.turn);
   nimRender();
 }
+function newGameNim(){if(MP.isConnected)mpRematch('nimGame');else resetNim();}
 
 function nimRender(){
   const board=$('nimBoard');
@@ -19402,9 +19448,11 @@ function nimRender(){
 function nimSelect(pile,count){
   if(NIM.over) return;
   if(welcomeGameMode==='ai'&&NIM.turn===2) return;
+  if(MP.isConnected&&NIM.turn!==(MP.isHost?1:2)) return;
   if(count>NIM.piles[pile]||count<1||count>3) return;
   // If same pile+count clicked again = confirm
   if(NIM.selected&&NIM.selected.pile===pile&&NIM.selected.count===count){
+    mpSend({type:'nim-take',pile,count});
     nimTake(pile,count);return;
   }
   NIM.selected={pile,count};
@@ -20707,7 +20755,7 @@ const MOBILE_GAMES = [
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp', cat:'word' },
   { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both', cat:'logic' },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both', cat:'logic' },
-  { id:'reversi',       label:'Reversi',        icon:'🔄', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both', cat:'board' },
+  { id:'reversi',       label:'Reversi',        icon:'🔄', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both', mp:true, cat:'board' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo', cat:'arcade' },
   { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo', cat:'arcade' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true, cat:'board' },
@@ -20730,7 +20778,7 @@ const MOBILE_GAMES = [
   { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
-  { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
+  { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'nonogram',     label:'Nonogram',       icon:'🖼️', grad:'rgba(156,39,176,0.3),rgba(103,58,183,0.3)', mode:'solo', cat:'logic' },
   { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
   { id:'simonSays',    label:'Simon Says',     icon:'🔊', grad:'rgba(231,76,60,0.3),rgba(52,152,219,0.3)', mode:'both', cat:'logic' },
@@ -21739,6 +21787,8 @@ function mpClearSession() {
 function mpDisconnect() {
   MP._intentionalDisconnect = true;
   MP._reconnectAttempts = 0;
+  mpStopPing();
+  const chatSec=$('mpChatSection');if(chatSec)chatSec.classList.add('mp-hidden');
   if(MP._reconnectTimeout) {
     clearTimeout(MP._reconnectTimeout);
     MP._reconnectTimeout = null;
@@ -22000,6 +22050,9 @@ function _mpHandleMessageInner(data) {
     onGlobalNameChange();
 
     mpSaveSession();
+    mpStartPing();
+    const chatSec=$('mpChatSection');if(chatSec)chatSec.classList.remove('mp-hidden');
+    const chatBox=$('mpChatMessages');if(chatBox)chatBox.innerHTML='';
 
     // Hide P2 controls in MP mode (each player controls their own device)
     ['tnkP2Controls','pngP2Controls','sdP2Controls'].forEach(id=>{
@@ -22526,6 +22579,8 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'tanks') { if(data.round !== undefined) MP.tnkRound = data.round; resetTanks(); }
     if(gameId === 'pong') { if(data.round !== undefined) MP.pngRound = data.round; resetPong(); }
     if(gameId === 'wordle') { if(data.round !== undefined) MP.wdlRound = data.round; resetWordle(); }
+    if(gameId === 'reversi') { if(data.round !== undefined) MP.revRound = data.round; resetReversi(); }
+    if(gameId === 'nimGame') { if(data.round !== undefined) MP.nimRound = data.round; resetNim(); }
   }
 
   // Snake Duel MP
@@ -22629,6 +22684,30 @@ function _mpHandleMessageInner(data) {
       celebrate('pngCelebration');playSound('win');
     }
   }
+
+  // Reversi MP
+  if(data.type==='rev-move'){
+    const flips=revFlips(REV.board,data.idx,REV.turn);
+    if(flips.length>0)revPlace(data.idx,REV.turn,flips);
+  }
+
+  // Nim MP
+  if(data.type==='nim-take'){
+    nimTake(data.pile,data.count);
+  }
+
+  // Ping/Pong for latency
+  if(data.type==='mp-ping'){mpSend({type:'mp-pong',ts:data.ts});}
+  if(data.type==='mp-pong'){
+    const rtt=Date.now()-data.ts;
+    const el=$('mpPingMs');
+    if(el){el.textContent='• '+rtt+'ms';el.style.display='';}
+  }
+
+  // Chat
+  if(data.type==='chat-msg'){
+    mpChatAppend(MP.opponentName||'Súper',data.text,false);
+  }
 }
 
 function mpStartBSGame() {
@@ -22679,6 +22758,8 @@ function mpRematch(gameId) {
   if(gameId === 'tanks') { MP.tnkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.tnkRound }); resetTanks(); }
   if(gameId === 'pong') { MP.pngRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.pngRound }); resetPong(); }
   if(gameId === 'wordle') { MP.wdlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.wdlRound }); resetWordle(); }
+  if(gameId === 'reversi') { MP.revRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.revRound }); resetReversi(); }
+  if(gameId === 'nimGame') { MP.nimRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.nimRound }); resetNim(); }
 }
 
 function mpGenerateQR(code) {
@@ -22858,7 +22939,7 @@ if('serviceWorker' in navigator) {
 <div class="mp-overlay" id="mpOverlay" onclick="closeMPModalOnOverlay(event)">
   <div class="mp-modal" onclick="event.stopPropagation()">
     <button class="mp-close" onclick="closeMPModal()">✕</button>
-    <h2 class="mp-title">🌐 Online Multiplayer<span id="mpRoleBadge" class="mp-role-badge" style="display:none"></span></h2>
+    <h2 class="mp-title">🌐 Online Multiplayer<span id="mpRoleBadge" class="mp-role-badge" style="display:none"></span><span id="mpPingMs" style="display:none;font-size:0.55em;opacity:0.55;margin-left:8px;font-weight:400"></span></h2>
 
     <!-- Info -->
     <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-bottom:20px;font-size:0.85em;line-height:1.5">
@@ -22907,6 +22988,16 @@ if('serviceWorker' in navigator) {
       <div class="mp-section-title">📡 Rôzne siete (TURN)</div>
       <div id="mpTurnStatus"></div>
       <div id="mpTurnUnlock" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="mp-section mp-hidden" id="mpChatSection">
+      <div class="mp-section-title">💬 Chat</div>
+      <div id="mpChatMessages" style="display:flex;flex-direction:column;gap:2px;min-height:60px;max-height:160px;overflow-y:auto;padding:6px;background:rgba(0,0,0,0.15);border-radius:8px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="mpChatInput" class="mp-input" placeholder="Napíš správu..." maxlength="100" style="flex:1;margin-bottom:0" onkeydown="if(event.key==='Enter')mpChatSend()">
+        <button class="mp-button" onclick="mpChatSend()" style="padding:8px 14px;min-width:auto">▶</button>
+      </div>
     </div>
 
     <!-- Disconnect Button -->
