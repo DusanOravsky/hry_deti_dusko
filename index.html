@@ -4940,7 +4940,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.36';
+const APP_VERSION = '19.37';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -19922,7 +19922,12 @@ function resetSimon() {
 }
 
 function simonStart() {
-  if(SIMON.showing || SIMON.playerTurn) return;
+  if(SIMON.showing || SIMON.playerTurn || SIMON.over) return;
+  // MP turn guard: prevent waiting player from pressing Štart
+  if(MP.isConnected) {
+    const myTurn = MP.isHost ? 1 : 2;
+    if(SIMON.turn !== myTurn) return;
+  }
 
   SIMON.sequence = [];
   SIMON.level = 1;
