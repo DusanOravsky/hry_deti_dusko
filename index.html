@@ -4943,7 +4943,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.42';
+const APP_VERSION = '19.43';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5540,7 +5540,14 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'unoGame', name:'Uno', icon:'🎴', mode:'both'},
   {id:'nimGame', name:'Nim', icon:'🪨', mode:'both'},
   {id:'nonogram', name:'Nonogram', icon:'🖼️', mode:'ai'},
-  {id:'sudoku', name:'Sudoku', icon:'🔢', mode:'ai'}
+  {id:'sudoku', name:'Sudoku', icon:'🔢', mode:'ai'},
+  {id:'wordle', name:'Wordle', icon:'🟩', mode:'both'},
+  {id:'sokoban', name:'Sokoban', icon:'📦', mode:'both'},
+  {id:'simonSays', name:'Simon Says', icon:'🔴', mode:'both'},
+  {id:'mancala', name:'Mancala', icon:'🪨', mode:'both'},
+  {id:'angryBirds', name:'Angry Birds', icon:'🐦', mode:'both'},
+  {id:'pong', name:'Pong', icon:'🏓', mode:'both'},
+  {id:'tanks', name:'Tank Battle', icon:'💥', mode:'both'},
 ];
 
 function showTournament() {
@@ -5850,6 +5857,14 @@ const DAILY_GAMES=[
   // Špeciálne výzvy
   {id:'beeCount',goal:'Uhádni 5 z 5 v Včelách',target:5,type:'score'},
   {id:'soccer',goal:'Daj 5 z 5 gólov v Penaltách',target:5,type:'score'},
+
+  // Nové výzvy
+  {id:'ghost',goal:'Vyhraj Ghost',target:1,type:'win'},
+  {id:'sokoban',goal:'Dokonči level v Sokoban',target:1,type:'win'},
+  {id:'simonSays',goal:'Vyhraj kolo Simon Says',target:1,type:'win'},
+  {id:'mancala',goal:'Vyhraj Mancala',target:1,type:'win'},
+  {id:'angryBirds',goal:'Vyhraj Angry Birds',target:1,type:'win'},
+  {id:'scramble',goal:'Vyhraj Scramble',target:1,type:'win'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
 function dailySeedDisplay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
