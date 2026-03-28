@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~19000 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~23000 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.34
+- **Current version**: v19.37
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -55,7 +55,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (50 total)
+## Games (52 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -79,9 +79,9 @@ resetWordle(); // welcomeGameMode check works
 - Uno (AI: easy/medium/hard, color/number matching, wild, +2, +4 Wild Draw Four, skip, reverse, UNO! callout)
 - Nim (AI: easy/medium/hard, 4 piles 1/3/5/7, take 1-3, misère — last stone loses, Grundy XOR strategy)
 - Angry Birds (AI: easy/medium/hard, canvas, drag & release slingshot, parabolic physics, destructible boxes, 5 shots per player)
-- Sokoban (AI: easy/medium/hard, 15 hand-crafted verified levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, PVP: both players complete each level before advancing)
-- Simon Says (AI: easy/medium/hard, memory sequence game, 4 colored buttons, increasing difficulty, PVP: alternating turns with highest level wins)
-- Mancala (AI: easy/medium/hard, Kalaha variant, stone distribution, capture mechanics, extra turns, minimax evaluation for hard AI)
+- Sokoban [MP] (AI: easy/medium/hard, 15 hand-crafted verified levels, push-box puzzle, canvas grid rendering, undo system, BFS hint solver, level progression, MP: simultaneous play, sok-done sync, both must finish to advance level)
+- Simon Says [MP] (AI: easy/medium/hard, memory sequence game, 4 colored buttons, increasing difficulty, PVP/MP: sequential — first player plays until fail, then second, higher level wins, simonRound alternation)
+- Mancala [MP] (AI: easy/medium/hard, Kalaha variant, stone distribution, capture mechanics, extra turns, minimax evaluation for hard AI, MP: mancala-move sync, manRound alternation)
 
 ### 2 Players Only (mode:'pvp')
 - Kviz (17 tem, 1000+ otazok)
@@ -147,7 +147,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "50 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "52 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -251,6 +251,7 @@ const MP = {
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
   dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
   sdRound: 0, tnkRound: 0, pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0,
+  simonRound: 0, manRound: 0, sokRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _reconnectAttempts: 0,
@@ -273,9 +274,9 @@ const MP = {
 - `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
 - `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
-**Games with MP Support (15 games):**
+**Games with MP Support (19 games):**
 
-*Turn-based (12 games):*
+*Turn-based (13 games):*
 - Piskvorky — `ttt-move`, alternating start (tttRound)
 - Connect4 — `c4-move`
 - Kamen Papier Noznice — `rps-choice`
@@ -288,6 +289,14 @@ const MP = {
 - Wordle — `wdl-word`, `wdl-guess`, `wdl-result` (simultaneous guessing, both see own board, tie-breaking)
 - Reversi — `rev-move`, alternating black/white per round (revRound); host=black even rounds, guest=black odd rounds
 - Nim — `nim-take` sent from nimSelect() at confirm point (not nimTake to avoid double-send); alternating first player per round (nimRound)
+- Mancala — `mancala-move` sent from manClickPit() (user action), manMakeMove() on receiver; manRound alternation; score reset guard
+
+*Sequential turn (2 games):*
+- Simon Says — `ss-result` sent on failure; first player sends `{fromTurn, score}`, second sends `{fromTurn, score, winner}`; simonRound alternation; simonStart() has SIMON.over + MP turn guard to prevent waiting player corruption
+- Hádaj Zviera (AGA) — `aga-guess`, agaRound alternation
+
+*Simultaneous (1 game):*
+- Sokoban — `sok-done` sent on level completion; each device tracks p1Completed/p2Completed independently; sokMPAdvanceLevel() when both done; level selector hidden in MP
 
 *Real-time (3 games — host-authoritative architecture):*
 - Snake Duel — `sd-start`, `sd-dir`, `sd-state` (host runs setInterval, guest sends direction only)
@@ -360,14 +369,18 @@ Key game state objects and their patterns:
 - `NG` — Nonogram (size, pattern, solution[][], player[][], errors, maxErrors:3, started, timer)
 - `SDK` — Sudoku (grid[][], solution[][], given[][], selected, diff, errors, timer)
 
-## New Features (v19.34)
+## New Features (v19.34–v19.37)
 
-- **Reversi MP**: `mp:true`, `rev-move` message, round alternation (host=⚫ even rounds, guest=⚫ odd rounds), `revRound` counter, `newGameReversi()` wrapper calls `mpRematch('reversi')` when connected
-- **Nim MP**: `mp:true`, `nim-take` sent from `nimSelect()` at confirm point (NOT from `nimTake()` to avoid double-send loop), round alternation first player, score reset guard, `nimRound` counter, `newGameNim()` wrapper
-- **MP Chat**: `<div id="mpChatSection">` in MP modal (hidden until handshake), `mpChatSend()` + `mpChatAppend()`, `chat-msg` message type, max 40 messages, Enter key support, shown/hidden via handshake/disconnect
-- **MP Ping**: `mp-ping`/`mp-pong` every 4s via `mpStartPing()`/`mpStopPing()`, RTT displayed as `• Xms` in `<span id="mpPingMs">` in modal title, started in handshake handler, stopped on disconnect
+- **Reversi MP** (v19.34): `mp:true`, `rev-move` message, round alternation (host=⚫ even rounds, guest=⚫ odd rounds), `revRound` counter, `newGameReversi()` wrapper calls `mpRematch('reversi')` when connected
+- **Nim MP** (v19.34): `mp:true`, `nim-take` sent from `nimSelect()` at confirm point (NOT from `nimTake()` to avoid double-send loop), round alternation first player, score reset guard, `nimRound` counter, `newGameNim()` wrapper
+- **MP Chat** (v19.34): `<div id="mpChatSection">` in MP modal (hidden until handshake), `mpChatSend()` + `mpChatAppend()`, `chat-msg` message type, max 40 messages, Enter key support, shown/hidden via handshake/disconnect
+- **MP Ping** (v19.34): `mp-ping`/`mp-pong` every 4s via `mpStartPing()`/`mpStopPing()`, RTT displayed as `• Xms` in `<span id="mpPingMs">` in modal title, started in handshake handler, stopped on disconnect
+- **In-game chat bar** (v19.35): fixed bottom-left widget, auto-expand, unread badge on MP button
+- **Simon Says MP** (v19.36): sequential play — `ss-result` handoff; first player sends `{fromTurn,score}`, second sends `{fromTurn,score,winner}`; `simonRound` alternation; `simonStart()` guards: `SIMON.over` check + MP turn guard (v19.37 fix)
+- **Mancala MP** (v19.36): `mancala-move` sent from `manClickPit()` (action point); `manMakeMove()` called on receiver; `manRound` alternation; score reset guard (`if(!MP.isConnected)`)
+- **Sokoban MP** (v19.36): simultaneous play; `sok-done` sent on completion; each device tracks `p1Completed`/`p2Completed` independently; `sokMPAdvanceLevel()` triggers when both done; level selector hidden in MP; `sokRound` for rematch sync only
 
-## New Features (v18.0-18.1)
+## New Features (v18.0–18.1)
 
 - **Search/Filter**: Quick search input in game picker, real-time filtering by game name, clear button (✕), auto-clears on category change
 - **Seasonal achievements**: 6 new achievements (Christmas Dec 20-Jan 6, Easter Mar 20-Apr, Summer Jun-Aug, Halloween Oct), tracks plays per season per year in `localStorage('hry_seasonal_plays')`, functions: `_isSeason()`, `_getSeasonalPlays()`, `_incrementSeasonalPlay()`
@@ -380,7 +393,7 @@ Key game state objects and their patterns:
 
 ### stopAllGames()
 Centralized cleanup function that stops all game timers/rafs:
-- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf, FLAP.raf, AB.raf, MS.timer, WAR._timer, UNO._timer, SOL.timer, NIM._timer
+- SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf, FLAP.raf, AB.raf, MS.timer, WAR._timer, UNO._timer, SOL.timer, NIM._timer, SIMON._timeout, MAN._aiTimeout, SOK.timer
 - Called by `mobileGoTo()` and desktop sidebar game switching
 
 ## Deploy
@@ -433,6 +446,7 @@ GitHub Pages auto-deploys from main branch. Git credentials are configured via `
 - **TURN servers replace PeerJS defaults**: When `config: { iceServers: [...] }` is specified in Peer(), it REPLACES (not supplements) PeerJS built-in ICE servers. Always include STUN servers alongside TURN.
 - **Stale peers on PeerJS broker**: Always destroy old peer before creating new one in mpCreateRoom/mpJoinRoom.
 - **MP name overwrite**: `saveNames()` must NOT run when `MP._savedP1` exists, otherwise MP temporary names overwrite user's real names in localStorage.
+- **Sequential MP start button**: In sequential MP games (Simon Says), the dedicated "Štart" button must have `SIMON.over` check AND MP turn guard — otherwise the waiting player can press it after the first player fails, reset the sequence, and send a spurious `ss-result`. Fixed v19.37.
 
 ## TURN Server (Metered)
 
