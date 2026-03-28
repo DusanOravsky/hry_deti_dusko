@@ -2976,7 +2976,7 @@ body.light .man-store {
     </div></div>
     <div class="timer-settings">
       <label>🌐 Jazyk slov:</label>
-      <select class="timer-select" id="ghostLangSelect" onchange="resetGhost()">
+      <select class="timer-select" id="ghostLangSelect" onchange="ghostLangChange()">
         <option value="sk">🇸🇰 Slovenčina</option>
         <option value="en">🇬🇧 Angličtina</option>
       </select>
@@ -4940,7 +4940,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.40';
+const APP_VERSION = '19.41';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9468,6 +9468,11 @@ function resetGhost(){
   buildGhostKeyboard();
 }
 function newGameGhost(){if(MP.isConnected)mpRematch('ghost');else resetGhost();}
+function ghostLangChange(){
+  if(MP.isConnected&&!MP.isHost)return; // guest cannot change language
+  if(MP.isConnected) mpSend({type:'ghost-lang',lang:$('ghostLangSelect').value});
+  resetGhost();
+}
 function buildGhostKeyboard(){
   const kb=$('ghostKeyboard'); kb.innerHTML='';
   for(const ch of getGhostAlpha()){
@@ -21855,7 +21860,8 @@ function mpCreateRoom() {
           tttSize: _isPsk ? '15x15' : TTT.size,
           tttGrid: _isPsk ? 15 : TTT.grid,
           memCards: MEM.cards,
-          memDiff: MEM.diff
+          memDiff: MEM.diff,
+          ghostLang: $('ghostLangSelect')?.value||'sk'
         });
       });
 
@@ -22106,6 +22112,7 @@ function mpDisconnect() {
   // Restore hidden selectors (were hidden for guest)
   $('tttSizeSel').style.display = '';
   $('memSizeSel').style.display='';
+  const ghostLangSel=$('ghostLangSelect');if(ghostLangSel)ghostLangSel.disabled=false;
   // Restore chess timer toggle (was disabled in MP)
   const chToggle = $('chTimerToggle');
   if(chToggle) {
@@ -22273,7 +22280,8 @@ function mpTryReconnect() {
           onReconnected();
           const _rPsk = $('psk15Board').style.display !== 'none';
           mpSend({ type: 'handshake', from: 'host', name: MP.myName,
-            tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff });
+            tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff,
+            ghostLang: $('ghostLangSelect')?.value||'sk' });
         });
         conn.on('data', (d) => mpHandleMessage(d));
         conn.on('close', mpHandleDisconnect);
@@ -22363,6 +22371,11 @@ function _mpHandleMessageInner(data) {
     // Guest receives Pexeso board from host handshake
     if(data.from === 'host' && data.memCards) {
       mpHandleMessage({type:'mem-board', cards:data.memCards, diff:data.memDiff});
+    }
+    // Guest receives Ghost language from host handshake
+    if(data.from === 'host' && data.ghostLang) {
+      const sel=$('ghostLangSelect');
+      if(sel){sel.value=data.ghostLang;sel.disabled=true;buildGhostKeyboard();}
     }
     return;
   }
@@ -23039,6 +23052,7 @@ function _mpHandleMessageInner(data) {
   // Ghost MP
   if(data.type==='ghost-letter'){ghostDoLetter(data.ch);}
   if(data.type==='ghost-challenge'){ghostDoChallenge();}
+  if(data.type==='ghost-lang'){if($('ghostLangSelect'))$('ghostLangSelect').value=data.lang;buildGhostKeyboard();}
 
   // Dots & Boxes MP
   if(data.type==='db-line'){dbPlaceLine(data.lineType,data.i,data.j,data.player!==undefined?data.player:DB.turn);}
