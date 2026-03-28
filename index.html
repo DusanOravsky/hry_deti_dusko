@@ -4940,7 +4940,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.37';
+const APP_VERSION = '19.38';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -22833,7 +22833,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'nimGame') { if(data.round !== undefined) MP.nimRound = data.round; resetNim(); }
     if(gameId === 'simonSays') { if(data.round !== undefined) MP.simonRound = data.round; resetSimon(); }
     if(gameId === 'mancala') { if(data.round !== undefined) MP.manRound = data.round; resetMancala(); }
-    if(gameId === 'sokoban') { if(data.round !== undefined) MP.sokRound = data.round; SOK.level=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
+    if(gameId === 'sokoban') { if(data.round !== undefined) MP.sokRound = data.round; SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
   }
 
   // Snake Duel MP
@@ -23067,7 +23067,7 @@ function mpRematch(gameId) {
   if(gameId === 'nimGame') { MP.nimRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.nimRound }); resetNim(); }
   if(gameId === 'simonSays') { MP.simonRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.simonRound }); resetSimon(); }
   if(gameId === 'mancala') { MP.manRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.manRound }); resetMancala(); }
-  if(gameId === 'sokoban') { MP.sokRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sokRound }); SOK.level=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
+  if(gameId === 'sokoban') { MP.sokRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sokRound }); SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
 }
 
 function mpGenerateQR(code) {
