@@ -2992,7 +2992,7 @@ body.light .man-store {
       <button class="action-btn danger-btn" onclick="ghostChallenge()" id="ghostChallengeBtn" style="display:none">⚡ Vyzva súpera!</button>
     </div>
     <div class="celebration" id="ghostCelebration">🎉</div>
-    <div class="buttons-group"><button class="action-btn primary-btn" onclick="resetGhost()">🔄 Nová hra</button></div>
+    <div class="buttons-group"><button class="action-btn primary-btn" onclick="newGameGhost()">🔄 Nová hra</button></div>
   </div>
 
   <!-- ===== REAKČNÝ TEST ===== -->
@@ -4242,7 +4242,7 @@ body.light .man-store {
     </div>
     <div class="celebration" id="dbCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn danger-btn" onclick="resetDB()">Nova hra</button>
+      <button class="action-btn danger-btn" onclick="newGameDB()">Nova hra</button>
     </div>
   </div>
 
@@ -4940,7 +4940,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.38';
+const APP_VERSION = '19.39';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9456,15 +9456,18 @@ function getGhostAlpha() {
 
 function ghostLifeStr(n){return GHOST_LETTERS.slice(0,n)+'_____'.slice(n);}
 function resetGhost(){
-  GHOST.word=''; GHOST.player=1; GHOST.lives=[0,0]; GHOST.over=false;
+  if(!MP.isConnected){GHOST.s1=0;GHOST.s2=0;}
+  GHOST.word=''; GHOST.player=MP.isConnected?(MP.ghostRound%2===0?1:2):1; GHOST.lives=[0,0]; GHOST.over=false;
   $('ghostDisplay').textContent='—';
-  $('ghostStatus').textContent=getP1Name('ghost')+' začína — klikni písmeno!';
+  const startName=GHOST.player===1?getP1Name('ghost'):getP2Name('ghost');
+  $('ghostStatus').textContent=startName+' začína — klikni písmeno!';
   $('p1ScoreGhost').textContent=ghostLifeStr(0);
   $('p2ScoreGhost').textContent=ghostLifeStr(0);
   $('ghostChallengeBtn').style.display='none';
-  activeTurn('ghostP1Card','ghostP2Card',1);
+  activeTurn('ghostP1Card','ghostP2Card',GHOST.player);
   buildGhostKeyboard();
 }
+function newGameGhost(){if(MP.isConnected)mpRematch('ghost');else resetGhost();}
 function buildGhostKeyboard(){
   const kb=$('ghostKeyboard'); kb.innerHTML='';
   for(const ch of getGhostAlpha()){
@@ -9476,13 +9479,20 @@ function buildGhostKeyboard(){
 }
 function ghostAddLetter(ch){
   if(GHOST.over)return;
+  if(MP.isConnected){
+    const myTurn=MP.isHost?1:2;
+    if(GHOST.player!==myTurn)return;
+    mpSend({type:'ghost-letter',ch});
+  }
+  ghostDoLetter(ch);
+}
+function ghostDoLetter(ch){
   playSound('click');
   GHOST.word+=ch;
   $('ghostDisplay').textContent=GHOST.word;
-  $('ghostChallengeBtn').style.display=GHOST.word.length>=2?'inline-block':'none';
   // Check if it's a complete word (3+ letters)
   if(GHOST.word.length>=3 && getGhostWords().has(GHOST.word.toLowerCase())){
-    // current player loses this round
+    $('ghostChallengeBtn').style.display='none';
     ghostRoundLoss(GHOST.player, GHOST.word+' je slovo!');
     return;
   }
@@ -9490,16 +9500,27 @@ function ghostAddLetter(ch){
   const prefix=GHOST.word.toLowerCase();
   const possible=[...getGhostWords()].some(w=>w.startsWith(prefix)&&w.length>prefix.length);
   if(!possible && GHOST.word.length>=2){
+    $('ghostChallengeBtn').style.display='none';
     ghostRoundLoss(GHOST.player,'Žiadne slovo nezačína na "'+GHOST.word+'"!');
     return;
   }
   GHOST.player=GHOST.player===1?2:1;
   $('ghostStatus').textContent=(GHOST.player===1?getP1Name('ghost'):getP2Name('ghost'))+' pridáva písmeno…';
   activeTurn('ghostP1Card','ghostP2Card',GHOST.player);
+  // Show challenge button only for current player (in MP only their turn)
+  const canChallenge=GHOST.word.length>=2&&(!MP.isConnected||(MP.isHost?GHOST.player===1:GHOST.player===2));
+  $('ghostChallengeBtn').style.display=canChallenge?'inline-block':'none';
 }
 function ghostChallenge(){
   if(GHOST.over||GHOST.word.length<2)return;
-  // opponent must prove word exists; simplified: check if any word starts with this and is longer
+  if(MP.isConnected){
+    const myTurn=MP.isHost?1:2;
+    if(GHOST.player!==myTurn)return;
+    mpSend({type:'ghost-challenge'});
+  }
+  ghostDoChallenge();
+}
+function ghostDoChallenge(){
   const prefix=GHOST.word.toLowerCase();
   const possible=[...getGhostWords()].some(w=>w.startsWith(prefix)&&w.length>prefix.length);
   const challenger=GHOST.player===1?2:1;
@@ -14291,7 +14312,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -14450,6 +14471,7 @@ function renderDB() {
 
 function dbClick(e) {
   if(DB.over) return;
+  if(MP.isConnected){const myTurn=MP.isHost?0:1;if(DB.turn!==myTurn)return;}
   const canvas=$('dbCanvas');
   const rect=canvas.getBoundingClientRect();
   const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
@@ -14476,8 +14498,18 @@ function dbClick(e) {
     if(d<bestDist) { bestDist=d; best={type:'v',i,j}; }
   }
   if(!best) return;
+  if(MP.isConnected) mpSend({type:'db-line',lineType:best.type,i:best.i,j:best.j});
   dbPlaceLine(best.type,best.i,best.j,DB.turn);
 }
+function applyDBMPStart(){
+  const hostFirst=!MP.isConnected||MP.dbRound%2===0;
+  DB.turn=hostFirst?0:1;
+  const name=DB.turn===0?getP1Name('db'):getP2Name('db');
+  $('dbStatus').textContent=name+' je na rade';
+  activeTurn('dbP1Card','dbP2Card',DB.turn===0?1:2);
+  renderDB();
+}
+function newGameDB(){if(MP.isConnected)mpRematch('dotsBoxes');else resetDB();}
 
 function dbPlaceLine(type,i,j,player) {
   if(type==='h') DB.hLines[i][j]=player; else DB.vLines[i][j]=player;
@@ -20987,7 +21019,7 @@ const MOBILE_GAMES = [
   { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'quiz',          label:'Kvíz',           icon:'🧪', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp', cat:'fun' },
   { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both', mp:true, cat:'board' },
-  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp', cat:'word' },
+  { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp', cat:'word', mp:true },
   { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'fun' },
   { id:'spamClick',     label:'Spam Click',     icon:'👆', grad:'rgba(255,0,128,0.3),rgba(255,100,0,0.3)', mode:'pvp', cat:'fun' },
   { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp', cat:'logic' },
@@ -21005,7 +21037,7 @@ const MOBILE_GAMES = [
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo', cat:'arcade' },
   { id:'snake',         label:'Snake',          icon:'🐍', grad:'rgba(67,233,123,0.25),rgba(79,172,254,0.25)', mode:'solo', cat:'arcade' },
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true, cat:'board' },
-  { id:'dotsBoxes',     label:'Bodky',          icon:'✏️', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp', cat:'board' },
+  { id:'dotsBoxes',     label:'Bodky',          icon:'✏️', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp', cat:'board', mp:true },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo', cat:'arcade' },
   { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both', cat:'arcade' },
   { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both', mp:true, cat:'arcade' },
@@ -22834,6 +22866,8 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'simonSays') { if(data.round !== undefined) MP.simonRound = data.round; resetSimon(); }
     if(gameId === 'mancala') { if(data.round !== undefined) MP.manRound = data.round; resetMancala(); }
     if(gameId === 'sokoban') { if(data.round !== undefined) MP.sokRound = data.round; SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
+    if(gameId === 'ghost') { if(data.round !== undefined) MP.ghostRound = data.round; if(data.lang && $('ghostLangSelect')) $('ghostLangSelect').value=data.lang; resetGhost(); }
+    if(gameId === 'dotsBoxes') { if(data.round !== undefined) MP.dbRound = data.round; resetDB(); applyDBMPStart(); }
   }
 
   // Snake Duel MP
@@ -23001,6 +23035,13 @@ function _mpHandleMessageInner(data) {
     }
   }
 
+  // Ghost MP
+  if(data.type==='ghost-letter'){ghostDoLetter(data.ch);}
+  if(data.type==='ghost-challenge'){ghostDoChallenge();}
+
+  // Dots & Boxes MP
+  if(data.type==='db-line'){dbPlaceLine(data.lineType,data.i,data.j,DB.turn);}
+
   // Ping/Pong for latency
   if(data.type==='mp-ping'){mpSend({type:'mp-pong',ts:data.ts});}
   if(data.type==='mp-pong'){
@@ -23068,6 +23109,8 @@ function mpRematch(gameId) {
   if(gameId === 'simonSays') { MP.simonRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.simonRound }); resetSimon(); }
   if(gameId === 'mancala') { MP.manRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.manRound }); resetMancala(); }
   if(gameId === 'sokoban') { MP.sokRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sokRound }); SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
+  if(gameId === 'ghost') { MP.ghostRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ghostRound, lang: $('ghostLangSelect')?.value||'sk' }); resetGhost(); }
+  if(gameId === 'dotsBoxes') { MP.dbRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dbRound }); resetDB(); applyDBMPStart(); }
 }
 
 function mpGenerateQR(code) {
