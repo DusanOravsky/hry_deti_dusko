@@ -4242,7 +4242,7 @@ body.light .man-store {
     </div>
     <div class="celebration" id="dbCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn danger-btn" onclick="newGameDB()">Nova hra</button>
+      <button class="action-btn danger-btn" onclick="newGameDB()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4940,7 +4940,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.39';
+const APP_VERSION = '19.40';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9523,11 +9523,12 @@ function ghostChallenge(){
 function ghostDoChallenge(){
   const prefix=GHOST.word.toLowerCase();
   const possible=[...getGhostWords()].some(w=>w.startsWith(prefix)&&w.length>prefix.length);
-  const challenger=GHOST.player===1?2:1;
   if(!possible){
+    // Correct challenge — the previous player (who built the dead-end word) loses
     ghostRoundLoss(GHOST.player===1?2:1,'Výzva správna — '+GHOST.word+' nemá pokračovanie!');
   } else {
-    ghostRoundLoss(challenger,'Výzva zlá — slovo pokračovanie existuje!');
+    // Wrong challenge — the challenger (current player) loses
+    ghostRoundLoss(GHOST.player,'Výzva zlá — slovo pokračovanie existuje!');
   }
 }
 function ghostRoundLoss(loser,reason){
@@ -14498,7 +14499,7 @@ function dbClick(e) {
     if(d<bestDist) { bestDist=d; best={type:'v',i,j}; }
   }
   if(!best) return;
-  if(MP.isConnected) mpSend({type:'db-line',lineType:best.type,i:best.i,j:best.j});
+  if(MP.isConnected) mpSend({type:'db-line',lineType:best.type,i:best.i,j:best.j,player:DB.turn});
   dbPlaceLine(best.type,best.i,best.j,DB.turn);
 }
 function applyDBMPStart(){
@@ -23040,7 +23041,7 @@ function _mpHandleMessageInner(data) {
   if(data.type==='ghost-challenge'){ghostDoChallenge();}
 
   // Dots & Boxes MP
-  if(data.type==='db-line'){dbPlaceLine(data.lineType,data.i,data.j,DB.turn);}
+  if(data.type==='db-line'){dbPlaceLine(data.lineType,data.i,data.j,data.player!==undefined?data.player:DB.turn);}
 
   // Ping/Pong for latency
   if(data.type==='mp-ping'){mpSend({type:'mp-pong',ts:data.ts});}
