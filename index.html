@@ -4477,7 +4477,7 @@ body.light .man-store {
     <div class="buttons-group">
       <button class="action-btn" onclick="sokUndo()" id="sokUndoBtn" style="background:rgba(255,193,7,0.3)">↩️ Undo</button>
       <button class="action-btn primary-btn" onclick="sokHint()" style="background:linear-gradient(135deg,#667eea,#764ba2)">💡 Hint</button>
-      <button class="action-btn danger-btn" onclick="resetSokoban()">🔄 Reset</button>
+      <button class="action-btn danger-btn" onclick="if(MP.isConnected)mpRematch('sokoban');else resetSokoban()">🔄 Reset</button>
     </div>
   </div>
 
@@ -4537,7 +4537,7 @@ body.light .man-store {
     </div>
     <div class="celebration" id="manCelebration"></div>
     <div class="buttons-group" style="margin-top:16px">
-      <button class="action-btn primary-btn" onclick="resetMancala()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="if(MP.isConnected)mpRematch('mancala');else resetMancala()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4590,7 +4590,7 @@ body.light .man-store {
     <div class="celebration" id="simonCelebration"></div>
     <div class="buttons-group" style="margin-top:16px">
       <button class="action-btn primary-btn" onclick="simonStart()">▶️ Štart</button>
-      <button class="action-btn" onclick="resetSimon()">🔄 Nová hra</button>
+      <button class="action-btn" onclick="if(MP.isConnected)mpRematch('simonSays');else resetSimon()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4940,7 +4940,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.35';
+const APP_VERSION = '19.36';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -14291,7 +14291,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -18474,6 +18474,12 @@ function resetSokoban(fromInit, keepCompleted){
     $('sokP2Card').style.display='none';
     $('sokLevelSelector').style.display='none';
     $('sokP1Name').textContent=getP1Name('sok');
+  }else if(MP.isConnected){
+    // MP mode: show both players, hide level selector (synced by host)
+    $('sokP2Card').style.display='';
+    $('sokLevelSelector').style.display='none';
+    $('sokP2Name').classList.remove('player-name-ai');
+    SOK.turn = MP.isHost ? 1 : 2; // Each device always shows as "their" turn
   }else{
     // PVP mode: show both players and level selector
     $('sokP2Card').style.display='';
@@ -18686,6 +18692,28 @@ function sokCheckWin(){
           $('sokStatus').textContent='🏆 Gratulujem! Dokončil si všetky levely!';
         },2000);
       }
+    }else if(MP.isConnected){
+      // MP mode: both players solve same level simultaneously on own devices
+      const w=MP.isHost?1:2;
+      const name=w===1?getP1Name('sok'):getP2Name('sok');
+
+      if(w===1){ SOK.p1Completed=true; SOK.s1++; $('p1ScoreSok').textContent=SOK.s1; }
+      else { SOK.p2Completed=true; SOK.s2++; $('p2ScoreSok').textContent=SOK.s2; }
+      addWin(w,'sokoban');
+
+      mpSend({type:'sok-done', moves:SOK.moves, time:SOK.time});
+
+      $('sokStatus').textContent='✅ '+name+' dokončil! '+SOK.moves+' ťahov. Čakáš na súpera...';
+      $('sokCelebration').textContent='🎉';
+      playSound('win');
+      launchConfetti();
+      setTimeout(()=>{$('sokCelebration').textContent='';},3000);
+      $('sokUndoBtn').disabled=true;
+
+      // Check if opponent already finished (sok-done received before we finished)
+      if(SOK.p1Completed && SOK.p2Completed){
+        sokMPAdvanceLevel();
+      }
     }else{
       // PVP mode: both players must complete each level
       const w=SOK.turn;
@@ -18739,6 +18767,21 @@ function sokCheckWin(){
         },2000);
       }
     }
+  }
+}
+
+function sokMPAdvanceLevel(){
+  if(SOK.level<SOK_LEVELS.length-1){
+    setTimeout(()=>{
+      $('sokStatus').textContent='🎯 Obaja dokončili! Ďalší level...';
+      setTimeout(()=>{
+        SOK.level++;
+        SOK.p1Completed=false; SOK.p2Completed=false;
+        resetSokoban();
+      },1500);
+    },2000);
+  }else{
+    setTimeout(()=>{$('sokStatus').textContent='🏆 Gratulujem! Dokončili ste všetky levely!';},2000);
   }
 }
 
@@ -19828,7 +19871,7 @@ function resetSimon() {
   SIMON.level = 1;
   SIMON.showing = false;
   SIMON.playerTurn = false;
-  SIMON.turn = 1;
+  SIMON.turn = MP.isConnected ? (MP.simonRound%2===0 ? 1 : 2) : 1;
   SIMON.s1 = 0;
   SIMON.s2 = 0;
   SIMON.over = false;
@@ -19843,15 +19886,26 @@ function resetSimon() {
     SIMON.numColors = SIMON.numColors || 4; // Keep user's choice in PVP
   }
 
-  $('simonStatus').textContent = 'Klikni na ľubovoľnú farbu pre štart!';
-  $('simonP1Score').textContent = '0';
-  $('simonP2Score').textContent = '0';
+  $('simonP1Score').textContent = SIMON.s1;
+  $('simonP2Score').textContent = SIMON.s2;
   $('simonCelebration').textContent = '';
 
   const p1Name = getActiveP1Name('simonSays');
   const p2Name = welcomeGameMode === 'ai' ? 'Počítač' : getActiveP2Name('simonSays');
   $('simonP1Name').textContent = p1Name;
   $('simonP2Name').textContent = p2Name;
+
+  if(MP.isConnected) {
+    const myTurn = MP.isHost ? 1 : 2;
+    if(SIMON.turn === myTurn) {
+      $('simonStatus').textContent = 'Klikni na ľubovoľnú farbu pre štart!';
+    } else {
+      const firstPlayerName = SIMON.turn===1 ? getActiveP1Name('simonSays') : getActiveP2Name('simonSays');
+      $('simonStatus').textContent = firstPlayerName + ' ide prvý – čakaj...';
+    }
+  } else {
+    $('simonStatus').textContent = 'Klikni na ľubovoľnú farbu pre štart!';
+  }
 
   // Enable buttons so user can click to start
   for(let i=0; i<9; i++) {
@@ -19956,6 +20010,12 @@ function simonShowNextColor() {
 function simonPlayerClick(colorIdx) {
   console.log('SIMON CLICK:', colorIdx, 'showing:', SIMON.showing, 'playerTurn:', SIMON.playerTurn, 'over:', SIMON.over, 'seq.len:', SIMON.sequence.length);
 
+  // MP turn guard: host=P1=turn1, guest=P2=turn2
+  if(MP.isConnected) {
+    const myTurn = MP.isHost ? 1 : 2;
+    if(SIMON.turn !== myTurn) return;
+  }
+
   // If game not started yet, start it on first click
   if(!SIMON.showing && !SIMON.playerTurn && !SIMON.over && SIMON.sequence.length === 0) {
     $('simonStatus').textContent = '🎮 Spúšťam hru...';
@@ -20055,29 +20115,39 @@ function simonGameOver(won) {
     $('simonStatus').textContent = `❌ Koniec! Dosiahol si úroveň ${finalScore}`;
     $('simonCelebration').textContent = '💥';
   } else {
-    // PVP mode
-    if(SIMON.turn === 1) {
-      SIMON.s1 = finalScore;
-      $('simonP1Score').textContent = SIMON.s1;
-      $('simonStatus').textContent = `❌ ${getActiveP1Name('simonSays')} dosiahol úroveň ${finalScore}. Ťah ${getActiveP2Name('simonSays')}!`;
+    // PVP / MP mode
+    const hostFirst = !MP.isConnected || MP.simonRound%2===0;
+    const firstTurn = hostFirst ? 1 : 2;
+    const secondTurn = hostFirst ? 2 : 1;
 
-      // Switch to P2
-      SIMON.turn = 2;
+    if(SIMON.turn === firstTurn) {
+      // First player in this round finished
+      if(SIMON.turn === 1) { SIMON.s1 = finalScore; $('simonP1Score').textContent = SIMON.s1; }
+      else { SIMON.s2 = finalScore; $('simonP2Score').textContent = SIMON.s2; }
+
+      if(MP.isConnected) {
+        // Tell opponent their turn + send score
+        mpSend({type:'ss-result', score: finalScore, fromTurn: SIMON.turn});
+        $('simonStatus').textContent = `❌ Dosiahol si úroveň ${finalScore}. Čakáš na súpera...`;
+        return;
+      }
+
+      // Local PVP: switch to second player
+      const firstName = firstTurn===1 ? getActiveP1Name('simonSays') : getActiveP2Name('simonSays');
+      const secondName = secondTurn===1 ? getActiveP1Name('simonSays') : getActiveP2Name('simonSays');
+      $('simonStatus').textContent = `❌ ${firstName} dosiahol úroveň ${finalScore}. Ťah ${secondName}!`;
+      SIMON.turn = secondTurn;
       SIMON.level = 1;
       SIMON.sequence = [];
       SIMON.over = false;
       updateSimonTurnIndicator();
-
-      SIMON._timeout = setTimeout(() => {
-        simonStart();
-      }, 2000);
+      SIMON._timeout = setTimeout(() => simonStart(), 2000);
       return;
     } else {
-      // P2 finished
-      SIMON.s2 = finalScore;
-      $('simonP2Score').textContent = SIMON.s2;
+      // Second player finished — determine winner
+      if(SIMON.turn === 1) { SIMON.s1 = finalScore; $('simonP1Score').textContent = SIMON.s1; }
+      else { SIMON.s2 = finalScore; $('simonP2Score').textContent = SIMON.s2; }
 
-      // Determine winner
       let winner = 0;
       if(SIMON.s1 > SIMON.s2) {
         winner = 1;
@@ -20092,6 +20162,9 @@ function simonGameOver(won) {
       $('simonCelebration').textContent = winner === 0 ? '🤝' : '🎉';
       if(winner > 0) launchConfetti();
 
+      if(MP.isConnected) {
+        mpSend({type:'ss-result', score: finalScore, fromTurn: SIMON.turn, winner});
+      }
       addWin(winner, 'simonSays');
     }
   }
@@ -20144,14 +20217,15 @@ function setManDiff(d,btn){
 function resetMancala() {
   if(MAN._aiTimeout) { clearTimeout(MAN._aiTimeout); MAN._aiTimeout=null; }
   MAN.pits = [4,4,4,4,4,4,0,4,4,4,4,4,4,0];
-  MAN.turn = 1;
+  MAN.turn = MP.isConnected ? (MP.manRound%2===0 ? 1 : 2) : 1;
+  if(!MP.isConnected){ MAN.s1=0; MAN.s2=0; }
   MAN.over = false;
   MAN.animating = false;
   $('manP1Name').textContent = getP1Name('mancala');
   $('manP2Name').textContent = getP2Name('mancala');
   $('manP1Score').textContent = MAN.s1;
   $('manP2Score').textContent = MAN.s2;
-  $('manStatus').textContent = getP1Name('mancala') + ' je na ťahu';
+  $('manStatus').textContent = (MAN.turn===1?getP1Name('mancala'):getP2Name('mancala')) + ' je na ťahu';
   $('manCelebration').textContent = '';
   activeTurn('manP1Card','manP2Card',MAN.turn);
 
@@ -20199,12 +20273,19 @@ function manClickPit(idx) {
   // Check if AI mode and wrong player
   if(welcomeGameMode === 'ai' && MAN.turn === 2) return;
 
+  // MP turn guard
+  if(MP.isConnected) {
+    const myPlayer = MP.isHost ? 1 : 2;
+    if(MAN.turn !== myPlayer) return;
+  }
+
   // Check if pit is empty
   if(MAN.pits[idx] === 0) {
     playSound('wrong');
     return;
   }
 
+  mpSend({type:'mancala-move', idx});
   manMakeMove(idx);
 }
 
@@ -20934,15 +21015,15 @@ const MOBILE_GAMES = [
   { id:'game2048',     label:'2048',           icon:'🔢', grad:'rgba(237,194,46,0.35),rgba(237,130,14,0.3)', mode:'solo', cat:'logic' },
   { id:'flappy',       label:'Flappy Bird',    icon:'🐤', grad:'rgba(76,175,80,0.3),rgba(135,206,235,0.3)', mode:'solo', cat:'arcade' },
   { id:'angryBirds',   label:'Angry Birds',    icon:'🐦', grad:'rgba(220,53,69,0.3),rgba(135,206,235,0.3)', mode:'both', cat:'arcade' },
-  { id:'sokoban',      label:'Sokoban',        icon:'📦', grad:'rgba(139,69,19,0.3),rgba(245,176,65,0.3)', mode:'both', cat:'logic' },
+  { id:'sokoban',      label:'Sokoban',        icon:'📦', grad:'rgba(139,69,19,0.3),rgba(245,176,65,0.3)', mode:'both', mp:true, cat:'logic' },
   { id:'cardWar',      label:'Vojna',          icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'solo', cat:'board' },
   { id:'unoGame',      label:'Uno',            icon:'🎴', grad:'rgba(231,76,60,0.3),rgba(46,204,113,0.3)', mode:'both', cat:'board' },
   { id:'solitaire',    label:'Solitaire',      icon:'🂡', grad:'rgba(26,35,126,0.3),rgba(40,53,147,0.3)', mode:'solo', cat:'board' },
   { id:'nimGame',      label:'Nim',            icon:'🪨', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'nonogram',     label:'Nonogram',       icon:'🖼️', grad:'rgba(156,39,176,0.3),rgba(103,58,183,0.3)', mode:'solo', cat:'logic' },
   { id:'sudoku',       label:'Sudoku',         icon:'🔢', grad:'rgba(33,150,243,0.3),rgba(3,169,244,0.3)', mode:'solo', cat:'logic' },
-  { id:'simonSays',    label:'Simon Says',     icon:'🔊', grad:'rgba(231,76,60,0.3),rgba(52,152,219,0.3)', mode:'both', cat:'logic' },
-  { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', cat:'board' },
+  { id:'simonSays',    label:'Simon Says',     icon:'🔊', grad:'rgba(231,76,60,0.3),rgba(52,152,219,0.3)', mode:'both', mp:true, cat:'logic' },
+  { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun', mp:true },
   { id:'animalQuiz',   label:'Zvierací Kvíz', icon:'🦁', grad:'rgba(255,152,0,0.3),rgba(255,87,34,0.3)', mode:'both', cat:'fun' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
@@ -22745,6 +22826,9 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'wordle') { if(data.round !== undefined) MP.wdlRound = data.round; resetWordle(); }
     if(gameId === 'reversi') { if(data.round !== undefined) MP.revRound = data.round; resetReversi(); }
     if(gameId === 'nimGame') { if(data.round !== undefined) MP.nimRound = data.round; resetNim(); }
+    if(gameId === 'simonSays') { if(data.round !== undefined) MP.simonRound = data.round; resetSimon(); }
+    if(gameId === 'mancala') { if(data.round !== undefined) MP.manRound = data.round; resetMancala(); }
+    if(gameId === 'sokoban') { if(data.round !== undefined) MP.sokRound = data.round; SOK.level=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
   }
 
   // Snake Duel MP
@@ -22860,6 +22944,58 @@ function _mpHandleMessageInner(data) {
     nimTake(data.pile,data.count);
   }
 
+  // Simon Says MP
+  if(data.type==='ss-result'){
+    if(data.fromTurn===1){ SIMON.s1=data.score; $('simonP1Score').textContent=SIMON.s1; }
+    else { SIMON.s2=data.score; $('simonP2Score').textContent=SIMON.s2; }
+
+    if(data.winner !== undefined){
+      // Second player's result — determine winner on this device
+      const w=data.winner;
+      const n1=getActiveP1Name('simonSays'),n2=getActiveP2Name('simonSays');
+      if(w===1) $('simonStatus').textContent='🎉 '+n1+' vyhráva! ('+SIMON.s1+' vs '+SIMON.s2+')';
+      else if(w===2) $('simonStatus').textContent='🎉 '+n2+' vyhráva! ('+SIMON.s2+' vs '+SIMON.s1+')';
+      else $('simonStatus').textContent='🤝 Remíza! Obaja dosiahli úroveň '+SIMON.s1;
+      $('simonCelebration').textContent=w===0?'🤝':'🎉';
+      if(w>0) launchConfetti();
+      SIMON.over=true;
+      addWin(w,'simonSays');
+      setTimeout(()=>{$('simonCelebration').textContent='';},2500);
+    } else {
+      // First player's result — start second player's turn on this device
+      const hostFirst=MP.simonRound%2===0;
+      const secondTurn=hostFirst?2:1;
+      SIMON.turn=secondTurn;
+      SIMON.level=1; SIMON.sequence=[]; SIMON.over=false;
+      const firstName=data.fromTurn===1?getActiveP1Name('simonSays'):getActiveP2Name('simonSays');
+      const secondName=secondTurn===1?getActiveP1Name('simonSays'):getActiveP2Name('simonSays');
+      $('simonStatus').textContent='❌ '+firstName+' dosiahol '+data.score+'. '+secondName+' – klikni pre štart!';
+      updateSimonTurnIndicator();
+      for(let i=0;i<9;i++){const btn=$('simonBtn'+i);if(btn){btn.disabled=false;btn.style.opacity='1';}}
+    }
+  }
+
+  // Mancala MP
+  if(data.type==='mancala-move'){
+    manMakeMove(data.idx);
+  }
+
+  // Sokoban MP
+  if(data.type==='sok-done'){
+    const oppTurn=MP.isHost?2:1;
+    const oppName=oppTurn===1?getP1Name('sok'):getP2Name('sok');
+    if(oppTurn===1){ SOK.p1Completed=true; SOK.s1++; $('p1ScoreSok').textContent=SOK.s1; }
+    else { SOK.p2Completed=true; SOK.s2++; $('p2ScoreSok').textContent=SOK.s2; }
+    addWin(oppTurn,'sokoban');
+    if(!SOK.p1Completed||!SOK.p2Completed){
+      // We haven't finished our attempt yet — show opponent done
+      $('sokStatus').textContent=oppName+' dokončil! '+data.moves+' ťahov – dokonči ty!';
+    }
+    if(SOK.p1Completed&&SOK.p2Completed){
+      sokMPAdvanceLevel();
+    }
+  }
+
   // Ping/Pong for latency
   if(data.type==='mp-ping'){mpSend({type:'mp-pong',ts:data.ts});}
   if(data.type==='mp-pong'){
@@ -22924,6 +23060,9 @@ function mpRematch(gameId) {
   if(gameId === 'wordle') { MP.wdlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.wdlRound }); resetWordle(); }
   if(gameId === 'reversi') { MP.revRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.revRound }); resetReversi(); }
   if(gameId === 'nimGame') { MP.nimRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.nimRound }); resetNim(); }
+  if(gameId === 'simonSays') { MP.simonRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.simonRound }); resetSimon(); }
+  if(gameId === 'mancala') { MP.manRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.manRound }); resetMancala(); }
+  if(gameId === 'sokoban') { MP.sokRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sokRound }); SOK.level=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
 }
 
 function mpGenerateQR(code) {
