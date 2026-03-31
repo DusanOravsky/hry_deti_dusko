@@ -5099,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.67';
+const APP_VERSION = '19.68';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12007,27 +12007,32 @@ function mmsvShowResult() {
   let html='<div style="grid-column:1/-1;display:flex;justify-content:space-between;font-weight:900;font-size:0.85em;padding:0 4px;opacity:0.7">'
     +'<span>'+escHtml(p1Name)+'</span><span>'+escHtml(p2Name)+'</span></div>';
 
+  const reqLetter = MMSV.letter.toLowerCase();
   for(let i=0;i<4;i++){
     const a1=mmsvNormalize(MMSV.p1Ans[i]);
     const a2=mmsvNormalize(MMSV.p2Ans[i]);
-    const same = a1&&a2&&a1===a2;
+    const v1 = a1 && a1[0]===reqLetter;
+    const v2 = a2 && a2[0]===reqLetter;
+    const same = v1&&v2&&a1===a2;
     let pts1=0,pts2=0;
-    if(a1&&a2){ pts1=same?5:10; pts2=same?5:10; }
-    else if(a1){ pts1=10; }
-    else if(a2){ pts2=10; }
+    if(v1&&v2){ pts1=same?5:10; pts2=same?5:10; }
+    else if(v1){ pts1=10; }
+    else if(v2){ pts2=10; }
     roundP1+=pts1; roundP2+=pts2;
 
     const badge = same
       ? '<span style="background:rgba(255,193,7,0.3);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">🤝 ZHODNÉ +5</span>'
-      : (a1&&a2 ? '<span style="background:rgba(67,233,123,0.2);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">⭐ UNIKÁTNE +10</span>' : '');
+      : (v1&&v2 ? '<span style="background:rgba(67,233,123,0.2);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">⭐ UNIKÁTNE +10</span>' : '');
 
     html+='<div style="grid-column:1/-1;font-size:0.78em;font-weight:700;opacity:0.65;padding:6px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px">'
       +MMSV_CATS[i]+badge+'</div>';
 
     const c1=pts1===10?'rgba(67,233,123,0.25)':pts1===5?'rgba(255,193,7,0.25)':'rgba(128,128,128,0.12)';
     const c2=pts2===10?'rgba(67,233,123,0.25)':pts2===5?'rgba(255,193,7,0.25)':'rgba(128,128,128,0.12)';
-    const disp1 = escHtml(MMSV.p1Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>';
-    const disp2 = escHtml(MMSV.p2Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>';
+    const inv1 = a1&&!v1 ? ' <span style="font-size:0.7em;opacity:0.6">❌ zlé písmeno</span>' : '';
+    const inv2 = a2&&!v2 ? ' <span style="font-size:0.7em;opacity:0.6">❌ zlé písmeno</span>' : '';
+    const disp1 = (escHtml(MMSV.p1Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>') + inv1;
+    const disp2 = (escHtml(MMSV.p2Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>') + inv2;
     html+='<div style="background:'+c1+';border-radius:8px;padding:6px 8px">'
         +'<div style="font-weight:900;font-size:0.95em">'+disp1+'</div>'
         +(pts1?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px">+'+pts1+' b</div>':'')+'</div>'
