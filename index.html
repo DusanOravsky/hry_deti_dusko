@@ -2902,9 +2902,10 @@ body.light .man-store {
       </select>
     </div>
     <div class="rules"><h3>📋 Pravidlá:</h3><ul>
-      <li>Hráči sa striedajú v odpovediach</li>
+      <li>Lokálne: hráči sa striedajú v odpovediach</li>
+      <li>Online MP: obaja odpovedajú súčasne na rovnakú otázku</li>
       <li>Správna odpoveď = 1 bod, vypršanie času = 0 bodov</li>
-      <li>Kto má viac bodov, vyhráva!</li>
+      <li>Kto má viac bodov po 10 otázkach, vyhráva!</li>
     </ul></div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="qP1Card"><div class="player-name-display" id="qP1Name">Hráč 1</div><div class="player-score" id="p1ScoreQuiz">0</div></div>
@@ -2922,7 +2923,7 @@ body.light .man-store {
     </div>
     <div class="celebration" id="quizCelebration">🎉</div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="resetQuiz()">🔄 Nová hra</button>
+      <button class="action-btn primary-btn" onclick="MP.isConnected?mpRematch('quiz'):resetQuiz()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4967,7 +4968,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.49';
+const APP_VERSION = '19.50';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -7583,7 +7584,8 @@ function c4TimerExpire() {
 // =============================================================================
 // SEKCIA 12: QUIZ — stav v objekte QUIZ + databáza otázok
 // =============================================================================
-const QUIZ = { theme:'all', questions:[], idx:0, player:1, s1:0, s2:0, timerInterval:null };
+const QUIZ = { theme:'all', questions:[], idx:0, player:1, s1:0, s2:0, timerInterval:null,
+  _mpMyAnswer:-1, _mpOppAnswer:-1, _mpDone:false };
 
 // ===== QUIZ =====
 const quizDB = {
@@ -8931,28 +8933,35 @@ function setQuizTheme(t,btn) {
   btn.classList.add('active');
 }
 function startQuiz() {
+  if(MP.isConnected && !MP.isHost) return; // only host can start in MP
   const allThemes=['general','food','animals','dogs','horses','heroes','geography','history','biology','science','sport','movies','music','slovakia','capitals','extra_general','extra_science','extra_animals','extra_sport'];
   if(QUIZ.theme==='all') {
     QUIZ.questions=allThemes.flatMap(t=>quizDB[t]||[]).sort(()=>Math.random()-0.5);
   } else {
     QUIZ.questions=[...(quizDB[QUIZ.theme]||[])].sort(()=>Math.random()-0.5);
   }
+  if(MP.isConnected) QUIZ.questions=QUIZ.questions.slice(0,10);
   QUIZ.idx=0; QUIZ.player=1; QUIZ.s1=0; QUIZ.s2=0;
-  $('p1ScoreQuiz').textContent='0';
-  $('p2ScoreQuiz').textContent='0';
+  QUIZ._mpMyAnswer=-1; QUIZ._mpOppAnswer=-1; QUIZ._mpDone=false;
+  $('p1ScoreQuiz').textContent='0'; $('p2ScoreQuiz').textContent='0';
   $('quizStartBox').style.display='none';
   $('quizGameBox').style.display='block';
   const timerSecs=parseInt($('quizTimerSelect').value||'0');
   const timerBg=$('quizTimerBarBg');
-  if(timerBg) timerBg.style.display=timerSecs>0?'block':'none';
+  if(timerBg) timerBg.style.display=(timerSecs>0||MP.isConnected)?'block':'none';
+  if(MP.isConnected) {
+    const ts=timerSecs||10;
+    MP._quizTimerSecs=ts;
+    mpSend({type:'quiz-start', questions:QUIZ.questions.map(q=>({q:q.q,a:q.a,c:q.c})), timerSecs:ts});
+  }
   showQuizQ();
 }
 function stopQuizTimer() {
   clearInterval(QUIZ.timerInterval); QUIZ.timerInterval=null;
 }
-function startQuizTimer(onExpire) {
+function startQuizTimer(onExpire, overrideSecs) {
   stopQuizTimer();
-  const secs=parseInt($('quizTimerSelect').value||'0');
+  const secs=overrideSecs||parseInt($('quizTimerSelect').value||'0');
   if(!secs) return;
   let remaining=secs;
   const bar=$('quizTimerBar');
@@ -8970,22 +8979,47 @@ function startQuizTimer(onExpire) {
 }
 function showQuizQ() {
   stopQuizTimer();
+  QUIZ._mpMyAnswer=-1; QUIZ._mpOppAnswer=-1; QUIZ._mpDone=false;
   if(QUIZ.idx>=QUIZ.questions.length) {
     const winner=QUIZ.s1>QUIZ.s2?1:(QUIZ.s2>QUIZ.s1?2:0);
     const n1=getP1Name('q'), n2=getP2Name('q');
-    $('quizStatus').textContent=winner===1?`🎉 ${n1} vyhral!`:winner===2?`🎉 ${n2} vyhral!`:'🤝 Remíza!';
+    $('quizStatus').textContent=winner===1?'🎉 '+n1+' vyhral!':winner===2?'🎉 '+n2+' vyhral!':'🤝 Remíza!';
     $('quizQuestion').textContent='Hra skončila!';
     $('quizAnswers').innerHTML='';
-    if(winner){addWin(winner);celebrate('quizCelebration');playSound('win');updateRecord('quizBest',Math.max(QUIZ.s1,QUIZ.s2));}
-    else{addWin(0);}
+    if(winner){addWin(winner,'quiz');celebrate('quizCelebration');playSound('win');}
+    else{addWin(0,'quiz');}
+    if(!MP.isConnected) updateRecord('quizBest',Math.max(QUIZ.s1,QUIZ.s2));
     return;
   }
-  const n=QUIZ.player===1?getP1Name('q'):getP2Name('q');
-  $('quizStatus').textContent=`${n} — odpoveď!`;
-  activeTurn('qP1Card','qP2Card',QUIZ.player);
   const q=QUIZ.questions[QUIZ.idx];
   $('quizQuestion').textContent=q.q;
   const ag=$('quizAnswers'); ag.innerHTML='';
+
+  if(MP.isConnected) {
+    // Simultaneous MP mode — no turns, both answer at once
+    $('quizStatus').textContent='❓ Otázka '+(QUIZ.idx+1)+'/10 — Odpovedaj!';
+    activeTurn('qP1Card','qP2Card',0);
+    q.a.forEach((ans,i)=>{
+      const b=document.createElement('button');
+      b.className='answer-btn'; b.textContent=ans;
+      b.onclick=()=>quizMPAnswer(i,b);
+      ag.appendChild(b);
+    });
+    const ts=MP._quizTimerSecs||10;
+    const timerBg=$('quizTimerBarBg'); if(timerBg) timerBg.style.display='block';
+    startQuizTimer(()=>{
+      if(!QUIZ._mpDone) {
+        if(MP.isHost) { quizMPCheckProcess(true); }
+        else { document.querySelectorAll('.answer-btn').forEach(b=>{b.onclick=null;b.style.opacity='0.5';}); }
+      }
+    }, ts);
+    return;
+  }
+
+  // Local PVP mode
+  const n=QUIZ.player===1?getP1Name('q'):getP2Name('q');
+  $('quizStatus').textContent=n+' — odpoveď!';
+  activeTurn('qP1Card','qP2Card',QUIZ.player);
   const correctAnswer=q.a[q.c];
   const shuffled=[...q.a].sort(()=>Math.random()-0.5);
   const lockAnswers=(isCorrect, selectedBtn)=>{
@@ -9018,11 +9052,60 @@ function showQuizQ() {
 function resetQuiz() {
   stopQuizTimer();
   QUIZ.s1=0; QUIZ.s2=0;
+  QUIZ._mpMyAnswer=-1; QUIZ._mpOppAnswer=-1; QUIZ._mpDone=false;
   $('p1ScoreQuiz').textContent='0';
   $('p2ScoreQuiz').textContent='0';
   $('quizStartBox').style.display='block';
   $('quizGameBox').style.display='none';
   $('quizTimerBarBg').style.display='none';
+}
+// ===== QUIZ MP HELPERS =====
+function quizMPAnswer(choiceIdx, btn) {
+  if(QUIZ._mpMyAnswer!==-1||QUIZ._mpDone) return;
+  QUIZ._mpMyAnswer=choiceIdx;
+  document.querySelectorAll('.answer-btn').forEach((b,i)=>{b.onclick=null;b.style.opacity=b===btn?'1':'0.4';});
+  btn.style.outline='3px solid #4facfe'; btn.style.borderRadius='8px';
+  playSound('click');
+  $('quizStatus').textContent='⏳ Čakám na súpera...';
+  if(MP.isHost) quizMPCheckProcess(false);
+  else mpSend({type:'quiz-answer',qIdx:QUIZ.idx,choiceIdx:choiceIdx});
+}
+function quizMPCheckProcess(force) {
+  if(QUIZ._mpDone) return;
+  if(!force && (QUIZ._mpMyAnswer<0||QUIZ._mpOppAnswer<0)) return;
+  quizMPFinish();
+}
+function quizMPFinish() {
+  if(QUIZ._mpDone) return;
+  QUIZ._mpDone=true;
+  stopQuizTimer();
+  const q=QUIZ.questions[QUIZ.idx];
+  const hCorrect=QUIZ._mpMyAnswer===q.c;
+  const gCorrect=QUIZ._mpOppAnswer===q.c;
+  if(hCorrect){QUIZ.s1++;$('p1ScoreQuiz').textContent=QUIZ.s1;popScore('p1ScoreQuiz');}
+  if(gCorrect){QUIZ.s2++;$('p2ScoreQuiz').textContent=QUIZ.s2;popScore('p2ScoreQuiz');}
+  mpSend({type:'quiz-done',qIdx:QUIZ.idx,hostChoice:QUIZ._mpMyAnswer,guestChoice:QUIZ._mpOppAnswer});
+  quizMPShowResult(QUIZ._mpMyAnswer,QUIZ._mpOppAnswer);
+}
+function quizMPShowResult(hostChoice,guestChoice) {
+  const q=QUIZ.questions[QUIZ.idx];
+  const myChoice=MP.isHost?hostChoice:guestChoice;
+  const oppChoice=MP.isHost?guestChoice:hostChoice;
+  document.querySelectorAll('.answer-btn').forEach((btn,i)=>{
+    btn.onclick=null; btn.style.opacity='1'; btn.style.outline='';
+    if(i===q.c) btn.classList.add('correct');
+    else if(i===myChoice&&myChoice!==q.c) btn.classList.add('wrong');
+    else if(i===oppChoice&&oppChoice!==q.c&&oppChoice>=0) btn.style.border='2px dashed rgba(255,100,100,0.7)';
+  });
+  const myCorrect=myChoice===q.c, oppCorrect=oppChoice===q.c;
+  let msg='';
+  if(myCorrect&&oppCorrect) msg='✅ Obaja správne!';
+  else if(myCorrect) msg='✅ Správne! Súper chyboval.';
+  else if(oppCorrect) msg='❌ Nesprávne. Súper to vedel!';
+  else msg='❌ Obaja chybovali. Správne: '+q.a[q.c];
+  $('quizStatus').textContent=msg;
+  playSound(myCorrect?'click':'wrong');
+  setTimeout(()=>{QUIZ.idx++;showQuizQ();},2200);
 }
 
 
@@ -14458,7 +14541,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -21166,7 +21249,7 @@ const MOBILE_GAMES = [
   { id:'guessNum',      label:'Hádaj Číslo',    icon:'🎲', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'both', mp:true, cat:'logic' },
   { id:'chess',         label:'Šach',           icon:'♟️', grad:'rgba(60,60,60,0.35),rgba(180,140,100,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'checkers',      label:'Dáma',           icon:'⬤', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.3)', mode:'both', mp:true, cat:'board' },
-  { id:'quiz',          label:'Kvíz',           icon:'🧪', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp', cat:'fun' },
+  { id:'quiz',          label:'Kvíz',           icon:'🧪', grad:'rgba(161,140,209,0.25),rgba(251,194,235,0.25)', mode:'pvp', mp:true, cat:'fun' },
   { id:'battleship',    label:'Lodičky',        icon:'🚢', grad:'rgba(0,92,151,0.3),rgba(54,55,149,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'ghost',         label:'Ghost',          icon:'👻', grad:'rgba(142,68,173,0.25),rgba(192,57,43,0.25)', mode:'pvp', cat:'word', mp:true },
   { id:'reaction',      label:'Reakcia',        icon:'⚡', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'fun' },
@@ -23050,6 +23133,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'ghost') { if(data.round !== undefined) MP.ghostRound = data.round; if(data.lang && $('ghostLangSelect')) $('ghostLangSelect').value=data.lang; resetGhost(); }
     if(gameId === 'dotsBoxes') { if(data.round !== undefined) MP.dbRound = data.round; resetDB(); applyDBMPStart(); }
     if(gameId === 'higherLower') { if(data.round !== undefined) MP.hlRound = data.round; startHL(); }
+    if(gameId === 'quiz') { if(data.round !== undefined) MP.quizRound = data.round; resetQuiz(); $('quizStatus').textContent='⏳ Čakám na hostiteľa...'; $('quizStartBox').style.display='none'; $('quizGameBox').style.display='block'; }
   }
 
   // Snake Duel MP
@@ -23248,6 +23332,37 @@ function _mpHandleMessageInner(data) {
     }
   }
 
+  // Kvíz MP
+  if(data.type==='quiz-start') {
+    QUIZ.questions=data.questions; QUIZ.idx=0; QUIZ.s1=0; QUIZ.s2=0;
+    QUIZ._mpMyAnswer=-1; QUIZ._mpOppAnswer=-1; QUIZ._mpDone=false;
+    MP._quizTimerSecs=data.timerSecs||10;
+    $('p1ScoreQuiz').textContent='0'; $('p2ScoreQuiz').textContent='0';
+    $('quizStartBox').style.display='none';
+    $('quizGameBox').style.display='block';
+    showQuizQ();
+  }
+  if(data.type==='quiz-answer') {
+    // Host receives guest's answer
+    if(MP.isHost && data.qIdx===QUIZ.idx) {
+      QUIZ._mpOppAnswer=data.choiceIdx;
+      quizMPCheckProcess(false);
+    }
+  }
+  if(data.type==='quiz-done') {
+    // Guest receives result from host
+    if(!MP.isHost && data.qIdx===QUIZ.idx && !QUIZ._mpDone) {
+      QUIZ._mpDone=true;
+      stopQuizTimer();
+      const q=QUIZ.questions[QUIZ.idx];
+      const hCorrect=data.hostChoice===q.c, gCorrect=data.guestChoice===q.c;
+      if(hCorrect){QUIZ.s1++;$('p1ScoreQuiz').textContent=QUIZ.s1;popScore('p1ScoreQuiz');}
+      if(gCorrect){QUIZ.s2++;$('p2ScoreQuiz').textContent=QUIZ.s2;popScore('p2ScoreQuiz');}
+      QUIZ._mpMyAnswer=data.guestChoice; QUIZ._mpOppAnswer=data.hostChoice;
+      quizMPShowResult(data.hostChoice,data.guestChoice);
+    }
+  }
+
   // Ping/Pong for latency
   if(data.type==='mp-ping'){mpSend({type:'mp-pong',ts:data.ts});}
   if(data.type==='mp-pong'){
@@ -23318,6 +23433,7 @@ function mpRematch(gameId) {
   if(gameId === 'ghost') { MP.ghostRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ghostRound, lang: $('ghostLangSelect')?.value||'sk' }); resetGhost(); }
   if(gameId === 'dotsBoxes') { MP.dbRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dbRound }); resetDB(); applyDBMPStart(); }
   if(gameId === 'higherLower') { MP.hlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.hlRound }); startHL(); }
+  if(gameId === 'quiz') { MP.quizRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.quizRound }); resetQuiz(); }
 }
 
 function mpGenerateQR(code) {
