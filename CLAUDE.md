@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~24700 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.76
+- **Current version**: v19.81
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -55,7 +55,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (54 total)
+## Games (55 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -147,7 +147,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "54 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "55 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -391,7 +391,7 @@ Key game state objects and their patterns:
 - **Mancala MP** (v19.36): `mancala-move` sent from `manClickPit()` (action point); `manMakeMove()` called on receiver; `manRound` alternation; score reset guard (`if(!MP.isConnected)`)
 - **Sokoban MP** (v19.36): simultaneous play; `sok-done` sent on completion; each device tracks `p1Completed`/`p2Completed` independently; `sokMPAdvanceLevel()` triggers when both done; level selector hidden in MP; `sokRound` for rematch sync only
 
-## New Features (v19.45–v19.76)
+## New Features (v19.45–v19.81)
 
 - **MMZV (Meno Mesto Zviera Vec) MP** (v19.45+): `mp:true`, `mmsv-start`/`mmsv-done`/`mmsv-answers` messages, simultaneous play, both players fill 4 categories per letter, score comparison after both submit; `mmsvRound` alternation; timer selector (30/45/60/90s); guest sees "Čakám na hostiteľa..." start state
 - **Slovný Reťazec (WC) MP** (v19.45+): `mp:true`, `wc-start`/`wc-word`/`wc-timeout` messages; turn-based word chain; `wcRound` alternation (host starts even rounds); epoch-protected 10s timer; `WC._isMyTurn` flag — only active player fires `wcTimeout()` and sends `wc-timeout` to sync scores on other device
@@ -403,8 +403,9 @@ Key game state objects and their patterns:
 - **MMSV improvements** (v19.68–v19.74): letter validation (answer must start with correct letter); two-step challenge confirm flow (`mmsvShowChallengePrompt` + `mmsvChallengeRespond`); extra category toggles opt-in (classic 4 default, +Povolanie/Jedlo/Krajina/Farba optional); MP force-param fix for `mmsvToggleExtra`
 - **MMSV MP extra cats sync fix** (v19.75): `mmsvGetActiveCats()` uses `MMSV_CAT_POOL[4+i]` refs so `indexOf()` works; guest `mmsv-start` handler calls `mmsvPickCats()` after `extraCats` sync; `mmsvShowResult()` loop `i<nCats`; drag wrapped in `DOMContentLoaded`; challenge bounds use `roundCats.length`
 - **MMSV cleanup** (v19.76): removed redundant enable-input loops (inputs recreated fresh by `mmsvUpdateLabels()`); `mmsv-done` fallback answer array uses `roundCats.length` instead of hardcoded 4
+- **Game count fix** (v19.77–v19.81): `gamesAll` achievement now uses hardcoded 55; welcome screen + onboarding updated to "55 hier"; animalQuiz was always game #55 but uncounted
 - **MP const MP additions**: `wcRound`, `scrRound`, `brkRound`, `puzzleRound`, `mmsvRound` added to MP state object
-- **Game count**: 52 → 54 (MMZV + Slovný Reťazec added)
+- **Game count**: 52 → 54 (MMZV + Slovný Reťazec added); 54 → 55 (animalQuiz/Zvierací Kvíz was always present but uncounted)
 - **MP games count**: 22 → 26 (WC, Scramble, Breakout, Puzzle Scramble added)
 
 ## New Features (v19.44)
