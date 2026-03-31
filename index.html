@@ -3806,8 +3806,11 @@ body.light .man-store {
       <button class="action-btn" id="mmsvTimer45" onclick="mmsvSetTimer(45)" style="padding:4px 12px;font-size:0.85em">45s</button>
       <button class="action-btn active-timer-btn" id="mmsvTimer60" onclick="mmsvSetTimer(60)" style="padding:4px 12px;font-size:0.85em">60s</button>
       <button class="action-btn" id="mmsvTimer90" onclick="mmsvSetTimer(90)" style="padding:4px 12px;font-size:0.85em">90s</button>
-      <span style="font-size:0.85em;opacity:0.7;font-weight:700;margin-left:8px">🗂️ Kat:</span>
-      <button class="action-btn" id="mmsvExtendedBtn" onclick="mmsvToggleExtended()" style="padding:4px 12px;font-size:0.85em" title="Pridať: Povolanie, Jedlo, Krajina, Farba">+4 ďalšie</button>
+      <span style="font-size:0.85em;opacity:0.7;font-weight:700;margin-left:8px">➕ Kat:</span>
+      <button class="action-btn" id="mmsvExtra0" onclick="mmsvToggleExtra(0)" style="padding:4px 10px;font-size:0.82em">👔 Povolanie</button>
+      <button class="action-btn" id="mmsvExtra1" onclick="mmsvToggleExtra(1)" style="padding:4px 10px;font-size:0.82em">🍕 Jedlo</button>
+      <button class="action-btn" id="mmsvExtra2" onclick="mmsvToggleExtra(2)" style="padding:4px 10px;font-size:0.82em">🌍 Krajina</button>
+      <button class="action-btn" id="mmsvExtra3" onclick="mmsvToggleExtra(3)" style="padding:4px 10px;font-size:0.82em">🎨 Farba</button>
     </div>
     <div class="status" id="mmsvStatus">Klikni Štart!</div>
     <div id="mmsvLetterBox" style="display:none;text-align:center;margin:10px 0">
@@ -3815,12 +3818,7 @@ body.light .man-store {
       <div style="font-size:0.9em;opacity:0.6" id="mmsvTimerLabel">⏱️ <span id="mmsvTimerVal">60</span>s</div>
     </div>
     <div id="mmsvInputBox" style="display:none;margin:10px 0">
-      <div style="display:grid;gap:8px">
-        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl0">👤 Meno</span>: <input id="mmsvI0" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,0)" oninput="mmsvInputLive(0)"></label>
-        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl1">🌆 Mesto</span>: <input id="mmsvI1" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,1)" oninput="mmsvInputLive(1)"></label>
-        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl2">🐾 Zviera</span>: <input id="mmsvI2" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,2)" oninput="mmsvInputLive(2)"></label>
-        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl3">🎒 Vec</span>: <input id="mmsvI3" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,3)" oninput="mmsvInputLive(3)"></label>
-      </div>
+      <div id="mmsvInputGrid" style="display:grid;gap:8px"></div>
       <button class="action-btn primary-btn" onclick="mmsvDone()" style="width:100%;margin-top:12px;font-size:1.1em;padding:12px">✅ Hotovo</button>
     </div>
     <div id="mmsvResultBox" style="display:none;margin:10px 0">
@@ -5102,7 +5100,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.71';
+const APP_VERSION = '19.72';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11884,8 +11882,8 @@ const MMSV = {
   letter:'', s1:0, s2:0, phase:'idle',
   p1Ans:['','','',''], p2Ans:['','','',''],
   timer:null, timeLeft:60, timerSecs:60, round:0, over:false,
-  roundCats:[], usedLetters:[], extendedCats:false,
-  _catPts1:[0,0,0,0], _catPts2:[0,0,0,0],
+  roundCats:[], usedLetters:[], extraCats:[false,false,false,false],
+  _catPts1:[], _catPts2:[],
   _roundStartTime:0, _p1DoneTime:0, _p2DoneTime:0,
   _mpMyDone:false, _mpOppDone:false, _mpMyAnswers:null, _mpOppAnswers:null,
   _mpOppDoneTime:0
@@ -11908,36 +11906,49 @@ function mmsvPickLetter() {
   return l;
 }
 
-function mmsvPickCats() {
-  if(MMSV.extendedCats) {
-    const shuffled = [...MMSV_CAT_POOL].sort(()=>Math.random()-0.5);
-    MMSV.roundCats = shuffled.slice(0,4);
-  } else {
-    MMSV.roundCats = MMSV_CAT_POOL.slice(0,4);
-  }
+function mmsvGetActiveCats() {
+  const extras = [
+    {icon:'👔', label:'Povolanie'},
+    {icon:'🍕', label:'Jedlo'},
+    {icon:'🌍', label:'Krajina'},
+    {icon:'🎨', label:'Farba'},
+  ];
+  const cats = [...MMSV_CAT_POOL.slice(0,4)];
+  MMSV.extraCats.forEach((on,i)=>{ if(on) cats.push(extras[i]); });
+  return cats;
 }
 
-function mmsvToggleExtended(force) {
+function mmsvPickCats() {
+  MMSV.roundCats = mmsvGetActiveCats();
+}
+
+function mmsvToggleExtra(idx, force) {
   if(MP.isConnected && !MP.isHost) return;
-  MMSV.extendedCats = force !== undefined ? force : !MMSV.extendedCats;
-  const btn = $('mmsvExtendedBtn');
-  if(btn) btn.className = 'action-btn' + (MMSV.extendedCats ? ' active-timer-btn' : '');
+  MMSV.extraCats[idx] = force !== undefined ? force : !MMSV.extraCats[idx];
+  const btn=$('mmsvExtra'+idx);
+  if(btn) btn.className='action-btn'+(MMSV.extraCats[idx]?' active-timer-btn':'');
 }
 
 function mmsvUpdateLabels() {
-  const cats = MMSV.roundCats.length===4 ? MMSV.roundCats : MMSV_CAT_POOL.slice(0,4);
-  for(let i=0;i<4;i++){
-    const lbl=$('mmsvLbl'+i);
-    if(lbl) lbl.textContent=cats[i].icon+' '+cats[i].label;
-    const inp=$('mmsvI'+i);
-    if(inp){ inp.style.borderColor='rgba(128,128,128,0.4)'; inp.value=''; }
+  const cats = MMSV.roundCats.length ? MMSV.roundCats : MMSV_CAT_POOL.slice(0,4);
+  const grid=$('mmsvInputGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  const inpStyle='width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px';
+  for(let i=0;i<cats.length;i++){
+    const lbl=document.createElement('label');
+    lbl.style.cssText='font-weight:700;font-size:0.9em;display:block';
+    lbl.innerHTML='<span id="mmsvLbl'+i+'">'+cats[i].icon+' '+cats[i].label+'</span>: '
+      +'<input id="mmsvI'+i+'" class="wordle-input" autocomplete="off" style="'+inpStyle+'" '
+      +'onkeydown="mmsvInputKey(event,'+i+')" oninput="mmsvInputLive('+i+')">';
+    grid.appendChild(lbl);
   }
 }
 
 function mmsvInputKey(e, i) {
   if(e.key==='Enter'){
     e.preventDefault();
-    if(i<3) $('mmsvI'+(i+1)).focus();
+    if(i<MMSV.roundCats.length-1) $('mmsvI'+(i+1)).focus();
     else mmsvDone();
   }
 }
@@ -11958,7 +11969,7 @@ function mmsvStart() {
     MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
     MMSV._mpOppDoneTime=0;
     const catIdxs = MMSV.roundCats.map(c=>MMSV_CAT_POOL.indexOf(c));
-    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs, cats:catIdxs, extendedCats:MMSV.extendedCats});
+    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs, cats:catIdxs, extraCats:MMSV.extraCats});
     mmsvMPBeginRound();
     return;
   }
@@ -12024,9 +12035,10 @@ function mmsvMPBeginRound() {
 function mmsvDone() {
   clearInterval(MMSV.timer);
   const myDoneTime = Date.now() - MMSV._roundStartTime;
+  const n = MMSV.roundCats.length || 4;
   const ans = [];
-  for(let i=0;i<4;i++) ans.push(($('mmsvI'+i).value||'').trim());
-  for(let i=0;i<4;i++) $('mmsvI'+i).disabled=true;
+  for(let i=0;i<n;i++) ans.push(($('mmsvI'+i)?($('mmsvI'+i).value||''):'').trim());
+  for(let i=0;i<n;i++){ const el=$('mmsvI'+i); if(el) el.disabled=true; }
   $('mmsvInputBox').style.display='none';
 
   if(MP.isConnected) {
@@ -12078,7 +12090,8 @@ function mmsvShowResult() {
   const p1Name = getActiveP1Name('mmsv');
   const p2Name = getActiveP2Name('mmsv');
   let roundP1=0, roundP2=0;
-  MMSV._catPts1=[0,0,0,0]; MMSV._catPts2=[0,0,0,0];
+  const nCats = MMSV.roundCats.length || 4;
+  MMSV._catPts1=Array(nCats).fill(0); MMSV._catPts2=Array(nCats).fill(0);
 
   let html='<div style="grid-column:1/-1;display:flex;justify-content:space-between;font-weight:900;font-size:0.85em;padding:0 4px;opacity:0.7">'
     +'<span>'+escHtml(p1Name)+'</span><span>'+escHtml(p2Name)+'</span></div>';
@@ -12234,7 +12247,7 @@ function resetMMSV() {
   MMSV.letter=''; MMSV.phase='idle';
   MMSV.p1Ans=['','','','']; MMSV.p2Ans=['','','',''];
   MMSV.timeLeft=MMSV.timerSecs; MMSV.over=false; MMSV.round=0;
-  MMSV.roundCats=[]; MMSV._catPts1=[0,0,0,0]; MMSV._catPts2=[0,0,0,0];
+  MMSV.roundCats=[]; MMSV._catPts1=[]; MMSV._catPts2=[];
   MMSV._roundStartTime=0; MMSV._p1DoneTime=0; MMSV._p2DoneTime=0;
   MMSV._mpMyDone=false; MMSV._mpOppDone=false;
   MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null; MMSV._mpOppDoneTime=0;
@@ -12249,11 +12262,11 @@ function resetMMSV() {
   btn.onclick=mmsvStart;
   btn.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
   activeTurn('mmsvP1Card','mmsvP2Card', MP.isConnected?0:1);
-  for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
+  const ig=$('mmsvInputGrid'); if(ig) ig.innerHTML='';
   const tsr=$('mmsvTimerSelectorRow');
   if(tsr) tsr.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
   mmsvSetTimer(MMSV.timerSecs);
-  mmsvToggleExtended(MMSV.extendedCats);
+  MMSV.extraCats.forEach((_,i)=>mmsvToggleExtra(i,MMSV.extraCats[i]));
 }
 // =============================================================================
 // SEKCIA: SLOVNÝ REŤAZEC
@@ -23996,7 +24009,7 @@ function _mpHandleMessageInner(data) {
       MMSV.timerSecs = Number(data.timerSecs);
       mmsvSetTimer(MMSV.timerSecs, true); // force: sync from host
     }
-    if(data.extendedCats !== undefined) mmsvToggleExtended(!!data.extendedCats);
+    if(Array.isArray(data.extraCats)&&data.extraCats.length===4) data.extraCats.forEach((v,i)=>mmsvToggleExtra(i,!!v));
     if(Array.isArray(data.cats) && data.cats.length===4) {
       MMSV.roundCats = data.cats.map(idx=>MMSV_CAT_POOL[Number(idx)]).filter(Boolean);
       if(MMSV.roundCats.length!==4) MMSV.roundCats=MMSV_CAT_POOL.slice(0,4);
