@@ -5102,7 +5102,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.70';
+const APP_VERSION = '19.71';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12116,8 +12116,8 @@ function mmsvShowResult() {
     const disp2 = (escHtml(MMSV.p2Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>') + inv2;
     const showChal1 = pts1>0 && (!MP.isConnected || !MP.isHost);
     const showChal2 = pts2>0 && (!MP.isConnected || MP.isHost);
-    const chalBtn1 = showChal1 ? '<button onclick="mmsvChallenge(1,'+i+')" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;margin-top:4px;display:block;color:inherit">⚠️ Namietam</button>' : '';
-    const chalBtn2 = showChal2 ? '<button onclick="mmsvChallenge(2,'+i+')" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;margin-top:4px;display:block;color:inherit">⚠️ Namietam</button>' : '';
+    const chalBtn1 = '<div id="mmsvCA1_'+i+'">'+(showChal1?'<button onclick="mmsvChallenge(1,'+i+')" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;margin-top:4px;display:block;color:inherit">⚠️ Namietam</button>':'')+'</div>';
+    const chalBtn2 = '<div id="mmsvCA2_'+i+'">'+(showChal2?'<button onclick="mmsvChallenge(2,'+i+')" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;margin-top:4px;display:block;color:inherit">⚠️ Namietam</button>':'')+'</div>';
     html+='<div style="background:'+c1+';border-radius:8px;padding:6px 8px" id="mmsvCell1_'+i+'">'
         +'<div style="font-weight:900;font-size:0.95em">'+disp1+'</div>'
         +(pts1?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px" id="mmsvPts1_'+i+'">+'+pts1+' b</div>':'')+chalBtn1+'</div>'
@@ -12179,8 +12179,35 @@ function mmsvShowResult() {
 }
 
 function mmsvChallenge(player, catIdx) {
-  if(MP.isConnected) mpSend({type:'mmsv-challenge', player, catIdx});
-  mmsvApplyChallenge(player, catIdx);
+  const pts = player===1 ? MMSV._catPts1[catIdx] : MMSV._catPts2[catIdx];
+  if(pts<=0) return;
+  if(MP.isConnected) {
+    const ca=$('mmsvCA'+player+'_'+catIdx);
+    if(ca) ca.innerHTML='<div style="font-size:0.65em;opacity:0.6;margin-top:3px">⏳ Čakám na súpera...</div>';
+    mpSend({type:'mmsv-challenge', player, catIdx});
+  } else {
+    mmsvShowChallengePrompt(player, catIdx);
+  }
+}
+
+function mmsvShowChallengePrompt(player, catIdx) {
+  const ca=$('mmsvCA'+player+'_'+catIdx);
+  if(!ca) return;
+  ca.innerHTML='<div style="font-size:0.72em;font-weight:700;margin-top:4px">Platná odpoveď?</div>'
+    +'<div style="display:flex;gap:4px;margin-top:3px">'
+    +'<button onclick="mmsvChallengeRespond('+player+','+catIdx+',false)" style="font-size:0.65em;padding:2px 6px;background:rgba(67,233,123,0.2);border:1px solid rgba(67,233,123,0.4);border-radius:4px;cursor:pointer;color:inherit">✓ Platná</button>'
+    +'<button onclick="mmsvChallengeRespond('+player+','+catIdx+',true)" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;color:inherit">✗ Neplatná</button>'
+    +'</div>';
+}
+
+function mmsvChallengeRespond(player, catIdx, invalid) {
+  if(MP.isConnected) mpSend({type:'mmsv-challenge-result', player, catIdx, invalid});
+  if(invalid) {
+    mmsvApplyChallenge(player, catIdx);
+  } else {
+    const ca=$('mmsvCA'+player+'_'+catIdx);
+    if(ca) ca.innerHTML='<div style="font-size:0.65em;color:rgba(67,233,123,0.8);margin-top:3px">✓ Uznaná</div>';
+  }
 }
 
 function mmsvApplyChallenge(player, catIdx) {
@@ -12191,13 +12218,13 @@ function mmsvApplyChallenge(player, catIdx) {
     $('p1ScoreMMSV').textContent=MMSV.s1;
     const pe=$('mmsvPts1_'+catIdx); if(pe) pe.textContent='❌ namietnuté';
     const ce=$('mmsvCell1_'+catIdx); if(ce) ce.style.background='rgba(128,128,128,0.12)';
-    const cb=ce?ce.querySelector('button'):null; if(cb) cb.remove();
+    const ca=$('mmsvCA1_'+catIdx); if(ca) ca.innerHTML='';
   } else {
     MMSV.s2-=pts; MMSV._catPts2[catIdx]=0;
     $('p2ScoreMMSV').textContent=MMSV.s2;
     const pe=$('mmsvPts2_'+catIdx); if(pe) pe.textContent='❌ namietnuté';
     const ce=$('mmsvCell2_'+catIdx); if(ce) ce.style.background='rgba(128,128,128,0.12)';
-    const cb=ce?ce.querySelector('button'):null; if(cb) cb.remove();
+    const ca=$('mmsvCA2_'+catIdx); if(ca) ca.innerHTML='';
   }
   playSound('wrong');
 }
@@ -23988,7 +24015,13 @@ function _mpHandleMessageInner(data) {
   }
   if(data.type === 'mmsv-challenge') {
     const cp=Number(data.player); const ci=Number(data.catIdx);
-    if((cp===1||cp===2)&&ci>=0&&ci<4) mmsvApplyChallenge(cp,ci);
+    if((cp===1||cp===2)&&ci>=0&&ci<4) mmsvShowChallengePrompt(cp,ci);
+  }
+  if(data.type === 'mmsv-challenge-result') {
+    const cp=Number(data.player); const ci=Number(data.catIdx);
+    if(!((cp===1||cp===2)&&ci>=0&&ci<4)) return;
+    if(data.invalid) { mmsvApplyChallenge(cp,ci); }
+    else { const ca=$('mmsvCA'+cp+'_'+ci); if(ca) ca.innerHTML='<div style="font-size:0.65em;color:rgba(67,233,123,0.8);margin-top:3px">✓ Uznaná</div>'; }
   }
 
   // Wordle MP
