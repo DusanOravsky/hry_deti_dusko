@@ -5068,7 +5068,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.57';
+const APP_VERSION = '19.58';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12002,16 +12002,18 @@ function resetMMSV() {
   MMSV.timeLeft=60; MMSV.over=false; MMSV.round=0;
   MMSV._mpMyDone=false; MMSV._mpOppDone=false;
   MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
-  if(!MP.isConnected){MMSV.s1=0;MMSV.s2=0;$('p1ScoreMMSV').textContent='0';$('p2ScoreMMSV').textContent='0';}
-  $('mmsvStatus').textContent = MP.isConnected&&!MP.isHost ? 'Čakám na hostiteľa...' : 'Klikni Štart!';
+  const mpConn = typeof MP!=='undefined' && MP.isConnected;
+  const mpHost = typeof MP!=='undefined' && MP.isHost;
+  if(!mpConn){MMSV.s1=0;MMSV.s2=0;$('p1ScoreMMSV').textContent='0';$('p2ScoreMMSV').textContent='0';}
+  $('mmsvStatus').textContent = mpConn&&!mpHost ? 'Čakám na hostiteľa...' : 'Klikni Štart!';
   $('mmsvLetterBox').style.display='none';
   $('mmsvInputBox').style.display='none';
   $('mmsvResultBox').style.display='none';
   const btn=$('mmsvStartBtn');
   btn.textContent='▶️ Štart';
   btn.onclick=mmsvStart;
-  btn.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
-  activeTurn('mmsvP1Card','mmsvP2Card', MP.isConnected?0:1);
+  btn.style.display = (mpConn&&!mpHost) ? 'none' : '';
+  activeTurn('mmsvP1Card','mmsvP2Card', mpConn?0:1);
   for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
 }
 resetMMSV();
