@@ -5119,7 +5119,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.74';
+const APP_VERSION = '19.75';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11930,14 +11930,8 @@ function mmsvPickLetter() {
 }
 
 function mmsvGetActiveCats() {
-  const extras = [
-    {icon:'👔', label:'Povolanie'},
-    {icon:'🍕', label:'Jedlo'},
-    {icon:'🌍', label:'Krajina'},
-    {icon:'🎨', label:'Farba'},
-  ];
   const cats = [...MMSV_CAT_POOL.slice(0,4)];
-  MMSV.extraCats.forEach((on,i)=>{ if(on) cats.push(extras[i]); });
+  MMSV.extraCats.forEach((on,i)=>{ if(on) cats.push(MMSV_CAT_POOL[4+i]); });
   return cats;
 }
 
@@ -12120,8 +12114,8 @@ function mmsvShowResult() {
     +'<span>'+escHtml(p1Name)+'</span><span>'+escHtml(p2Name)+'</span></div>';
 
   const reqLetter = MMSV.letter.toLowerCase();
-  const cats = MMSV.roundCats.length===4 ? MMSV.roundCats : MMSV_CAT_POOL.slice(0,4);
-  for(let i=0;i<4;i++){
+  const cats = MMSV.roundCats.length>0 ? MMSV.roundCats : MMSV_CAT_POOL.slice(0,4);
+  for(let i=0;i<nCats;i++){
     const a1=mmsvNormalize(MMSV.p1Ans[i]);
     const a2=mmsvNormalize(MMSV.p2Ans[i]);
     const v1 = a1.length>=2 && a1[0]===reqLetter;
@@ -12167,7 +12161,6 @@ function mmsvShowResult() {
   if(MP.isConnected && MMSV._p1DoneTime>0 && MMSV._p2DoneTime>0 && MMSV._p1DoneTime!==MMSV._p2DoneTime) {
     if(MMSV._p1DoneTime < MMSV._p2DoneTime){ speedBonus1=2; }
     else { speedBonus2=2; }
-    const speedWinner = speedBonus1>0?escHtml(p1Name):escHtml(p2Name);
     html+='<div style="grid-column:1/-1;font-size:0.78em;font-weight:700;padding:6px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px;opacity:0.8">⚡ Rýchlosť</div>'
       +'<div style="border-radius:8px;padding:6px 8px;background:'+(speedBonus1?'rgba(67,233,123,0.15)':'rgba(128,128,128,0.08)')+'">'+(speedBonus1?'<div style="font-size:0.75em;font-weight:900">⚡ +2 b</div>':'<div style="opacity:0.3;font-size:0.8em">—</div>')+'</div>'
       +'<div style="border-radius:8px;padding:6px 8px;background:'+(speedBonus2?'rgba(67,233,123,0.15)':'rgba(128,128,128,0.08)')+'">'+(speedBonus2?'<div style="font-size:0.75em;font-weight:900">⚡ +2 b</div>':'<div style="opacity:0.3;font-size:0.8em">—</div>')+'</div>';
@@ -15417,7 +15410,7 @@ function mpIngameHide(){
   const btn=$('mpIngameToggleBtn');if(btn)btn.textContent='▲';
   clearTimeout(_mpIngameAutoTimer);
 }
-(function(){
+document.addEventListener('DOMContentLoaded',function(){
   const el=$('mpIngameChat');
   const handle=$('mpIngameDragHandle');
   if(!el||!handle)return;
@@ -15441,7 +15434,7 @@ function mpIngameHide(){
   handle.addEventListener('mousedown',e=>{startDrag(e.clientX,e.clientY);});
   document.addEventListener('mousemove',e=>{moveDrag(e.clientX,e.clientY);});
   document.addEventListener('mouseup',endDrag);
-})();
+});
 
 // =============================================================================
 // SEKCIA 33: BODKY A KRABICKY (DOTS AND BOXES)
@@ -24058,10 +24051,7 @@ function _mpHandleMessageInner(data) {
       mmsvSetTimer(MMSV.timerSecs, true); // force: sync from host
     }
     if(Array.isArray(data.extraCats)&&data.extraCats.length===4) data.extraCats.forEach((v,i)=>mmsvToggleExtra(i,!!v));
-    if(Array.isArray(data.cats) && data.cats.length===4) {
-      MMSV.roundCats = data.cats.map(idx=>MMSV_CAT_POOL[Number(idx)]).filter(Boolean);
-      if(MMSV.roundCats.length!==4) MMSV.roundCats=MMSV_CAT_POOL.slice(0,4);
-    } else { MMSV.roundCats=MMSV_CAT_POOL.slice(0,4); }
+    mmsvPickCats();
     MMSV._mpMyDone=false; MMSV._mpOppDone=false;
     MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null; MMSV._mpOppDoneTime=0;
     MMSV._myDoneTime=0;
@@ -24076,11 +24066,11 @@ function _mpHandleMessageInner(data) {
   }
   if(data.type === 'mmsv-challenge') {
     const cp=Number(data.player); const ci=Number(data.catIdx);
-    if((cp===1||cp===2)&&ci>=0&&ci<4) mmsvShowChallengePrompt(cp,ci);
+    if((cp===1||cp===2)&&ci>=0&&ci<(MMSV.roundCats.length||8)) mmsvShowChallengePrompt(cp,ci);
   }
   if(data.type === 'mmsv-challenge-result') {
     const cp=Number(data.player); const ci=Number(data.catIdx);
-    if(!((cp===1||cp===2)&&ci>=0&&ci<4)) return;
+    if(!((cp===1||cp===2)&&ci>=0&&ci<(MMSV.roundCats.length||8))) return;
     if(data.invalid) { mmsvApplyChallenge(cp,ci); }
     else { const ca=$('mmsvCA'+cp+'_'+ci); if(ca) ca.innerHTML='<div style="font-size:0.65em;color:rgba(67,233,123,0.8);margin-top:3px">✓ Uznaná</div>'; }
   }
