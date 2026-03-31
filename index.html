@@ -3143,7 +3143,7 @@ body.light .man-store {
     <div class="celebration" id="scrCelebration">🎉</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startScramble()">▶️ Štart</button>
-      <button class="action-btn danger-btn" onclick="resetScramble()">🔄 Reset</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('scramble'):resetScramble()">🔄 Reset</button>
     </div>
   </div>
 
@@ -3591,7 +3591,7 @@ body.light .man-store {
     <div class="celebration" id="pzCelebration">🎉</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startPuzzle()">▶️ Štart</button>
-      <button class="action-btn danger-btn" onclick="resetPuzzle()">🔄 Nová hra</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('puzzle'):resetPuzzle()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -3858,7 +3858,7 @@ body.light .man-store {
     <div class="celebration" id="wcCelebration"></div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="wcStart()">▶️ Štart</button>
-      <button class="action-btn danger-btn" onclick="resetWC()">🔄 Nová hra</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('wordChain'):resetWC()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4221,7 +4221,7 @@ body.light .man-store {
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startBreakout()">Start</button>
       <button class="action-btn" onclick="toggleFullscreen('brkCanvas')">⛶ Fullscreen</button>
-      <button class="action-btn danger-btn" onclick="resetBreakout()">Reset</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('breakout'):resetBreakout()">Reset</button>
     </div>
   </div>
 
@@ -5099,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.62';
+const APP_VERSION = '19.63';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9967,7 +9967,7 @@ function reacFinish(){
 const SCR = {
   player:1, s1:0, s2:0, round:0, totalRounds:5,
   currentWord:'', currentHint:'',
-  selectedTiles:[], usedIndices:[], over:false
+  selectedTiles:[], usedIndices:[], over:false, _mpRoundDone:false
 };
 
 // ===== SCRAMBLE =====
@@ -10230,6 +10230,7 @@ function scrambleStr(str) {
 }
 
 function startScramble() {
+  if(MP.isConnected && !MP.isHost) return; // only host starts in MP
   SCR.totalRounds=parseInt($('scrambleRoundsSelect').value||'5');
   SCR.round=0; SCR.s1=0; SCR.s2=0; SCR.player=1; SCR.over=false;
   $('p1ScoreScr').textContent='0';
@@ -10238,27 +10239,41 @@ function startScramble() {
   const timerSecs = parseInt($('scrambleTimerSelect').value||'0');
   const wrap = $('scrTimerWrap');
   if(wrap) wrap.style.display = timerSecs>0?'flex':'none';
-  activeTurn('scrP1Card','scrP2Card',1);
+  activeTurn('scrP1Card','scrP2Card',MP.isConnected?0:1);
   nextScrambleRound();
 }
 
 function nextScrambleRound() {
-  if(SCR.round >= SCR.totalRounds*2) { scrFinish(); return; }
+  const mpRounds = MP.isConnected ? SCR.totalRounds : SCR.totalRounds*2;
+  if(SCR.round >= mpRounds) { scrFinish(); return; }
   SCR.round++;
+  SCR._mpRoundDone = false;
   SCR.selectedTiles=[]; SCR.usedIndices=[];
+  if(MP.isConnected && !MP.isHost) {
+    // Guest: wait for host to send the word
+    $('scrStatus').textContent = '⏳ Čakám na slovo...';
+    $('scrTiles').innerHTML = '';
+    $('scrAnswerRow').innerHTML = '';
+    const badge = $('scrRoundBadge');
+    if(badge) badge.textContent = 'Kolo '+SCR.round+' / '+mpRounds;
+    return;
+  }
   const words = getAllScrambleWords();
   const entry = words[Math.floor(Math.random()*words.length)];
   SCR.currentWord = entry.w.toUpperCase();
   SCR.currentHint = entry.h;
   const cat = $('scrambleCatSelect').value;
   const catName = cat==='all'?'Zmiešané':$('scrambleCatSelect').options[$('scrambleCatSelect').selectedIndex].text;
+  if(MP.isConnected) {
+    // Host: send word to guest so both race simultaneously
+    mpSend({type:'scr-word', word:SCR.currentWord, hint:SCR.currentHint, cat:cat, catName:catName, round:SCR.round, totalRounds:mpRounds});
+  }
   $('scrCategory').textContent = '📂 '+catName;
-  // Round badge
   const badge = $('scrRoundBadge');
-  if(badge) badge.textContent = 'Kolo '+SCR.round+' / '+(SCR.totalRounds*2);
+  if(badge) badge.textContent = 'Kolo '+SCR.round+' / '+mpRounds;
   $('scrHint').textContent = 'Poskladaj slovo z písmen nižšie';
-  $('scrStatus').textContent = (SCR.player===1?getP1Name('scr'):getP2Name('scr'))+' — skladaj slovo!';
-  activeTurn('scrP1Card','scrP2Card',SCR.player);
+  $('scrStatus').textContent = MP.isConnected ? 'Kto bude rýchlejší?' : (SCR.player===1?getP1Name('scr'):getP2Name('scr'))+' — skladaj slovo!';
+  activeTurn('scrP1Card','scrP2Card',MP.isConnected?0:SCR.player);
   // Hide undo at start of round
   const undoBtn = $('scrUndoBtn');
   if(undoBtn) undoBtn.style.display='none';
@@ -10347,6 +10362,7 @@ function scrHintBtn() {
 
 function scrCheck() {
   if(SCR.over) return;
+  if(MP.isConnected && SCR._mpRoundDone) return; // already won this round
   const answer = SCR.selectedTiles.map(t=>t.ch).join('');
   if(answer.length<SCR.currentWord.length){ $('scrHint').textContent='⚠️ Ešte nie sú všetky písmená!'; return; }
   stopTurnTimer('scr');
@@ -10356,9 +10372,19 @@ function scrCheck() {
     answerTiles.forEach(t=>t.classList.add('correct',t.classList.contains('filled')?'filled':''));
     $('scrHint').textContent='✅ Správne! Slovo: '+SCR.currentWord;
     playSound('win');
-    if(SCR.player===1){ SCR.s1++; $('p1ScoreScr').textContent=SCR.s1%1?SCR.s1.toFixed(1):SCR.s1; }
-    else{ SCR.s2++; $('p2ScoreScr').textContent=SCR.s2%1?SCR.s2.toFixed(1):SCR.s2; }
-    $('scrStatus').textContent='🎉 Správne!';
+    if(MP.isConnected) {
+      // Simultaneous: I was first correct
+      SCR._mpRoundDone = true;
+      const myPlayer = MP.isHost?1:2;
+      if(myPlayer===1){ SCR.s1++; $('p1ScoreScr').textContent=SCR.s1%1?SCR.s1.toFixed(1):SCR.s1; }
+      else{ SCR.s2++; $('p2ScoreScr').textContent=SCR.s2%1?SCR.s2.toFixed(1):SCR.s2; }
+      $('scrStatus').textContent='🎉 Rýchlejší/ia!';
+      mpSend({type:'scr-done', round:SCR.round});
+    } else {
+      if(SCR.player===1){ SCR.s1++; $('p1ScoreScr').textContent=SCR.s1%1?SCR.s1.toFixed(1):SCR.s1; }
+      else{ SCR.s2++; $('p2ScoreScr').textContent=SCR.s2%1?SCR.s2.toFixed(1):SCR.s2; }
+      $('scrStatus').textContent='🎉 Správne!';
+    }
   } else {
     answerTiles.forEach(t=>{if(t.classList.contains('filled')) t.classList.add('wrong');});
     $('scrHint').textContent='❌ Nesprávne! Správne: '+SCR.currentWord;
@@ -10366,21 +10392,25 @@ function scrCheck() {
     $('scrStatus').textContent='❌ Chyba! Slovo bolo: '+SCR.currentWord;
     setTimeout(()=>{ answerTiles.forEach(t=>t.classList.remove('wrong')); },500);
   }
-  setTimeout(()=>{
-    SCR.player=SCR.player===1?2:1;
-    nextScrambleRound();
-  },2000);
+  if(!MP.isConnected || correct) {
+    setTimeout(()=>{
+      if(!MP.isConnected) SCR.player=SCR.player===1?2:1;
+      nextScrambleRound();
+    },2000);
+  }
 }
 
 function scrTimeUp() {
   $('scrHint').textContent='⏰ Čas vypršal! Slovo bolo: '+SCR.currentWord;
   $('scrStatus').textContent='⏰ Čas vypršal!';
   playSound('wrong');
+  if(MP.isConnected){ setTimeout(()=>nextScrambleRound(),2000); return; }
   setTimeout(()=>{SCR.player=SCR.player===1?2:1; nextScrambleRound();},2000);
 }
 
 function scrFinish() {
   SCR.over=true;
+  stopTurnTimer('scr');
   const n1=getP1Name('scr'), n2=getP2Name('scr');
   let msg;
   if(SCR.s1>SCR.s2) msg='🏆 '+n1+' vyhral! ('+SCR.s1+' : '+SCR.s2+')';
@@ -10391,14 +10421,14 @@ function scrFinish() {
   if(SCR.s1>SCR.s2){addWin(1);celebrate('scrCelebration');playSound('win');updateRecord('scrambleBest',SCR.s1);}
   else if(SCR.s2>SCR.s1){addWin(2);celebrate('scrCelebration');playSound('win');updateRecord('scrambleBest',SCR.s2);}
   else{addWin(0);}
+  if(MP.isConnected) mpSend({type:'scr-finish', s1:SCR.s1, s2:SCR.s2});
 }
 
 function resetScramble() {
   stopTurnTimer('scr');
-  SCR.over=false; SCR.round=0; SCR.s1=0; SCR.s2=0; SCR.player=1;
+  SCR.over=false; SCR.round=0; SCR.player=1; SCR._mpRoundDone=false;
   SCR.selectedTiles=[]; SCR.usedIndices=[];
-  $('p1ScoreScr').textContent='0';
-  $('p2ScoreScr').textContent='0';
+  if(!MP.isConnected){SCR.s1=0;SCR.s2=0;$('p1ScoreScr').textContent='0';$('p2ScoreScr').textContent='0';}
   $('scrStatus').textContent='Klikni Štart!';
   $('scrGameBox').style.display='none';
   $('scrHint').textContent='';
@@ -12076,13 +12106,19 @@ const WC = {
 };
 
 function wcStart() {
+  if(MP.isConnected && !MP.isHost) return; // only host starts in MP
   if(WC.over && WC.s1 < 3 && WC.s2 < 3) return; // between rounds — auto-restart pending
-  if(WC.s1>=3||WC.s2>=3){WC.s1=0;WC.s2=0;WC.player=1;$('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';}
+  if(WC.s1>=3||WC.s2>=3){if(!MP.isConnected){WC.s1=0;WC.s2=0;$('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';}WC.player=1;}
   WC.words=[];
   WC.lastLetter='';
   WC.over=false;
   WC._epoch++;
   const ep=WC._epoch;
+  // Round alternation: host starts round on even rounds, guest on odd
+  if(MP.isConnected) {
+    WC.player = MP.wcRound%2===0 ? 1 : 2;
+    mpSend({type:'wc-start'});
+  }
   $('wcGameBox').style.display='block';
   $('wcWordList').innerHTML='';
   $('wcInput').value='';
@@ -12118,6 +12154,7 @@ function wcUpdateHint() {
 
 function wcSubmit() {
   if(WC.over) return;
+  if(MP.isConnected && WC.player !== (MP.isHost?1:2)) return; // not my turn
   const raw = ($('wcInput').value||'').trim().toLowerCase().replace(/\s+/g,'');
   $('wcInput').value='';
   if(!raw) return;
@@ -12135,6 +12172,7 @@ function wcSubmit() {
 
   WC.words.push(raw);
   WC.lastLetter = raw[raw.length-1];
+  if(MP.isConnected) mpSend({type:'wc-word', word:raw});
   playSound('click');
 
   const li=document.createElement('div');
@@ -12171,7 +12209,8 @@ function wcTimeout() {
   } else {
     WC.player=loser;
     WC._epoch++;
-    setTimeout(()=>{ WC.over=false; wcStart(); }, 2000);
+    if(!MP.isConnected) setTimeout(()=>{ WC.over=false; wcStart(); }, 2000);
+    else if(MP.isHost) setTimeout(()=>{ WC.over=false; wcStart(); }, 2000);
   }
 }
 
@@ -12185,10 +12224,30 @@ function wcCheckGameOver() {
   $('wcInput').disabled=true;
 }
 
+function wcApplyWord(word) {
+  // Apply a word received from opponent (no send back)
+  if(WC.over) return;
+  WC.words.push(word);
+  WC.lastLetter = word[word.length-1];
+  playSound('click');
+  const li=document.createElement('div');
+  li.style.cssText='font-size:0.85em;padding:2px 6px;opacity:0.7';
+  li.textContent=(WC.player===1?getP1Name('wc'):getP2Name('wc'))+': '+word+' → '+WC.lastLetter.toUpperCase();
+  $('wcWordList').appendChild(li);
+  $('wcWordList').scrollTop=$('wcWordList').scrollHeight;
+  WC.player = WC.player===1?2:1;
+  wcUpdateHint();
+  $('wcStatus').textContent=(WC.player===1?getP1Name('wc'):getP2Name('wc'))+' — napíš slovo!';
+  activeTurn('wcP1Card','wcP2Card',WC.player);
+  const ep=++WC._epoch;
+  wcStartTimer(ep);
+  setTimeout(()=>{ if(WC._epoch===ep && !WC.over) $('wcInput').focus(); },50);
+}
+
 function resetWC() {
   clearInterval(WC.timer);
-  WC.player=1;WC.s1=0;WC.s2=0;WC.words=[];WC.lastLetter='';WC.over=false;WC.timeLeft=10;WC._epoch++;
-  $('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';
+  WC.player=1;WC.words=[];WC.lastLetter='';WC.over=false;WC.timeLeft=10;WC._epoch++;
+  if(!MP.isConnected){WC.s1=0;WC.s2=0;$('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';}
   $('wcStatus').textContent='Klikni Štart!';
   $('wcGameBox').style.display='none';
   $('wcTimer').textContent='10';
@@ -14508,7 +14567,7 @@ document.addEventListener('keyup', e => {
 // =============================================================================
 // SEKCIA 30: PUZZLE SCRAMBLE (canvas-based image puzzle)
 // =============================================================================
-const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null, _aiTimeout:null };
+const PZ = { tiles:[], size:4, empty:0, solved:false, player:1, times:[0,0], moves:[0,0], timer:null, startTime:0, s1:0, s2:0, scramble:[], aiSolving:false, img:null, _aiTimeout:null, _mpDone:false };
 
 function pzDrawScene(canvas, theme) {
   const s=canvas.width, ctx=canvas.getContext('2d');
@@ -14694,8 +14753,9 @@ function pzDrawScene(canvas, theme) {
   }
 }
 function resetPuzzle() {
-  PZ.solved=false; PZ.player=1; PZ.times=[0,0]; PZ.moves=[0,0]; PZ.aiSolving=false;
+  PZ.solved=false; PZ.player=1; PZ.times=[0,0]; PZ.moves=[0,0]; PZ.aiSolving=false; PZ._mpDone=false;
   if(PZ.timer) { clearInterval(PZ.timer); PZ.timer=null; }
+  if(!MP.isConnected){PZ.s1=0;PZ.s2=0;$('p1ScorePZ').textContent='0';$('p2ScorePZ').textContent='0';}
   $('pzStatus').textContent='Vyber obrázok a klikni Štart!';
   $('pzTimer').textContent='0.0s';
   $('pzMoves').textContent='';
@@ -14736,17 +14796,22 @@ function getPZNeighbors(idx) {
   return n;
 }
 function startPuzzle() {
+  if(MP.isConnected && !MP.isHost) return; // only host can start in MP
   if(PZ.timer) { clearInterval(PZ.timer); PZ.timer=null; }
   if(PZ.player===1) {
     generatePuzzle();
+    if(MP.isConnected) {
+      // Send puzzle to guest for simultaneous solving
+      mpSend({type:'puzzle-start', size:PZ.size, theme:$('pzThemeSelect').value, scramble:PZ.scramble});
+    }
   } else {
     PZ.tiles=PZ.scramble.slice();
     PZ.empty=PZ.tiles.indexOf(null);
   }
-  PZ.solved=false; PZ.moves[PZ.player-1]=0;
+  PZ.solved=false; PZ._mpDone=false; PZ.moves[PZ.player-1]=0;
   const name=PZ.player===1?getP1Name('pz'):getP2Name('pz');
-  $('pzStatus').textContent='🧩 '+name+' skladá!';
-  activeTurn('pzP1Card','pzP2Card',PZ.player);
+  $('pzStatus').textContent=MP.isConnected?'🧩 Kto bude rýchlejší?':'🧩 '+name+' skladá!';
+  activeTurn('pzP1Card','pzP2Card',MP.isConnected?0:PZ.player);
   PZ.startTime=Date.now();
   PZ.timer=setInterval(()=>{
     $('pzTimer').textContent=((Date.now()-PZ.startTime)/1000).toFixed(1)+'s';
@@ -14784,7 +14849,8 @@ function renderPuzzle() {
 }
 function pzClick(idx) {
   if(PZ.solved||PZ.aiSolving) return;
-  if(welcomeGameMode==='ai'&&PZ.player===2) return;
+  if(PZ._mpDone) return; // already lost
+  if(!MP.isConnected && welcomeGameMode==='ai'&&PZ.player===2) return;
   const neighbors=getPZNeighbors(idx);
   if(!neighbors.includes(PZ.empty)) return;
   PZ.tiles[PZ.empty]=PZ.tiles[idx]; PZ.tiles[idx]=null; PZ.empty=idx;
@@ -14801,6 +14867,19 @@ function pzPlayerDone() {
   PZ.times[PZ.player-1]=(Date.now()-PZ.startTime)/1000;
   const name=PZ.player===1?getP1Name('pz'):getP2Name('pz');
   playSound('win');
+  if(MP.isConnected) {
+    if(PZ._mpDone) return; // opponent already won
+    PZ._mpDone=true;
+    const myPlayer=MP.isHost?1:2;
+    const t=PZ.times[myPlayer-1];
+    mpSend({type:'puzzle-done', time:t});
+    // I finished — I win this round
+    if(myPlayer===1){ PZ.s1++; $('p1ScorePZ').textContent=PZ.s1; addWin(1,'puzzle'); }
+    else{ PZ.s2++; $('p2ScorePZ').textContent=PZ.s2; addWin(2,'puzzle'); }
+    $('pzStatus').textContent='🏆 '+name+' vyhral! ('+t.toFixed(1)+'s)';
+    celebrate('pzCelebration');
+    return;
+  }
   if(PZ.player===1 && welcomeGameMode!=='ai') {
     $('pzStatus').textContent='✅ '+name+': '+PZ.times[0].toFixed(1)+'s ('+PZ.moves[0]+' ťahov). Teraz '+getP2Name('pz')+'!';
     PZ.player=2; PZ.solved=false;
@@ -15050,7 +15129,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -15329,7 +15408,9 @@ const BRK = {
   // input
   moveDir:0, mouseX:-1,
   // pvp
-  p1Score:0, p2Score:0
+  p1Score:0, p2Score:0,
+  // mp
+  _mpTurnDone:false, _mpMyTurn:false
 };
 
 function setBrkDiff(d,btn){
@@ -15365,7 +15446,7 @@ function brkResetBall(){
 
 function resetBreakout(){
   if(BRK.raf) cancelAnimationFrame(BRK.raf);
-  BRK.running=false; BRK.over=false;
+  BRK.running=false; BRK.over=false; BRK._mpTurnDone=false; BRK._mpMyTurn=false;
   const d=BRK_DIFF[BRK.diff];
   BRK.score=0; BRK.lives=d.lives; BRK.level=1;
   brkGenBricks();
@@ -15378,6 +15459,7 @@ function resetBreakout(){
   activeTurn('brkP1Card','brkP2Card',BRK.player);
   const bn1=$('brkP1Name');if(bn1)bn1.textContent=getP1Name('brk');
   const bn2=$('brkP2Name');if(bn2)bn2.textContent=getP2Name('brk');
+  if(MP.isConnected) brkMPSetMyTurn();
 }
 
 function brkRender(){
@@ -15512,6 +15594,26 @@ function brkAllCleared(){
 function brkGameOver(){
   BRK.over=true; BRK.running=false;
   if(BRK.raf)cancelAnimationFrame(BRK.raf);
+  // MP mode — sequential turns, each player plays locally, scores compared
+  if(MP.isConnected){
+    const myScore=BRK.score;
+    const myPlayer = BRK.player; // 1 or 2 depending on who goes first this round
+    if(myPlayer===1){
+      BRK.p1Score=myScore; $('p1ScoreBrk').textContent=myScore;
+    } else {
+      BRK.p2Score=myScore; $('p2ScoreBrk').textContent=myScore;
+    }
+    BRK._mpTurnDone=true;
+    mpSend({type:'brk-done', score:myScore, player:myPlayer});
+    if(myPlayer===1){
+      $('brkStatus').textContent=getP1Name('brk')+': '+myScore+' bodov. '+getP2Name('brk')+' hrá...';
+      activeTurn('brkP1Card','brkP2Card',2);
+    } else {
+      // Both played — show result
+      brkMPShowResult();
+    }
+    return;
+  }
   // PvP mode
   if(welcomeGameMode==='pvp'){
     if(BRK.player===1){
@@ -15554,8 +15656,60 @@ function brkGameOver(){
   if(BRK.score>=50){celebrate('brkCelebration');playSound('win');}
 }
 
+function brkMPSetMyTurn(){
+  // Set _mpMyTurn=true only if this device goes first this round
+  const hostFirst = MP.brkRound%2===0;
+  BRK._mpMyTurn = MP.isHost ? hostFirst : !hostFirst;
+  if(BRK._mpMyTurn){
+    const myPlayer = MP.isHost ? (hostFirst?1:2) : (hostFirst?2:1);
+    activeTurn('brkP1Card','brkP2Card',myPlayer);
+    $('brkStatus').textContent=(myPlayer===1?getP1Name('brk'):getP2Name('brk'))+' — klikni Start!';
+  } else {
+    const oppPlayer = MP.isHost ? (hostFirst?2:1) : (hostFirst?1:2);
+    activeTurn('brkP1Card','brkP2Card',oppPlayer);
+    $('brkStatus').textContent=(oppPlayer===1?getP1Name('brk'):getP2Name('brk'))+' hrá. Počkaj...';
+  }
+}
+
+function brkMPShowResult(){
+  const n1=getP1Name('brk'),n2=getP2Name('brk');
+  // Determine who is P1 and P2 for this round (host goes first on even rounds, guest goes first on odd)
+  const hostFirst = MP.brkRound%2===0;
+  const hostScore = hostFirst ? BRK.p1Score : BRK.p2Score;
+  const guestScore = hostFirst ? BRK.p2Score : BRK.p1Score;
+  const hostWon = hostScore > guestScore;
+  const guestWon = guestScore > hostScore;
+  if(hostWon){
+    $('brkStatus').textContent='🏆 '+n1+' vyhral! ('+BRK.p1Score+':'+BRK.p2Score+')';
+    addWin(1,'breakout'); celebrate('brkCelebration');
+  } else if(guestWon){
+    $('brkStatus').textContent='🏆 '+n2+' vyhral! ('+BRK.p2Score+':'+BRK.p1Score+')';
+    addWin(2,'breakout'); celebrate('brkCelebration');
+  } else {
+    $('brkStatus').textContent='🤝 Remiza! ('+BRK.p1Score+':'+BRK.p2Score+')';
+    addWin(0,'breakout');
+  }
+  playSound('win');
+}
+
 function startBreakout(){
   if(BRK.running)return;
+  if(MP.isConnected){
+    // In MP: only the active player can start
+    if(!BRK._mpMyTurn && !BRK._mpTurnDone) brkMPSetMyTurn(); // init on first click
+    if(!BRK._mpMyTurn) return; // not this player's turn yet
+    if(BRK._mpTurnDone) return; // already played this round, waiting for opponent
+    const myPlayer = MP.isHost ? (MP.brkRound%2===0?1:2) : (MP.brkRound%2===0?2:1);
+    BRK.score=0; BRK.lives=BRK_DIFF[BRK.diff].lives; BRK.level=1;
+    brkGenBricks(); brkResetBall();
+    BRK.player=myPlayer;
+    activeTurn('brkP1Card','brkP2Card',myPlayer);
+    BRK.running=true; BRK.over=false;
+    $('brkScore').textContent='0';$('brkLevel').textContent='1';$('brkLives').textContent=BRK.lives;
+    $('brkStatus').textContent=(myPlayer===1?getP1Name('brk'):getP2Name('brk'))+' hra!';
+    BRK.raf=requestAnimationFrame(brkStep);
+    return;
+  }
   if(BRK.over && welcomeGameMode==='pvp' && BRK.player===2){
     // P2 starting their turn
   } else if(!BRK.over || BRK.player===1){
@@ -21824,14 +21978,14 @@ const MOBILE_GAMES = [
   { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp', cat:'fun' },
   { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp', cat:'word' },
   { id:'mmsv',          label:'Meno Mesto',     icon:'🗺️', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'pvp', cat:'word', mp:true },
-  { id:'wordChain',     label:'Slovný Reťazec', icon:'🔗', grad:'rgba(118,75,162,0.25),rgba(102,126,234,0.25)', mode:'pvp', cat:'word' },
+  { id:'wordChain',     label:'Slovný Reťazec', icon:'🔗', grad:'rgba(118,75,162,0.25),rgba(102,126,234,0.25)', mode:'pvp', cat:'word', mp:true },
   { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp', mp:true, cat:'logic' },
-  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word' },
+  { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word', mp:true },
   { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'word' },
   { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp', cat:'word' },
   { id:'missingLetter', label:'Doplň písmeno',  icon:'🔡', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word' },
   { id:'sentence',      label:'Prekladaj vety', icon:'💬', grad:'rgba(233,108,60,0.25),rgba(247,151,30,0.25)', mode:'pvp', cat:'word' },
-  { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both', cat:'logic' },
+  { id:'puzzle',        label:'Puzzle',         icon:'🧩', grad:'rgba(228,77,38,0.25),rgba(241,101,41,0.25)', mode:'both', cat:'logic', mp:true },
   { id:'maze',          label:'Labyrint',       icon:'🏁', grad:'rgba(46,204,113,0.25),rgba(39,174,96,0.25)', mode:'both', cat:'logic' },
   { id:'reversi',       label:'Reversi',        icon:'🔄', grad:'rgba(100,100,100,0.25),rgba(200,200,200,0.25)', mode:'both', mp:true, cat:'board' },
   { id:'tetris',        label:'Tetris',         icon:'🧱', grad:'rgba(255,105,180,0.25),rgba(138,43,226,0.25)', mode:'solo', cat:'arcade' },
@@ -21839,7 +21993,7 @@ const MOBILE_GAMES = [
   { id:'ludo',          label:'Človeče',        icon:'🎲', grad:'rgba(239,83,80,0.25),rgba(66,165,245,0.25)', mode:'both', mp:true, cat:'board' },
   { id:'dotsBoxes',     label:'Bodky',          icon:'✏️', grad:'rgba(156,39,176,0.25),rgba(233,30,99,0.25)', mode:'pvp', cat:'board', mp:true },
   { id:'racing',        label:'Preteky',        icon:'🏎️', grad:'rgba(255,69,0,0.3),rgba(255,165,0,0.25)', mode:'solo', cat:'arcade' },
-  { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both', cat:'arcade' },
+  { id:'breakout',      label:'Breakout',       icon:'🏓', grad:'rgba(245,87,108,0.3),rgba(255,210,0,0.3)', mode:'both', cat:'arcade', mp:true },
   { id:'pong',          label:'Pong',           icon:'🏸', grad:'rgba(245,87,108,0.25),rgba(79,172,254,0.25)', mode:'both', mp:true, cat:'arcade' },
   { id:'tanks',         label:'Tank Battle',    icon:'💥', grad:'rgba(200,0,0,0.3),rgba(0,100,200,0.3)', mode:'both', mp:true, cat:'arcade' },
   { id:'snakeDuel',     label:'Snake Duel',     icon:'🐍', grad:'rgba(67,233,123,0.3),rgba(79,172,254,0.3)', mode:'pvp', mp:true, cat:'arcade' },
@@ -23755,6 +23909,10 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'higherLower') { if(data.round !== undefined) MP.hlRound = data.round; startHL(); }
     if(gameId === 'mmsv') { if(data.round !== undefined) MP.mmsvRound = data.round; resetMMSV(); }
     if(gameId === 'quiz') { if(data.round !== undefined) MP.quizRound = data.round; resetQuiz(); $('quizStatus').textContent='⏳ Čakám na hostiteľa...'; $('quizStartBox').style.display='none'; $('quizGameBox').style.display='block'; }
+    if(gameId === 'wordChain') { if(data.round !== undefined) MP.wcRound = data.round; resetWC(); }
+    if(gameId === 'scramble') { if(data.round !== undefined) MP.scrRound = data.round; resetScramble(); }
+    if(gameId === 'breakout') { if(data.round !== undefined) MP.brkRound = data.round; BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
+    if(gameId === 'puzzle') { if(data.round !== undefined) MP.puzzleRound = data.round; resetPuzzle(); }
   }
 
   // Snake Duel MP
@@ -23996,6 +24154,124 @@ function _mpHandleMessageInner(data) {
   if(data.type==='chat-msg'){
     mpChatAppend(MP.opponentName||'Súper',data.text,false);
   }
+
+  // Slovný Reťazec MP
+  if(data.type==='wc-start'){
+    // Guest receives start signal from host
+    WC.words=[]; WC.lastLetter=''; WC.over=false; WC._epoch++;
+    WC.player = MP.wcRound%2===0 ? 1 : 2;
+    $('wcGameBox').style.display='block';
+    $('wcWordList').innerHTML='';
+    $('wcInput').value='';
+    $('wcInput').disabled=false;
+    wcUpdateHint();
+    $('wcStatus').textContent=(WC.player===1?getP1Name('wc'):getP2Name('wc'))+' — napíš slovo!';
+    activeTurn('wcP1Card','wcP2Card',WC.player);
+    const ep=WC._epoch;
+    wcStartTimer(ep);
+    setTimeout(()=>{ if(WC._epoch===ep && !WC.over) $('wcInput').focus(); },50);
+  }
+  if(data.type==='wc-word'){
+    // Opponent submitted a word — apply without resending
+    wcApplyWord(data.word);
+  }
+
+  // Scramble MP
+  if(data.type==='scr-word'){
+    // Guest receives word from host — show and start racing
+    SCR.currentWord=data.word; SCR.currentHint=data.hint;
+    SCR.round=data.round; SCR._mpRoundDone=false;
+    SCR.selectedTiles=[]; SCR.usedIndices=[];
+    $('scrCategory').textContent='📂 '+data.catName;
+    const badge=$('scrRoundBadge');
+    if(badge) badge.textContent='Kolo '+data.round+' / '+data.totalRounds;
+    $('scrHint').textContent='Poskladaj slovo z písmen nižšie';
+    $('scrStatus').textContent='Kto bude rýchlejší?';
+    $('scrGameBox').style.display='block';
+    activeTurn('scrP1Card','scrP2Card',0);
+    const undoBtn=$('scrUndoBtn');if(undoBtn) undoBtn.style.display='none';
+    renderScrambleTiles(); renderScrambleAnswer();
+    // Note: timers disabled for guest in MP (host drives round timing)
+  }
+  if(data.type==='scr-done'){
+    // Opponent was first to solve this round
+    if(data.round!==SCR.round) return;
+    stopTurnTimer('scr');
+    SCR._mpRoundDone=true;
+    const oppPlayer=MP.isHost?2:1;
+    const oppName=oppPlayer===1?getP1Name('scr'):getP2Name('scr');
+    if(oppPlayer===1){ SCR.s1++; $('p1ScoreScr').textContent=SCR.s1%1?SCR.s1.toFixed(1):SCR.s1; }
+    else{ SCR.s2++; $('p2ScoreScr').textContent=SCR.s2%1?SCR.s2.toFixed(1):SCR.s2; }
+    $('scrStatus').textContent='🏆 '+oppName+' bol/a rýchlejší/ia!';
+    $('scrHint').textContent='Slovo bolo: '+SCR.currentWord;
+    playSound('wrong');
+    // Advance to next round (host drives timing)
+    if(MP.isHost) setTimeout(()=>nextScrambleRound(),2000);
+  }
+  if(data.type==='scr-finish'){
+    // Host finished game — sync scores and show result on guest
+    SCR.over=true;
+    stopTurnTimer('scr');
+    SCR.s1=data.s1; SCR.s2=data.s2;
+    $('p1ScoreScr').textContent=SCR.s1%1?SCR.s1.toFixed(1):SCR.s1;
+    $('p2ScoreScr').textContent=SCR.s2%1?SCR.s2.toFixed(1):SCR.s2;
+    const n1=getP1Name('scr'), n2=getP2Name('scr');
+    if(SCR.s1>SCR.s2){$('scrStatus').textContent='🏆 '+n1+' vyhral! ('+SCR.s1+' : '+SCR.s2+')';addWin(1);celebrate('scrCelebration');playSound('win');}
+    else if(SCR.s2>SCR.s1){$('scrStatus').textContent='🏆 '+n2+' vyhral! ('+SCR.s2+' : '+SCR.s1+')';addWin(2);celebrate('scrCelebration');playSound('win');}
+    else{$('scrStatus').textContent='🤝 Remíza! ('+SCR.s1+' : '+SCR.s2+')';addWin(0);}
+    $('scrHint').textContent='';
+  }
+
+  // Breakout MP
+  if(data.type==='brk-done'){
+    // Opponent finished their turn
+    const oppPlayer=data.player;
+    if(oppPlayer===1){ BRK.p1Score=data.score; $('p1ScoreBrk').textContent=data.score; }
+    else{ BRK.p2Score=data.score; $('p2ScoreBrk').textContent=data.score; }
+    if(oppPlayer===1){
+      // First player done — second player's turn now
+      const myPlayer=MP.isHost?(MP.brkRound%2===0?2:1):(MP.brkRound%2===0?1:2);
+      BRK._mpMyTurn=true; BRK._mpTurnDone=false; BRK.player=myPlayer;
+      activeTurn('brkP1Card','brkP2Card',myPlayer);
+      $('brkStatus').textContent=(oppPlayer===1?getP1Name('brk'):getP2Name('brk'))+': '+data.score+' bodov. '+(myPlayer===1?getP1Name('brk'):getP2Name('brk'))+' — klikni Start!';
+    } else {
+      // Both done — show result
+      brkMPShowResult();
+    }
+  }
+
+  // Puzzle Scramble MP
+  if(data.type==='puzzle-start'){
+    // Guest receives puzzle from host — apply and start solving simultaneously
+    PZ.size=data.size;
+    // Regenerate the image with same theme
+    const imgCanvas=document.createElement('canvas'); imgCanvas.width=300; imgCanvas.height=300;
+    pzDrawScene(imgCanvas, data.theme);
+    PZ.img=imgCanvas;
+    const preview=$('pzPreview'); if(preview){preview.width=120;preview.height=120;preview.getContext('2d').drawImage(imgCanvas,0,0,120,120);}
+    PZ.scramble=data.scramble;
+    PZ.tiles=PZ.scramble.slice(); PZ.empty=PZ.tiles.indexOf(null);
+    PZ.solved=false; PZ._mpDone=false; PZ.moves=[0,0]; PZ.player=2; // guest = player 2
+    if(PZ.timer){clearInterval(PZ.timer);PZ.timer=null;}
+    $('pzStatus').textContent='🧩 Kto bude rýchlejší?';
+    activeTurn('pzP1Card','pzP2Card',0);
+    PZ.startTime=Date.now();
+    PZ.timer=setInterval(()=>{ $('pzTimer').textContent=((Date.now()-PZ.startTime)/1000).toFixed(1)+'s'; },100);
+    renderPuzzle();
+  }
+  if(data.type==='puzzle-done'){
+    // Opponent finished — I lost this round
+    if(PZ._mpDone) return;
+    PZ._mpDone=true;
+    clearInterval(PZ.timer); PZ.timer=null;
+    PZ.solved=true;
+    const oppPlayer=MP.isHost?2:1;
+    if(oppPlayer===1){ PZ.s1++; $('p1ScorePZ').textContent=PZ.s1; addWin(1,'puzzle'); }
+    else{ PZ.s2++; $('p2ScorePZ').textContent=PZ.s2; addWin(2,'puzzle'); }
+    const oppName=oppPlayer===1?getP1Name('pz'):getP2Name('pz');
+    $('pzStatus').textContent='🏆 '+oppName+' vyhral! ('+data.time.toFixed(1)+'s)';
+    celebrate('pzCelebration'); playSound('win');
+  }
 }
 
 function mpStartBSGame() {
@@ -24056,6 +24332,10 @@ function mpRematch(gameId) {
   if(gameId === 'higherLower') { MP.hlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.hlRound }); startHL(); }
   if(gameId === 'mmsv') { MP.mmsvRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.mmsvRound }); resetMMSV(); }
   if(gameId === 'quiz') { MP.quizRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.quizRound }); resetQuiz(); }
+  if(gameId === 'wordChain') { MP.wcRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.wcRound }); resetWC(); }
+  if(gameId === 'scramble') { MP.scrRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.scrRound }); resetScramble(); }
+  if(gameId === 'breakout') { MP.brkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.brkRound }); BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
+  if(gameId === 'puzzle') { MP.puzzleRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.puzzleRound }); resetPuzzle(); }
 }
 
 function mpGenerateQR(code) {
