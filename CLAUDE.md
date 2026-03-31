@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~23000 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~24700 lines).
 
 ## Key Architecture
 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.46
+- **Current version**: v19.67
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -55,7 +55,7 @@ resetWordle(); // welcomeGameMode check works
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts between games
 
-## Games (52 total)
+## Games (54 total)
 
 ### 2 Players + vs Computer (mode:'both')
 - Piskvorky (3x3, 4x4, 5x5, 10x10) [MP]
@@ -147,7 +147,7 @@ resetWordle(); // welcomeGameMode check works
 - **MP QR codes**: QR generation (QRCode.js) for room code, QR scanning (BarcodeDetector API)
 - **MP name sync**: Player names from welcome screen sync to opponent via handshake
 - **Player name persistence**: Names saved to localStorage, empty by default, each device remembers its own names
-- **Game count + copyright**: "52 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
+- **Game count + copyright**: "54 hier pre celú rodinu" on welcome, "(c) Dusan Oravsky" at bottom
 - **Version-tracked SW update**: Service worker installs immediately, version tracking via localStorage shows update toast, user clicks to reload when ready, prevents blank page during GitHub outage, works fully offline
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Bee Counting**: Canvas game, bees fly into 3 hives via bezier paths, guess which hive got most, solo mode shows "Správne: X/5" (no P2 in AI mode)
@@ -251,7 +251,8 @@ const MP = {
   tttRound: 0, memRound: 0, c4Round: 0, chRound: 0,
   dkRound: 0, bsRound: 0, ludoRound: 0, gnRound: 0,
   sdRound: 0, tnkRound: 0, pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0,
-  simonRound: 0, manRound: 0, sokRound: 0, ghostRound: 0, dbRound: 0,
+  simonRound: 0, manRound: 0, sokRound: 0, ghostRound: 0, dbRound: 0, hlRound: 0,
+  quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _reconnectAttempts: 0,
@@ -274,9 +275,9 @@ const MP = {
 - `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
 - `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
-**Games with MP Support (21 games):**
+**Games with MP Support (26 games):**
 
-*Turn-based (14 games):*
+*Turn-based (15 games):*
 - Piskvorky — `ttt-move`, alternating start (tttRound)
 - Connect4 — `c4-move`
 - Kamen Papier Noznice — `rps-choice`
@@ -291,14 +292,22 @@ const MP = {
 - Nim — `nim-take` sent from nimSelect() at confirm point (not nimTake to avoid double-send); alternating first player per round (nimRound)
 - Mancala — `mancala-move` sent from manClickPit() (user action), manMakeMove() on receiver; manRound alternation; score reset guard
 - Bodky a Krabičky — `db-line` sent from dbClick() (user action), dbPlaceLine() on receiver; dbRound alternation
+- Vyššie Nižšie — `hl-turn-done` (score, player, isFirst); hlRound alternation; sequential turns
 
-*Sequential turn (3 games):*
+*Sequential turn (4 games):*
 - Simon Says — `ss-result` sent on failure; first player sends `{fromTurn, score}`, second sends `{fromTurn, score, winner}`; simonRound alternation; simonStart() has SIMON.over + MP turn guard to prevent waiting player corruption
 - Ghost — `ghost-letter` (sent from ghostAddLetter), `ghost-challenge` (sent from ghostChallenge), `ghost-lang` (host-only lang change); ghostRound alternation; host controls language (guest selector disabled); series score shown in `#ghostSeriesScore`
 - Hádaj Zviera (AGA) — `aga-guess`, agaRound alternation
+- Slovný Reťazec (WC) — `wc-start`/`wc-word`/`wc-timeout`; wcRound alternation; `WC._isMyTurn` flag prevents double-fire; `wc-timeout` syncs score to other device
 
-*Simultaneous (1 game):*
+*Simultaneous (4 games):*
 - Sokoban — `sok-done` sent on level completion; each device tracks p1Completed/p2Completed independently; sokMPAdvanceLevel() when both done; level selector hidden in MP
+- MMZV — `mmsv-start`/`mmsv-done`/`mmsv-answers`; both fill simultaneously; mmsvRound alternation
+- Scramble — `scr-word` (host sends word+hint); simultaneous race; scrRound; `SCR._mpRoundDone` guard; guest category selector disabled
+- Puzzle Scramble — `puzzle-done` (with time); simultaneous solve; puzzleRound; `PZ._mpDone` guard
+
+*Alternating turns (1 game):*
+- Breakout — `brk-done`; brkRound alternation; `oppWasFirst` boolean fixes odd-round scoring
 
 *Real-time (3 games — host-authoritative architecture):*
 - Snake Duel — `sd-start`, `sd-dir`, `sd-state` (host runs setInterval, guest sends direction only)
@@ -381,6 +390,19 @@ Key game state objects and their patterns:
 - **Simon Says MP** (v19.36): sequential play — `ss-result` handoff; first player sends `{fromTurn,score}`, second sends `{fromTurn,score,winner}`; `simonRound` alternation; `simonStart()` guards: `SIMON.over` check + MP turn guard (v19.37 fix)
 - **Mancala MP** (v19.36): `mancala-move` sent from `manClickPit()` (action point); `manMakeMove()` called on receiver; `manRound` alternation; score reset guard (`if(!MP.isConnected)`)
 - **Sokoban MP** (v19.36): simultaneous play; `sok-done` sent on completion; each device tracks `p1Completed`/`p2Completed` independently; `sokMPAdvanceLevel()` triggers when both done; level selector hidden in MP; `sokRound` for rematch sync only
+
+## New Features (v19.45–v19.67)
+
+- **MMZV (Meno Mesto Zviera Vec) MP** (v19.45+): `mp:true`, `mmsv-start`/`mmsv-done`/`mmsv-answers` messages, simultaneous play, both players fill 4 categories per letter, score comparison after both submit; `mmsvRound` alternation; timer selector (30/60/90/120s); guest sees "Čakám na hostiteľa..." start state
+- **Slovný Reťazec (WC) MP** (v19.45+): `mp:true`, `wc-start`/`wc-word`/`wc-timeout` messages; turn-based word chain; `wcRound` alternation (host starts even rounds); epoch-protected 10s timer; `WC._isMyTurn` flag — only active player fires `wcTimeout()` and sends `wc-timeout` to sync scores on other device
+- **Scramble MP** (v19.45+): `mp:true`, `scr-word` message (host sends word+hint to guest); simultaneous race; `scrRound` alternation; `SCR._mpRoundDone` guard; guest `scrambleCatSelect` disabled in MP
+- **Breakout MP** (v19.45+): `mp:true`, `brk-done` message; alternating turns; `brkRound` alternation; `oppWasFirst` logic (`oppPlayer===1&&hostFirst || oppPlayer===2&&!hostFirst`) fixes odd-round scoring
+- **Puzzle Scramble MP** (v19.45+): `mp:true`, `puzzle-done` message (with time); simultaneous solve; `puzzleRound` alternation; `PZ._mpDone` guard; `(+data.time||0).toFixed(1)` safe number coerce
+- **UX fixes** (v19.45+): MMZV timer selector (30/60/90/120s); Wordle hard mode badge `#wdlHardBadge` + `wdlApplyHardModeUI()` (re-enables btn after game); Ghost lang locked during active game; onboarding slides 2-4 animated (demo cards, MP phone anim, arrow mock)
+- **Bug fixes** (v19.60–v19.67): TDZ blank screen — `resetMMSV()`/`resetWC()` moved to init block after `const MP`; WC double-timeout fix (`_isMyTurn` guard + `wc-timeout` sync message); Wordle hard mode btn stays disabled after game (fixed in `wdlApplyHardModeUI`); Breakout MP odd-round scoring (`oppWasFirst` boolean); `wcApplyWord` crash on empty string (String sanitization); `puzzle-done` crash on undefined time
+- **MP const MP additions**: `wcRound`, `scrRound`, `brkRound`, `puzzleRound`, `mmsvRound` added to MP state object
+- **Game count**: 52 → 54 (MMZV + Slovný Reťazec added)
+- **MP games count**: 22 → 26 (WC, Scramble, Breakout, Puzzle Scramble added)
 
 ## New Features (v19.44)
 
