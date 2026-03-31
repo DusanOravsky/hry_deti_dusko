@@ -5099,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.66';
+const APP_VERSION = '19.67';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12102,7 +12102,7 @@ function resetMMSV() {
 // =============================================================================
 const WC = {
   player:1, s1:0, s2:0, words:[], lastLetter:'', over:false,
-  timer:null, timeLeft:10, _epoch:0
+  timer:null, timeLeft:10, _epoch:0, _isMyTurn:false
 };
 
 function wcStart() {
@@ -12135,13 +12135,13 @@ function wcStartTimer(ep) {
   WC.timeLeft=10;
   $('wcTimer').textContent='10';
   $('wcTimer').style.color='inherit';
-  const _isMyTurn = !MP.isConnected || WC.player===(MP.isHost?1:2);
+  WC._isMyTurn = !MP.isConnected || WC.player===(MP.isHost?1:2);
   WC.timer=setInterval(()=>{
     if(WC._epoch!==ep){clearInterval(WC.timer);return;}
     WC.timeLeft--;
     $('wcTimer').textContent=WC.timeLeft;
     if(WC.timeLeft<=3) $('wcTimer').style.color='#f5576c';
-    if(WC.timeLeft<=0){clearInterval(WC.timer);if(_isMyTurn)wcTimeout();}
+    if(WC.timeLeft<=0){clearInterval(WC.timer);if(WC._isMyTurn)wcTimeout();}
   },1000);
 }
 
@@ -12194,6 +12194,7 @@ function wcSubmit() {
 function wcTimeout() {
   if(WC.over) return;
   WC.over=true;
+  if(MP.isConnected && WC._isMyTurn) mpSend({type:'wc-timeout'});
   clearInterval(WC.timer);
   $('wcInput').disabled=true;
   const loser=WC.player;
@@ -24193,6 +24194,9 @@ function _mpHandleMessageInner(data) {
   if(data.type==='wc-word'){
     const _w=String(data.word||'').trim().toLowerCase().slice(0,50);
     if(_w) wcApplyWord(_w);
+  }
+  if(data.type==='wc-timeout'){
+    wcTimeout(); // sync timeout to other device so scores update
   }
 
   // Scramble MP
