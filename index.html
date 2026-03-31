@@ -5068,7 +5068,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.60';
+const APP_VERSION = '19.61';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11972,10 +11972,10 @@ function mmsvShowResult() {
   else { addWin(0,'mmsv'); }
 
   const cel=$('mmsvCelebration');
-  cel.textContent=roundP1>=roundP2?'🏆':'🎉';
+  cel.textContent=roundP1>roundP2?'🏆':roundP1<roundP2?'🎉':'🤝';
   cel.classList.add('show');
   setTimeout(()=>cel.classList.remove('show'),1800);
-  if(soundEnabled) playSound(523,'sine',0.3,0.4);
+  playSound('win');
 
   const btn=$('mmsvStartBtn');
   if(MP.isConnected) {
@@ -12023,7 +12023,8 @@ const WC = {
 };
 
 function wcStart() {
-  if(WC.over) return;
+  if(WC.over && WC.s1 < 3 && WC.s2 < 3) return; // between rounds — auto-restart pending
+  if(WC.s1>=3||WC.s2>=3){WC.s1=0;WC.s2=0;WC.player=1;$('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';}
   WC.words=[];
   WC.lastLetter='';
   WC.over=false;
