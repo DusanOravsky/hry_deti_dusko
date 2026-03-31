@@ -1734,6 +1734,25 @@ body.light .mp-input {
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   display: none;
+  touch-action: none;
+  user-select: none;
+}
+#mpIngameDragHandle {
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  border-radius: 14px 14px 0 0;
+  padding-top: 2px;
+}
+#mpIngameDragHandle::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(102,126,234,0.45);
 }
 body.light #mpIngameChat {
   background: rgba(240,242,255,0.95);
@@ -5100,7 +5119,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.73';
+const APP_VERSION = '19.74';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -7300,7 +7319,11 @@ const memThemes = {
   auta:['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🚲','🛺'],
   nastroje:['🎸','🎹','🥁','🎺','🎷','🎻','🪗','🎵','🪕','🪘','🎤','🔔','🪈','📯','🎶','🎼','🪇','🥢'],
   sport:['⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🥋','⛷️','🏂','🤿','🛹','🥅','🏹'],
-  jedlo:['🍕','🍔','🌭','🌮','🍟','🍿','🧁','🍩','🍪','🎂','🍰','🧇','🥞','🍗','🌯','🥨','🧀','🥐']
+  jedlo:['🍕','🍔','🌭','🌮','🍟','🍿','🧁','🍩','🍪','🎂','🍰','🧇','🥞','🍗','🌯','🥨','🧀','🥐'],
+  priroda:['🌸','🌺','🌻','🌹','🌷','🌼','🌿','🍀','🌱','🌲','🌳','🌴','🍁','🍂','🍃','🌾','🪷','🪸'],
+  vesmír:['🚀','🛸','🌍','🌙','⭐','☀️','🪐','☄️','🔭','👨‍🚀','🛰️','💫','🌟','🌠','🌌','🪄','🌈','⚡'],
+  cestovanie:['✈️','🚂','🚢','🚁','⛵','🏖️','🗼','🗽','🏰','🗿','🧳','🗺️','🎡','🏔️','🌋','🏜️','🏕️','🛤️'],
+  povolania:['👨‍⚕️','👩‍🍳','👨‍🔧','👩‍🏫','👨‍🚒','👩‍✈️','👨‍🎨','👩‍🔬','👨‍🌾','👩‍💻','👮','🕵️','👷','👨‍⚖️','🧑‍🚀','👨‍🎤','🧑‍🍼','👩‍⚖️']
 };
 const memThemeKeys=Object.keys(memThemes);
 let memEmojis=memThemes[memThemeKeys[Math.floor(Math.random()*memThemeKeys.length)]];
@@ -15394,6 +15417,31 @@ function mpIngameHide(){
   const btn=$('mpIngameToggleBtn');if(btn)btn.textContent='▲';
   clearTimeout(_mpIngameAutoTimer);
 }
+(function(){
+  const el=$('mpIngameChat');
+  const handle=$('mpIngameDragHandle');
+  if(!el||!handle)return;
+  let sx,sy,sl,st,dragging=false;
+  function startDrag(cx,cy){
+    const r=el.getBoundingClientRect();
+    el.style.bottom=''; el.style.top=r.top+'px'; el.style.left=r.left+'px';
+    sx=cx;sy=cy;sl=r.left;st=r.top;dragging=true;
+    handle.style.cursor='grabbing';
+  }
+  function moveDrag(cx,cy){
+    if(!dragging)return;
+    const nl=Math.max(0,Math.min(window.innerWidth-el.offsetWidth,sl+(cx-sx)));
+    const nt=Math.max(0,Math.min(window.innerHeight-el.offsetHeight,st+(cy-sy)));
+    el.style.left=nl+'px';el.style.top=nt+'px';
+  }
+  function endDrag(){dragging=false;handle.style.cursor='grab';}
+  handle.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];startDrag(t.clientX,t.clientY);},{passive:false});
+  handle.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];moveDrag(t.clientX,t.clientY);},{passive:false});
+  handle.addEventListener('touchend',endDrag);
+  handle.addEventListener('mousedown',e=>{startDrag(e.clientX,e.clientY);});
+  document.addEventListener('mousemove',e=>{moveDrag(e.clientX,e.clientY);});
+  document.addEventListener('mouseup',endDrag);
+})();
 
 // =============================================================================
 // SEKCIA 33: BODKY A KRABICKY (DOTS AND BOXES)
@@ -24809,6 +24857,7 @@ if('serviceWorker' in navigator) {
 
 <!-- In-game MP Chat -->
 <div id="mpIngameChat">
+  <div id="mpIngameDragHandle"></div>
   <div id="mpIngameMsgs"></div>
   <div class="mp-ingame-row">
     <button id="mpIngameToggleBtn" onclick="mpIngameToggle()" style="padding:5px 7px">▲</button>
