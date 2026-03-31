@@ -3788,12 +3788,13 @@ body.light .man-store {
   <!-- ===== MENO MESTO ZVIERA VEC ===== -->
   <div class="game-area" id="mmsv">
     <div class="rules"><h3>📋 Meno, Mesto, Zviera, Vec:</h3><ul>
-      <li>Vylosuje sa písmeno — obaja hráči zadávajú odpovede na 4 kategórie</li>
-      <li>Každá odpoveď musí začínať daným písmenom</li>
+      <li>Vylosuje sa písmeno — obaja hráči zadávajú odpovede na 4 náhodné kategórie</li>
+      <li>Každá odpoveď musí začínať daným písmenom a mať aspoň 2 znaky</li>
       <li>Unikátna odpoveď (iná ako súper) = <strong>10 bodov</strong></li>
       <li>Zhodná odpoveď = <strong>5 bodov</strong> každý</li>
-      <li>Prázdna odpoveď = 0 bodov</li>
-      <li>Najprv zadáva H1, potom H2 — čas: 60 sekúnd</li>
+      <li>Prázdna / zlá odpoveď = 0 bodov</li>
+      <li>V online hre: rýchlejší hráč získa bonus <strong>+2 body</strong></li>
+      <li>Po výsledku môžeš namietať odpoveď súpera tlačidlom ⚠️</li>
     </ul></div>
     <div class="player-info">
       <div class="player-card player1 active-turn" id="mmsvP1Card"><div class="player-name-display" id="mmsvP1Name">Hráč 1</div><div class="player-score" id="p1ScoreMMSV">0</div></div>
@@ -3813,10 +3814,10 @@ body.light .man-store {
     </div>
     <div id="mmsvInputBox" style="display:none;margin:10px 0">
       <div style="display:grid;gap:8px">
-        <label style="font-weight:700;font-size:0.9em">👤 Meno: <input id="mmsvI0" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px"></label>
-        <label style="font-weight:700;font-size:0.9em">🌆 Mesto: <input id="mmsvI1" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px"></label>
-        <label style="font-weight:700;font-size:0.9em">🐾 Zviera: <input id="mmsvI2" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px"></label>
-        <label style="font-weight:700;font-size:0.9em">🎒 Vec: <input id="mmsvI3" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px"></label>
+        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl0">👤 Meno</span>: <input id="mmsvI0" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,0)" oninput="mmsvInputLive(0)"></label>
+        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl1">🌆 Mesto</span>: <input id="mmsvI1" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,1)" oninput="mmsvInputLive(1)"></label>
+        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl2">🐾 Zviera</span>: <input id="mmsvI2" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,2)" oninput="mmsvInputLive(2)"></label>
+        <label style="font-weight:700;font-size:0.9em"><span id="mmsvLbl3">🎒 Vec</span>: <input id="mmsvI3" class="wordle-input" autocomplete="off" style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid rgba(128,128,128,0.4);background:transparent;color:inherit;font-size:1em;font-weight:700;text-transform:capitalize;margin-top:4px" onkeydown="mmsvInputKey(event,3)" oninput="mmsvInputLive(3)"></label>
       </div>
       <button class="action-btn primary-btn" onclick="mmsvDone()" style="width:100%;margin-top:12px;font-size:1.1em;padding:12px">✅ Hotovo</button>
     </div>
@@ -5099,7 +5100,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.68';
+const APP_VERSION = '19.69';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11867,12 +11868,25 @@ function resetHL() {
 // SEKCIA: MENO MESTO ZVIERA VEC
 // =============================================================================
 const MMSV_LETTERS = 'ABCDEFGHIJKLMNOPRSTUVZ'.split('');
-const MMSV_CATS = ['👤 Meno','🌆 Mesto','🐾 Zviera','🎒 Vec'];
+const MMSV_CAT_POOL = [
+  {icon:'👤', label:'Meno'},
+  {icon:'🌆', label:'Mesto'},
+  {icon:'🐾', label:'Zviera'},
+  {icon:'🎒', label:'Vec'},
+  {icon:'👔', label:'Povolanie'},
+  {icon:'🍕', label:'Jedlo'},
+  {icon:'🌍', label:'Krajina'},
+  {icon:'🎨', label:'Farba'},
+];
 const MMSV = {
   letter:'', s1:0, s2:0, phase:'idle',
   p1Ans:['','','',''], p2Ans:['','','',''],
   timer:null, timeLeft:60, timerSecs:60, round:0, over:false,
-  _mpMyDone:false, _mpOppDone:false, _mpMyAnswers:null, _mpOppAnswers:null
+  roundCats:[], usedLetters:[],
+  _catPts1:[0,0,0,0], _catPts2:[0,0,0,0],
+  _roundStartTime:0, _p1DoneTime:0, _p2DoneTime:0,
+  _mpMyDone:false, _mpOppDone:false, _mpMyAnswers:null, _mpOppAnswers:null,
+  _mpOppDoneTime:0
 };
 
 function mmsvSetTimer(secs, force) {
@@ -11885,16 +11899,53 @@ function mmsvSetTimer(secs, force) {
 }
 
 function mmsvPickLetter() {
-  return MMSV_LETTERS[Math.floor(Math.random()*MMSV_LETTERS.length)];
+  const avail = MMSV_LETTERS.filter(l => !MMSV.usedLetters.slice(-3).includes(l));
+  const pool = avail.length ? avail : MMSV_LETTERS;
+  const l = pool[Math.floor(Math.random()*pool.length)];
+  MMSV.usedLetters.push(l);
+  return l;
+}
+
+function mmsvPickCats() {
+  const shuffled = [...MMSV_CAT_POOL].sort(()=>Math.random()-0.5);
+  MMSV.roundCats = shuffled.slice(0,4);
+}
+
+function mmsvUpdateLabels() {
+  const cats = MMSV.roundCats.length===4 ? MMSV.roundCats : MMSV_CAT_POOL.slice(0,4);
+  for(let i=0;i<4;i++){
+    const lbl=$('mmsvLbl'+i);
+    if(lbl) lbl.textContent=cats[i].icon+' '+cats[i].label;
+    const inp=$('mmsvI'+i);
+    if(inp){ inp.style.borderColor='rgba(128,128,128,0.4)'; inp.value=''; }
+  }
+}
+
+function mmsvInputKey(e, i) {
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(i<3) $('mmsvI'+(i+1)).focus();
+    else mmsvDone();
+  }
+}
+
+function mmsvInputLive(i) {
+  const inp=$('mmsvI'+i);
+  const val=inp.value.trim().toLowerCase();
+  if(!val){ inp.style.borderColor='rgba(128,128,128,0.4)'; return; }
+  inp.style.borderColor=val[0]===MMSV.letter.toLowerCase()?'rgba(67,233,123,0.8)':'rgba(255,80,80,0.8)';
 }
 
 function mmsvStart() {
   if(MP.isConnected) {
     if(!MP.isHost) return;
     MMSV.letter = mmsvPickLetter();
+    mmsvPickCats();
     MMSV._mpMyDone=false; MMSV._mpOppDone=false;
     MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
-    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs});
+    MMSV._mpOppDoneTime=0;
+    const catIdxs = MMSV.roundCats.map(c=>MMSV_CAT_POOL.indexOf(c));
+    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs, cats:catIdxs});
     mmsvMPBeginRound();
     return;
   }
@@ -11902,6 +11953,7 @@ function mmsvStart() {
   if(MMSV.phase==='idle' || MMSV.phase==='result') {
     MMSV.round++;
     MMSV.letter = mmsvPickLetter();
+    mmsvPickCats();
     MMSV.p1Ans = ['','','',''];
     MMSV.p2Ans = ['','','',''];
   }
@@ -11914,14 +11966,17 @@ function mmsvStart() {
   $('mmsvResultBox').style.display='none';
   $('mmsvStartBtn').style.display='none';
   const _tsr=$('mmsvTimerSelectorRow'); if(_tsr) _tsr.style.display='none';
-  for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
+  mmsvUpdateLabels();
+  for(let i=0;i<4;i++){$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
   MMSV.timeLeft=MMSV.timerSecs;
-  $('mmsvTimerVal').textContent=MMSV.timerSecs;
+  const tvEl=$('mmsvTimerVal'); if(tvEl){tvEl.textContent=MMSV.timerSecs;tvEl.style.color='';tvEl.style.fontWeight='';}
   clearInterval(MMSV.timer);
+  MMSV._roundStartTime=Date.now();
   MMSV.timer=setInterval(()=>{
     MMSV.timeLeft--;
-    $('mmsvTimerVal').textContent=MMSV.timeLeft;
+    const tv=$('mmsvTimerVal');
+    if(tv){tv.textContent=MMSV.timeLeft;if(MMSV.timeLeft<=10){tv.style.color='#ff4444';tv.style.fontWeight='900';}else{tv.style.color='';tv.style.fontWeight='';}}
     if(MMSV.timeLeft<=0){clearInterval(MMSV.timer);mmsvDone();}
   },1000);
   MMSV.phase = isP1 ? 'p1' : 'p2';
@@ -11935,14 +11990,17 @@ function mmsvMPBeginRound() {
   $('mmsvResultBox').style.display='none';
   $('mmsvStartBtn').style.display='none';
   const _tsr2=$('mmsvTimerSelectorRow'); if(_tsr2) _tsr2.style.display='none';
-  for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
+  mmsvUpdateLabels();
+  for(let i=0;i<4;i++){$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
   MMSV.timeLeft=MMSV.timerSecs;
-  $('mmsvTimerVal').textContent=MMSV.timerSecs;
+  const tvEl2=$('mmsvTimerVal'); if(tvEl2){tvEl2.textContent=MMSV.timerSecs;tvEl2.style.color='';tvEl2.style.fontWeight='';}
   clearInterval(MMSV.timer);
+  MMSV._roundStartTime=Date.now();
   MMSV.timer=setInterval(()=>{
     MMSV.timeLeft--;
-    $('mmsvTimerVal').textContent=MMSV.timeLeft;
+    const tv2=$('mmsvTimerVal');
+    if(tv2){tv2.textContent=MMSV.timeLeft;if(MMSV.timeLeft<=10){tv2.style.color='#ff4444';tv2.style.fontWeight='900';}else{tv2.style.color='';tv2.style.fontWeight='';}}
     if(MMSV.timeLeft<=0){clearInterval(MMSV.timer);mmsvDone();}
   },1000);
   const myName = MP.isHost ? getActiveP1Name('mmsv') : getActiveP2Name('mmsv');
@@ -11952,6 +12010,7 @@ function mmsvMPBeginRound() {
 
 function mmsvDone() {
   clearInterval(MMSV.timer);
+  const myDoneTime = Date.now() - MMSV._roundStartTime;
   const ans = [];
   for(let i=0;i<4;i++) ans.push(($('mmsvI'+i).value||'').trim());
   for(let i=0;i<4;i++) $('mmsvI'+i).disabled=true;
@@ -11960,7 +12019,8 @@ function mmsvDone() {
   if(MP.isConnected) {
     MMSV._mpMyDone=true;
     MMSV._mpMyAnswers=ans;
-    mpSend({type:'mmsv-done', answers:ans});
+    MMSV._myDoneTime=myDoneTime;
+    mpSend({type:'mmsv-done', answers:ans, doneTime:myDoneTime});
     if(MMSV._mpOppDone) {
       mmsvMPResolve();
     } else {
@@ -11987,6 +12047,8 @@ function mmsvDone() {
 function mmsvMPResolve() {
   MMSV.p1Ans = MP.isHost ? MMSV._mpMyAnswers : MMSV._mpOppAnswers;
   MMSV.p2Ans = MP.isHost ? MMSV._mpOppAnswers : MMSV._mpMyAnswers;
+  MMSV._p1DoneTime = MP.isHost ? MMSV._myDoneTime : MMSV._mpOppDoneTime;
+  MMSV._p2DoneTime = MP.isHost ? MMSV._mpOppDoneTime : MMSV._myDoneTime;
   mmsvShowResult();
 }
 
@@ -12003,43 +12065,66 @@ function mmsvShowResult() {
   const p1Name = getActiveP1Name('mmsv');
   const p2Name = getActiveP2Name('mmsv');
   let roundP1=0, roundP2=0;
+  MMSV._catPts1=[0,0,0,0]; MMSV._catPts2=[0,0,0,0];
 
   let html='<div style="grid-column:1/-1;display:flex;justify-content:space-between;font-weight:900;font-size:0.85em;padding:0 4px;opacity:0.7">'
     +'<span>'+escHtml(p1Name)+'</span><span>'+escHtml(p2Name)+'</span></div>';
 
   const reqLetter = MMSV.letter.toLowerCase();
+  const cats = MMSV.roundCats.length===4 ? MMSV.roundCats : MMSV_CAT_POOL.slice(0,4);
   for(let i=0;i<4;i++){
     const a1=mmsvNormalize(MMSV.p1Ans[i]);
     const a2=mmsvNormalize(MMSV.p2Ans[i]);
-    const v1 = a1 && a1[0]===reqLetter;
-    const v2 = a2 && a2[0]===reqLetter;
+    const v1 = a1.length>=2 && a1[0]===reqLetter;
+    const v2 = a2.length>=2 && a2[0]===reqLetter;
     const same = v1&&v2&&a1===a2;
     let pts1=0,pts2=0;
     if(v1&&v2){ pts1=same?5:10; pts2=same?5:10; }
     else if(v1){ pts1=10; }
     else if(v2){ pts2=10; }
+    MMSV._catPts1[i]=pts1; MMSV._catPts2[i]=pts2;
     roundP1+=pts1; roundP2+=pts2;
 
     const badge = same
       ? '<span style="background:rgba(255,193,7,0.3);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">🤝 ZHODNÉ +5</span>'
       : (v1&&v2 ? '<span style="background:rgba(67,233,123,0.2);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">⭐ UNIKÁTNE +10</span>' : '');
 
+    const catLabel = cats[i].icon+' '+cats[i].label;
     html+='<div style="grid-column:1/-1;font-size:0.78em;font-weight:700;opacity:0.65;padding:6px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px">'
-      +MMSV_CATS[i]+badge+'</div>';
+      +catLabel+badge+'</div>';
 
     const c1=pts1===10?'rgba(67,233,123,0.25)':pts1===5?'rgba(255,193,7,0.25)':'rgba(128,128,128,0.12)';
     const c2=pts2===10?'rgba(67,233,123,0.25)':pts2===5?'rgba(255,193,7,0.25)':'rgba(128,128,128,0.12)';
-    const inv1 = a1&&!v1 ? ' <span style="font-size:0.7em;opacity:0.6">❌ zlé písmeno</span>' : '';
-    const inv2 = a2&&!v2 ? ' <span style="font-size:0.7em;opacity:0.6">❌ zlé písmeno</span>' : '';
+    const shortInv='<span style="font-size:0.7em;opacity:0.6">❌ príliš krátke</span>';
+    const badLetterInv='<span style="font-size:0.7em;opacity:0.6">❌ zlé písmeno</span>';
+    const inv1 = a1&&!v1 ? ' '+(a1[0]===reqLetter?shortInv:badLetterInv) : '';
+    const inv2 = a2&&!v2 ? ' '+(a2[0]===reqLetter?shortInv:badLetterInv) : '';
     const disp1 = (escHtml(MMSV.p1Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>') + inv1;
     const disp2 = (escHtml(MMSV.p2Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>') + inv2;
-    html+='<div style="background:'+c1+';border-radius:8px;padding:6px 8px">'
+    const showChal1 = pts1>0 && (!MP.isConnected || !MP.isHost);
+    const showChal2 = pts2>0 && (!MP.isConnected || MP.isHost);
+    const chalBtn1 = showChal1 ? '<button onclick="mmsvChallenge(1,'+i+')" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;margin-top:4px;display:block;color:inherit">⚠️ Namietam</button>' : '';
+    const chalBtn2 = showChal2 ? '<button onclick="mmsvChallenge(2,'+i+')" style="font-size:0.65em;padding:2px 6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.35);border-radius:4px;cursor:pointer;margin-top:4px;display:block;color:inherit">⚠️ Namietam</button>' : '';
+    html+='<div style="background:'+c1+';border-radius:8px;padding:6px 8px" id="mmsvCell1_'+i+'">'
         +'<div style="font-weight:900;font-size:0.95em">'+disp1+'</div>'
-        +(pts1?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px">+'+pts1+' b</div>':'')+'</div>'
-        +'<div style="background:'+c2+';border-radius:8px;padding:6px 8px">'
+        +(pts1?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px" id="mmsvPts1_'+i+'">+'+pts1+' b</div>':'')+chalBtn1+'</div>'
+        +'<div style="background:'+c2+';border-radius:8px;padding:6px 8px" id="mmsvCell2_'+i+'">'
         +'<div style="font-weight:900;font-size:0.95em">'+disp2+'</div>'
-        +(pts2?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px">+'+pts2+' b</div>':'')+'</div>';
+        +(pts2?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px" id="mmsvPts2_'+i+'">+'+pts2+' b</div>':'')+chalBtn2+'</div>';
   }
+
+  // Speed bonus (MP simultaneous only)
+  let speedBonus1=0, speedBonus2=0;
+  if(MP.isConnected && MMSV._p1DoneTime>0 && MMSV._p2DoneTime>0 && MMSV._p1DoneTime!==MMSV._p2DoneTime) {
+    if(MMSV._p1DoneTime < MMSV._p2DoneTime){ speedBonus1=2; }
+    else { speedBonus2=2; }
+    const speedWinner = speedBonus1>0?escHtml(p1Name):escHtml(p2Name);
+    html+='<div style="grid-column:1/-1;font-size:0.78em;font-weight:700;padding:6px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px;opacity:0.8">⚡ Rýchlosť</div>'
+      +'<div style="border-radius:8px;padding:6px 8px;background:'+(speedBonus1?'rgba(67,233,123,0.15)':'rgba(128,128,128,0.08)')+'">'+(speedBonus1?'<div style="font-size:0.75em;font-weight:900">⚡ +2 b</div>':'<div style="opacity:0.3;font-size:0.8em">—</div>')+'</div>'
+      +'<div style="border-radius:8px;padding:6px 8px;background:'+(speedBonus2?'rgba(67,233,123,0.15)':'rgba(128,128,128,0.08)')+'">'+(speedBonus2?'<div style="font-size:0.75em;font-weight:900">⚡ +2 b</div>':'<div style="opacity:0.3;font-size:0.8em">—</div>')+'</div>';
+    roundP1+=speedBonus1; roundP2+=speedBonus2;
+  }
+
   $('mmsvResultGrid').innerHTML=html;
 
   MMSV.s1+=roundP1; MMSV.s2+=roundP2;
@@ -12080,13 +12165,40 @@ function mmsvShowResult() {
   activeTurn('mmsvP1Card','mmsvP2Card',0);
 }
 
+function mmsvChallenge(player, catIdx) {
+  if(MP.isConnected) mpSend({type:'mmsv-challenge', player, catIdx});
+  mmsvApplyChallenge(player, catIdx);
+}
+
+function mmsvApplyChallenge(player, catIdx) {
+  const pts = player===1 ? MMSV._catPts1[catIdx] : MMSV._catPts2[catIdx];
+  if(pts<=0) return;
+  if(player===1){
+    MMSV.s1-=pts; MMSV._catPts1[catIdx]=0;
+    $('p1ScoreMMSV').textContent=MMSV.s1;
+    const pe=$('mmsvPts1_'+catIdx); if(pe) pe.textContent='❌ namietnuté';
+    const ce=$('mmsvCell1_'+catIdx); if(ce) ce.style.background='rgba(128,128,128,0.12)';
+    const cb=ce?ce.querySelector('button'):null; if(cb) cb.remove();
+  } else {
+    MMSV.s2-=pts; MMSV._catPts2[catIdx]=0;
+    $('p2ScoreMMSV').textContent=MMSV.s2;
+    const pe=$('mmsvPts2_'+catIdx); if(pe) pe.textContent='❌ namietnuté';
+    const ce=$('mmsvCell2_'+catIdx); if(ce) ce.style.background='rgba(128,128,128,0.12)';
+    const cb=ce?ce.querySelector('button'):null; if(cb) cb.remove();
+  }
+  playSound('wrong');
+}
+
 function resetMMSV() {
   clearInterval(MMSV.timer);
   MMSV.letter=''; MMSV.phase='idle';
   MMSV.p1Ans=['','','','']; MMSV.p2Ans=['','','',''];
   MMSV.timeLeft=MMSV.timerSecs; MMSV.over=false; MMSV.round=0;
+  MMSV.roundCats=[]; MMSV._catPts1=[0,0,0,0]; MMSV._catPts2=[0,0,0,0];
+  MMSV._roundStartTime=0; MMSV._p1DoneTime=0; MMSV._p2DoneTime=0;
   MMSV._mpMyDone=false; MMSV._mpOppDone=false;
-  MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
+  MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null; MMSV._mpOppDoneTime=0;
+  MMSV._myDoneTime=0;
   if(!MP.isConnected){MMSV.s1=0;MMSV.s2=0;$('p1ScoreMMSV').textContent='0';$('p2ScoreMMSV').textContent='0';}
   $('mmsvStatus').textContent = MP.isConnected&&!MP.isHost ? 'Čakám na hostiteľa...' : 'Klikni Štart!';
   $('mmsvLetterBox').style.display='none';
@@ -23843,15 +23955,25 @@ function _mpHandleMessageInner(data) {
       MMSV.timerSecs = Number(data.timerSecs);
       mmsvSetTimer(MMSV.timerSecs, true); // force: sync from host
     }
+    if(Array.isArray(data.cats) && data.cats.length===4) {
+      MMSV.roundCats = data.cats.map(idx=>MMSV_CAT_POOL[Number(idx)]).filter(Boolean);
+      if(MMSV.roundCats.length!==4) MMSV.roundCats=MMSV_CAT_POOL.slice(0,4);
+    } else { MMSV.roundCats=MMSV_CAT_POOL.slice(0,4); }
     MMSV._mpMyDone=false; MMSV._mpOppDone=false;
-    MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
+    MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null; MMSV._mpOppDoneTime=0;
+    MMSV._myDoneTime=0;
     mmsvMPBeginRound();
   }
   if(data.type === 'mmsv-done') {
     MMSV._mpOppDone=true;
     MMSV._mpOppAnswers=(Array.isArray(data.answers)?data.answers:['','','','']).map(a=>String(a||'').slice(0,60));
+    MMSV._mpOppDoneTime=Number(data.doneTime||0);
     if(MMSV._mpMyDone) { mmsvMPResolve(); }
     else { $('mmsvStatus').textContent='⏳ Súper skončil! Daj si čas...'; }
+  }
+  if(data.type === 'mmsv-challenge') {
+    const cp=Number(data.player); const ci=Number(data.catIdx);
+    if((cp===1||cp===2)&&ci>=0&&ci<4) mmsvApplyChallenge(cp,ci);
   }
 
   // Wordle MP
