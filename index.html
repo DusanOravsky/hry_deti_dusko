@@ -5099,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.65';
+const APP_VERSION = '19.66';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12135,12 +12135,13 @@ function wcStartTimer(ep) {
   WC.timeLeft=10;
   $('wcTimer').textContent='10';
   $('wcTimer').style.color='inherit';
+  const _isMyTurn = !MP.isConnected || WC.player===(MP.isHost?1:2);
   WC.timer=setInterval(()=>{
     if(WC._epoch!==ep){clearInterval(WC.timer);return;}
     WC.timeLeft--;
     $('wcTimer').textContent=WC.timeLeft;
     if(WC.timeLeft<=3) $('wcTimer').style.color='#f5576c';
-    if(WC.timeLeft<=0){clearInterval(WC.timer);wcTimeout();}
+    if(WC.timeLeft<=0){clearInterval(WC.timer);if(_isMyTurn)wcTimeout();}
   },1000);
 }
 
@@ -17462,6 +17463,7 @@ function wdlApplyHardModeUI() {
     btn.classList.toggle('wdl-hard-active', WDL.hardMode);
     btn.style.background = '';
     btn.style.color = '';
+    btn.disabled = false; // re-enable (wdl-start handler re-disables for guest)
   }
   const badge = $('wdlHardBadge');
   if(badge) badge.style.display = WDL.hardMode ? '' : 'none';
