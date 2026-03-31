@@ -5035,7 +5035,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.54';
+const APP_VERSION = '19.55';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11660,7 +11660,7 @@ function resetHM() {
 // =============================================================================
 // SEKCIA 27: VYŠŠIE NIŽŠIE (HIGHER LOWER)
 // =============================================================================
-const HL = { player:1, s1:0, s2:0, current:0, streak:0, over:false, p1Best:0, p2Best:0 };
+const HL = { player:1, s1:0, s2:0, current:0, streak:0, over:false, p1Best:0, p2Best:0, _timer:null };
 
 const HL_CARDS=[1,2,3,4,5,6,7,8,9,10,11,12,13];
 
@@ -11735,7 +11735,7 @@ function hlGuess(dir) {
       if(HL.player===1){
         $('hlStatus').textContent='❌ Zlý tip! '+getP1Name('hl')+' dosiahol '+score+' bodov. Teraz '+getP2Name('hl')+'!';
         HL.player=2;
-        setTimeout(hlNewRound,2000);
+        HL._timer=setTimeout(hlNewRound,2000);
       } else {
         hlShowResult();
       }
@@ -11750,8 +11750,9 @@ function hlShowResult() {
   playSound('win');
 }
 function resetHL() {
-  HL.player=1;HL.s1=0;HL.s2=0;HL.streak=0;HL.over=false;HL.p1Best=0;HL.p2Best=0;
-  if(!MP.isConnected){$('p1ScoreHL').textContent='0';$('p2ScoreHL').textContent='0';}
+  if(HL._timer){clearTimeout(HL._timer);HL._timer=null;}
+  HL.player=1;HL.streak=0;HL.over=false;HL.p1Best=0;HL.p2Best=0;
+  if(!MP.isConnected){HL.s1=0;HL.s2=0;$('p1ScoreHL').textContent='0';$('p2ScoreHL').textContent='0';}
   $('hlStatus').textContent='Klikni Štart!';
   $('hlGameBox').style.display='none';
   activeTurn('hlP1Card','hlP2Card',1);
@@ -21657,6 +21658,8 @@ function stopAllGames(){
   if(typeof SIMON!=='undefined'){if(SIMON._timeout){clearTimeout(SIMON._timeout);SIMON._timeout=null;}SIMON.over=true;SIMON.showing=false;SIMON.playerTurn=false;}
   // Mancala
   if(typeof MAN!=='undefined'){if(MAN._aiTimeout){clearTimeout(MAN._aiTimeout);MAN._aiTimeout=null;}MAN.over=true;}
+  // Higher Lower
+  if(typeof HL!=='undefined'&&HL._timer){clearTimeout(HL._timer);HL._timer=null;}
   // Meno Mesto Zviera Vec
   if(typeof MMSV!=='undefined'&&MMSV.timer){clearInterval(MMSV.timer);MMSV.timer=null;}
   // QR scanner
@@ -22508,7 +22511,7 @@ function mpJoinWithConfig(code, statusEl, config) {
       MP.connection.on('error', (err) => {
         console.error('Connection error:', err);
         statusEl.className = 'mp-status error';
-        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia: '+err+'</div>';
+        statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba pripojenia: '+escHtml(String(err.type||err))+'</div>';
       });
     });
 
@@ -22520,7 +22523,7 @@ function mpJoinWithConfig(code, statusEl, config) {
         return;
       }
       statusEl.className = 'mp-status error';
-      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + err.type + '</div>';
+      statusEl.innerHTML = '<div style="font-size:1.5em;margin-bottom:8px">❌</div><div>Chyba: ' + escHtml(String(err.type||err)) + '</div>';
     });
 
   } catch(err) {
@@ -23358,7 +23361,9 @@ function _mpHandleMessageInner(data) {
   // Wordle MP
   if(data.type === 'wdl-start') {
     if(data.lang && data.lang !== (WDL._lang||'sk')) setWdlLang(data.lang);
-    WDL.secret = data.secret;
+    // Validate secret against word list to prevent host sending invalid/malicious value
+    const _sec = String(data.secret||'').toUpperCase().slice(0,5);
+    WDL.secret = (WORDLE_WORDS.includes(_sec) && _sec.length===5) ? _sec : (WORDLE_WORDS[0]||'SLOVO');
     WDL.pvpPhase = 'guess';
     WDL.guesses = [];WDL.current = '';WDL.row = 0;WDL.gameOver = false;WDL.keyStates = {};
     WDL.mpDone = false;WDL.mpOpponentRows = -1;
