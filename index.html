@@ -3672,8 +3672,8 @@ body.light .man-store {
       <li>Hráč 1 háda slovo — kliká na písmená</li>
       <li>Každé nesprávne písmeno = časť panáčika</li>
       <li>8 chýb a prehrávaš! Uhádni slovo skôr!</li>
-      <li>Nápoveda: klikni 💡 pre odhalenie písmena</li>
-      <li>Hráči sa striedajú</li>
+      <li>Nápoveda: klikni 💡 pre odhalenie písmena (0.5 bodu)</li>
+      <li>Hráči sa striedajú — prvý na 3 body vyhráva!</li>
     </ul></div>
     <div class="difficulty-selector" id="hmDiffSel">
       <button class="difficulty-btn active" onclick="setHMDiff('easy',this)">Ľahká (4-5 písmen)</button>
@@ -4967,7 +4967,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.46';
+const APP_VERSION = '19.47';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5574,6 +5574,7 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'tanks', name:'Tank Battle', icon:'💥', mode:'both'},
   {id:'snakeDuel', name:'Snake Duel', icon:'🐍', mode:'pvp'},
   {id:'breakout', name:'Breakout', icon:'🏓', mode:'both'},
+  {id:'hangman', name:'Obesenec', icon:'💀', mode:'pvp'},
 ];
 
 function showTournament() {
@@ -5896,6 +5897,7 @@ const DAILY_GAMES=[
   {id:'mathDuel',goal:'Vyhraj Matika Duel',target:1,type:'win'},
   {id:'spamClick',goal:'Vyhraj Spam Click',target:1,type:'win'},
   {id:'animalGuess',goal:'Vyhraj Hádaj Zviera',target:1,type:'win'},
+  {id:'hangman',goal:'Vyhraj Obesenec (prvý na 3 body)',target:1,type:'win'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
 function dailySeedDisplay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
@@ -6205,6 +6207,7 @@ const ACHIEVEMENTS = [
   { id:'ghost10',icon:'👻', name:'Strašidlo',      desc:'Vyhraj 10× Ghost',           check:()=>(gStats.perGame.ghost?.p1||0)+(gStats.perGame.ghost?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.ghost?.p1||0)+(gStats.perGame.ghost?.p2||0),max:10}) },
   { id:'scr10',  icon:'🔤', name:'Scramble Ace',   desc:'Vyhraj 10× Scramble',        check:()=>(gStats.perGame.scramble?.p1||0)+(gStats.perGame.scramble?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.scramble?.p1||0)+(gStats.perGame.scramble?.p2||0),max:10}) },
   { id:'hl10',   icon:'🎰', name:'Kartový tipér',  desc:'Vyhraj 10× Vyššie Nižšie',  check:()=>(gStats.perGame.higherLower?.p1||0)+(gStats.perGame.higherLower?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.higherLower?.p1||0)+(gStats.perGame.higherLower?.p2||0),max:10}) },
+  { id:'hm5',    icon:'💀', name:'Kat',            desc:'Vyhraj 5× Obesenec',         check:()=>(gStats.perGame.hangman?.p1||0)+(gStats.perGame.hangman?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.hangman?.p1||0)+(gStats.perGame.hangman?.p2||0),max:5}) },
 ];
 
 let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
@@ -11367,12 +11370,26 @@ function setHMDiff(d,btn) {
   btn.classList.add('active');
 }
 function startHM() {
-  HM.s1=0; HM.s2=0; HM.player=1;
-  $('p1ScoreHM').textContent='0';
-  $('p2ScoreHM').textContent='0';
+  if(!MP.isConnected){HM.s1=0;HM.s2=0;}
+  HM.player=1; HM.over=false;
+  $('p1ScoreHM').textContent=HM.s1;
+  $('p2ScoreHM').textContent=HM.s2;
   $('hmGameBox').style.display='block';
   activeTurn('hmP1Card','hmP2Card',1);
   nextHMRound();
+}
+function hmCheckGameOver() {
+  if(HM.s1>=3||HM.s2>=3) {
+    HM.over=true;
+    const w=HM.s1>=3?1:2;
+    const wName=w===1?getP1Name('hm'):getP2Name('hm');
+    $('hmStatus').textContent='🏆 '+wName+' vyhral/a hru!';
+    const cel=$('hmCelebration'); cel.textContent='🏆'; cel.style.display='block';
+    addWin(w,'hangman');
+    setTimeout(()=>{cel.style.display='none'; resetHM();},3000);
+    return true;
+  }
+  return false;
 }
 function nextHMRound() {
   HM.roundOver=false; HM.errors=0; HM.guessed=new Set(); HM.hintUsed=false;
@@ -11441,7 +11458,7 @@ function hmGuessLetter(ch,btn) {
     const hint=$('hmHint');
     hint.textContent='✅ Správne! Slovo bolo: '+HM.word+(HM.hintUsed?' (0.5 bodu za nápovedu)':'');
     hint.className='hm-success';
-    setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
+    if(!hmCheckGameOver()){setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);}
   } else if(HM.errors>=8) {
     HM.roundOver=true; playSound('wrong');
     const hint=$('hmHint');
@@ -11474,7 +11491,7 @@ function hmUseHint() {
     else{HM.s2+=0.5;$('p2ScoreHM').textContent=HM.s2;popScore('p2ScoreHM');}
     $('hmHint').textContent='✅ Správne! Slovo bolo: '+HM.word+' (0.5 bodu za nápovedu)';
     $('hmHint').style.color='#43e97b';
-    setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);
+    if(!hmCheckGameOver()){setTimeout(()=>{HM.player=HM.player===1?2:1;nextHMRound();},2000);}
   }
 }
 function resetHM() {
