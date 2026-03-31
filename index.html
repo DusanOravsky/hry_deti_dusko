@@ -4967,7 +4967,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.48';
+const APP_VERSION = '19.49';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -22003,7 +22003,9 @@ function mpCreateRoom() {
           tttGrid: _isPsk ? 15 : TTT.grid,
           memCards: MEM.cards,
           memDiff: MEM.diff,
-          ghostLang: $('ghostLangSelect')?.value||'sk'
+          ghostLang: $('ghostLangSelect')?.value||'sk',
+          simonDiff: SIMON.diff,
+          simonNumColors: SIMON.numColors
         });
       });
 
@@ -22255,6 +22257,8 @@ function mpDisconnect() {
   $('tttSizeSel').style.display = '';
   $('memSizeSel').style.display='';
   const ghostLangSel=$('ghostLangSelect');if(ghostLangSel)ghostLangSel.disabled=false;
+  $('simonDiffWrap').style.display = 'flex';
+  if(welcomeGameMode !== 'ai') $('simonColorWrap').style.display = 'flex';
   // Restore chess timer toggle (was disabled in MP)
   const chToggle = $('chTimerToggle');
   if(chToggle) {
@@ -22423,7 +22427,8 @@ function mpTryReconnect() {
           const _rPsk = $('psk15Board').style.display !== 'none';
           mpSend({ type: 'handshake', from: 'host', name: MP.myName,
             tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff,
-            ghostLang: $('ghostLangSelect')?.value||'sk' });
+            ghostLang: $('ghostLangSelect')?.value||'sk',
+            simonDiff: SIMON.diff, simonNumColors: SIMON.numColors });
         });
         conn.on('data', (d) => mpHandleMessage(d));
         conn.on('close', mpHandleDisconnect);
@@ -22518,6 +22523,20 @@ function _mpHandleMessageInner(data) {
     if(data.from === 'host' && data.ghostLang) {
       const sel=$('ghostLangSelect');
       if(sel){sel.value=data.ghostLang;sel.disabled=true;buildGhostKeyboard();}
+    }
+    // Guest receives Simon Says settings from host handshake
+    if(data.from === 'host' && data.simonDiff) {
+      SIMON.diff = data.simonDiff;
+      SIMON.numColors = data.simonNumColors || 4;
+      simonUpdateGrid();
+      document.querySelectorAll('#simonDiffWrap .difficulty-btn').forEach((b,i) => {
+        b.classList.toggle('active', ['easy','medium','hard'][i] === data.simonDiff);
+      });
+      document.querySelectorAll('#simonColorWrap .difficulty-btn').forEach((b,i) => {
+        b.classList.toggle('active', [4,6,9][i] === data.simonNumColors);
+      });
+      $('simonDiffWrap').style.display = 'none';
+      $('simonColorWrap').style.display = 'none';
     }
     return;
   }
