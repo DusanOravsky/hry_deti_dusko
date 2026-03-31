@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~23000 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.43
+- **Current version**: v19.44
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -118,7 +118,7 @@ resetWordle(); // welcomeGameMode check works
 - **Offline indicator**: Red banner when device offline, MP button auto-hides
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
-- **Achievement system**: 54 achievements (16 general + 28 per-game + 4 daily + 6 seasonal) checked after every `addWin()`, `toggleFavorite()`, and `dailyCheckComplete()`, toast notification on unlock, displayed in Stats page
+- **Achievement system**: 68 achievements (16 general + 28 per-game + 4 daily + 6 seasonal + 14 new per-game) checked after every `addWin()`, `toggleFavorite()`, and `dailyCheckComplete()`, toast notification on unlock, displayed in Stats page
 - **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
 - **Active turn indicator**: Inactive player card dims to 40% opacity, active shows colored "Na rade" badge
 - **Chess coordinates**: A-H / 1-8 around board, flipped for black in MP
@@ -178,7 +178,7 @@ resetWordle(); // welcomeGameMode check works
 - **Sound & Vibration Persistence**: Settings saved to localStorage ('hry_sound', 'hry_vibration'), restored on page load via `loadSoundSettings()`, prevents frustrating reset-to-defaults on reload
 - **Angry Birds**: Slingshot physics game, drag & release mechanics, parabolic bird flight with gravity, destructible box towers, PvP: 5 shots per player, AI: varying accuracy based on difficulty
 - **Sokoban**: Classic push-box puzzle, 15 hand-crafted verified levels (progressive difficulty), player pushes boxes (📦) onto targets (⭐), can't pull/push 2 boxes, unlimited undo system, BFS AI hint solver (500/2000/5000 iterations), level selector, move counter & timer, auto-advance on win, WASD/arrows/swipe controls
-- **Achievement Progress Bars**: All 54 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
+- **Achievement Progress Bars**: All 68 achievements show visual progress bars for locked achievements, displaying current/max values and percentage (e.g., "7/10 (70%)"), gradient fills animate with progress, `progress()` function on each achievement
 - **Simon Says**: Memory sequence game with 4, 6, or 9 colored buttons (🔴🔵🟢🟡🟠🟣🟤⚫🩷), watch and repeat the pattern, each round adds one color, AI mode: difficulty determines colors + speed (easy=4 colors/800ms, medium=6 colors/500ms, hard=9 colors/300ms), PVP mode: separate selectors for color count (4/6/9) + speed (easy/medium/hard), alternating turns with highest level winner, grid adapts: 2×2 (4), 2×3 (6), 3×3 (9)
 - **Mancala**: Classic Kalaha board game, 6 pits + store per player, counter-clockwise stone distribution, capture mechanics (landing in empty pit captures opposite), extra turn on landing in own store, AI with 3 difficulties (easy=random, medium=prefers extra turns/captures, hard=minimax with board evaluation)
 
@@ -381,6 +381,13 @@ Key game state objects and their patterns:
 - **Simon Says MP** (v19.36): sequential play — `ss-result` handoff; first player sends `{fromTurn,score}`, second sends `{fromTurn,score,winner}`; `simonRound` alternation; `simonStart()` guards: `SIMON.over` check + MP turn guard (v19.37 fix)
 - **Mancala MP** (v19.36): `mancala-move` sent from `manClickPit()` (action point); `manMakeMove()` called on receiver; `manRound` alternation; score reset guard (`if(!MP.isConnected)`)
 - **Sokoban MP** (v19.36): simultaneous play; `sok-done` sent on completion; each device tracks `p1Completed`/`p2Completed` independently; `sokMPAdvanceLevel()` triggers when both done; level selector hidden in MP; `sokRound` for rematch sync only
+
+## New Features (v19.44)
+
+- **14 nových achievementov** (v19.44): ttt10 (🔶 Piškvorkar, 10×), pong10 (🏓 Pingpongista, 10×), sok5 (📦 Skladník, 5×), simon5 (🔴 Simon šampión, 5×), man10 (🪨 Mancalista, 10×), ab5 (🐦 Prakovník, 5×), sd10 (🐍 Duel hadov, 10×), uno10 (🎴 UNO majster, 10×), ng5 (🖼️ Nonogramista, 5×), sdk5 (🔢 Sudoku génius, 5×), sol5 (♠️ Solitér, 5×), ghost10 (👻 Strašidlo, 10×), scr10 (🔤 Scramble Ace, 10×), hl10 (🎰 Kartový tipér, 10×) — total now 68
+- **Daily Challenge +5 games** (v19.44): reaction, higherLower, mathDuel, spamClick, animalGuess — total now 43
+- **Tournament +2 games** (v19.44): snakeDuel (pvp), breakout (both) — total now 31
+- **Vyššie Nižšie MP** (v19.44): `mp:true`, `hl-turn-done` message (score, player, isFirst), `hlRound` alternation, score reset guard; sequential turns — first player plays, sends result, second player plays, both calculate winner
 
 ## New Features (v19.38–v19.43)
 

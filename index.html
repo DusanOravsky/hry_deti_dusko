@@ -3705,7 +3705,7 @@ body.light .man-store {
     <div class="celebration" id="hlCelebration">🎉</div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" onclick="startHL()">▶️ Štart</button>
-      <button class="action-btn danger-btn" onclick="resetHL()">🔄 Reset</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('higherLower'):resetHL()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -4943,7 +4943,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.43';
+const APP_VERSION = '19.44';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5548,6 +5548,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'angryBirds', name:'Angry Birds', icon:'🐦', mode:'both'},
   {id:'pong', name:'Pong', icon:'🏓', mode:'both'},
   {id:'tanks', name:'Tank Battle', icon:'💥', mode:'both'},
+  {id:'snakeDuel', name:'Snake Duel', icon:'🐍', mode:'pvp'},
+  {id:'breakout', name:'Breakout', icon:'🏓', mode:'both'},
 ];
 
 function showTournament() {
@@ -5865,6 +5867,11 @@ const DAILY_GAMES=[
   {id:'mancala',goal:'Vyhraj Mancala',target:1,type:'win'},
   {id:'angryBirds',goal:'Vyhraj Angry Birds',target:1,type:'win'},
   {id:'scramble',goal:'Vyhraj Scramble',target:1,type:'win'},
+  {id:'reaction',goal:'Poraz súpera v Reakcnom teste',target:1,type:'win'},
+  {id:'higherLower',goal:'Vyhraj kolo Vyššie Nižšie',target:1,type:'win'},
+  {id:'mathDuel',goal:'Vyhraj Matika Duel',target:1,type:'win'},
+  {id:'spamClick',goal:'Vyhraj Spam Click',target:1,type:'win'},
+  {id:'animalGuess',goal:'Vyhraj Hádaj Zviera',target:1,type:'win'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
 function dailySeedDisplay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
@@ -6159,6 +6166,21 @@ const ACHIEVEMENTS = [
   { id:'fc5',    icon:'🃏', name:'Kartičkár',     desc:'Skonči 5 hier Flashcards',  check:()=>(gStats.perGame.flashcard?.p1||0)+(gStats.perGame.flashcard?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.flashcard?.p1||0)+(gStats.perGame.flashcard?.p2||0),max:5}) },
   { id:'ml5',    icon:'🔡', name:'Pravopisár',    desc:'Vyhraj 5× Doplň Písmeno',   check:()=>(gStats.perGame.missingLetter?.p1||0)+(gStats.perGame.missingLetter?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.missingLetter?.p1||0)+(gStats.perGame.missingLetter?.p2||0),max:5}) },
   { id:'st3',    icon:'💬', name:'Prekladateľ',   desc:'Vyhraj 3× Prekladaj Vety',  check:()=>(gStats.perGame.sentence?.p1||0)+(gStats.perGame.sentence?.p2||0)>=3, progress:()=>({cur:(gStats.perGame.sentence?.p1||0)+(gStats.perGame.sentence?.p2||0),max:3}) },
+  // Per-game achievements — nové hry
+  { id:'ttt10',  icon:'🔶', name:'Piškvorkar',     desc:'Vyhraj 10× Piškvorky',       check:()=>(gStats.perGame.ticTacToe?.p1||0)+(gStats.perGame.ticTacToe?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.ticTacToe?.p1||0)+(gStats.perGame.ticTacToe?.p2||0),max:10}) },
+  { id:'pong10', icon:'🏓', name:'Pingpongista',   desc:'Vyhraj 10× Pong',            check:()=>(gStats.perGame.pong?.p1||0)+(gStats.perGame.pong?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.pong?.p1||0)+(gStats.perGame.pong?.p2||0),max:10}) },
+  { id:'sok5',   icon:'📦', name:'Skladník',       desc:'Dokonči 5× Sokoban',         check:()=>(gStats.perGame.sokoban?.p1||0)+(gStats.perGame.sokoban?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.sokoban?.p1||0)+(gStats.perGame.sokoban?.p2||0),max:5}) },
+  { id:'simon5', icon:'🔴', name:'Simon šampión',  desc:'Vyhraj 5× Simon Says',       check:()=>(gStats.perGame.simonSays?.p1||0)+(gStats.perGame.simonSays?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.simonSays?.p1||0)+(gStats.perGame.simonSays?.p2||0),max:5}) },
+  { id:'man10',  icon:'🪨', name:'Mancalista',     desc:'Vyhraj 10× Mancala',         check:()=>(gStats.perGame.mancala?.p1||0)+(gStats.perGame.mancala?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.mancala?.p1||0)+(gStats.perGame.mancala?.p2||0),max:10}) },
+  { id:'ab5',    icon:'🐦', name:'Prakovník',      desc:'Vyhraj 5× Angry Birds',      check:()=>(gStats.perGame.angryBirds?.p1||0)+(gStats.perGame.angryBirds?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.angryBirds?.p1||0)+(gStats.perGame.angryBirds?.p2||0),max:5}) },
+  { id:'sd10',   icon:'🐍', name:'Duel hadov',     desc:'Vyhraj 10× Snake Duel',      check:()=>(gStats.perGame.snakeDuel?.p1||0)+(gStats.perGame.snakeDuel?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.snakeDuel?.p1||0)+(gStats.perGame.snakeDuel?.p2||0),max:10}) },
+  { id:'uno10',  icon:'🎴', name:'UNO majster',    desc:'Vyhraj 10× UNO',             check:()=>(gStats.perGame.unoGame?.p1||0)+(gStats.perGame.unoGame?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.unoGame?.p1||0)+(gStats.perGame.unoGame?.p2||0),max:10}) },
+  { id:'ng5',    icon:'🖼️', name:'Nonogramista',   desc:'Dokonči 5× Nonogram',        check:()=>(gStats.perGame.nonogram?.p1||0)>=5, progress:()=>({cur:(gStats.perGame.nonogram?.p1||0),max:5}) },
+  { id:'sdk5',   icon:'🔢', name:'Sudoku génius',  desc:'Vyhraj 5× Sudoku',           check:()=>(gStats.perGame.sudoku?.p1||0)>=5, progress:()=>({cur:(gStats.perGame.sudoku?.p1||0),max:5}) },
+  { id:'sol5',   icon:'♠️', name:'Solitér',        desc:'Dokonči 5× Solitaire',       check:()=>(gStats.perGame.solitaire?.p1||0)>=5, progress:()=>({cur:(gStats.perGame.solitaire?.p1||0),max:5}) },
+  { id:'ghost10',icon:'👻', name:'Strašidlo',      desc:'Vyhraj 10× Ghost',           check:()=>(gStats.perGame.ghost?.p1||0)+(gStats.perGame.ghost?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.ghost?.p1||0)+(gStats.perGame.ghost?.p2||0),max:10}) },
+  { id:'scr10',  icon:'🔤', name:'Scramble Ace',   desc:'Vyhraj 10× Scramble',        check:()=>(gStats.perGame.scramble?.p1||0)+(gStats.perGame.scramble?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.scramble?.p1||0)+(gStats.perGame.scramble?.p2||0),max:10}) },
+  { id:'hl10',   icon:'🎰', name:'Kartový tipér',  desc:'Vyhraj 10× Vyššie Nižšie',  check:()=>(gStats.perGame.higherLower?.p1||0)+(gStats.perGame.higherLower?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.higherLower?.p1||0)+(gStats.perGame.higherLower?.p2||0),max:10}) },
 ];
 
 let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
@@ -11439,11 +11461,14 @@ const HL = { player:1, s1:0, s2:0, current:0, streak:0, over:false, p1Best:0, p2
 const HL_CARDS=[1,2,3,4,5,6,7,8,9,10,11,12,13];
 
 function startHL() {
-  HL.player=1; HL.s1=0; HL.s2=0; HL.p1Best=0; HL.p2Best=0;
-  $('p1ScoreHL').textContent='0';
-  $('p2ScoreHL').textContent='0';
+  if(!MP.isConnected){HL.s1=0;HL.s2=0;}
+  HL.player=1; HL.p1Best=0; HL.p2Best=0;
+  $('p1ScoreHL').textContent=HL.s1||'0';
+  $('p2ScoreHL').textContent=HL.s2||'0';
   $('hlGameBox').style.display='block';
-  activeTurn('hlP1Card','hlP2Card',1);
+  // In MP: alternating first player
+  HL.player = MP.isConnected ? (MP.hlRound%2===0 ? 1 : 2) : 1;
+  activeTurn('hlP1Card','hlP2Card',HL.player);
   hlNewRound();
 }
 function hlNewRound() {
@@ -11453,12 +11478,27 @@ function hlNewRound() {
   $('hlCurrentCard').textContent=card;
   $('hlNextCard').textContent='?';
   $('hlStreak').textContent='Séria: 0';
-  $('hlRoundInfo').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' hrá!';
-  $('hlStatus').textContent=(HL.player===1?getP1Name('hl'):getP2Name('hl'))+' — bude ďalšie číslo vyššie alebo nižšie?';
+  const pName=(HL.player===1?getP1Name('hl'):getP2Name('hl'));
+  $('hlRoundInfo').textContent=pName+' hrá!';
+  if(MP.isConnected) {
+    const myPlayer=MP.isHost?1:2;
+    if(HL.player!==myPlayer){
+      $('hlStatus').textContent='⏳ Čakáš na '+pName+'...';
+    } else {
+      $('hlStatus').textContent=pName+' — bude ďalšie číslo vyššie alebo nižšie?';
+    }
+  } else {
+    $('hlStatus').textContent=pName+' — bude ďalšie číslo vyššie alebo nižšie?';
+  }
   activeTurn('hlP1Card','hlP2Card',HL.player);
 }
 function hlGuess(dir) {
   if(HL.over) return;
+  // MP turn guard
+  if(MP.isConnected) {
+    const myPlayer=MP.isHost?1:2;
+    if(HL.player!==myPlayer) return;
+  }
   const next=HL_CARDS[Math.floor(Math.random()*HL_CARDS.length)];
   const curVal=HL.current, nextVal=next;
   $('hlNextCard').textContent=next;
@@ -11474,25 +11514,40 @@ function hlGuess(dir) {
   } else {
     HL.over=true; playSound('wrong'); vibrate([80,40,80]);
     const score=HL.streak;
+    // Which player just finished
+    const isFirstPlayer = HL.player === (MP.isConnected?(MP.hlRound%2===0?1:2):1);
     if(HL.player===1){HL.s1=score;HL.p1Best=score;$('p1ScoreHL').textContent=score;popScore('p1ScoreHL');}
     else{HL.s2=score;HL.p2Best=score;$('p2ScoreHL').textContent=score;popScore('p2ScoreHL');}
-    if(HL.player===1){
-      $('hlStatus').textContent='❌ Zlý tip! '+getP1Name('hl')+' dosiahol '+score+' bodov. Teraz '+getP2Name('hl')+'!';
-      HL.player=2;
-      setTimeout(hlNewRound,2000);
+    if(MP.isConnected) {
+      mpSend({type:'hl-turn-done', score, player:HL.player, isFirst:isFirstPlayer});
+      if(isFirstPlayer) {
+        // First player done — wait for second player
+        $('hlStatus').textContent='❌ Zlý tip! Séria: '+score+'. Čakáš na súpera...';
+      } else {
+        // Second player done — determine winner
+        hlShowResult();
+      }
     } else {
-      const n1=getP1Name('hl'),n2=getP2Name('hl');
-      if(HL.p1Best>HL.p2Best){$('hlStatus').textContent='🏆 '+n1+' vyhral! ('+HL.p1Best+' vs '+HL.p2Best+')';addWin(1,'higherLower');celebrate('hlCelebration');}
-      else if(HL.p2Best>HL.p1Best){$('hlStatus').textContent='🏆 '+n2+' vyhral! ('+HL.p2Best+' vs '+HL.p1Best+')';addWin(2,'higherLower');celebrate('hlCelebration');}
-      else{$('hlStatus').textContent='🤝 Remíza! ('+HL.p1Best+':'+HL.p2Best+')';addWin(0,'higherLower');}
-      playSound('win');
+      if(HL.player===1){
+        $('hlStatus').textContent='❌ Zlý tip! '+getP1Name('hl')+' dosiahol '+score+' bodov. Teraz '+getP2Name('hl')+'!';
+        HL.player=2;
+        setTimeout(hlNewRound,2000);
+      } else {
+        hlShowResult();
+      }
     }
   }
 }
+function hlShowResult() {
+  const n1=getP1Name('hl'),n2=getP2Name('hl');
+  if(HL.p1Best>HL.p2Best){$('hlStatus').textContent='🏆 '+n1+' vyhral! ('+HL.p1Best+' vs '+HL.p2Best+')';addWin(1,'higherLower');celebrate('hlCelebration');}
+  else if(HL.p2Best>HL.p1Best){$('hlStatus').textContent='🏆 '+n2+' vyhral! ('+HL.p2Best+' vs '+HL.p1Best+')';addWin(2,'higherLower');celebrate('hlCelebration');}
+  else{$('hlStatus').textContent='🤝 Remíza! ('+HL.p1Best+':'+HL.p2Best+')';addWin(0,'higherLower');}
+  playSound('win');
+}
 function resetHL() {
-  HL.player=1;HL.s1=0;HL.s2=0;HL.streak=0;HL.over=false;
-  $('p1ScoreHL').textContent='0';
-  $('p2ScoreHL').textContent='0';
+  HL.player=1;HL.s1=0;HL.s2=0;HL.streak=0;HL.over=false;HL.p1Best=0;HL.p2Best=0;
+  if(!MP.isConnected){$('p1ScoreHL').textContent='0';$('p2ScoreHL').textContent='0';}
   $('hlStatus').textContent='Klikni Štart!';
   $('hlGameBox').style.display='none';
   activeTurn('hlP1Card','hlP2Card',1);
@@ -14352,7 +14407,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -21068,7 +21123,7 @@ const MOBILE_GAMES = [
   { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp', cat:'logic' },
   { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp', cat:'fun' },
   { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp', cat:'word' },
-  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp', cat:'logic' },
+  { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp', mp:true, cat:'logic' },
   { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word' },
   { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'word' },
   { id:'flashcard',     label:'Flashcards',     icon:'🃏', grad:'rgba(102,126,234,0.25),rgba(118,75,162,0.25)', mode:'pvp', cat:'word' },
@@ -22925,6 +22980,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'sokoban') { if(data.round !== undefined) MP.sokRound = data.round; SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
     if(gameId === 'ghost') { if(data.round !== undefined) MP.ghostRound = data.round; if(data.lang && $('ghostLangSelect')) $('ghostLangSelect').value=data.lang; resetGhost(); }
     if(gameId === 'dotsBoxes') { if(data.round !== undefined) MP.dbRound = data.round; resetDB(); applyDBMPStart(); }
+    if(gameId === 'higherLower') { if(data.round !== undefined) MP.hlRound = data.round; resetHL(); }
   }
 
   // Snake Duel MP
@@ -23101,6 +23157,28 @@ function _mpHandleMessageInner(data) {
   // Dots & Boxes MP
   if(data.type==='db-line'){dbPlaceLine(data.lineType,data.i,data.j,data.player!==undefined?data.player:DB.turn);}
 
+  // Vyššie Nižšie MP
+  if(data.type==='hl-turn-done') {
+    if(data.player===1){HL.p1Best=data.score;$('p1ScoreHL').textContent=data.score;popScore('p1ScoreHL');}
+    else{HL.p2Best=data.score;$('p2ScoreHL').textContent=data.score;popScore('p2ScoreHL');}
+    if(data.isFirst) {
+      // Remote first player done — start local (second) player's turn
+      const myPlayer=MP.isHost?1:2;
+      HL.player=myPlayer; HL.over=false; HL.streak=0;
+      activeTurn('hlP1Card','hlP2Card',HL.player);
+      const card=HL_CARDS[Math.floor(Math.random()*HL_CARDS.length)];
+      HL.current=card;
+      $('hlCurrentCard').textContent=card;
+      $('hlNextCard').textContent='?';
+      $('hlStreak').textContent='Séria: 0';
+      $('hlRoundInfo').textContent=(myPlayer===1?getP1Name('hl'):getP2Name('hl'))+' hrá!';
+      $('hlStatus').textContent=(myPlayer===1?getP1Name('hl'):getP2Name('hl'))+' — bude ďalšie číslo vyššie alebo nižšie?';
+    } else {
+      // Remote second player done — show result
+      hlShowResult();
+    }
+  }
+
   // Ping/Pong for latency
   if(data.type==='mp-ping'){mpSend({type:'mp-pong',ts:data.ts});}
   if(data.type==='mp-pong'){
@@ -23170,6 +23248,7 @@ function mpRematch(gameId) {
   if(gameId === 'sokoban') { MP.sokRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sokRound }); SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
   if(gameId === 'ghost') { MP.ghostRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ghostRound, lang: $('ghostLangSelect')?.value||'sk' }); resetGhost(); }
   if(gameId === 'dotsBoxes') { MP.dbRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dbRound }); resetDB(); applyDBMPStart(); }
+  if(gameId === 'higherLower') { MP.hlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.hlRound }); resetHL(); }
 }
 
 function mpGenerateQR(code) {
