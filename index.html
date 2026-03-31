@@ -2588,7 +2588,8 @@ body.light .man-store {
       <button class="game-btn" id="emojiGuessBtn" style="background:linear-gradient(135deg,rgba(255,200,0,0.25),rgba(255,100,200,0.25))"><span class="game-btn-icon">😂</span><span class="game-btn-label">Emoji Hádanka</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="hangmanBtn" style="background:linear-gradient(135deg,rgba(120,80,200,0.25),rgba(200,100,150,0.25))"><span class="game-btn-icon">💀</span><span class="game-btn-label">Obesenec</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="higherLowerBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.2),rgba(0,0,0,0.2))"><span class="game-btn-icon">🃏</span><span class="game-btn-label">Vyššie Nižšie</span><span class="game-btn-dot"></span></button>
-      <button class="game-btn" id="mmsvBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.2),rgba(56,249,215,0.2))"><span class="game-btn-icon">🗺️</span><span class="game-btn-label">Meno Mesto</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="mmsvBtn" style="background:linear-gradient(135deg,rgba(67,233,123,0.2),rgba(56,249,215,0.2))"><span class="game-btn-icon">🗺️</span><span class="game-btn-label">M. M. Zviera Vec</span><span class="game-btn-dot"></span></button>
+      <button class="game-btn" id="wordChainBtn" style="background:linear-gradient(135deg,rgba(118,75,162,0.2),rgba(102,126,234,0.2))"><span class="game-btn-icon">🔗</span><span class="game-btn-label">Slovný Reťazec</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="chessBtn" style="background:linear-gradient(135deg,rgba(60,60,60,0.35),rgba(180,140,100,0.3))"><span class="game-btn-icon">♟️</span><span class="game-btn-label">Šach</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="checkersBtn" style="background:linear-gradient(135deg,rgba(200,0,0,0.25),rgba(0,0,0,0.3))"><span class="game-btn-icon">⬤</span><span class="game-btn-label">Dáma</span><span class="game-btn-dot"></span></button>
       <button class="game-btn" id="reversiBtn" style="background:linear-gradient(135deg,rgba(100,100,100,0.25),rgba(200,200,200,0.25))"><span class="game-btn-icon">🔄</span><span class="game-btn-label">Reversi</span><span class="game-btn-dot"></span></button>
@@ -3795,7 +3796,39 @@ body.light .man-store {
     <div class="celebration" id="mmsvCelebration"></div>
     <div class="buttons-group">
       <button class="action-btn primary-btn" id="mmsvStartBtn" onclick="mmsvStart()" style="display:none">▶️ Štart</button>
-      <button class="action-btn danger-btn" onclick="resetMMSV()">🔄 Nová hra</button>
+      <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('mmsv'):resetMMSV()">🔄 Nová hra</button>
+    </div>
+  </div>
+
+  <!-- ===== SLOVNÝ REŤAZEC ===== -->
+  <div class="game-area" id="wordChain">
+    <div class="rules"><h3>📋 Slovný Reťazec:</h3><ul>
+      <li>Povedz slovo — súper musí odpovedať slovom začínajúcim <strong>posledným písmenom</strong> tvojho slova</li>
+      <li>Slová sa nesmú opakovať</li>
+      <li>Na odpoveď máš <strong>10 sekúnd</strong></li>
+      <li>Kto nevymyslí slovo alebo opakuje, prehrá kolo</li>
+      <li>Prvý na <strong>3 body</strong> vyhráva hru!</li>
+    </ul></div>
+    <div class="player-info">
+      <div class="player-card player1 active-turn" id="wcP1Card"><div class="player-name-display" id="wcP1Name">Hráč 1</div><div class="player-score" id="p1ScoreWC">0</div></div>
+      <div class="player-card player2" id="wcP2Card"><div class="player-name-display" id="wcP2Name">Hráč 2</div><div class="player-score" id="p2ScoreWC">0</div></div>
+    </div>
+    <div class="status" id="wcStatus">Klikni Štart!</div>
+    <div id="wcGameBox" style="display:none;text-align:center">
+      <div style="font-size:1.1em;margin:8px 0" id="wcLetterHint"></div>
+      <div style="max-height:120px;overflow-y:auto;margin:8px 0;padding:4px" id="wcWordList"></div>
+      <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin:10px 0">
+        <input id="wcInput" autocomplete="off" autocorrect="off" spellcheck="false"
+          style="flex:1;max-width:220px;padding:10px 14px;border-radius:10px;border:2px solid rgba(102,126,234,0.5);background:rgba(255,255,255,0.07);color:inherit;font-size:1.1em;font-weight:700;text-transform:lowercase"
+          placeholder="Napíš slovo…" onkeydown="if(event.key==='Enter')wcSubmit()">
+        <button class="action-btn primary-btn" onclick="wcSubmit()" style="padding:10px 18px">✓</button>
+      </div>
+      <div style="font-size:2em;font-weight:900" id="wcTimer">10</div>
+    </div>
+    <div class="celebration" id="wcCelebration"></div>
+    <div class="buttons-group">
+      <button class="action-btn primary-btn" onclick="wcStart()">▶️ Štart</button>
+      <button class="action-btn danger-btn" onclick="resetWC()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -5035,7 +5068,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.56';
+const APP_VERSION = '19.57';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5050,7 +5083,7 @@ const gameKeys = {
   battleship:'battleshipBtn', ghost:'ghostBtn', reaction:'reactionBtn',
   scramble:'scrambleBtn', langScramble:'langScrambleBtn', flashcard:'flashcardBtn',
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
-  hangman:'hangmanBtn', higherLower:'higherLowerBtn', mmsv:'mmsvBtn',
+  hangman:'hangmanBtn', higherLower:'higherLowerBtn', mmsv:'mmsvBtn', wordChain:'wordChainBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
   tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', animalGuess:'animalGuessBtn', animalQuiz:'animalQuizBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
@@ -5062,7 +5095,7 @@ const GAME_NAMES = {
   scramble:'Scramble', langScramble:'Jazykový Scramble', flashcard:'Flashcards',
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
-  hangman:'Obesenec', higherLower:'Vyššie Nižšie', mmsv:'Meno Mesto Zviera Vec',
+  hangman:'Obesenec', higherLower:'Vyššie Nižšie', mmsv:'Meno Mesto Zviera Vec', wordChain:'Slovný Reťazec',
   chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', animalGuess:'Hádaj Zviera', animalQuiz:'Zvierací Kvíz', tournament:'Turnaj'
 };
 
@@ -5487,7 +5520,7 @@ function getActiveP1Name(gId) {
   const keys = {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
-    flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',
+    flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',wordChain:'wc',
     chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq'
   };
   const k = keys[gId];
@@ -5498,7 +5531,7 @@ function getActiveP2Name(gId) {
   const keys = {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
-    flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',
+    flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',wordChain:'wc',
     chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq'
   };
   const k = keys[gId];
@@ -5643,7 +5676,8 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'snakeDuel', name:'Snake Duel', icon:'🐍', mode:'pvp'},
   {id:'breakout', name:'Breakout', icon:'🏓', mode:'both'},
   {id:'hangman', name:'Obesenec', icon:'💀', mode:'pvp'},
-  {id:'mmsv', name:'Meno Mesto Zviera Vec', icon:'🗺️', mode:'pvp'},
+  {id:'mmsv', name:'Meno Mesto Zviera Vec', icon:'🗺️', mode:'pvp', mp:true},
+  {id:'wordChain', name:'Slovný Reťazec', icon:'🔗', mode:'pvp'},
 ];
 
 function showTournament() {
@@ -5968,6 +6002,7 @@ const DAILY_GAMES=[
   {id:'animalGuess',goal:'Vyhraj Hádaj Zviera',target:1,type:'win'},
   {id:'hangman',goal:'Vyhraj Obesenec (prvý na 3 body)',target:1,type:'win'},
   {id:'mmsv',goal:'Vyhraj Meno Mesto Zviera Vec',target:1,type:'win'},
+  {id:'wordChain',goal:'Vyhraj Slovný Reťazec',target:1,type:'win'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
 function dailySeedDisplay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
@@ -6279,6 +6314,7 @@ const ACHIEVEMENTS = [
   { id:'hl10',   icon:'🎰', name:'Kartový tipér',  desc:'Vyhraj 10× Vyššie Nižšie',  check:()=>(gStats.perGame.higherLower?.p1||0)+(gStats.perGame.higherLower?.p2||0)>=10, progress:()=>({cur:(gStats.perGame.higherLower?.p1||0)+(gStats.perGame.higherLower?.p2||0),max:10}) },
   { id:'hm5',    icon:'💀', name:'Kat',            desc:'Vyhraj 5× Obesenec',         check:()=>(gStats.perGame.hangman?.p1||0)+(gStats.perGame.hangman?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.hangman?.p1||0)+(gStats.perGame.hangman?.p2||0),max:5}) },
   { id:'mmsv5',  icon:'🗺️', name:'Zemepisár',     desc:'Vyhraj 5× Meno Mesto Zviera Vec', check:()=>(gStats.perGame.mmsv?.p1||0)+(gStats.perGame.mmsv?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.mmsv?.p1||0)+(gStats.perGame.mmsv?.p2||0),max:5}) },
+  { id:'wc5',    icon:'🔗', name:'Reťaziar',      desc:'Vyhraj 5× Slovný Reťazec',       check:()=>(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0),max:5}) },
 ];
 
 let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
@@ -11766,7 +11802,8 @@ const MMSV_CATS = ['👤 Meno','🌆 Mesto','🐾 Zviera','🎒 Vec'];
 const MMSV = {
   letter:'', s1:0, s2:0, phase:'idle',
   p1Ans:['','','',''], p2Ans:['','','',''],
-  timer:null, timeLeft:60, round:0, over:false
+  timer:null, timeLeft:60, round:0, over:false,
+  _mpMyDone:false, _mpOppDone:false, _mpMyAnswers:null, _mpOppAnswers:null
 };
 
 function mmsvPickLetter() {
@@ -11774,14 +11811,22 @@ function mmsvPickLetter() {
 }
 
 function mmsvStart() {
-  // New round starts from idle (first round) or result (next round)
+  if(MP.isConnected) {
+    if(!MP.isHost) return;
+    MMSV.letter = mmsvPickLetter();
+    MMSV._mpMyDone=false; MMSV._mpOppDone=false;
+    MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
+    mpSend({type:'mmsv-start', letter:MMSV.letter});
+    mmsvMPBeginRound();
+    return;
+  }
+  // Hot-seat PvP
   if(MMSV.phase==='idle' || MMSV.phase==='result') {
     MMSV.round++;
     MMSV.letter = mmsvPickLetter();
     MMSV.p1Ans = ['','','',''];
     MMSV.p2Ans = ['','','',''];
   }
-  // isP1=true when starting P1's turn (idle or result); P2's turn comes from p2wait
   const isP1 = MMSV.phase==='idle' || MMSV.phase==='result';
   const playerName = isP1 ? getActiveP1Name('mmsv') : getActiveP2Name('mmsv');
   $('mmsvStatus').textContent = playerName + ' — zadávaš odpovede!';
@@ -11790,10 +11835,8 @@ function mmsvStart() {
   $('mmsvInputBox').style.display='block';
   $('mmsvResultBox').style.display='none';
   $('mmsvStartBtn').style.display='none';
-  // Clear inputs
   for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
-  // Start timer
   MMSV.timeLeft=60;
   $('mmsvTimerVal').textContent='60';
   clearInterval(MMSV.timer);
@@ -11806,14 +11849,45 @@ function mmsvStart() {
   activeTurn('mmsvP1Card','mmsvP2Card', isP1?1:2);
 }
 
+function mmsvMPBeginRound() {
+  $('mmsvLetterBox').style.display='block';
+  $('mmsvLetter').textContent = MMSV.letter;
+  $('mmsvInputBox').style.display='block';
+  $('mmsvResultBox').style.display='none';
+  $('mmsvStartBtn').style.display='none';
+  for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
+  $('mmsvI0').focus();
+  MMSV.timeLeft=60;
+  $('mmsvTimerVal').textContent='60';
+  clearInterval(MMSV.timer);
+  MMSV.timer=setInterval(()=>{
+    MMSV.timeLeft--;
+    $('mmsvTimerVal').textContent=MMSV.timeLeft;
+    if(MMSV.timeLeft<=0){clearInterval(MMSV.timer);mmsvDone();}
+  },1000);
+  const myName = MP.isHost ? getActiveP1Name('mmsv') : getActiveP2Name('mmsv');
+  $('mmsvStatus').textContent = myName + ' — zadávaš odpovede! (súčasne)';
+  activeTurn('mmsvP1Card','mmsvP2Card',0);
+}
+
 function mmsvDone() {
   clearInterval(MMSV.timer);
-  // Save answers for current player
   const ans = [];
   for(let i=0;i<4;i++) ans.push(($('mmsvI'+i).value||'').trim());
-  // Disable inputs
   for(let i=0;i<4;i++) $('mmsvI'+i).disabled=true;
   $('mmsvInputBox').style.display='none';
+
+  if(MP.isConnected) {
+    MMSV._mpMyDone=true;
+    MMSV._mpMyAnswers=ans;
+    mpSend({type:'mmsv-done', answers:ans});
+    if(MMSV._mpOppDone) {
+      mmsvMPResolve();
+    } else {
+      $('mmsvStatus').textContent='✅ Hotovo! Čakám na súpera...';
+    }
+    return;
+  }
 
   if(MMSV.phase==='p1') {
     MMSV.p1Ans = ans;
@@ -11830,6 +11904,12 @@ function mmsvDone() {
   }
 }
 
+function mmsvMPResolve() {
+  MMSV.p1Ans = MP.isHost ? MMSV._mpMyAnswers : MMSV._mpOppAnswers;
+  MMSV.p2Ans = MP.isHost ? MMSV._mpOppAnswers : MMSV._mpMyAnswers;
+  mmsvShowResult();
+}
+
 function mmsvNormalize(s) {
   return (s||'').trim().replace(/\s+/g,' ').toLowerCase();
 }
@@ -11844,7 +11924,6 @@ function mmsvShowResult() {
   const p2Name = getActiveP2Name('mmsv');
   let roundP1=0, roundP2=0;
 
-  // Header: player names spanning full width
   let html='<div style="grid-column:1/-1;display:flex;justify-content:space-between;font-weight:900;font-size:0.85em;padding:0 4px;opacity:0.7">'
     +'<span>'+escHtml(p1Name)+'</span><span>'+escHtml(p2Name)+'</span></div>';
 
@@ -11862,7 +11941,6 @@ function mmsvShowResult() {
       ? '<span style="background:rgba(255,193,7,0.3);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">🤝 ZHODNÉ +5</span>'
       : (a1&&a2 ? '<span style="background:rgba(67,233,123,0.2);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">⭐ UNIKÁTNE +10</span>' : '');
 
-    // Category label row spanning both columns
     html+='<div style="grid-column:1/-1;font-size:0.78em;font-weight:700;opacity:0.65;padding:6px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px">'
       +MMSV_CATS[i]+badge+'</div>';
 
@@ -11899,27 +11977,174 @@ function mmsvShowResult() {
   setTimeout(()=>cel.classList.remove('show'),1800);
   if(soundEnabled) playSound(523,'sine',0.3,0.4);
 
-  $('mmsvStartBtn').textContent='▶️ Ďalšie kolo';
-  $('mmsvStartBtn').style.display='';
+  const btn=$('mmsvStartBtn');
+  if(MP.isConnected) {
+    if(MP.isHost) {
+      btn.textContent='▶️ Ďalšie kolo';
+      btn.onclick=()=>mpRematch('mmsv');
+      btn.style.display='';
+    } else {
+      btn.style.display='none';
+      $('mmsvStatus').textContent += ' Čakám na ďalšie kolo...';
+    }
+  } else {
+    btn.textContent='▶️ Ďalšie kolo';
+    btn.onclick=mmsvStart;
+    btn.style.display='';
+  }
   activeTurn('mmsvP1Card','mmsvP2Card',0);
 }
 
 function resetMMSV() {
   clearInterval(MMSV.timer);
-  MMSV.letter=''; MMSV.s1=0; MMSV.s2=0; MMSV.phase='idle';
+  MMSV.letter=''; MMSV.phase='idle';
   MMSV.p1Ans=['','','','']; MMSV.p2Ans=['','','',''];
   MMSV.timeLeft=60; MMSV.over=false; MMSV.round=0;
-  $('p1ScoreMMSV').textContent='0'; $('p2ScoreMMSV').textContent='0';
-  $('mmsvStatus').textContent='Klikni Štart!';
+  MMSV._mpMyDone=false; MMSV._mpOppDone=false;
+  MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
+  if(!MP.isConnected){MMSV.s1=0;MMSV.s2=0;$('p1ScoreMMSV').textContent='0';$('p2ScoreMMSV').textContent='0';}
+  $('mmsvStatus').textContent = MP.isConnected&&!MP.isHost ? 'Čakám na hostiteľa...' : 'Klikni Štart!';
   $('mmsvLetterBox').style.display='none';
   $('mmsvInputBox').style.display='none';
   $('mmsvResultBox').style.display='none';
-  $('mmsvStartBtn').textContent='▶️ Štart';
-  $('mmsvStartBtn').style.display='';
-  activeTurn('mmsvP1Card','mmsvP2Card',1);
+  const btn=$('mmsvStartBtn');
+  btn.textContent='▶️ Štart';
+  btn.onclick=mmsvStart;
+  btn.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
+  activeTurn('mmsvP1Card','mmsvP2Card', MP.isConnected?0:1);
   for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
 }
 resetMMSV();
+
+// =============================================================================
+// SEKCIA: SLOVNÝ REŤAZEC
+// =============================================================================
+const WC = {
+  player:1, s1:0, s2:0, words:[], lastLetter:'', over:false,
+  timer:null, timeLeft:10, _epoch:0
+};
+
+function wcStart() {
+  if(WC.over) return;
+  WC.words=[];
+  WC.lastLetter='';
+  WC.over=false;
+  WC._epoch++;
+  const ep=WC._epoch;
+  $('wcGameBox').style.display='block';
+  $('wcWordList').innerHTML='';
+  $('wcInput').value='';
+  $('wcInput').disabled=false;
+  wcUpdateHint();
+  $('wcStatus').textContent=(WC.player===1?getP1Name('wc'):getP2Name('wc'))+' — napíš slovo!';
+  activeTurn('wcP1Card','wcP2Card',WC.player);
+  wcStartTimer(ep);
+  setTimeout(()=>{ if(WC._epoch===ep && !WC.over) $('wcInput').focus(); },50);
+}
+
+function wcStartTimer(ep) {
+  clearInterval(WC.timer);
+  WC.timeLeft=10;
+  $('wcTimer').textContent='10';
+  $('wcTimer').style.color='inherit';
+  WC.timer=setInterval(()=>{
+    if(WC._epoch!==ep){clearInterval(WC.timer);return;}
+    WC.timeLeft--;
+    $('wcTimer').textContent=WC.timeLeft;
+    if(WC.timeLeft<=3) $('wcTimer').style.color='#f5576c';
+    if(WC.timeLeft<=0){clearInterval(WC.timer);wcTimeout();}
+  },1000);
+}
+
+function wcUpdateHint() {
+  if(WC.lastLetter) {
+    $('wcLetterHint').innerHTML='Slovo musí začínať: <strong style="font-size:1.4em;color:#667eea">'+WC.lastLetter.toUpperCase()+'</strong>';
+  } else {
+    $('wcLetterHint').textContent='Zadaj ľubovoľné slovo na začiatok:';
+  }
+}
+
+function wcSubmit() {
+  if(WC.over) return;
+  const raw = ($('wcInput').value||'').trim().toLowerCase().replace(/\s+/g,'');
+  $('wcInput').value='';
+  if(!raw) return;
+
+  if(WC.lastLetter && raw[0]!==WC.lastLetter) {
+    $('wcStatus').textContent='❌ Slovo musí začínať písmenom "'+WC.lastLetter.toUpperCase()+'"!';
+    playSound('wrong'); vibrate(50);
+    return;
+  }
+  if(WC.words.includes(raw)) {
+    $('wcStatus').textContent='❌ Slovo "'+raw+'" už bolo použité!';
+    playSound('wrong'); vibrate(50);
+    return;
+  }
+
+  WC.words.push(raw);
+  WC.lastLetter = raw[raw.length-1];
+  playSound('click');
+
+  const li=document.createElement('div');
+  li.style.cssText='font-size:0.85em;padding:2px 6px;opacity:0.7';
+  li.textContent=(WC.player===1?getP1Name('wc'):getP2Name('wc'))+': '+raw+' → '+WC.lastLetter.toUpperCase();
+  $('wcWordList').appendChild(li);
+  $('wcWordList').scrollTop=$('wcWordList').scrollHeight;
+
+  WC.player = WC.player===1?2:1;
+  wcUpdateHint();
+  $('wcStatus').textContent=(WC.player===1?getP1Name('wc'):getP2Name('wc'))+' — napíš slovo!';
+  activeTurn('wcP1Card','wcP2Card',WC.player);
+  const ep=++WC._epoch;
+  wcStartTimer(ep);
+  setTimeout(()=>{ if(WC._epoch===ep && !WC.over) $('wcInput').focus(); },50);
+}
+
+function wcTimeout() {
+  if(WC.over) return;
+  WC.over=true;
+  clearInterval(WC.timer);
+  $('wcInput').disabled=true;
+  const loser=WC.player;
+  const winner=loser===1?2:1;
+  const winnerName=winner===1?getP1Name('wc'):getP2Name('wc');
+  const loserName=loser===1?getP1Name('wc'):getP2Name('wc');
+  if(winner===1){WC.s1++;$('p1ScoreWC').textContent=WC.s1;popScore('p1ScoreWC');}
+  else{WC.s2++;$('p2ScoreWC').textContent=WC.s2;popScore('p2ScoreWC');}
+  $('wcStatus').textContent='⏰ '+loserName+' nestihol/a! +1 bod pre '+winnerName;
+  playSound('wrong'); vibrate([80,30,80]);
+  activeTurn('wcP1Card','wcP2Card',0);
+  if(WC.s1>=3||WC.s2>=3) {
+    wcCheckGameOver();
+  } else {
+    WC.player=loser;
+    WC._epoch++;
+    setTimeout(()=>{ WC.over=false; wcStart(); }, 2000);
+  }
+}
+
+function wcCheckGameOver() {
+  const w=WC.s1>=3?1:2;
+  const wName=w===1?getP1Name('wc'):getP2Name('wc');
+  $('wcStatus').textContent='🏆 '+wName+' vyhral hru! ('+WC.s1+':'+WC.s2+')';
+  addWin(w,'wordChain');
+  celebrate('wcCelebration');
+  WC.over=true;
+  $('wcInput').disabled=true;
+}
+
+function resetWC() {
+  clearInterval(WC.timer);
+  WC.player=1;WC.s1=0;WC.s2=0;WC.words=[];WC.lastLetter='';WC.over=false;WC.timeLeft=10;WC._epoch++;
+  $('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';
+  $('wcStatus').textContent='Klikni Štart!';
+  $('wcGameBox').style.display='none';
+  $('wcTimer').textContent='10';
+  $('wcTimer').style.color='inherit';
+  $('wcInput').value='';$('wcInput').disabled=false;
+  activeTurn('wcP1Card','wcP2Card',1);
+}
+resetWC();
 
 // =============================================================================
 // RANDOM BATTLE
@@ -14775,7 +15000,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -17111,6 +17336,11 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Enter') { wdlKeyPress('ENTER'); e.preventDefault(); }
   else if(e.key === 'Backspace') { wdlKeyPress('⌫'); e.preventDefault(); }
   else if(/^[a-zA-Z]$/.test(e.key)) { wdlKeyPress(e.key.toUpperCase()); }
+});
+document.addEventListener('keydown',(e)=>{
+  if(currentGameId!=='wordChain') return;
+  if(WC.over||$('wcInput').disabled) return;
+  if(document.activeElement!==$('wcInput')) $('wcInput').focus();
 });
 
 
@@ -21539,7 +21769,8 @@ const MOBILE_GAMES = [
   { id:'mathDuel',      label:'Matika Duel',    icon:'🧮', grad:'rgba(0,200,100,0.25),rgba(0,150,255,0.25)', mode:'pvp', cat:'logic' },
   { id:'emojiGuess',    label:'Emoji Hádanka',  icon:'😂', grad:'rgba(255,200,0,0.3),rgba(255,100,200,0.3)', mode:'pvp', cat:'fun' },
   { id:'hangman',       label:'Obesenec',       icon:'💀', grad:'rgba(120,80,200,0.3),rgba(200,100,150,0.3)', mode:'pvp', cat:'word' },
-  { id:'mmsv',          label:'Meno Mesto',     icon:'🗺️', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'pvp', cat:'word' },
+  { id:'mmsv',          label:'Meno Mesto',     icon:'🗺️', grad:'rgba(67,233,123,0.25),rgba(56,249,215,0.25)', mode:'pvp', cat:'word', mp:true },
+  { id:'wordChain',     label:'Slovný Reťazec', icon:'🔗', grad:'rgba(118,75,162,0.25),rgba(102,126,234,0.25)', mode:'pvp', cat:'word' },
   { id:'higherLower',   label:'Vyššie Nižšie',  icon:'🃏', grad:'rgba(200,0,0,0.25),rgba(0,0,0,0.25)', mode:'pvp', mp:true, cat:'logic' },
   { id:'scramble',      label:'Scramble',       icon:'🔀', grad:'rgba(17,153,142,0.25),rgba(56,239,125,0.25)', mode:'pvp', cat:'word' },
   { id:'langScramble',  label:'Jaz. Scramble',  icon:'🔤', grad:'rgba(247,151,30,0.25),rgba(255,210,0,0.25)', mode:'pvp', cat:'word' },
@@ -21676,6 +21907,8 @@ function stopAllGames(){
   if(typeof HL!=='undefined'&&HL._timer){clearTimeout(HL._timer);HL._timer=null;}
   // Meno Mesto Zviera Vec
   if(typeof MMSV!=='undefined'&&MMSV.timer){clearInterval(MMSV.timer);MMSV.timer=null;}
+  // Word Chain
+  if(typeof WC!=='undefined'&&WC.timer){clearInterval(WC.timer);WC.timer=null;WC.over=true;}
   // QR scanner
   if(typeof mpStopScan==='function') mpStopScan();
 }
@@ -23372,6 +23605,20 @@ function _mpHandleMessageInner(data) {
     if(MP._meReady) mpStartBSGame();
   }
 
+  // MMSV MP
+  if(data.type === 'mmsv-start') {
+    MMSV.letter = String(data.letter||'A').toUpperCase().slice(0,1);
+    MMSV._mpMyDone=false; MMSV._mpOppDone=false;
+    MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
+    mmsvMPBeginRound();
+  }
+  if(data.type === 'mmsv-done') {
+    MMSV._mpOppDone=true;
+    MMSV._mpOppAnswers=(Array.isArray(data.answers)?data.answers:['','','','']).map(a=>String(a||'').slice(0,60));
+    if(MMSV._mpMyDone) { mmsvMPResolve(); }
+    else { $('mmsvStatus').textContent='⏳ Súper skončil! Daj si čas...'; }
+  }
+
   // Wordle MP
   if(data.type === 'wdl-start') {
     if(data.lang && data.lang !== (WDL._lang||'sk')) setWdlLang(data.lang);
@@ -23448,6 +23695,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'ghost') { if(data.round !== undefined) MP.ghostRound = data.round; if(data.lang && $('ghostLangSelect')) $('ghostLangSelect').value=data.lang; resetGhost(); }
     if(gameId === 'dotsBoxes') { if(data.round !== undefined) MP.dbRound = data.round; resetDB(); applyDBMPStart(); }
     if(gameId === 'higherLower') { if(data.round !== undefined) MP.hlRound = data.round; startHL(); }
+    if(gameId === 'mmsv') { if(data.round !== undefined) MP.mmsvRound = data.round; resetMMSV(); }
     if(gameId === 'quiz') { if(data.round !== undefined) MP.quizRound = data.round; resetQuiz(); $('quizStatus').textContent='⏳ Čakám na hostiteľa...'; $('quizStartBox').style.display='none'; $('quizGameBox').style.display='block'; }
   }
 
@@ -23748,6 +23996,7 @@ function mpRematch(gameId) {
   if(gameId === 'ghost') { MP.ghostRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ghostRound, lang: $('ghostLangSelect')?.value||'sk' }); resetGhost(); }
   if(gameId === 'dotsBoxes') { MP.dbRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dbRound }); resetDB(); applyDBMPStart(); }
   if(gameId === 'higherLower') { MP.hlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.hlRound }); startHL(); }
+  if(gameId === 'mmsv') { MP.mmsvRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.mmsvRound }); resetMMSV(); }
   if(gameId === 'quiz') { MP.quizRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.quizRound }); resetQuiz(); }
 }
 
