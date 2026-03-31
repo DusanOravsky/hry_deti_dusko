@@ -3806,6 +3806,8 @@ body.light .man-store {
       <button class="action-btn" id="mmsvTimer45" onclick="mmsvSetTimer(45)" style="padding:4px 12px;font-size:0.85em">45s</button>
       <button class="action-btn active-timer-btn" id="mmsvTimer60" onclick="mmsvSetTimer(60)" style="padding:4px 12px;font-size:0.85em">60s</button>
       <button class="action-btn" id="mmsvTimer90" onclick="mmsvSetTimer(90)" style="padding:4px 12px;font-size:0.85em">90s</button>
+      <span style="font-size:0.85em;opacity:0.7;font-weight:700;margin-left:8px">🗂️ Kat:</span>
+      <button class="action-btn" id="mmsvExtendedBtn" onclick="mmsvToggleExtended()" style="padding:4px 12px;font-size:0.85em" title="Pridať: Povolanie, Jedlo, Krajina, Farba">+4 ďalšie</button>
     </div>
     <div class="status" id="mmsvStatus">Klikni Štart!</div>
     <div id="mmsvLetterBox" style="display:none;text-align:center;margin:10px 0">
@@ -5100,7 +5102,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.69';
+const APP_VERSION = '19.70';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11882,7 +11884,7 @@ const MMSV = {
   letter:'', s1:0, s2:0, phase:'idle',
   p1Ans:['','','',''], p2Ans:['','','',''],
   timer:null, timeLeft:60, timerSecs:60, round:0, over:false,
-  roundCats:[], usedLetters:[],
+  roundCats:[], usedLetters:[], extendedCats:false,
   _catPts1:[0,0,0,0], _catPts2:[0,0,0,0],
   _roundStartTime:0, _p1DoneTime:0, _p2DoneTime:0,
   _mpMyDone:false, _mpOppDone:false, _mpMyAnswers:null, _mpOppAnswers:null,
@@ -11907,8 +11909,19 @@ function mmsvPickLetter() {
 }
 
 function mmsvPickCats() {
-  const shuffled = [...MMSV_CAT_POOL].sort(()=>Math.random()-0.5);
-  MMSV.roundCats = shuffled.slice(0,4);
+  if(MMSV.extendedCats) {
+    const shuffled = [...MMSV_CAT_POOL].sort(()=>Math.random()-0.5);
+    MMSV.roundCats = shuffled.slice(0,4);
+  } else {
+    MMSV.roundCats = MMSV_CAT_POOL.slice(0,4);
+  }
+}
+
+function mmsvToggleExtended(force) {
+  if(MP.isConnected && !MP.isHost) return;
+  MMSV.extendedCats = force !== undefined ? force : !MMSV.extendedCats;
+  const btn = $('mmsvExtendedBtn');
+  if(btn) btn.className = 'action-btn' + (MMSV.extendedCats ? ' active-timer-btn' : '');
 }
 
 function mmsvUpdateLabels() {
@@ -11945,7 +11958,7 @@ function mmsvStart() {
     MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
     MMSV._mpOppDoneTime=0;
     const catIdxs = MMSV.roundCats.map(c=>MMSV_CAT_POOL.indexOf(c));
-    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs, cats:catIdxs});
+    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs, cats:catIdxs, extendedCats:MMSV.extendedCats});
     mmsvMPBeginRound();
     return;
   }
@@ -12213,6 +12226,7 @@ function resetMMSV() {
   const tsr=$('mmsvTimerSelectorRow');
   if(tsr) tsr.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
   mmsvSetTimer(MMSV.timerSecs);
+  mmsvToggleExtended(MMSV.extendedCats);
 }
 // =============================================================================
 // SEKCIA: SLOVNÝ REŤAZEC
@@ -23955,6 +23969,7 @@ function _mpHandleMessageInner(data) {
       MMSV.timerSecs = Number(data.timerSecs);
       mmsvSetTimer(MMSV.timerSecs, true); // force: sync from host
     }
+    if(data.extendedCats !== undefined) mmsvToggleExtended(!!data.extendedCats);
     if(Array.isArray(data.cats) && data.cats.length===4) {
       MMSV.roundCats = data.cats.map(idx=>MMSV_CAT_POOL[Number(idx)]).filter(Boolean);
       if(MMSV.roundCats.length!==4) MMSV.roundCats=MMSV_CAT_POOL.slice(0,4);
