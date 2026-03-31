@@ -1830,11 +1830,12 @@ body.light .mp-ingame-row input { background: rgba(0,0,0,0.05); }
 }
 .onb-overlay.active { display:flex; }
 .onb-modal {
-  background: linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
-  border:2px solid rgba(102,126,234,0.5); border-radius:24px; padding:32px 28px 24px;
+  background: linear-gradient(135deg,#1e2040 0%,#1a2a4a 100%);
+  border:2px solid rgba(102,126,234,0.6); border-radius:24px; padding:32px 28px 24px;
   max-width:420px; width:100%; position:relative;
-  box-shadow: 0 10px 50px rgba(102,126,234,0.35);
+  box-shadow: 0 10px 50px rgba(102,126,234,0.4);
   animation: modalSlideIn 0.35s ease-out;
+  color: #eef2ff;
 }
 .onb-slides { overflow:hidden; position:relative; }
 .onb-slide { display:none; text-align:center; }
@@ -5034,7 +5035,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.53';
+const APP_VERSION = '19.54';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5848,7 +5849,7 @@ function tourShowVictory() {
     const game = TOUR_AVAILABLE_GAMES.find(g => g.id === r.game);
     const icon = game ? game.icon : '🎮';
     const name = game ? game.name : r.game;
-    const result = r.winner === 1 ? `${globalP1} +1` : r.winner === 2 ? `${globalP2} +1` : 'Remíza +0.5/+0.5';
+    const result = r.winner === 1 ? `${escHtml(globalP1)} +1` : r.winner === 2 ? `${escHtml(globalP2)} +1` : 'Remíza +0.5/+0.5';
     return `<div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:6px">
       <span>${icon} ${name}</span>
       <span style="opacity:0.7">${result}</span>
@@ -11772,15 +11773,15 @@ function mmsvPickLetter() {
 }
 
 function mmsvStart() {
-  if(MMSV.phase==='idle') {
-    // First click — new round, pick letter, P1 turn
+  // New round starts from idle (first round) or result (next round)
+  if(MMSV.phase==='idle' || MMSV.phase==='result') {
     MMSV.round++;
     MMSV.letter = mmsvPickLetter();
     MMSV.p1Ans = ['','','',''];
     MMSV.p2Ans = ['','','',''];
   }
-  // Show inputs for current player
-  const isP1 = MMSV.phase==='idle'||MMSV.phase==='p2wait';
+  // isP1=true when starting P1's turn (idle or result); P2's turn comes from p2wait
+  const isP1 = MMSV.phase==='idle' || MMSV.phase==='result';
   const playerName = isP1 ? getActiveP1Name('mmsv') : getActiveP2Name('mmsv');
   $('mmsvStatus').textContent = playerName + ' — zadávaš odpovede!';
   $('mmsvLetterBox').style.display='block';
@@ -11838,8 +11839,8 @@ function mmsvShowResult() {
   const p2Name = getActiveP2Name('mmsv');
   let roundP1=0, roundP2=0;
 
-  let html='<div style="font-weight:900;text-align:center;opacity:0.6;font-size:0.85em">'+p1Name+'</div>'
-          +'<div style="font-weight:900;text-align:center;opacity:0.6;font-size:0.85em">'+p2Name+'</div>';
+  let html='<div style="font-weight:900;text-align:center;opacity:0.6;font-size:0.85em">'+escHtml(p1Name)+'</div>'
+          +'<div style="font-weight:900;text-align:center;opacity:0.6;font-size:0.85em">'+escHtml(p2Name)+'</div>';
   for(let i=0;i<4;i++){
     const a1=(MMSV.p1Ans[i]||'').trim();
     const a2=(MMSV.p2Ans[i]||'').trim();
