@@ -1848,6 +1848,29 @@ body.light .mp-ingame-row input { background: rgba(0,0,0,0.05); }
 .onb-dot.active { background:#667eea; }
 .onb-nav { display:flex; gap:10px; }
 .onb-nav button { flex:1; }
+.onb-demo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:240px; margin:14px auto 8px; }
+.onb-demo-card { background:rgba(102,126,234,0.18); border:1.5px solid rgba(102,126,234,0.35); border-radius:12px; padding:10px 6px; font-size:1.5em; line-height:1; animation:cardPop 0.4s ease-out both; }
+.onb-demo-card:nth-child(2){animation-delay:0.07s}
+.onb-demo-card:nth-child(3){animation-delay:0.14s}
+.onb-demo-card:nth-child(4){animation-delay:0.21s}
+.onb-demo-card:nth-child(5){animation-delay:0.28s}
+.onb-demo-card:nth-child(6){animation-delay:0.35s}
+.onb-mp-demo { display:flex; align-items:center; justify-content:center; gap:10px; margin:16px auto 8px; }
+.onb-phone { font-size:2.4em; animation:onbPhonePulse 1.8s ease-in-out infinite; }
+.onb-phone:last-child { animation-delay:0.9s; }
+.onb-conn-dots { display:flex; gap:5px; align-items:center; }
+.onb-conn-dot { width:7px; height:7px; border-radius:50%; background:#667eea; animation:onbDotPop 1.2s ease-in-out infinite; }
+.onb-conn-dot:nth-child(2){animation-delay:0.2s}
+.onb-conn-dot:nth-child(3){animation-delay:0.4s}
+.onb-start-demo { display:flex; flex-direction:column; align-items:center; gap:10px; margin:14px auto 6px; }
+.onb-arrow-down { font-size:2em; animation:onbArrowBounce 0.9s ease-in-out infinite; }
+.onb-mock-btn { background:linear-gradient(135deg,#667eea,#764ba2); color:white; font-weight:800; border:none; border-radius:12px; padding:12px 28px; font-size:1.1em; cursor:default; box-shadow:0 4px 18px rgba(102,126,234,0.45); animation:onbBtnPulse 1.6s ease-in-out infinite; }
+@keyframes onbPhonePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+@keyframes onbDotPop { 0%,100%{opacity:0.25;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
+@keyframes onbArrowBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+@keyframes onbBtnPulse { 0%,100%{box-shadow:0 4px 18px rgba(102,126,234,0.45)} 50%{box-shadow:0 4px 28px rgba(102,126,234,0.85)} }
+.active-timer-btn { background:linear-gradient(135deg,#43e97b,#38f9d7)!important; color:#111!important; font-weight:800!important; }
+.wdl-hard-active { background:linear-gradient(135deg,#ff6b6b,#ee5a24)!important; color:white!important; font-weight:800!important; }
 .rules-overlay {
   position: fixed;
   top: 0;
@@ -3776,6 +3799,13 @@ body.light .man-store {
       <div class="player-card player1 active-turn" id="mmsvP1Card"><div class="player-name-display" id="mmsvP1Name">Hráč 1</div><div class="player-score" id="p1ScoreMMSV">0</div></div>
       <div class="player-card player2" id="mmsvP2Card"><div class="player-name-display" id="mmsvP2Name">Hráč 2</div><div class="player-score" id="p2ScoreMMSV">0</div></div>
     </div>
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:8px" id="mmsvTimerSelectorRow">
+      <span style="font-size:0.85em;opacity:0.7;font-weight:700">⏱️ Čas:</span>
+      <button class="action-btn" id="mmsvTimer30" onclick="mmsvSetTimer(30)" style="padding:4px 12px;font-size:0.85em">30s</button>
+      <button class="action-btn" id="mmsvTimer45" onclick="mmsvSetTimer(45)" style="padding:4px 12px;font-size:0.85em">45s</button>
+      <button class="action-btn active-timer-btn" id="mmsvTimer60" onclick="mmsvSetTimer(60)" style="padding:4px 12px;font-size:0.85em">60s</button>
+      <button class="action-btn" id="mmsvTimer90" onclick="mmsvSetTimer(90)" style="padding:4px 12px;font-size:0.85em">90s</button>
+    </div>
     <div class="status" id="mmsvStatus">Klikni Štart!</div>
     <div id="mmsvLetterBox" style="display:none;text-align:center;margin:10px 0">
       <div style="font-size:4em;font-weight:900;line-height:1" id="mmsvLetter">A</div>
@@ -4385,6 +4415,7 @@ body.light .man-store {
       <button class="action-btn" id="wdlLangEN" onclick="setWdlLang('en')" style="padding:6px 16px;font-size:0.85em">&#127468;&#127463; English</button>
       <button class="action-btn" id="wdlHardModeBtn" onclick="wdlToggleHardMode()" style="padding:6px 16px;font-size:0.85em">🔓 Normal</button>
     </div>
+    <div id="wdlHardBadge" style="display:none;text-align:center;margin:-4px 0 8px;font-size:0.82em;font-weight:800;color:#ff6b35;letter-spacing:0.5px">🔥 Hard mode aktívny</div>
     <div class="player-info" id="wdlPlayerInfo">
       <div class="player-card player1 active-turn" id="wdlP1Card"><div class="player-name-display" id="wdlP1Name">Hráč 1</div><div class="player-score" id="p1ScoreWDL">0</div></div>
       <div class="player-card player2" id="wdlP2Card"><div class="player-name-display" id="wdlP2Name">Hráč 2</div><div class="player-score" id="p2ScoreWDL">0</div></div>
@@ -5068,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.61';
+const APP_VERSION = '19.62';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -9743,6 +9774,14 @@ function resetGhost(){
 function newGameGhost(){if(MP.isConnected)mpRematch('ghost');else resetGhost();}
 function ghostLangChange(){
   if(MP.isConnected&&!MP.isHost)return; // guest cannot change language
+  if(GHOST.word.length>0&&!GHOST.over){
+    const s=$('ghostStatus');
+    if(s){const prev=s.textContent;s.textContent='Jazyk nemožno meniť počas hry';setTimeout(()=>{s.textContent=prev;},2000);}
+    // revert selector to the language actively in use (opposite of new selection since onchange already fired)
+    const sel=$('ghostLangSelect');
+    if(sel) sel.value = sel.value==='sk'?'en':'sk';
+    return;
+  }
   if(MP.isConnected) mpSend({type:'ghost-lang',lang:$('ghostLangSelect').value});
   resetGhost();
 }
@@ -11802,9 +11841,18 @@ const MMSV_CATS = ['👤 Meno','🌆 Mesto','🐾 Zviera','🎒 Vec'];
 const MMSV = {
   letter:'', s1:0, s2:0, phase:'idle',
   p1Ans:['','','',''], p2Ans:['','','',''],
-  timer:null, timeLeft:60, round:0, over:false,
+  timer:null, timeLeft:60, timerSecs:60, round:0, over:false,
   _mpMyDone:false, _mpOppDone:false, _mpMyAnswers:null, _mpOppAnswers:null
 };
+
+function mmsvSetTimer(secs, force) {
+  if(!force && MP.isConnected && !MP.isHost) return; // guest cannot manually change timer
+  MMSV.timerSecs = secs;
+  [30,45,60,90].forEach(s => {
+    const btn = $('mmsvTimer'+s);
+    if(btn) btn.className = 'action-btn' + (s===secs ? ' active-timer-btn' : '');
+  });
+}
 
 function mmsvPickLetter() {
   return MMSV_LETTERS[Math.floor(Math.random()*MMSV_LETTERS.length)];
@@ -11816,7 +11864,7 @@ function mmsvStart() {
     MMSV.letter = mmsvPickLetter();
     MMSV._mpMyDone=false; MMSV._mpOppDone=false;
     MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
-    mpSend({type:'mmsv-start', letter:MMSV.letter});
+    mpSend({type:'mmsv-start', letter:MMSV.letter, timerSecs:MMSV.timerSecs});
     mmsvMPBeginRound();
     return;
   }
@@ -11835,10 +11883,11 @@ function mmsvStart() {
   $('mmsvInputBox').style.display='block';
   $('mmsvResultBox').style.display='none';
   $('mmsvStartBtn').style.display='none';
+  const _tsr=$('mmsvTimerSelectorRow'); if(_tsr) _tsr.style.display='none';
   for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
-  MMSV.timeLeft=60;
-  $('mmsvTimerVal').textContent='60';
+  MMSV.timeLeft=MMSV.timerSecs;
+  $('mmsvTimerVal').textContent=MMSV.timerSecs;
   clearInterval(MMSV.timer);
   MMSV.timer=setInterval(()=>{
     MMSV.timeLeft--;
@@ -11855,10 +11904,11 @@ function mmsvMPBeginRound() {
   $('mmsvInputBox').style.display='block';
   $('mmsvResultBox').style.display='none';
   $('mmsvStartBtn').style.display='none';
+  const _tsr2=$('mmsvTimerSelectorRow'); if(_tsr2) _tsr2.style.display='none';
   for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
-  MMSV.timeLeft=60;
-  $('mmsvTimerVal').textContent='60';
+  MMSV.timeLeft=MMSV.timerSecs;
+  $('mmsvTimerVal').textContent=MMSV.timerSecs;
   clearInterval(MMSV.timer);
   MMSV.timer=setInterval(()=>{
     MMSV.timeLeft--;
@@ -11999,7 +12049,7 @@ function resetMMSV() {
   clearInterval(MMSV.timer);
   MMSV.letter=''; MMSV.phase='idle';
   MMSV.p1Ans=['','','','']; MMSV.p2Ans=['','','',''];
-  MMSV.timeLeft=60; MMSV.over=false; MMSV.round=0;
+  MMSV.timeLeft=MMSV.timerSecs; MMSV.over=false; MMSV.round=0;
   MMSV._mpMyDone=false; MMSV._mpOppDone=false;
   MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
   if(!MP.isConnected){MMSV.s1=0;MMSV.s2=0;$('p1ScoreMMSV').textContent='0';$('p2ScoreMMSV').textContent='0';}
@@ -12013,6 +12063,9 @@ function resetMMSV() {
   btn.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
   activeTurn('mmsvP1Card','mmsvP2Card', MP.isConnected?0:1);
   for(let i=0;i<4;i++){$('mmsvI'+i).value='';$('mmsvI'+i).disabled=false;}
+  const tsr=$('mmsvTimerSelectorRow');
+  if(tsr) tsr.style.display = (MP.isConnected&&!MP.isHost) ? 'none' : '';
+  mmsvSetTimer(MMSV.timerSecs);
 }
 // =============================================================================
 // SEKCIA: SLOVNÝ REŤAZEC
@@ -17243,13 +17296,20 @@ function wdlShakeRow() {
 
 function wdlToggleHardMode() {
   WDL.hardMode = !WDL.hardMode;
+  wdlApplyHardModeUI();
+  resetWordle();
+}
+
+function wdlApplyHardModeUI() {
   const btn = $('wdlHardModeBtn');
   if(btn) {
-    btn.textContent = WDL.hardMode ? '🔒 Hard' : '🔓 Normal';
-    btn.style.background = WDL.hardMode ? 'linear-gradient(135deg,#ff6b6b,#ee5a24)' : '';
-    btn.style.color = WDL.hardMode ? 'white' : '';
+    btn.textContent = WDL.hardMode ? '🔥 HARD' : '🔓 Normal';
+    btn.classList.toggle('wdl-hard-active', WDL.hardMode);
+    btn.style.background = '';
+    btn.style.color = '';
   }
-  resetWordle();
+  const badge = $('wdlHardBadge');
+  if(badge) badge.style.display = WDL.hardMode ? '' : 'none';
 }
 
 // Returns error message string if hard mode constraints are violated, null if OK
@@ -17284,12 +17344,7 @@ function resetWordle() {
   WDL.mpDone = false;
   WDL.mpOpponentRows = -1;
   // Sync hard mode button visual (hardMode itself persists across rounds)
-  const _hmBtn = $('wdlHardModeBtn');
-  if(_hmBtn) {
-    _hmBtn.textContent = WDL.hardMode ? '🔒 Hard' : '🔓 Normal';
-    _hmBtn.style.background = WDL.hardMode ? 'linear-gradient(135deg,#ff6b6b,#ee5a24)' : '';
-    _hmBtn.style.color = WDL.hardMode ? 'white' : '';
-  }
+  wdlApplyHardModeUI();
 
   wdlBuildBoard();
   wdlBuildKeyboard();
@@ -23607,6 +23662,10 @@ function _mpHandleMessageInner(data) {
   // MMSV MP
   if(data.type === 'mmsv-start') {
     MMSV.letter = String(data.letter||'A').toUpperCase().slice(0,1);
+    if(data.timerSecs && [30,45,60,90].includes(Number(data.timerSecs))) {
+      MMSV.timerSecs = Number(data.timerSecs);
+      mmsvSetTimer(MMSV.timerSecs, true); // force: sync from host
+    }
     MMSV._mpMyDone=false; MMSV._mpOppDone=false;
     MMSV._mpMyAnswers=null; MMSV._mpOppAnswers=null;
     mmsvMPBeginRound();
@@ -24276,17 +24335,38 @@ if('serviceWorker' in navigator) {
       <div class="onb-slide">
         <div class="onb-icon">📱</div>
         <div class="onb-title">Ako vybrať hru</div>
-        <div class="onb-desc">Vyber <strong>herný mód</strong> — <em>2 Hráči</em> alebo <em>vs Počítač</em> — a potom si vyber hru zo zoznamu.<br><br>Môžeš filtrovať podľa kategórie (Doskové, Arkádové, Slovné…) alebo použiť vyhľadávanie.</div>
-      </div>
-      <div class="onb-slide">
-        <div class="onb-icon">🔥</div>
-        <div class="onb-title">Denná výzva</div>
-        <div class="onb-desc">Každý deň nová hra a nový cieľ! Splň výzvu a predlžuj si <strong>sériu 🔥</strong>.<br><br>Sleduj pokrok v <strong>Štatistikách</strong> a odomkni <strong>68 achievementov</strong>.</div>
+        <div class="onb-demo-grid">
+          <div class="onb-demo-card">♟️</div>
+          <div class="onb-demo-card">🎯</div>
+          <div class="onb-demo-card">🧩</div>
+          <div class="onb-demo-card">🐍</div>
+          <div class="onb-demo-card">💣</div>
+          <div class="onb-demo-card">🎴</div>
+        </div>
+        <div class="onb-desc">Vyber <strong>herný mód</strong> — <em>2 Hráči</em> alebo <em>vs Počítač</em> — a potom si vyber hru zo zoznamu.<br>Môžeš filtrovať podľa kategórie alebo použiť vyhľadávanie.</div>
       </div>
       <div class="onb-slide">
         <div class="onb-icon">🌐</div>
         <div class="onb-title">Online multiplayer</div>
+        <div class="onb-mp-demo">
+          <div class="onb-phone">📱</div>
+          <div class="onb-conn-dots">
+            <div class="onb-conn-dot"></div>
+            <div class="onb-conn-dot"></div>
+            <div class="onb-conn-dot"></div>
+          </div>
+          <div class="onb-phone">📱</div>
+        </div>
         <div class="onb-desc">Hraj s kamarátom cez internet — stlač globus 🌐 v hre s MP odznakom, zdieľaj kód miestnosti alebo QR kód.<br><br>Funguje aj <strong>offline</strong> — hra je nainštalovaná do tvojho zariadenia.</div>
+      </div>
+      <div class="onb-slide">
+        <div class="onb-icon">🚀</div>
+        <div class="onb-title">Začnime hrať!</div>
+        <div class="onb-start-demo">
+          <div class="onb-arrow-down">👇</div>
+          <button class="onb-mock-btn" tabindex="-1">▶️ Štart</button>
+        </div>
+        <div class="onb-desc">Zadaj mená hráčov na úvodnej obrazovke, vyber mód a stlač <strong>Štart</strong>.<br><br>Sleduj pokrok v <strong>Štatistikách</strong> a odomkni <strong>68 achievementov 🏆</strong>.</div>
       </div>
     </div>
     <div class="onb-dots" id="onbDots">
