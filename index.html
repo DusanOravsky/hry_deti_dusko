@@ -1441,6 +1441,15 @@ body.light .player-name-display { color: #222; }
 .ls-word-display { font-size:1em; opacity:0.6; text-align:center; margin:6px 0; font-style:italic; }
 
 /* STATS PAGE */
+.stats-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.1); }
+body.light .stats-tabs { border-bottom-color:rgba(0,0,0,0.08); }
+.stats-tab-btn { flex:1; min-width:0; padding:8px 6px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); cursor:pointer; font-size:0.8em; font-weight:700; color:inherit; transition:all 0.2s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.stats-tab-btn.active { background:linear-gradient(135deg,rgba(79,172,254,0.25),rgba(100,79,254,0.25)); border-color:rgba(79,172,254,0.5); }
+.stats-tab-btn:hover:not(.active) { background:rgba(255,255,255,0.08); }
+body.light .stats-tab-btn { border-color:rgba(0,0,0,0.12); background:rgba(0,0,0,0.04); }
+body.light .stats-tab-btn.active { background:linear-gradient(135deg,rgba(79,172,254,0.15),rgba(100,79,254,0.15)); border-color:rgba(79,172,254,0.5); }
+.stats-tab-panel { display:none; }
+.stats-tab-panel.active { display:block; }
 .stats-section { margin-bottom:28px; }
 .stats-section h3 { font-size:1em; font-weight:700; opacity:0.6; letter-spacing:2px; text-transform:uppercase; margin-bottom:14px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1); }
 body.light .stats-section h3 { border-bottom-color:rgba(0,0,0,0.08); }
@@ -3280,87 +3289,102 @@ body.light .man-store {
 
   <!-- ===== ŠTATISTIKY ===== -->
   <div class="game-area" id="stats">
-    <div class="rules"><h3>📊 Štatistiky:</h3><ul>
-      <li>Sleduj výhry a prehry pre každého hráča</li>
-      <li>Výhry podľa jednotlivých hier s grafom</li>
-      <li>Osobné rekordy: reakcia, snake, quiz a ďalšie</li>
-      <li>Achievementy: odomkni 16 úspechov hraním</li>
-      <li>Turnajové štatistiky: koľko turnajov ste odohrali</li>
-      <li>História posledných hier</li>
-      <li>Štatistiky aj achievementy sa dajú vymazať samostatne</li>
-    </ul></div>
-    <div class="stats-section">
-      <h3>🏆 Celkové výsledky</h3>
-      <div class="stats-grid">
-        <div class="stats-tile"><div class="stats-tile-val" id="stTotalGames">0</div><div class="stats-tile-label">Spolu hier</div></div>
-        <div class="stats-tile gold"><div class="stats-tile-val" id="stP1Wins">0</div><div class="stats-tile-label" id="stP1Label">Hráč 1 výhry</div></div>
-        <div class="stats-tile blue"><div class="stats-tile-val" id="stP2Wins">0</div><div class="stats-tile-label" id="stP2Label">Hráč 2 výhry</div></div>
-        <div class="stats-tile"><div class="stats-tile-val" id="stDraws">0</div><div class="stats-tile-label">Remízy</div></div>
+    <!-- Sub-tab navigation -->
+    <div class="stats-tabs">
+      <button class="stats-tab-btn active" id="stTab0" onclick="switchStatsTab(0)">📊 Prehľad</button>
+      <button class="stats-tab-btn" id="stTab1" onclick="switchStatsTab(1)">🏅 Achievementy</button>
+      <button class="stats-tab-btn" id="stTab2" onclick="switchStatsTab(2)">📅 Výzvy</button>
+      <button class="stats-tab-btn" id="stTab3" onclick="switchStatsTab(3)">🥇 Rebríčky</button>
+      <button class="stats-tab-btn" id="stTab4" onclick="switchStatsTab(4)">📋 História</button>
+    </div>
+
+    <!-- TAB 0: Prehľad -->
+    <div class="stats-tab-panel active" id="stPanel0">
+      <div class="stats-section">
+        <h3>🏆 Celkové výsledky</h3>
+        <div class="stats-grid">
+          <div class="stats-tile"><div class="stats-tile-val" id="stTotalGames">0</div><div class="stats-tile-label">Spolu hier</div></div>
+          <div class="stats-tile gold"><div class="stats-tile-val" id="stP1Wins">0</div><div class="stats-tile-label" id="stP1Label">Hráč 1 výhry</div></div>
+          <div class="stats-tile blue"><div class="stats-tile-val" id="stP2Wins">0</div><div class="stats-tile-label" id="stP2Label">Hráč 2 výhry</div></div>
+          <div class="stats-tile"><div class="stats-tile-val" id="stDraws">0</div><div class="stats-tile-label">Remízy</div></div>
+        </div>
+        <div class="stats-bar-wrap" id="stWinBars" style="margin-top:18px"></div>
       </div>
-      <div class="stats-bar-wrap" id="stWinBars" style="margin-top:18px"></div>
-    </div>
 
-    <div class="stats-section">
-      <h3>🎮 Výhry podľa hry</h3>
-      <div id="stPerGame"></div>
-    </div>
-
-    <div class="stats-section">
-      <h3>🌟 Osobné rekordy</h3>
-      <div class="stats-grid" id="stRecords">
-        <div class="stats-tile green"><div class="stats-tile-val" id="recReacP1">—</div><div class="stats-tile-label" id="recReacP1Lbl">Najrýchlejšia reakcia (Hráč 1)</div></div>
-        <div class="stats-tile blue"><div class="stats-tile-val" id="recReacP2">—</div><div class="stats-tile-label" id="recReacP2Lbl">Najrýchlejšia reakcia (Hráč 2)</div></div>
-        <div class="stats-tile purple"><div class="stats-tile-val" id="recFCStreak">0</div><div class="stats-tile-label">Najdlhšia séria Flashcards 🔥</div></div>
-        <div class="stats-tile gold"><div class="stats-tile-val" id="recQuizBest">0</div><div class="stats-tile-label">Najlepší quiz výsledok</div></div>
-        <div class="stats-tile green"><div class="stats-tile-val" id="recSnakeBest">0</div><div class="stats-tile-label">Snake najlepšie skóre 🐍</div></div>
-        <div class="stats-tile green"><div class="stats-tile-val" id="recScrambleBest">0</div><div class="stats-tile-label">Scramble max bodov</div></div>
-        <div class="stats-tile blue"><div class="stats-tile-val" id="recGhostWins">0</div><div class="stats-tile-label">Ghost víťazstvá</div></div>
+      <div class="stats-section">
+        <h3>🎮 Výhry podľa hry</h3>
+        <div id="stPerGame"></div>
       </div>
-    </div>
 
-    <div class="stats-section">
-      <h3>🏆 Turnajové štatistiky</h3>
-      <div class="stats-grid">
-        <div class="stats-tile purple"><div class="stats-tile-val" id="stTourPlayed">0</div><div class="stats-tile-label">Turnaje odohraných</div></div>
-        <div class="stats-tile gold"><div class="stats-tile-val" id="stTourP1Wins">0</div><div class="stats-tile-label" id="stTourP1Label">Hráč 1 vyhral</div></div>
-        <div class="stats-tile blue"><div class="stats-tile-val" id="stTourP2Wins">0</div><div class="stats-tile-label" id="stTourP2Label">Hráč 2 vyhral</div></div>
-        <div class="stats-tile"><div class="stats-tile-val" id="stTourDraws">0</div><div class="stats-tile-label">Remízy</div></div>
-      </div>
-    </div>
-
-    <div class="stats-section">
-      <h3>📅 Denné výzvy</h3>
-      <div style="margin-bottom:12px">
-        <div class="stats-tile purple" style="display:inline-block;min-width:150px">
-          <div class="stats-tile-val" id="dailyStreakVal">0</div>
-          <div class="stats-tile-label">Aktuálny streak 🔥</div>
+      <div class="stats-section">
+        <h3>🌟 Osobné rekordy</h3>
+        <div class="stats-grid" id="stRecords">
+          <div class="stats-tile green"><div class="stats-tile-val" id="recReacP1">—</div><div class="stats-tile-label" id="recReacP1Lbl">Najrýchlejšia reakcia (Hráč 1)</div></div>
+          <div class="stats-tile blue"><div class="stats-tile-val" id="recReacP2">—</div><div class="stats-tile-label" id="recReacP2Lbl">Najrýchlejšia reakcia (Hráč 2)</div></div>
+          <div class="stats-tile purple"><div class="stats-tile-val" id="recFCStreak">0</div><div class="stats-tile-label">Najdlhšia séria Flashcards 🔥</div></div>
+          <div class="stats-tile gold"><div class="stats-tile-val" id="recQuizBest">0</div><div class="stats-tile-label">Najlepší quiz výsledok</div></div>
+          <div class="stats-tile green"><div class="stats-tile-val" id="recSnakeBest">0</div><div class="stats-tile-label">Snake najlepšie skóre 🐍</div></div>
+          <div class="stats-tile green"><div class="stats-tile-val" id="recScrambleBest">0</div><div class="stats-tile-label">Scramble max bodov</div></div>
+          <div class="stats-tile blue"><div class="stats-tile-val" id="recGhostWins">0</div><div class="stats-tile-label">Ghost víťazstvá</div></div>
         </div>
       </div>
-      <div id="dailyCalendar" style="margin-top:16px">
-        <!-- Filled by JS -->
-      </div>
-    </div>
 
-    <div class="stats-section">
-      <h3>🏅 Achievementy</h3>
-      <div id="stAchievements" class="achievements-grid"></div>
-    </div>
-
-    <div class="stats-section">
-      <h3>🥇 Rebríček najlepších skóre</h3>
-      <div id="stLeaderboard"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-header">
-        <h3>📋 História posledných hier</h3>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="stats-reset-btn" onclick="resetGameStats()">🗑️ Štatistiky</button>
-          <button class="stats-reset-btn" onclick="resetAchievements()">🏅 Achievementy</button>
+      <div class="stats-section">
+        <h3>🏆 Turnajové štatistiky</h3>
+        <div class="stats-grid">
+          <div class="stats-tile purple"><div class="stats-tile-val" id="stTourPlayed">0</div><div class="stats-tile-label">Turnaje odohraných</div></div>
+          <div class="stats-tile gold"><div class="stats-tile-val" id="stTourP1Wins">0</div><div class="stats-tile-label" id="stTourP1Label">Hráč 1 vyhral</div></div>
+          <div class="stats-tile blue"><div class="stats-tile-val" id="stTourP2Wins">0</div><div class="stats-tile-label" id="stTourP2Label">Hráč 2 vyhral</div></div>
+          <div class="stats-tile"><div class="stats-tile-val" id="stTourDraws">0</div><div class="stats-tile-label">Remízy</div></div>
         </div>
       </div>
-      <div class="stats-game-history" id="stHistory">
-        <div class="stats-empty">Zatiaľ žiadne hry 🎮</div>
+    </div>
+
+    <!-- TAB 1: Achievementy -->
+    <div class="stats-tab-panel" id="stPanel1">
+      <div class="stats-section">
+        <div class="stats-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h3 style="margin-bottom:0">🏅 Achievementy</h3>
+          <button class="stats-reset-btn" onclick="resetAchievements()">🗑️ Vymazať</button>
+        </div>
+        <div id="stAchievements" class="achievements-grid"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Výzvy -->
+    <div class="stats-tab-panel" id="stPanel2">
+      <div class="stats-section">
+        <h3>📅 Denné výzvy</h3>
+        <div style="margin-bottom:12px">
+          <div class="stats-tile purple" style="display:inline-block;min-width:150px">
+            <div class="stats-tile-val" id="dailyStreakVal">0</div>
+            <div class="stats-tile-label">Aktuálny streak 🔥</div>
+          </div>
+        </div>
+        <div id="dailyCalendar" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Rebríčky -->
+    <div class="stats-tab-panel" id="stPanel3">
+      <div class="stats-section">
+        <h3>🥇 Rebríček najlepších skóre</h3>
+        <div id="stLeaderboard"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: História -->
+    <div class="stats-tab-panel" id="stPanel4">
+      <div class="stats-section">
+        <div class="stats-header">
+          <h3>📋 História posledných hier</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="stats-reset-btn" onclick="resetGameStats()">🗑️ Štatistiky</button>
+          </div>
+        </div>
+        <div class="stats-game-history" id="stHistory">
+          <div class="stats-empty">Zatiaľ žiadne hry 🎮</div>
+        </div>
       </div>
     </div>
   </div>
@@ -4943,7 +4967,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.45';
+const APP_VERSION = '19.46';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6393,6 +6417,16 @@ function launchConfetti() {
     else { canvas.style.display='none'; ctx.clearRect(0,0,canvas.width,canvas.height); }
   }
   requestAnimationFrame(draw);
+}
+
+let _statsTab = 0;
+function switchStatsTab(idx) {
+  _statsTab = idx;
+  for(let i=0;i<5;i++) {
+    const btn=$('stTab'+i), panel=$('stPanel'+i);
+    if(btn) btn.classList.toggle('active', i===idx);
+    if(panel) panel.classList.toggle('active', i===idx);
+  }
 }
 
 function renderStats() {
