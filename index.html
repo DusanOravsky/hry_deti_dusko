@@ -5119,7 +5119,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.75';
+const APP_VERSION = '19.76';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12008,7 +12008,6 @@ function mmsvStart() {
   $('mmsvStartBtn').style.display='none';
   const _tsr=$('mmsvTimerSelectorRow'); if(_tsr) _tsr.style.display='none';
   mmsvUpdateLabels();
-  for(let i=0;i<4;i++){$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
   MMSV.timeLeft=MMSV.timerSecs;
   const tvEl=$('mmsvTimerVal'); if(tvEl){tvEl.textContent=MMSV.timerSecs;tvEl.style.color='';tvEl.style.fontWeight='';}
@@ -12032,7 +12031,6 @@ function mmsvMPBeginRound() {
   $('mmsvStartBtn').style.display='none';
   const _tsr2=$('mmsvTimerSelectorRow'); if(_tsr2) _tsr2.style.display='none';
   mmsvUpdateLabels();
-  for(let i=0;i<4;i++){$('mmsvI'+i).disabled=false;}
   $('mmsvI0').focus();
   MMSV.timeLeft=MMSV.timerSecs;
   const tvEl2=$('mmsvTimerVal'); if(tvEl2){tvEl2.textContent=MMSV.timerSecs;tvEl2.style.color='';tvEl2.style.fontWeight='';}
@@ -24059,7 +24057,7 @@ function _mpHandleMessageInner(data) {
   }
   if(data.type === 'mmsv-done') {
     MMSV._mpOppDone=true;
-    MMSV._mpOppAnswers=(Array.isArray(data.answers)?data.answers:['','','','']).map(a=>String(a||'').slice(0,60));
+    MMSV._mpOppAnswers=(Array.isArray(data.answers)?data.answers:Array(MMSV.roundCats.length||4).fill('')).map(a=>String(a||'').slice(0,60));
     MMSV._mpOppDoneTime=Number(data.doneTime||0);
     if(MMSV._mpMyDone) { mmsvMPResolve(); }
     else { $('mmsvStatus').textContent='⏳ Súper skončil! Daj si čas...'; }
