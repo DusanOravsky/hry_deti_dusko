@@ -3857,7 +3857,7 @@ body.light .man-store {
     </div>
     <div class="celebration" id="wcCelebration"></div>
     <div class="buttons-group">
-      <button class="action-btn primary-btn" onclick="wcStart()">▶️ Štart</button>
+      <button class="action-btn primary-btn" id="wcStartBtn" onclick="wcStart()">▶️ Štart</button>
       <button class="action-btn danger-btn" onclick="MP.isConnected?mpRematch('wordChain'):resetWC()">🔄 Nová hra</button>
     </div>
   </div>
@@ -5099,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.63';
+const APP_VERSION = '19.64';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -12248,11 +12248,12 @@ function resetWC() {
   clearInterval(WC.timer);
   WC.player=1;WC.words=[];WC.lastLetter='';WC.over=false;WC.timeLeft=10;WC._epoch++;
   if(!MP.isConnected){WC.s1=0;WC.s2=0;$('p1ScoreWC').textContent='0';$('p2ScoreWC').textContent='0';}
-  $('wcStatus').textContent='Klikni Štart!';
+  $('wcStatus').textContent= MP.isConnected&&!MP.isHost ? 'Čakám na hostiteľa...' : 'Klikni Štart!';
   $('wcGameBox').style.display='none';
   $('wcTimer').textContent='10';
   $('wcTimer').style.color='inherit';
   $('wcInput').value='';$('wcInput').disabled=false;
+  $('wcStartBtn').style.display= (MP.isConnected&&!MP.isHost)?'none':'';
   activeTurn('wcP1Card','wcP2Card',1);
 }
 // =============================================================================
@@ -24172,8 +24173,8 @@ function _mpHandleMessageInner(data) {
     setTimeout(()=>{ if(WC._epoch===ep && !WC.over) $('wcInput').focus(); },50);
   }
   if(data.type==='wc-word'){
-    // Opponent submitted a word — apply without resending
-    wcApplyWord(data.word);
+    const _w=String(data.word||'').trim().toLowerCase().slice(0,50);
+    if(_w) wcApplyWord(_w);
   }
 
   // Scramble MP
@@ -24224,18 +24225,21 @@ function _mpHandleMessageInner(data) {
 
   // Breakout MP
   if(data.type==='brk-done'){
-    // Opponent finished their turn
     const oppPlayer=data.player;
     if(oppPlayer===1){ BRK.p1Score=data.score; $('p1ScoreBrk').textContent=data.score; }
     else{ BRK.p2Score=data.score; $('p2ScoreBrk').textContent=data.score; }
-    if(oppPlayer===1){
-      // First player done — second player's turn now
-      const myPlayer=MP.isHost?(MP.brkRound%2===0?2:1):(MP.brkRound%2===0?1:2);
+    // Determine if opponent was the FIRST player (by turn order, not player number)
+    const hostFirst=MP.brkRound%2===0;
+    const oppWasFirst=(oppPlayer===1&&hostFirst)||(oppPlayer===2&&!hostFirst);
+    if(oppWasFirst){
+      // First player done — enable second player's turn
+      const myPlayer=MP.isHost?(hostFirst?2:1):(hostFirst?1:2);
       BRK._mpMyTurn=true; BRK._mpTurnDone=false; BRK.player=myPlayer;
       activeTurn('brkP1Card','brkP2Card',myPlayer);
-      $('brkStatus').textContent=(oppPlayer===1?getP1Name('brk'):getP2Name('brk'))+': '+data.score+' bodov. '+(myPlayer===1?getP1Name('brk'):getP2Name('brk'))+' — klikni Start!';
+      const oppName=oppPlayer===1?getP1Name('brk'):getP2Name('brk');
+      const myName=myPlayer===1?getP1Name('brk'):getP2Name('brk');
+      $('brkStatus').textContent=oppName+': '+data.score+' bodov. '+myName+' — klikni Start!';
     } else {
-      // Both done — show result
       brkMPShowResult();
     }
   }
@@ -24269,7 +24273,7 @@ function _mpHandleMessageInner(data) {
     if(oppPlayer===1){ PZ.s1++; $('p1ScorePZ').textContent=PZ.s1; addWin(1,'puzzle'); }
     else{ PZ.s2++; $('p2ScorePZ').textContent=PZ.s2; addWin(2,'puzzle'); }
     const oppName=oppPlayer===1?getP1Name('pz'):getP2Name('pz');
-    $('pzStatus').textContent='🏆 '+oppName+' vyhral! ('+data.time.toFixed(1)+'s)';
+    $('pzStatus').textContent='🏆 '+oppName+' vyhral! ('+(+data.time||0).toFixed(1)+'s)';
     celebrate('pzCelebration'); playSound('win');
   }
 }
