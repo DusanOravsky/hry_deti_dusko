@@ -4943,7 +4943,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.44';
+const APP_VERSION = '19.45';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6657,7 +6657,7 @@ function clickTTT(i) {
   const w=checkTTTWin();
   if(w) {
     TTT.over=true;
-    w.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));
+    {const _cells=document.querySelectorAll('#board .cell');w.cells.forEach(idx=>_cells[idx].classList.add('win-cell'));}
     playSound('win');
     const tttW=getTTTActiveCard(w.w);
     if(tttW===1){TTT.s1++;$('tttStatus').textContent='🎉 '+getTTTPlayerName(w.w)+' vyhral!';addWin(1);celebrate('tttCelebration');popScore('p1ScoreTTT');}
@@ -6677,7 +6677,7 @@ function clickTTT(i) {
     setTimeout(()=>{
       const ai=getTTTAIMove(); TTT.board[ai]='O'; renderTTT();
       const w2=checkTTTWin();
-      if(w2){TTT.over=true;TTT.s2++;playSound('win');$('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);$('p2ScoreTTT').textContent=TTT.s2;w2.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));renderTTT();return;}
+      if(w2){TTT.over=true;TTT.s2++;playSound('win');$('tttStatus').textContent='😢 Počítač vyhral!';addWin(2);$('p2ScoreTTT').textContent=TTT.s2;{const _cells=document.querySelectorAll('#board .cell');w2.cells.forEach(idx=>_cells[idx].classList.add('win-cell'));}renderTTT();return;}
       if(TTT.board.every(v=>v)){TTT.over=true;$('tttStatus').textContent='🤝 Remíza!';addWin(0);return;}
       $('tttStatus').textContent=getP1Name('ttt')+' na rade!';
       startTurnTimer('ttt',()=>{ if(!TTT.over){TTT.over=true;$('tttStatus').textContent='⏰ Čas vypršal! Počítač vyhráva!';addWin(2);celebrate('tttCelebration');} });
@@ -22498,7 +22498,7 @@ function _mpHandleMessageInner(data) {
     const w = checkTTTWin();
     if(w) {
       TTT.over = true;
-      w.cells.forEach(idx=>document.querySelectorAll('#board .cell')[idx].classList.add('win-cell'));
+      {const _cells=document.querySelectorAll('#board .cell');w.cells.forEach(idx=>_cells[idx].classList.add('win-cell'));}
       playSound('win');
       const tttW=getTTTActiveCard(w.w);
       if(tttW===1){
@@ -22980,7 +22980,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'sokoban') { if(data.round !== undefined) MP.sokRound = data.round; SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
     if(gameId === 'ghost') { if(data.round !== undefined) MP.ghostRound = data.round; if(data.lang && $('ghostLangSelect')) $('ghostLangSelect').value=data.lang; resetGhost(); }
     if(gameId === 'dotsBoxes') { if(data.round !== undefined) MP.dbRound = data.round; resetDB(); applyDBMPStart(); }
-    if(gameId === 'higherLower') { if(data.round !== undefined) MP.hlRound = data.round; resetHL(); }
+    if(gameId === 'higherLower') { if(data.round !== undefined) MP.hlRound = data.round; startHL(); }
   }
 
   // Snake Duel MP
@@ -23248,7 +23248,7 @@ function mpRematch(gameId) {
   if(gameId === 'sokoban') { MP.sokRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.sokRound }); SOK.level=0; SOK.s1=0; SOK.s2=0; SOK.p1Completed=false; SOK.p2Completed=false; resetSokoban(); }
   if(gameId === 'ghost') { MP.ghostRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.ghostRound, lang: $('ghostLangSelect')?.value||'sk' }); resetGhost(); }
   if(gameId === 'dotsBoxes') { MP.dbRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.dbRound }); resetDB(); applyDBMPStart(); }
-  if(gameId === 'higherLower') { MP.hlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.hlRound }); resetHL(); }
+  if(gameId === 'higherLower') { MP.hlRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.hlRound }); startHL(); }
 }
 
 function mpGenerateQR(code) {
