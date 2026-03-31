@@ -4280,10 +4280,12 @@ body.light .man-store {
       <li><span style="background:#538d4e;color:white;padding:1px 5px;border-radius:3px">Zelená</span> = správne písmeno na správnom mieste</li>
       <li><span style="background:#b59f3b;color:white;padding:1px 5px;border-radius:3px">Žltá</span> = písmeno je v slove, ale inde</li>
       <li><span style="background:#3a3a3c;color:white;padding:1px 5px;border-radius:3px">Sivá</span> = písmeno nie je v slove</li>
+      <li><strong>🔒 Hard mode</strong>: odhalené písmená musíš použiť v ďalšom pokuse</li>
     </ul></div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px">
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">
       <button class="action-btn" id="wdlLangSK" onclick="setWdlLang('sk')" style="padding:6px 16px;font-size:0.85em">&#127480;&#127472; Slovenčina</button>
       <button class="action-btn" id="wdlLangEN" onclick="setWdlLang('en')" style="padding:6px 16px;font-size:0.85em">&#127468;&#127463; English</button>
+      <button class="action-btn" id="wdlHardModeBtn" onclick="wdlToggleHardMode()" style="padding:6px 16px;font-size:0.85em">🔓 Normal</button>
     </div>
     <div class="player-info" id="wdlPlayerInfo">
       <div class="player-card player1 active-turn" id="wdlP1Card"><div class="player-name-display" id="wdlP1Name">Hráč 1</div><div class="player-score" id="p1ScoreWDL">0</div></div>
@@ -4968,7 +4970,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.50';
+const APP_VERSION = '19.51';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16482,7 +16484,7 @@ const WDL = {
   secret: '', guesses: [], current: '', row: 0, gameOver: false,
   p1Score: 0, p2Score: 0, turn: 1,
   pvpPhase: 'guess', pvpSecret: '', pvpRound: 0,
-  keyStates: {}
+  keyStates: {}, hardMode: false
 };
 
 function wdlBuildBoard() {
@@ -16609,6 +16611,13 @@ function wdlSubmitGuess() {
   if(!WORDLE_WORDS.includes(guess)) {
     wdlShakeRow();
     $('wdlStatus').textContent = 'Neplatne slovo!';
+    playSound('wrong');
+    return;
+  }
+  const hmErr = wdlHardModeValidate(guess);
+  if(hmErr) {
+    wdlShakeRow();
+    $('wdlStatus').textContent = '🔒 ' + hmErr;
     playSound('wrong');
     return;
   }
@@ -16778,6 +16787,40 @@ function wdlShakeRow() {
   }
 }
 
+function wdlToggleHardMode() {
+  WDL.hardMode = !WDL.hardMode;
+  const btn = $('wdlHardModeBtn');
+  if(btn) {
+    btn.textContent = WDL.hardMode ? '🔒 Hard' : '🔓 Normal';
+    btn.style.background = WDL.hardMode ? 'linear-gradient(135deg,#ff6b6b,#ee5a24)' : '';
+    btn.style.color = WDL.hardMode ? 'white' : '';
+  }
+  resetWordle();
+}
+
+// Returns error message string if hard mode constraints are violated, null if OK
+function wdlHardModeValidate(guess) {
+  if(!WDL.hardMode || WDL.guesses.length === 0) return null;
+  const positions = [null, null, null, null, null];
+  const required = [];
+  WDL.guesses.forEach(g => {
+    const res = wdlEvaluate(g, WDL.secret);
+    for(let i = 0; i < 5; i++) {
+      if(res[i] === 'correct') positions[i] = g[i];
+      else if(res[i] === 'present' && !required.includes(g[i])) required.push(g[i]);
+    }
+  });
+  for(let i = 0; i < 5; i++) {
+    if(positions[i] && guess[i] !== positions[i]) {
+      return `Pozícia ${i+1} musí byť '${positions[i]}'`;
+    }
+  }
+  for(const letter of required) {
+    if(!guess.includes(letter)) return `Musíš použiť '${letter}'`;
+  }
+  return null;
+}
+
 function resetWordle() {
   WDL.guesses = [];
   WDL.current = '';
@@ -16786,6 +16829,13 @@ function resetWordle() {
   WDL.keyStates = {};
   WDL.mpDone = false;
   WDL.mpOpponentRows = -1;
+  // Sync hard mode button visual (hardMode itself persists across rounds)
+  const _hmBtn = $('wdlHardModeBtn');
+  if(_hmBtn) {
+    _hmBtn.textContent = WDL.hardMode ? '🔒 Hard' : '🔓 Normal';
+    _hmBtn.style.background = WDL.hardMode ? 'linear-gradient(135deg,#ff6b6b,#ee5a24)' : '';
+    _hmBtn.style.color = WDL.hardMode ? 'white' : '';
+  }
 
   wdlBuildBoard();
   wdlBuildKeyboard();
