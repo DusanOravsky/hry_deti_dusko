@@ -5100,7 +5100,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.72';
+const APP_VERSION = '19.73';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11923,7 +11923,7 @@ function mmsvPickCats() {
 }
 
 function mmsvToggleExtra(idx, force) {
-  if(MP.isConnected && !MP.isHost) return;
+  if(force === undefined && MP.isConnected && !MP.isHost) return;
   MMSV.extraCats[idx] = force !== undefined ? force : !MMSV.extraCats[idx];
   const btn=$('mmsvExtra'+idx);
   if(btn) btn.className='action-btn'+(MMSV.extraCats[idx]?' active-timer-btn':'');
