@@ -5099,7 +5099,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.64';
+const APP_VERSION = '19.65';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -17511,7 +17511,7 @@ function resetWordle() {
     setP2Card('wdlP2Name', false);
     if(MP.isHost) {
       WDL.secret = WORDLE_WORDS.length > 0 ? WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)] : 'SLOVO';
-      mpSend({type:'wdl-start',secret:WDL.secret,lang:WDL._lang||'sk'});
+      mpSend({type:'wdl-start',secret:WDL.secret,lang:WDL._lang||'sk',hardMode:WDL.hardMode});
       $('wdlStatus').textContent = 'Obaja hádajte! Pokus 1/6';
     } else {
       $('wdlStatus').textContent = 'Čakám na slovo...';
@@ -22843,7 +22843,8 @@ function mpCreateRoom() {
           memDiff: MEM.diff,
           ghostLang: $('ghostLangSelect')?.value||'sk',
           simonDiff: SIMON.diff,
-          simonNumColors: SIMON.numColors
+          simonNumColors: SIMON.numColors,
+          wcRound: MP.wcRound, scrRound: MP.scrRound, brkRound: MP.brkRound, puzzleRound: MP.puzzleRound
         });
       });
 
@@ -23095,6 +23096,8 @@ function mpDisconnect() {
   $('tttSizeSel').style.display = '';
   $('memSizeSel').style.display='';
   const ghostLangSel=$('ghostLangSelect');if(ghostLangSel)ghostLangSel.disabled=false;
+  const _wdlHardBtnD=$('wdlHardModeBtn');if(_wdlHardBtnD)_wdlHardBtnD.disabled=false;
+  const _scrCatD=$('scrambleCatSelect');if(_scrCatD){_scrCatD.disabled=false;_scrCatD.style.opacity='';}
   $('simonDiffWrap').style.display = 'flex';
   if(welcomeGameMode !== 'ai') $('simonColorWrap').style.display = 'flex';
   // Restore chess timer toggle (was disabled in MP)
@@ -23266,7 +23269,8 @@ function mpTryReconnect() {
           mpSend({ type: 'handshake', from: 'host', name: MP.myName,
             tttSize: _rPsk ? '15x15' : TTT.size, tttGrid: _rPsk ? 15 : TTT.grid, memCards: MEM.cards, memDiff: MEM.diff,
             ghostLang: $('ghostLangSelect')?.value||'sk',
-            simonDiff: SIMON.diff, simonNumColors: SIMON.numColors });
+            simonDiff: SIMON.diff, simonNumColors: SIMON.numColors,
+            wcRound: MP.wcRound, scrRound: MP.scrRound, brkRound: MP.brkRound, puzzleRound: MP.puzzleRound });
         });
         conn.on('data', (d) => mpHandleMessage(d));
         conn.on('close', mpHandleDisconnect);
@@ -23361,6 +23365,16 @@ function _mpHandleMessageInner(data) {
     if(data.from === 'host' && data.ghostLang) {
       const sel=$('ghostLangSelect');
       if(sel){sel.value=data.ghostLang;sel.disabled=true;buildGhostKeyboard();}
+    }
+    // Guest: disable scramble category (host controls word selection)
+    // Guest: sync round counters from host
+    if(data.from === 'host') {
+      const _scrCat=$('scrambleCatSelect');
+      if(_scrCat){_scrCat.disabled=true;_scrCat.style.opacity='0.5';}
+      if(data.wcRound !== undefined) MP.wcRound = data.wcRound;
+      if(data.scrRound !== undefined) MP.scrRound = data.scrRound;
+      if(data.brkRound !== undefined) MP.brkRound = data.brkRound;
+      if(data.puzzleRound !== undefined) MP.puzzleRound = data.puzzleRound;
     }
     // Guest receives Simon Says settings from host handshake
     if(data.from === 'host' && data.simonDiff) {
@@ -23835,6 +23849,8 @@ function _mpHandleMessageInner(data) {
   // Wordle MP
   if(data.type === 'wdl-start') {
     if(data.lang && data.lang !== (WDL._lang||'sk')) setWdlLang(data.lang);
+    if(data.hardMode !== undefined){ WDL.hardMode=!!data.hardMode; wdlApplyHardModeUI(); }
+    const _wdlHardBtn=$('wdlHardModeBtn'); if(_wdlHardBtn) _wdlHardBtn.disabled=true;
     // Validate secret against word list to prevent host sending invalid/malicious value
     const _sec = String(data.secret||'').toUpperCase().slice(0,5);
     WDL.secret = (WORDLE_WORDS.includes(_sec) && _sec.length===5) ? _sec : (WORDLE_WORDS[0]||'SLOVO');
