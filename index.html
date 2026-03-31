@@ -5035,7 +5035,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.55';
+const APP_VERSION = '19.56';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -11830,6 +11830,10 @@ function mmsvDone() {
   }
 }
 
+function mmsvNormalize(s) {
+  return (s||'').trim().replace(/\s+/g,' ').toLowerCase();
+}
+
 function mmsvShowResult() {
   MMSV.phase='result';
   $('mmsvLetterBox').style.display='block';
@@ -11840,27 +11844,38 @@ function mmsvShowResult() {
   const p2Name = getActiveP2Name('mmsv');
   let roundP1=0, roundP2=0;
 
-  let html='<div style="font-weight:900;text-align:center;opacity:0.6;font-size:0.85em">'+escHtml(p1Name)+'</div>'
-          +'<div style="font-weight:900;text-align:center;opacity:0.6;font-size:0.85em">'+escHtml(p2Name)+'</div>';
+  // Header: player names spanning full width
+  let html='<div style="grid-column:1/-1;display:flex;justify-content:space-between;font-weight:900;font-size:0.85em;padding:0 4px;opacity:0.7">'
+    +'<span>'+escHtml(p1Name)+'</span><span>'+escHtml(p2Name)+'</span></div>';
+
   for(let i=0;i<4;i++){
-    const a1=(MMSV.p1Ans[i]||'').trim();
-    const a2=(MMSV.p2Ans[i]||'').trim();
-    const same = a1&&a2&&a1.toLowerCase()===a2.toLowerCase();
+    const a1=mmsvNormalize(MMSV.p1Ans[i]);
+    const a2=mmsvNormalize(MMSV.p2Ans[i]);
+    const same = a1&&a2&&a1===a2;
     let pts1=0,pts2=0;
     if(a1&&a2){ pts1=same?5:10; pts2=same?5:10; }
     else if(a1){ pts1=10; }
     else if(a2){ pts2=10; }
     roundP1+=pts1; roundP2+=pts2;
-    const c1=pts1===10?'#43e97b':pts1===5?'#f6d365':'rgba(128,128,128,0.2)';
-    const c2=pts2===10?'#43e97b':pts2===5?'#f6d365':'rgba(128,128,128,0.2)';
+
+    const badge = same
+      ? '<span style="background:rgba(255,193,7,0.3);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">🤝 ZHODNÉ +5</span>'
+      : (a1&&a2 ? '<span style="background:rgba(67,233,123,0.2);border-radius:4px;padding:1px 5px;font-size:0.7em;margin-left:4px">⭐ UNIKÁTNE +10</span>' : '');
+
+    // Category label row spanning both columns
+    html+='<div style="grid-column:1/-1;font-size:0.78em;font-weight:700;opacity:0.65;padding:6px 4px 2px;border-top:1px solid rgba(255,255,255,0.08);margin-top:2px">'
+      +MMSV_CATS[i]+badge+'</div>';
+
+    const c1=pts1===10?'rgba(67,233,123,0.25)':pts1===5?'rgba(255,193,7,0.25)':'rgba(128,128,128,0.12)';
+    const c2=pts2===10?'rgba(67,233,123,0.25)':pts2===5?'rgba(255,193,7,0.25)':'rgba(128,128,128,0.12)';
+    const disp1 = escHtml(MMSV.p1Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>';
+    const disp2 = escHtml(MMSV.p2Ans[i]||'').trim() || '<span style="opacity:0.3">—</span>';
     html+='<div style="background:'+c1+';border-radius:8px;padding:6px 8px">'
-        +'<div style="font-size:0.75em;opacity:0.7">'+MMSV_CATS[i]+'</div>'
-        +'<div style="font-weight:900">'+(escHtml(a1)||'—')+'</div>'
-        +'<div style="font-size:0.8em;opacity:0.8">+'+pts1+' bodov</div></div>'
+        +'<div style="font-weight:900;font-size:0.95em">'+disp1+'</div>'
+        +(pts1?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px">+'+pts1+' b</div>':'')+'</div>'
         +'<div style="background:'+c2+';border-radius:8px;padding:6px 8px">'
-        +'<div style="font-size:0.75em;opacity:0.7">'+MMSV_CATS[i]+'</div>'
-        +'<div style="font-weight:900">'+(escHtml(a2)||'—')+'</div>'
-        +'<div style="font-size:0.8em;opacity:0.8">+'+pts2+' bodov</div></div>';
+        +'<div style="font-weight:900;font-size:0.95em">'+disp2+'</div>'
+        +(pts2?'<div style="font-size:0.75em;opacity:0.7;margin-top:2px">+'+pts2+' b</div>':'')+'</div>';
   }
   $('mmsvResultGrid').innerHTML=html;
 
@@ -11869,18 +11884,17 @@ function mmsvShowResult() {
   $('p2ScoreMMSV').textContent=MMSV.s2;
 
   let statusMsg='';
-  if(roundP1>roundP2){ statusMsg=getActiveP1Name('mmsv')+' vyhral kolo! (+'+roundP1+' vs +'+roundP2+')'; }
-  else if(roundP2>roundP1){ statusMsg=getActiveP2Name('mmsv')+' vyhral kolo! (+'+roundP2+' vs +'+roundP1+')'; }
-  else { statusMsg='Remíza! Obaja +'+roundP1+' bodov'; }
+  if(roundP1>roundP2){ statusMsg='🏆 '+escHtml(p1Name)+' vyhral kolo! ('+roundP1+' vs '+roundP2+' b)'; }
+  else if(roundP2>roundP1){ statusMsg='🏆 '+escHtml(p2Name)+' vyhral kolo! ('+roundP2+' vs '+roundP1+' b)'; }
+  else { statusMsg='🤝 Remíza! Obaja '+roundP1+' bodov'; }
   $('mmsvStatus').textContent=statusMsg;
 
-  // Determine round winner for addWin
   if(roundP1>roundP2){ addWin(1,'mmsv'); }
   else if(roundP2>roundP1){ addWin(2,'mmsv'); }
   else { addWin(0,'mmsv'); }
 
   const cel=$('mmsvCelebration');
-  cel.textContent=roundP1>roundP2?'🏆':'🎉';
+  cel.textContent=roundP1>=roundP2?'🏆':'🎉';
   cel.classList.add('show');
   setTimeout(()=>cel.classList.remove('show'),1800);
   if(soundEnabled) playSound(523,'sine',0.3,0.4);
