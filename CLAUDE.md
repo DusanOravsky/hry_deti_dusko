@@ -9,7 +9,7 @@ Single-file PWA game collection for kids. Everything is in `index.html` (~24700 
 - **Single file**: All HTML, CSS, and JS in `index.html`
 - **PWA**: `sw.js` uses network-first for HTML, cache-first for assets
 - **Version sync**: `APP_VERSION` in index.html must match `CACHE_NAME` in sw.js (format: `hrajmesi-vX.Y`)
-- **Current version**: v19.67
+- **Current version**: v19.76
 - **PeerJS version**: 1.5.5 (CDN: `unpkg.com/peerjs@1.5.5`)
 - **Game modes**: `welcomeGameMode` variable — `'pvp'` (default, 2 players) or `'ai'` (vs computer)
 - **Mobile nav**: 3-level navigation — welcome → game picker → game view
@@ -391,15 +391,18 @@ Key game state objects and their patterns:
 - **Mancala MP** (v19.36): `mancala-move` sent from `manClickPit()` (action point); `manMakeMove()` called on receiver; `manRound` alternation; score reset guard (`if(!MP.isConnected)`)
 - **Sokoban MP** (v19.36): simultaneous play; `sok-done` sent on completion; each device tracks `p1Completed`/`p2Completed` independently; `sokMPAdvanceLevel()` triggers when both done; level selector hidden in MP; `sokRound` for rematch sync only
 
-## New Features (v19.45–v19.67)
+## New Features (v19.45–v19.76)
 
-- **MMZV (Meno Mesto Zviera Vec) MP** (v19.45+): `mp:true`, `mmsv-start`/`mmsv-done`/`mmsv-answers` messages, simultaneous play, both players fill 4 categories per letter, score comparison after both submit; `mmsvRound` alternation; timer selector (30/60/90/120s); guest sees "Čakám na hostiteľa..." start state
+- **MMZV (Meno Mesto Zviera Vec) MP** (v19.45+): `mp:true`, `mmsv-start`/`mmsv-done`/`mmsv-answers` messages, simultaneous play, both players fill 4 categories per letter, score comparison after both submit; `mmsvRound` alternation; timer selector (30/45/60/90s); guest sees "Čakám na hostiteľa..." start state
 - **Slovný Reťazec (WC) MP** (v19.45+): `mp:true`, `wc-start`/`wc-word`/`wc-timeout` messages; turn-based word chain; `wcRound` alternation (host starts even rounds); epoch-protected 10s timer; `WC._isMyTurn` flag — only active player fires `wcTimeout()` and sends `wc-timeout` to sync scores on other device
 - **Scramble MP** (v19.45+): `mp:true`, `scr-word` message (host sends word+hint to guest); simultaneous race; `scrRound` alternation; `SCR._mpRoundDone` guard; guest `scrambleCatSelect` disabled in MP
 - **Breakout MP** (v19.45+): `mp:true`, `brk-done` message; alternating turns; `brkRound` alternation; `oppWasFirst` logic (`oppPlayer===1&&hostFirst || oppPlayer===2&&!hostFirst`) fixes odd-round scoring
 - **Puzzle Scramble MP** (v19.45+): `mp:true`, `puzzle-done` message (with time); simultaneous solve; `puzzleRound` alternation; `PZ._mpDone` guard; `(+data.time||0).toFixed(1)` safe number coerce
-- **UX fixes** (v19.45+): MMZV timer selector (30/60/90/120s); Wordle hard mode badge `#wdlHardBadge` + `wdlApplyHardModeUI()` (re-enables btn after game); Ghost lang locked during active game; onboarding slides 2-4 animated (demo cards, MP phone anim, arrow mock)
+- **UX fixes** (v19.45+): MMZV timer selector (30/45/60/90s); Wordle hard mode badge `#wdlHardBadge` + `wdlApplyHardModeUI()` (re-enables btn after game); Ghost lang locked during active game; onboarding slides 2-4 animated (demo cards, MP phone anim, arrow mock)
 - **Bug fixes** (v19.60–v19.67): TDZ blank screen — `resetMMSV()`/`resetWC()` moved to init block after `const MP`; WC double-timeout fix (`_isMyTurn` guard + `wc-timeout` sync message); Wordle hard mode btn stays disabled after game (fixed in `wdlApplyHardModeUI`); Breakout MP odd-round scoring (`oppWasFirst` boolean); `wcApplyWord` crash on empty string (String sanitization); `puzzle-done` crash on undefined time
+- **MMSV improvements** (v19.68–v19.74): letter validation (answer must start with correct letter); two-step challenge confirm flow (`mmsvShowChallengePrompt` + `mmsvChallengeRespond`); extra category toggles opt-in (classic 4 default, +Povolanie/Jedlo/Krajina/Farba optional); MP force-param fix for `mmsvToggleExtra`
+- **MMSV MP extra cats sync fix** (v19.75): `mmsvGetActiveCats()` uses `MMSV_CAT_POOL[4+i]` refs so `indexOf()` works; guest `mmsv-start` handler calls `mmsvPickCats()` after `extraCats` sync; `mmsvShowResult()` loop `i<nCats`; drag wrapped in `DOMContentLoaded`; challenge bounds use `roundCats.length`
+- **MMSV cleanup** (v19.76): removed redundant enable-input loops (inputs recreated fresh by `mmsvUpdateLabels()`); `mmsv-done` fallback answer array uses `roundCats.length` instead of hardcoded 4
 - **MP const MP additions**: `wcRound`, `scrRound`, `brkRound`, `puzzleRound`, `mmsvRound` added to MP state object
 - **Game count**: 52 → 54 (MMZV + Slovný Reťazec added)
 - **MP games count**: 22 → 26 (WC, Scramble, Breakout, Puzzle Scramble added)
