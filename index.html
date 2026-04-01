@@ -5209,7 +5209,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.89';
+const APP_VERSION = '19.90';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6242,7 +6242,7 @@ function renderDailyCalendar(){
   // Get history from localStorage (store last 30 days)
   try{
     const history=JSON.parse(localStorage.getItem('hry_daily_history')||'[]');
-    history.forEach(d=>completedDates.add(d));
+    if(Array.isArray(history)) history.forEach(d=>completedDates.add(d));
   }catch(e){}
 
   // CRITICAL: If today's challenge is completed in state but not in history, add it
@@ -6283,11 +6283,12 @@ function renderDailyCalendar(){
 function dailySaveHistory(day){
   try{
     const history=JSON.parse(localStorage.getItem('hry_daily_history')||'[]');
-    if(!history.includes(day)){
-      history.push(day);
+    const safeHistory=Array.isArray(history)?history:[];
+    if(!safeHistory.includes(day)){
+      safeHistory.push(day);
       // Keep only last 30 days
       const cutoff=dailySeed()-30;
-      const filtered=history.filter(d=>d>cutoff);
+      const filtered=safeHistory.filter(d=>d>cutoff);
       localStorage.setItem('hry_daily_history',JSON.stringify(filtered));
     }
   }catch(e){}
@@ -6473,10 +6474,11 @@ const ACHIEVEMENTS = [
   { id:'hm5',    icon:'💀', name:'Kat',            desc:'Vyhraj 5× Obesenec',         check:()=>(gStats.perGame.hangman?.p1||0)+(gStats.perGame.hangman?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.hangman?.p1||0)+(gStats.perGame.hangman?.p2||0),max:5}) },
   { id:'mmsv5',  icon:'🗺️', name:'Zemepisár',     desc:'Vyhraj 5× Meno Mesto Zviera Vec', check:()=>(gStats.perGame.mmsv?.p1||0)+(gStats.perGame.mmsv?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.mmsv?.p1||0)+(gStats.perGame.mmsv?.p2||0),max:5}) },
   { id:'wc5',    icon:'🔗', name:'Reťaziar',      desc:'Vyhraj 5× Slovný Reťazec',       check:()=>(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0),max:5}) },
+  { id:'gf5',    icon:'🎣', name:'Rybár',          desc:'Vyhraj 5× Kvarteto',             check:()=>(gStats.perGame.gofish?.p1||0)+(gStats.perGame.gofish?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.gofish?.p1||0)+(gStats.perGame.gofish?.p2||0),max:5}) },
 ];
 
 let _unlockedAch; try { const _ua=JSON.parse(localStorage.getItem('hry_achievements')||'[]'); _unlockedAch=Array.isArray(_ua)?_ua.filter(x=>typeof x==='string'):[]; } catch(e) { _unlockedAch = []; }
-let _seasonalPlays; try { _seasonalPlays = JSON.parse(localStorage.getItem('hry_seasonal_plays')||'{}'); } catch(e) { _seasonalPlays = {}; }
+let _seasonalPlays; try { const _sp=JSON.parse(localStorage.getItem('hry_seasonal_plays')||'{}'); _seasonalPlays=(_sp&&typeof _sp==='object'&&!Array.isArray(_sp))?_sp:{}; } catch(e) { _seasonalPlays = {}; }
 
 function _isSeason(season) {
   const now = new Date();
@@ -25403,7 +25405,7 @@ if('serviceWorker' in navigator) {
       <div class="onb-slide active">
         <div class="onb-icon">🎮</div>
         <div class="onb-title">Vitaj v Hrajme si!</div>
-        <div class="onb-desc">Zbierka <strong>55 hier</strong> pre celú rodinu — doskové hry, arkádové hry, slovné súboje a oveľa viac.<br><br>Rýchly prehľad za 30 sekúnd 👇</div>
+        <div class="onb-desc">Zbierka <strong>56 hier</strong> pre celú rodinu — doskové hry, arkádové hry, slovné súboje a oveľa viac.<br><br>Rýchly prehľad za 30 sekúnd 👇</div>
       </div>
       <div class="onb-slide">
         <div class="onb-icon">📱</div>
