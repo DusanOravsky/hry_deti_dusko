@@ -3374,17 +3374,24 @@ body.light .man-store {
 
   <!-- ===== GO FISH / KVARTETO ===== -->
   <div class="game-area" id="gofish">
+    <div class="rules"><h3>📋 Pravidlá Kvarteta:</h3><ul>
+      <li>Každý hráč dostane 7 kariet zo zamiešaného balíčka (2–Eso, 4 farby)</li>
+      <li>Na rade si <b>vyber kartu</b> zo svojej ruky a spýtaj sa súpera, či ju má</li>
+      <li>Ak súper má kartu, odovzdá ti ju a ty ideš znova</li>
+      <li>Ak nemá, povie <b>„Choď rybárčiť"</b> — zoberies kartu z balíčka</li>
+      <li>Keď máš všetky 4 karty rovnakej hodnoty, uložíš si <b>štvorku (📚)</b></li>
+      <li>Hra končí keď sa minú karty — vyhráva ten s najviac štvorkami</li>
+    </ul></div>
     <div class="player-info">
-      <div class="player-card" id="gfP1Card">
-        <div class="player-name" id="gfP1Name">Hráč 1</div>
-        <div class="score" id="gfP1Score">0</div>
-        <div class="player-label">štvorky</div>
+      <div class="player-card player1 active-turn" id="gfP1Card">
+        <div class="player-name-display" id="gfP1Name">Hráč 1</div>
+        <div class="player-score" id="gfP1Score">0</div>
+        <div style="font-size:0.7em;opacity:0.6;margin-top:2px">📚 štvorky</div>
       </div>
-      <div class="vs-badge">VS</div>
-      <div class="player-card" id="gfP2Card">
-        <div class="player-name" id="gfP2Name">Hráč 2</div>
-        <div class="score" id="gfP2Score">0</div>
-        <div class="player-label">štvorky</div>
+      <div class="player-card player2" id="gfP2Card">
+        <div class="player-name-display" id="gfP2Name">Hráč 2</div>
+        <div class="player-score" id="gfP2Score">0</div>
+        <div style="font-size:0.7em;opacity:0.6;margin-top:2px">📚 štvorky</div>
       </div>
     </div>
     <div class="status" id="gfStatus">Klikni Štart!</div>
@@ -5196,7 +5203,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.86';
+const APP_VERSION = '19.87';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -23072,7 +23079,7 @@ function _getGreeting() {
   return 'Dobrý večer! 🌙';
 }
 
-const _welcomeEmojis = ['🎮','🎲','🧩','♟️','🎯','🏓','🐍','🔢','🐤','💥'];
+const _welcomeEmojis = ['🎮','🎲','🧩','♟️','🎯','🏓','🐍','🔢','🐤','💥','🃏','🎴','🚀','⚽','🐝','🎪','🏆','🌟','🎸','🧠','🦁','🌈','🔥','🎃','🎨','🃟','🎭','🎰','🎠','🌊'];
 let _welcomeEmojiIdx = 0;
 let _welcomeEmojiTimer = null;
 function _rotateWelcomeEmoji() {
