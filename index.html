@@ -3436,6 +3436,12 @@ body.light .man-store {
       <div id="gfLastAction" style="text-align:center;margin-top:10px;font-size:0.9em;min-height:2.5em;opacity:0.8;padding:0 10px"></div>
     </div>
 
+    <div class="difficulty-selector" id="gfAISel">
+      <button class="difficulty-btn active" onclick="setGFDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setGFDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setGFDiff('hard',this)">Ťažká</button>
+    </div>
+
     <div class="buttons-group" style="margin-top:12px">
       <button class="action-btn primary-btn" id="gfStartBtn" onclick="gfStart()">▶️ Štart</button>
       <button class="action-btn" onclick="MP.isConnected?mpRematch('gofish'):resetGoFish()">🔄 Nová hra</button>
@@ -5203,7 +5209,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.87';
+const APP_VERSION = '19.88';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6306,6 +6312,7 @@ function restoreAllDiffs(){
     ['unoGame','unoAISel',setUnoDiff],
     ['angryBirds','abDiffWrap',setAbDiff],
     ['sokoban','sokDiffWrap',setSokDiff],
+    ['gofish','gfAISel',setGFDiff],
   ];
   map.forEach(([gId,selId,setFn])=>{
     const d=loadDiff(gId); if(!d) return;
@@ -22581,6 +22588,11 @@ function gfStart(){
   gfRenderTurnUI();
 }
 
+function setGFDiff(d, btn){
+  GF.diff=d; saveDiff('gofish',d);
+  document.querySelectorAll('#gfAISel .difficulty-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
 function resetGoFish(){
   if(GF._aiTimeout){clearTimeout(GF._aiTimeout);GF._aiTimeout=null;}
   GF.deck=gfMakeDeck();
@@ -24994,10 +25006,12 @@ function _mpHandleMessageInner(data) {
   // ---- GO FISH MP ----
   if(data.type==='gf-start'){
     // Guest receives initial hand and game parameters from host
-    GF.hand2=data.hand||[];   // guest's own hand (host stored as hand2)
+    const _gfVH=a=>Array.isArray(a)&&a.length<=52&&a.every(c=>c&&GF_RANKS.includes(c.r)&&GF_SUITS.includes(c.s));
+    const _gfVB=a=>Array.isArray(a)&&a.length<=13&&a.every(r=>GF_RANKS.includes(r));
+    GF.hand2=_gfVH(data.hand)?data.hand:[];  // guest's own hand (host stored as hand2)
     GF.hand1=new Array(7);    // host's hand — guest doesn't see it, placeholder for count
-    GF.books1=data.books1||[]; GF.books2=data.books2||[];
-    GF.deck=new Array(data.deckCount||38);
+    GF.books1=_gfVB(data.books1)?data.books1:[]; GF.books2=_gfVB(data.books2)?data.books2:[];
+    GF.deck=new Array(Math.min(Math.max(0,data.deckCount||38),52));
     GF.turn=data.first||1; GF.over=false; GF.selectedRank=null; GF.phase='idle';
     GF.s1=0; GF.s2=0;
     const p1n=$('gfP1Name'); if(p1n) p1n.textContent=gfGetName(1);
@@ -25019,9 +25033,11 @@ function _mpHandleMessageInner(data) {
   if(data.type==='gf-state'){
     // Guest receives updated state after host processes any action
     if(MP.isHost) return;
-    GF.hand2=data.hand||[];      // guest's own updated hand
-    GF.deck=new Array(data.deckCount||0);
-    GF.books1=data.books1||[]; GF.books2=data.books2||[];
+    const _gfVH=a=>Array.isArray(a)&&a.length<=52&&a.every(c=>c&&GF_RANKS.includes(c.r)&&GF_SUITS.includes(c.s));
+    const _gfVB=a=>Array.isArray(a)&&a.length<=13&&a.every(r=>GF_RANKS.includes(r));
+    GF.hand2=_gfVH(data.hand)?data.hand:[];  // guest's own updated hand
+    GF.deck=new Array(Math.min(Math.max(0,data.deckCount||0),52));
+    GF.books1=_gfVB(data.books1)?data.books1:[]; GF.books2=_gfVB(data.books2)?data.books2:[];
     GF.turn=data.turn||1;
     const la=$('gfLastAction'); if(la) la.textContent=data.lastAction||'';
     const deckEl=$('gfDeckCount'); if(deckEl) deckEl.textContent=data.deckCount||0;
