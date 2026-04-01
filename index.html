@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js" integrity="sha384-x0YgkOr/3UOZP2CRDxGW9e0Q+2Qjyr3uJrm4xU32Y7ZCNAo7Cc7bjhrZMi/dwczu" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 <meta name="description" content="Offline herná zbierka pre Lukáška a Natálku">
 <meta name="theme-color" content="#667eea">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5119,7 +5119,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.81';
+const APP_VERSION = '19.82';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -19897,7 +19897,7 @@ function sokCheckWin(){
       else { SOK.p2Completed=true; SOK.s2++; $('p2ScoreSok').textContent=SOK.s2; }
       addWin(w,'sokoban');
 
-      mpSend({type:'sok-done', moves:SOK.moves, time:SOK.time});
+      mpSend({type:'sok-done', moves:SOK.moves, time:SOK.time, level:SOK.level, round:MP.sokRound});
 
       $('sokStatus').textContent='✅ '+name+' dokončil! '+SOK.moves+' ťahov. Čakáš na súpera...';
       $('sokCelebration').textContent='🎉';
@@ -22333,6 +22333,13 @@ function stopAllGames(){
   if(typeof WC!=='undefined'&&WC.timer){clearInterval(WC.timer);WC.timer=null;WC.over=true;}
   // QR scanner
   if(typeof mpStopScan==='function') mpStopScan();
+  // Global UI timers
+  if(typeof _welcomeEmojiTimer!=='undefined'&&_welcomeEmojiTimer){clearInterval(_welcomeEmojiTimer);_welcomeEmojiTimer=null;}
+  if(typeof _mpIngameAutoTimer!=='undefined'&&_mpIngameAutoTimer){clearTimeout(_mpIngameAutoTimer);_mpIngameAutoTimer=null;}
+  if(typeof MP!=='undefined'){
+    if(MP._pingInterval){clearInterval(MP._pingInterval);MP._pingInterval=null;}
+    if(MP._reconnectTimeout){clearTimeout(MP._reconnectTimeout);MP._reconnectTimeout=null;}
+  }
 }
 
 function mobileBackWithTournamentCheck(targetLevel) {
@@ -23520,7 +23527,7 @@ function mpHandleMessage(data) {
 function _mpHandleMessageInner(data) {
   if(data.type === 'handshake') {
     console.log('Handshake from:', data.from, 'name:', data.name);
-    MP.opponentName = data.name || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
+    MP.opponentName = String(data.name||'').replace(/<[^>]*>/g,'').trim().slice(0,30) || (data.from === 'host' ? 'Hráč 1' : 'Hráč 2');
 
     // Save original names before MP overrides them
     if(!MP._savedP1) { MP._savedP1 = globalP1; MP._savedP2 = globalP2; }
@@ -24132,7 +24139,7 @@ function _mpHandleMessageInner(data) {
       activeTurn(p1c, p2c, hostIsX ? 1 : 2);
     }
     if(gameId === 'connect4') { if(data.round !== undefined) MP.c4Round = data.round; resetC4(); applyMPAlternate('c4', MP.c4Round, 'c4P1Card', 'c4P2Card', 'c4Status', ()=>{C4.player=MP.isHost?1:2;}, ()=>{C4.player=MP.isHost?2:1;}); }
-    if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; if(MP.isHost) resetMem(); applyMemMPStart(); }
+    if(gameId === 'memory') { if(data.round !== undefined) MP.memRound = data.round; resetMem(); applyMemMPStart(); }
     if(gameId === 'chess') { if(data.round !== undefined) MP.chRound = data.round; resetChess(); applyChessMPStart(); }
     if(gameId === 'checkers') { if(data.round !== undefined) MP.dkRound = data.round; resetCheckers(); applyCheckersMPStart(); }
     if(gameId === 'ludo') { if(data.round !== undefined) MP.ludoRound = data.round; resetLudo(); applyLudoMPStart(); }
@@ -24311,6 +24318,8 @@ function _mpHandleMessageInner(data) {
 
   // Sokoban MP
   if(data.type==='sok-done'){
+    // Guard: ignore stale messages from previous game/level
+    if((data.round !== undefined && data.round !== MP.sokRound) || (data.level !== undefined && data.level !== SOK.level)) return;
     const oppTurn=MP.isHost?2:1;
     const oppName=oppTurn===1?getP1Name('sok'):getP2Name('sok');
     if(oppTurn===1){ SOK.p1Completed=true; SOK.s1++; $('p1ScoreSok').textContent=SOK.s1; }
@@ -24472,8 +24481,9 @@ function _mpHandleMessageInner(data) {
   // Breakout MP
   if(data.type==='brk-done'){
     const oppPlayer=data.player;
-    if(oppPlayer===1){ BRK.p1Score=data.score; $('p1ScoreBrk').textContent=data.score; }
-    else{ BRK.p2Score=data.score; $('p2ScoreBrk').textContent=data.score; }
+    const safeScore=typeof data.score==='number'&&isFinite(data.score)?Math.max(0,Math.min(data.score,99999)):0;
+    if(oppPlayer===1){ BRK.p1Score=safeScore; $('p1ScoreBrk').textContent=safeScore; }
+    else{ BRK.p2Score=safeScore; $('p2ScoreBrk').textContent=safeScore; }
     // Determine if opponent was the FIRST player (by turn order, not player number)
     const hostFirst=MP.brkRound%2===0;
     const oppWasFirst=(oppPlayer===1&&hostFirst)||(oppPlayer===2&&!hostFirst);
