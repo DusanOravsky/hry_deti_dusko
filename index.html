@@ -5119,7 +5119,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.82';
+const APP_VERSION = '19.83';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5517,7 +5517,14 @@ const AVATAR_EMOJIS=['🔴','🔵','🟢','🟡','🟣','🟠','⚫','⚪','😀
 let _avatarTarget = 0;
 let _p1Avatar = '🔴'; let _p2Avatar = '🔵'; let _p3Avatar = '🟢'; let _p4Avatar = '🟡';
 function loadAvatars(){
-  try{const d=JSON.parse(localStorage.getItem('hry_avatars')||'{}');if(d.p1)_p1Avatar=d.p1;if(d.p2)_p2Avatar=d.p2;if(d.p3)_p3Avatar=d.p3;if(d.p4)_p4Avatar=d.p4;}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem('hry_avatars')||'{}');
+    if(d&&typeof d==='object'&&!Array.isArray(d)){
+      if(AVATAR_EMOJIS.includes(d.p1))_p1Avatar=d.p1;
+      if(AVATAR_EMOJIS.includes(d.p2))_p2Avatar=d.p2;
+      if(AVATAR_EMOJIS.includes(d.p3))_p3Avatar=d.p3;
+      if(AVATAR_EMOJIS.includes(d.p4))_p4Avatar=d.p4;
+    }
+  }catch(e){}
   const e1=$('wP1Avatar');if(e1)e1.textContent=_p1Avatar;
   const e2=$('wP2Avatar');if(e2)e2.textContent=_p2Avatar;
   const e3=$('ludoP3Avatar');if(e3)e3.textContent=_p3Avatar;
@@ -5533,7 +5540,16 @@ function openAvatarPicker(player){
   document.body.style.overflow='hidden';
   $('avatarPickerTitle').textContent='Vyber avatar pre Hráča '+player;
   const grid=$('avatarPickerGrid');
-  grid.innerHTML=AVATAR_EMOJIS.map(e=>'<div style="font-size:1.8em;cursor:pointer;padding:6px;border-radius:8px;transition:background 0.15s" onclick="selectAvatar(\''+e+'\')" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'\'">'+e+'</div>').join('');
+  grid.innerHTML='';
+  AVATAR_EMOJIS.forEach(e=>{
+    const d=document.createElement('div');
+    d.style.cssText='font-size:1.8em;cursor:pointer;padding:6px;border-radius:8px;transition:background 0.15s';
+    d.textContent=e;
+    d.addEventListener('click',()=>selectAvatar(e));
+    d.addEventListener('mouseover',()=>{d.style.background='rgba(255,255,255,0.1)';});
+    d.addEventListener('mouseout',()=>{d.style.background='';});
+    grid.appendChild(d);
+  });
 }
 function closeAvatarPicker(){$('avatarPickerOverlay').style.display='none';document.body.style.overflow='';}
 function selectAvatar(emoji){
@@ -6368,7 +6384,7 @@ const ACHIEVEMENTS = [
   { id:'wc5',    icon:'🔗', name:'Reťaziar',      desc:'Vyhraj 5× Slovný Reťazec',       check:()=>(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0),max:5}) },
 ];
 
-let _unlockedAch; try { _unlockedAch = JSON.parse(localStorage.getItem('hry_achievements')||'[]'); } catch(e) { _unlockedAch = []; }
+let _unlockedAch; try { const _ua=JSON.parse(localStorage.getItem('hry_achievements')||'[]'); _unlockedAch=Array.isArray(_ua)?_ua.filter(x=>typeof x==='string'):[]; } catch(e) { _unlockedAch = []; }
 let _seasonalPlays; try { _seasonalPlays = JSON.parse(localStorage.getItem('hry_seasonal_plays')||'{}'); } catch(e) { _seasonalPlays = {}; }
 
 function _isSeason(season) {
@@ -13698,13 +13714,14 @@ const SNK = {
   W:20, H:20,
   body:[{x:10,y:10}], dir:'right', nextDir:'right',
   food:{x:15,y:10}, score:0, best:parseInt(localStorage.getItem('hry_snakeBest')||'0'),
-  timer:null, running:false, over:false, speed:250, diff:'easy', paused:false
+  timer:null, running:false, over:false, speed:250, diff:'easy', paused:false, ctx:null
 };
 function setSnakeDiff(d,btn){SNK.diff=d;saveDiff('snake',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function resetSnake(){
   if(SNK.timer)clearInterval(SNK.timer);
   SNK.running=false; SNK.over=false; SNK.speed=SNK_SPEEDS[SNK.diff]; SNK.score=0;
   SNK.body=[{x:10,y:10}]; SNK.dir='none'; SNK.nextDir='none';
+  const _sc=$('snakeCanvas');if(_sc)SNK.ctx=_sc.getContext('2d');
   snakePlaceFood();
   renderSnake();
   const el=$('snakeScore');if(el)el.textContent='0';
@@ -13732,7 +13749,7 @@ function snakePlaceFood(){
 }
 function renderSnake(){
   const c=$('snakeCanvas');if(!c)return;
-  const ctx=c.getContext('2d');
+  const ctx=SNK.ctx||c.getContext('2d');
   const cs=c.width/SNK.W;
   ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,c.width,c.height);
   ctx.strokeStyle='rgba(255,255,255,0.04)';
@@ -14337,9 +14354,8 @@ function resetRace() {
 }
 
 document.addEventListener('keydown', function(e) {
+  if(currentGameId!=='racing') return;
   if(!RACE.running || RACE.over) return;
-  const racingEl = $('racing');
-  if(!racingEl || racingEl.offsetParent === null) return;
   if(e.key==='ArrowLeft') { e.preventDefault(); raceMove(-1); }
   if(e.key==='ArrowRight') { e.preventDefault(); raceMove(1); }
 });
@@ -14354,7 +14370,7 @@ const DOOD = {
   best:parseInt(localStorage.getItem('hry_doodleBest')||'0'),
   bestWall:parseInt(localStorage.getItem('hry_doodleBestWall')||'0'),
   player:1, scores:[0,0], s1:0, s2:0, phase:'idle',
-  rocketFrames:0, wallMode:false
+  rocketFrames:0, wallMode:false, ctx:null
 };
 function setDoodMode(m,btn){
   DOOD.wallMode=(m==='wall');
@@ -14459,7 +14475,7 @@ function doodAddPlatforms() {
 
 function doodRender() {
   const c = $('doodleCanvas'); if(!c) return;
-  const ctx = c.getContext('2d');
+  const ctx = DOOD.ctx||c.getContext('2d');
   // Always dark canvas (like Snake/Tetris) — looks good in both themes
   ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, DOOD.W, DOOD.H);
   // Stars background
@@ -14716,6 +14732,7 @@ function doodEndRound() {
 function resetDoodle() {
   DOOD.running = false; DOOD.over = false;
   if(DOOD.raf) cancelAnimationFrame(DOOD.raf);
+  const _dc=$('doodleCanvas');if(_dc)DOOD.ctx=_dc.getContext('2d');
   DOOD.x = 160; DOOD.y = 400; DOOD.vy = 0; DOOD.vx = 0; DOOD.moveDir = 0;
   DOOD.cameraY = 0; DOOD.score = 0; DOOD.maxHeight = 0; DOOD.player = 1;
   doodGenPlatforms();
@@ -14729,9 +14746,8 @@ function resetDoodle() {
 
 // Keyboard controls
 document.addEventListener('keydown', e => {
+  if(currentGameId!=='doodle') return;
   if(!DOOD.running || DOOD.over) return;
-  const doodleEl = $('doodle');
-  if(!doodleEl || doodleEl.offsetParent === null) return;
   if(e.key === 'ArrowLeft') { DOOD.moveDir = -1; e.preventDefault(); }
   if(e.key === 'ArrowRight') { DOOD.moveDir = 1; e.preventDefault(); }
 });
@@ -15274,9 +15290,8 @@ function mazeAI() {
 }
 // Keyboard controls for maze
 document.addEventListener('keydown',e=>{
+  if(currentGameId!=='maze') return;
   if(!MZ.grid||MZ.done) return;
-  const el=$('maze');
-  if(!el||el.style.display==='none') return;
   if(e.key==='ArrowRight'||e.key==='d') mazeMove(1,0);
   else if(e.key==='ArrowLeft'||e.key==='a') mazeMove(-1,0);
   else if(e.key==='ArrowUp'||e.key==='w') { e.preventDefault(); mazeMove(0,-1); }
@@ -15360,6 +15375,7 @@ function mpChatUpdateBadge(){
 }
 function _mpChatDoSend(text){
   if(!text||!MP.isConnected)return;
+  text=String(text).slice(0,200);
   mpSend({type:'chat-msg',text});
   mpChatAppend(MP.myName||'Ja',text,true);
 }
@@ -15623,7 +15639,8 @@ const BRK = {
   // pvp
   p1Score:0, p2Score:0,
   // mp
-  _mpTurnDone:false, _mpMyTurn:false
+  _mpTurnDone:false, _mpMyTurn:false,
+  ctx:null
 };
 
 function setBrkDiff(d,btn){
@@ -15660,6 +15677,7 @@ function brkResetBall(){
 function resetBreakout(){
   if(BRK.raf) cancelAnimationFrame(BRK.raf);
   BRK.running=false; BRK.over=false; BRK._mpTurnDone=false; BRK._mpMyTurn=false;
+  const _bc=$('brkCanvas');if(_bc)BRK.ctx=_bc.getContext('2d');
   const d=BRK_DIFF[BRK.diff];
   BRK.score=0; BRK.lives=d.lives; BRK.level=1;
   brkGenBricks();
@@ -15677,7 +15695,7 @@ function resetBreakout(){
 
 function brkRender(){
   const c=$('brkCanvas');if(!c)return;
-  const ctx=c.getContext('2d');
+  const ctx=BRK.ctx||c.getContext('2d');
   const scaleX=c.width/BRK.W, scaleY=c.height/BRK.H;
   ctx.setTransform(scaleX,0,0,scaleY,0,0);
   // clear
@@ -15939,6 +15957,7 @@ function startBreakout(){
 
 // Keyboard controls for Breakout
 document.addEventListener('keydown',e=>{
+  if(currentGameId!=='breakout')return;
   if(!BRK.running)return;
   if(e.key==='ArrowLeft'){BRK.moveDir=-1;e.preventDefault();}
   if(e.key==='ArrowRight'){BRK.moveDir=1;e.preventDefault();}
@@ -15988,7 +16007,8 @@ const PNG = {
   // score
   s1:0, s2:0, winScore:10,
   // touch
-  touch1:null, touch2:null
+  touch1:null, touch2:null,
+  ctx:null
 };
 
 function setPngDiff(d,btn){
@@ -16009,6 +16029,7 @@ function pngResetBall(dir){
 function resetPong(){
   if(PNG.raf)cancelAnimationFrame(PNG.raf);
   PNG.running=false; PNG.over=false;
+  const _pc=$('pngCanvas');if(_pc)PNG.ctx=_pc.getContext('2d');
   PNG.s1=0; PNG.s2=0;
   PNG.p1y=PNG.H/2-PNG.ph/2;
   PNG.p2y=PNG.H/2-PNG.ph/2;
@@ -16025,7 +16046,7 @@ function resetPong(){
 
 function pngRender(){
   const c=$('pngCanvas');if(!c)return;
-  const ctx=c.getContext('2d');
+  const ctx=PNG.ctx||c.getContext('2d');
   const sx=c.width/PNG.W, sy=c.height/PNG.H;
   ctx.setTransform(sx,0,0,sy,0,0);
   const isLight=document.body.classList.contains('light');
@@ -22433,8 +22454,8 @@ function mobileGoTo(level, gameId) {
 }
 
 // ===== FAVORITES & RECENTLY PLAYED =====
-let _favorites; try { _favorites = JSON.parse(localStorage.getItem('hry_favorites')||'[]'); } catch(e) { _favorites = []; }
-let _recentGames; try { _recentGames = JSON.parse(localStorage.getItem('hry_recent')||'[]'); } catch(e) { _recentGames = []; }
+let _favorites; try { const _fv=JSON.parse(localStorage.getItem('hry_favorites')||'[]'); _favorites=Array.isArray(_fv)?_fv.filter(x=>typeof x==='string'):[]; } catch(e) { _favorites = []; }
+let _recentGames; try { const _rv=JSON.parse(localStorage.getItem('hry_recent')||'[]'); _recentGames=Array.isArray(_rv)?_rv.filter(x=>typeof x==='string'):[]; } catch(e) { _recentGames = []; }
 
 function toggleFavorite(gId, e) {
   e.stopPropagation();
@@ -23598,8 +23619,8 @@ function _mpHandleMessageInner(data) {
     }
     // Guest receives Simon Says settings from host handshake
     if(data.from === 'host' && data.simonDiff) {
-      SIMON.diff = data.simonDiff;
-      SIMON.numColors = data.simonNumColors || 4;
+      SIMON.diff = ['easy','medium','hard'].includes(data.simonDiff) ? data.simonDiff : 'easy';
+      SIMON.numColors = [4,6,9].includes(data.simonNumColors) ? data.simonNumColors : 4;
       simonUpdateGrid();
       document.querySelectorAll('#simonDiffWrap .difficulty-btn').forEach((b,i) => {
         b.classList.toggle('active', ['easy','medium','hard'][i] === data.simonDiff);
@@ -24376,14 +24397,14 @@ function _mpHandleMessageInner(data) {
   }
   if(data.type==='quiz-answer') {
     // Host receives guest's answer
-    if(MP.isHost && data.qIdx===QUIZ.idx) {
+    if(MP.isHost && data.qIdx===QUIZ.idx && QUIZ.questions && QUIZ.questions[QUIZ.idx]) {
       QUIZ._mpOppAnswer=data.choiceIdx;
       quizMPCheckProcess(false);
     }
   }
   if(data.type==='quiz-done') {
     // Guest receives result from host
-    if(!MP.isHost && data.qIdx===QUIZ.idx && !QUIZ._mpDone) {
+    if(!MP.isHost && data.qIdx===QUIZ.idx && !QUIZ._mpDone && QUIZ.questions && QUIZ.questions[QUIZ.idx]) {
       QUIZ._mpDone=true;
       stopQuizTimer();
       const q=QUIZ.questions[QUIZ.idx];
@@ -24435,7 +24456,8 @@ function _mpHandleMessageInner(data) {
   // Scramble MP
   if(data.type==='scr-word'){
     // Guest receives word from host — show and start racing
-    SCR.currentWord=data.word; SCR.currentHint=data.hint;
+    SCR.currentWord=String(data.word||'').toUpperCase().replace(/[<>"'&]/g,'').slice(0,30);
+    SCR.currentHint=String(data.hint||'').replace(/[<>"'&]/g,'').slice(0,100);
     SCR.round=data.round; SCR._mpRoundDone=false;
     SCR.selectedTiles=[]; SCR.usedIndices=[];
     $('scrCategory').textContent='📂 '+data.catName;
