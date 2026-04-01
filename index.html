@@ -5119,7 +5119,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.83';
+const APP_VERSION = '19.84';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -16268,7 +16268,7 @@ const TNK = {
   s1:0, s2:0, winScore:5,
   p1keys:{up:false,down:false,left:false,right:false},
   p2keys:{up:false,down:false,left:false,right:false},
-  cooldown1:0, cooldown2:0
+  cooldown1:0, cooldown2:0, ctx:null
 };
 const TNK_DX=[0,1,0,-1], TNK_DY=[-1,0,1,0];
 
@@ -16315,6 +16315,7 @@ function resetTanks(){
   if(TNK.raf)cancelAnimationFrame(TNK.raf);
   if(TNK.timer)clearInterval(TNK.timer);
   TNK.running=false; TNK.over=false;
+  const _tc=$('tnkCanvas');if(_tc)TNK.ctx=_tc.getContext('2d');
   TNK.s1=0; TNK.s2=0; TNK.bullets=[]; TNK.powerup=null; TNK.puTimer=0;
   TNK.cooldown1=0; TNK.cooldown2=0;
   TNK.t1={x:1,y:TNK.G-2,dir:0,shield:0,rapid:0,speed:0};
@@ -16333,7 +16334,7 @@ function resetTanks(){
 
 function tnkRender(){
   const c=$('tnkCanvas');if(!c)return;
-  const ctx=c.getContext('2d');
+  const ctx=TNK.ctx||c.getContext('2d');
   const cs=c.width/TNK.G;
   const sy=c.height/TNK.G;
   ctx.setTransform(cs,0,0,sy,0,0);
@@ -16624,7 +16625,7 @@ const SD = {
   s1:0, s2:0, winScore:5,
   snake1:[], snake2:[], food:{x:10,y:10},
   p1dir:'right', p2dir:'left', p1next:'right', p2next:'left',
-  dead1:false, dead2:false
+  dead1:false, dead2:false, ctx:null
 };
 const SD_OPP={left:'right',right:'left',up:'down',down:'up'};
 const SD_DX={left:-1,right:1,up:0,down:0};
@@ -16642,6 +16643,7 @@ function sdPlaceFood(){
 function resetSnakeDuel(){
   if(SD.timer)clearInterval(SD.timer);
   SD.running=false;SD.over=false;SD.dead1=false;SD.dead2=false;
+  const _sdc=$('sdCanvas');if(_sdc)SD.ctx=_sdc.getContext('2d');
   SD.snake1=[{x:3,y:10},{x:2,y:10},{x:1,y:10}];
   SD.snake2=[{x:SD.G-4,y:10},{x:SD.G-3,y:10},{x:SD.G-2,y:10}];
   SD.p1dir='right';SD.p2dir='left';SD.p1next='right';SD.p2next='left';
@@ -16657,7 +16659,7 @@ function resetSnakeDuel(){
 
 function sdRender(){
   const c=$('sdCanvas');if(!c)return;
-  const ctx=c.getContext('2d');
+  const ctx=SD.ctx||c.getContext('2d');
   const cs=c.width/SD.G;
   ctx.setTransform(cs,0,0,cs,0,0);
   const isLight=document.body.classList.contains('light');
@@ -19295,7 +19297,7 @@ const AB = {
   bird:null,birdFlying:false,
   drag:false,dragX:0,dragY:0,
   boxes:[],
-  raf:null,over:false,_aiTimeout:null
+  raf:null,over:false,_aiTimeout:null,ctx:null
 };
 
 function setAbDiff(d,btn){
@@ -19307,6 +19309,7 @@ function setAbDiff(d,btn){
 function resetAngryBirds(){
   if(AB.raf){cancelAnimationFrame(AB.raf);AB.raf=null;}
   AB.turn=1;AB.s1=0;AB.s2=0;AB.shots1=0;AB.shots2=0;AB.over=false;
+  const _ac=$('abCanvas');if(_ac)AB.ctx=_ac.getContext('2d');
   AB.bird=null;AB.birdFlying=false;AB.drag=false;
   AB.boxes=[];
   abGenerateLevel();
@@ -19339,7 +19342,7 @@ function startAngryBirds(){
 
 function abRender(){
   const c=$('abCanvas');if(!c)return;
-  const ctx=c.getContext('2d');
+  const ctx=AB.ctx||c.getContext('2d');
   const W=AB.W,H=AB.H;
   // Sky
   ctx.fillStyle='#87CEEB';ctx.fillRect(0,0,W,H);
