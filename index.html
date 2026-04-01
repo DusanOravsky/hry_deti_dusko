@@ -5209,7 +5209,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.88';
+const APP_VERSION = '19.89';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -24813,8 +24813,11 @@ function _mpHandleMessageInner(data) {
 
   // Vyššie Nižšie MP
   if(data.type==='hl-turn-done') {
-    if(data.player===1){HL.p1Best=data.score;$('p1ScoreHL').textContent=data.score;popScore('p1ScoreHL');}
-    else{HL.p2Best=data.score;$('p2ScoreHL').textContent=data.score;popScore('p2ScoreHL');}
+    if(data.player!==1&&data.player!==2) return;
+    if(typeof data.score!=='number'||!isFinite(data.score)) return;
+    const safeHLScore=Math.max(0,Math.floor(data.score));
+    if(data.player===1){HL.p1Best=safeHLScore;$('p1ScoreHL').textContent=safeHLScore;popScore('p1ScoreHL');}
+    else{HL.p2Best=safeHLScore;$('p2ScoreHL').textContent=safeHLScore;popScore('p2ScoreHL');}
     if(data.isFirst) {
       // Remote first player done — start local (second) player's turn
       const myPlayer=MP.isHost?1:2;
@@ -24898,6 +24901,11 @@ function _mpHandleMessageInner(data) {
     if(_w) wcApplyWord(_w);
   }
   if(data.type==='wc-timeout'){
+    // Only accept timeout from the player whose turn it currently is
+    // Host accepts only when WC.player===2 (guest's turn timed out)
+    // Guest accepts only when WC.player===1 (host's turn timed out)
+    if(MP.isHost&&WC.player!==2) return;
+    if(!MP.isHost&&WC.player!==1) return;
     wcTimeout(); // sync timeout to other device so scores update
   }
 
@@ -24951,6 +24959,7 @@ function _mpHandleMessageInner(data) {
   // Breakout MP
   if(data.type==='brk-done'){
     const oppPlayer=data.player;
+    if(oppPlayer!==1&&oppPlayer!==2) return;
     const safeScore=typeof data.score==='number'&&isFinite(data.score)?Math.max(0,Math.min(data.score,99999)):0;
     if(oppPlayer===1){ BRK.p1Score=safeScore; $('p1ScoreBrk').textContent=safeScore; }
     else{ BRK.p2Score=safeScore; $('p2ScoreBrk').textContent=safeScore; }
