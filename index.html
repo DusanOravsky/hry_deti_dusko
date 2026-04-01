@@ -1440,6 +1440,20 @@ body.light .fc-option:hover { border-color:#667eea; background:rgba(102,126,234,
 body.light .player-name-display { color: #222; }
 .ls-word-display { font-size:1em; opacity:0.6; text-align:center; margin:6px 0; font-style:italic; }
 
+/* GO FISH / KVARTETO */
+.gf-hand { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:70px; padding:8px; }
+.gf-card { width:44px; height:62px; border-radius:7px; border:2px solid rgba(255,255,255,0.2); background:linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04)); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:4px 3px; font-weight:900; font-size:0.85em; transition:transform 0.15s,border-color 0.15s; position:relative; }
+.gf-card.selected { border-color:#4facfe; transform:translateY(-8px); background:linear-gradient(135deg,rgba(79,172,254,0.3),rgba(100,79,254,0.2)); }
+.gf-card.red { color:#e74c3c; }
+.gf-card:hover:not(.selected) { transform:translateY(-4px); border-color:rgba(255,255,255,0.5); }
+.gf-card-back { width:40px; height:56px; border-radius:6px; background:linear-gradient(135deg,#667eea,#764ba2); border:2px solid rgba(255,255,255,0.2); display:inline-block; }
+.gf-book { display:inline-flex; align-items:center; gap:2px; background:rgba(255,215,0,0.15); border:1px solid rgba(255,215,0,0.4); border-radius:6px; padding:3px 6px; font-size:0.8em; font-weight:700; margin:2px; }
+.gf-pass-screen { text-align:center; padding:30px 20px; }
+.gf-pass-screen h2 { font-size:1.4em; margin-bottom:12px; }
+body.light .gf-card { border-color:rgba(0,0,0,0.2); background:linear-gradient(135deg,rgba(0,0,0,0.05),rgba(0,0,0,0.02)); }
+body.light .gf-card.selected { border-color:#4facfe; background:linear-gradient(135deg,rgba(79,172,254,0.2),rgba(100,79,254,0.1)); }
+body.light .gf-card.red { color:#c0392b; }
+
 /* STATS PAGE */
 .stats-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.1); }
 body.light .stats-tabs { border-bottom-color:rgba(0,0,0,0.08); }
@@ -2514,7 +2528,7 @@ body.light .man-store {
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
     <button class="welcome-continue-btn" id="welcomeContinueBtn" style="display:none"></button>
     <button class="welcome-install-btn" id="pwaInstallBtn" style="display:none" onclick="installPWA()">📥 Inštaluj aplikáciu</button>
-    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 55 hier pre celú rodinu</div>
+    <div style="font-size:0.85em;opacity:0.5;margin-bottom:4px">🎯 56 hier pre celú rodinu</div>
     <div id="appVersion" style="font-size:0.65em;opacity:0.3;margin-top:8px;text-align:center"></div>
     <div style="font-size:0.6em;opacity:0.25;text-align:center;margin-top:2px">© Dušan Oravský</div>
   </div>
@@ -3355,6 +3369,69 @@ body.light .man-store {
       <div id="tourFinalScore" style="font-size:1.3em;opacity:0.8;margin-bottom:30px"></div>
       <div id="tourResultsList" style="max-width:400px;margin:0 auto 30px;text-align:left"></div>
       <button class="action-btn primary-btn" onclick="tourReset()" style="font-size:1.1em;padding:14px 32px">🔄 Nový turnaj</button>
+    </div>
+  </div>
+
+  <!-- ===== GO FISH / KVARTETO ===== -->
+  <div class="game-area" id="gofish">
+    <div class="player-info">
+      <div class="player-card" id="gfP1Card">
+        <div class="player-name" id="gfP1Name">Hráč 1</div>
+        <div class="score" id="gfP1Score">0</div>
+        <div class="player-label">štvorky</div>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="player-card" id="gfP2Card">
+        <div class="player-name" id="gfP2Name">Hráč 2</div>
+        <div class="score" id="gfP2Score">0</div>
+        <div class="player-label">štvorky</div>
+      </div>
+    </div>
+    <div class="status" id="gfStatus">Klikni Štart!</div>
+    <div class="celebration" id="gfCelebration">🎉</div>
+
+    <!-- Info bar -->
+    <div style="display:flex;justify-content:space-around;align-items:center;margin:8px 0;font-size:0.88em;opacity:0.8">
+      <div>🃏 <span id="gfDeckCount">52</span></div>
+      <div id="gfBooks1Disp" style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center"></div>
+      <div id="gfBooks2Disp" style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center"></div>
+    </div>
+
+    <!-- Pass-device screen (PVP only) -->
+    <div id="gfPassScreen" class="gf-pass-screen" style="display:none">
+      <div style="font-size:3em;margin-bottom:12px">🤝</div>
+      <h2 id="gfPassTitle">Odovzdaj zariadenie</h2>
+      <p id="gfPassSub" style="opacity:0.7;margin-bottom:20px">Klikni keď si pripravený(á)</p>
+      <button class="action-btn primary-btn" onclick="gfReveal()">👁️ Zobraziť karty</button>
+    </div>
+
+    <!-- Game area -->
+    <div id="gfGameArea">
+      <!-- Opponent section -->
+      <div style="margin-bottom:8px">
+        <div style="text-align:center;font-size:0.8em;opacity:0.6;margin-bottom:4px" id="gfOppLabel">Súper</div>
+        <div id="gfOppHand" class="gf-hand"></div>
+      </div>
+
+      <!-- My hand -->
+      <div>
+        <div style="text-align:center;font-size:0.8em;opacity:0.6;margin-bottom:4px" id="gfMyLabel">Tvoje karty</div>
+        <div id="gfMyHand" class="gf-hand"></div>
+      </div>
+
+      <!-- Ask controls -->
+      <div style="text-align:center;margin-top:10px" id="gfAskSection" style="display:none">
+        <div id="gfAskHint" style="font-size:0.85em;opacity:0.6;margin-bottom:8px">Vyber kartu a klikni Pýtam sa</div>
+        <button class="action-btn primary-btn" id="gfAskBtn" onclick="gfAsk()" disabled style="font-size:1.05em">🙋 Pýtam sa!</button>
+      </div>
+
+      <!-- Last action -->
+      <div id="gfLastAction" style="text-align:center;margin-top:10px;font-size:0.9em;min-height:2.5em;opacity:0.8;padding:0 10px"></div>
+    </div>
+
+    <div class="buttons-group" style="margin-top:12px">
+      <button class="action-btn primary-btn" id="gfStartBtn" onclick="gfStart()">▶️ Štart</button>
+      <button class="action-btn" onclick="MP.isConnected?mpRematch('gofish'):resetGoFish()">🔄 Nová hra</button>
     </div>
   </div>
 
@@ -5119,7 +5196,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.85';
+const APP_VERSION = '19.86';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5136,7 +5213,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn', mmsv:'mmsvBtn', wordChain:'wordChainBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', animalGuess:'animalGuessBtn', animalQuiz:'animalQuizBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', animalGuess:'animalGuessBtn', animalQuiz:'animalQuizBtn', gofish:'gofishBtn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -5147,7 +5224,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie', mmsv:'Meno Mesto Zviera Vec', wordChain:'Slovný Reťazec',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', animalGuess:'Hádaj Zviera', animalQuiz:'Zvierací Kvíz', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', animalGuess:'Hádaj Zviera', animalQuiz:'Zvierací Kvíz', gofish:'Kvarteto', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -5588,7 +5665,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',wordChain:'wc',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq',gofish:'gf'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -5599,7 +5676,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',wordChain:'wc',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq',gofish:'gf'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -6313,7 +6390,7 @@ const ACHIEVEMENTS = [
   { id:'win100',   icon:'💎', name:'Stovka',          desc:'Vyhraj 100 hier',           check:()=>gStats.p1+gStats.p2>=100, progress:()=>({cur:gStats.p1+gStats.p2,max:100}) },
   { id:'games5',   icon:'🎮', name:'Prieskumnik',     desc:'Skus 5 roznych hier',       check:()=>Object.keys(gStats.perGame).length>=5, progress:()=>({cur:Object.keys(gStats.perGame).length,max:5}) },
   { id:'games15',  icon:'🌟', name:'Znalec',          desc:'Skus 15 roznych hier',      check:()=>Object.keys(gStats.perGame).length>=15, progress:()=>({cur:Object.keys(gStats.perGame).length,max:15}) },
-  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=55, progress:()=>({cur:Object.keys(gStats.perGame).length,max:55}) },
+  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=56, progress:()=>({cur:Object.keys(gStats.perGame).length,max:56}) },
   { id:'draw5',    icon:'🤝', name:'Mierotvorec',     desc:'Dosiahni 5 remiz',          check:()=>gStats.draws>=5, progress:()=>({cur:gStats.draws,max:5}) },
   { id:'streak3',  icon:'🔥', name:'Seria 3',         desc:'Vyhraj 3x za sebou',        check:()=>_getWinStreak()>=3, progress:()=>({cur:_getWinStreak(),max:3}) },
   { id:'streak5',  icon:'🔥', name:'Seria 5',         desc:'Vyhraj 5x za sebou',        check:()=>_getWinStreak()>=5, progress:()=>({cur:_getWinStreak(),max:5}) },
@@ -15332,7 +15409,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0, gfRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -22186,6 +22263,351 @@ function azqGameOver() {
 }
 resetAZQ();
 
+// =============================================================================
+// GO FISH / KVARTETO
+// =============================================================================
+const GF_RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const GF_SUITS = ['♠','♥','♦','♣'];
+const GF_RED = new Set(['♥','♦']);
+
+const GF = {
+  deck:[], hand1:[], hand2:[],
+  books1:[], books2:[],
+  turn:1, phase:'idle', over:false,
+  s1:0, s2:0, diff:'easy',
+  _aiTimeout:null, selectedRank:null,
+  lastAction:''
+};
+
+function gfMakeDeck(){
+  const d=[];
+  for(const r of GF_RANKS) for(const s of GF_SUITS) d.push({r,s});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+function gfRankCounts(hand){
+  const c={};
+  hand.forEach(({r})=>c[r]=(c[r]||0)+1);
+  return c;
+}
+
+function gfCheckBooks(player){
+  const hand=player===1?GF.hand1:GF.hand2;
+  const counts=gfRankCounts(hand);
+  let found=false;
+  for(const r of GF_RANKS){
+    if(counts[r]===4){
+      if(player===1){GF.hand1=GF.hand1.filter(c=>c.r!==r);GF.books1.push(r);}
+      else{GF.hand2=GF.hand2.filter(c=>c.r!==r);GF.books2.push(r);}
+      playSound('flip');
+      found=true;
+    }
+  }
+  return found;
+}
+
+function gfCardEl(card, clickable, selected){
+  const d=document.createElement('div');
+  d.className='gf-card'+(GF_RED.has(card.s)?' red':'')+(selected?' selected':'');
+  d.innerHTML='<span>'+card.r+'</span><span style="font-size:1.1em">'+card.s+'</span><span style="transform:rotate(180deg)">'+card.r+'</span>';
+  if(clickable) d.onclick=()=>gfSelectRank(card.r);
+  return d;
+}
+
+function gfBackEl(){
+  const d=document.createElement('div');
+  d.className='gf-card-back';
+  return d;
+}
+
+function gfBookEl(rank){
+  const d=document.createElement('span');
+  d.className='gf-book';
+  d.textContent=rank+'×4';
+  return d;
+}
+
+function gfRenderHands(){
+  const myHand=$('gfMyHand'), oppHand=$('gfOppHand');
+  const b1=$('gfBooks1Disp'), b2=$('gfBooks2Disp');
+  if(!myHand) return;
+
+  const canClick = GF.phase==='p1-select'||GF.phase==='p2-select'||GF.phase==='my-turn';
+
+  // Determine which hand to show as "mine"
+  let myHandData, oppHandData;
+  if(MP.isConnected){
+    myHandData = MP.isHost ? GF.hand1 : GF.hand2;
+    oppHandData = MP.isHost ? GF.hand2 : GF.hand1;
+  } else {
+    myHandData = GF.turn===1 ? GF.hand1 : GF.hand2;
+    oppHandData = GF.turn===1 ? GF.hand2 : GF.hand1;
+  }
+
+  // Group hand by rank, sorted
+  const grouped={};
+  myHandData.forEach(c=>{if(!grouped[c.r])grouped[c.r]=[];grouped[c.r].push(c);});
+  myHand.innerHTML='';
+  for(const r of GF_RANKS){
+    if(grouped[r]) grouped[r].forEach(c=>myHand.appendChild(gfCardEl(c,canClick,GF.selectedRank===r)));
+  }
+
+  // Opponent hand: always show backs
+  oppHand.innerHTML='';
+  const cnt=Math.min(oppHandData.length, 13);
+  for(let i=0;i<cnt;i++) oppHand.appendChild(gfBackEl());
+
+  // Books
+  b1.innerHTML=''; GF.books1.forEach(r=>b1.appendChild(gfBookEl(r)));
+  b2.innerHTML=''; GF.books2.forEach(r=>b2.appendChild(gfBookEl(r)));
+
+  const deckEl=$('gfDeckCount'); if(deckEl) deckEl.textContent=GF.deck.length;
+  $('gfP1Score').textContent=GF.books1.length;
+  $('gfP2Score').textContent=GF.books2.length;
+}
+
+function gfSelectRank(rank){
+  if(GF.phase!=='p1-select'&&GF.phase!=='p2-select'&&GF.phase!=='my-turn') return;
+  const myHand = MP.isConnected ? (MP.isHost?GF.hand1:GF.hand2) : (GF.turn===1?GF.hand1:GF.hand2);
+  if(!myHand.find(c=>c.r===rank)) return;
+  GF.selectedRank=rank;
+  $('gfAskBtn').disabled=false;
+  $('gfAskHint').textContent='Pýtaš sa na: '+rank+' — potvrď tlačidlom';
+  gfRenderHands();
+  playSound('click');
+}
+
+function gfAsk(){
+  if(!GF.selectedRank) return;
+  const rank=GF.selectedRank;
+  if(MP.isConnected){
+    if(!MP.isHost){
+      mpSend({type:'gf-ask',rank});
+      GF.phase='waiting';
+      $('gfAskBtn').disabled=true;
+      $('gfStatus').textContent='⏳ Čakám na odpoveď...';
+    } else {
+      gfProcessAsk(1, rank);
+    }
+    return;
+  }
+  gfProcessAsk(GF.turn, rank);
+}
+
+function gfGetName(player){
+  return player===1 ? (globalP1||'Hráč 1') : (welcomeGameMode==='ai'?'🤖 Počítač':(globalP2||'Hráč 2'));
+}
+
+function gfProcessAsk(asker, rank){
+  const oppHand = asker===1 ? GF.hand2 : GF.hand1;
+  const myHand  = asker===1 ? GF.hand1 : GF.hand2;
+  const askerName = gfGetName(asker);
+  const oppName   = gfGetName(asker===1?2:1);
+
+  const given = oppHand.filter(c=>c.r===rank);
+
+  if(given.length>0){
+    given.forEach(c=>myHand.push(c));
+    if(asker===1) GF.hand2=GF.hand2.filter(c=>c.r!==rank);
+    else GF.hand1=GF.hand1.filter(c=>c.r!==rank);
+    gfCheckBooks(asker);
+
+    const actionMsg='✅ '+askerName+' dostal(a) '+given.length+'× '+rank+' od '+oppName+'!';
+    GF.lastAction=actionMsg;
+    $('gfLastAction').textContent=actionMsg;
+    playSound('click');
+
+    if(MP.isConnected && MP.isHost){
+      mpSend({type:'gf-state', hand:GF.hand2, hostCount:GF.hand1.length, deckCount:GF.deck.length, books1:GF.books1, books2:GF.books2, turn:GF.turn, lastAction:actionMsg, goAgain:true});
+    }
+
+    if(gfCheckOver()) return;
+    gfRenderHands();
+    gfRenderTurnUI();
+  } else {
+    // Go fish
+    let drewCard=null;
+    if(GF.deck.length>0){
+      drewCard=GF.deck.pop();
+      myHand.push(drewCard);
+      gfCheckBooks(asker);
+    }
+    const actionMsg='🐟 '+askerName+' ide rybárčiť'+(drewCard?' (dobral kartu)':'')+'!';
+    GF.lastAction=actionMsg;
+    $('gfLastAction').textContent=actionMsg;
+    playSound('wrong');
+
+    // Switch turn
+    GF.turn = asker===1 ? 2 : 1;
+    GF.selectedRank=null;
+
+    if(MP.isConnected && MP.isHost){
+      mpSend({type:'gf-state', hand:GF.hand2, hostCount:GF.hand1.length, deckCount:GF.deck.length, books1:GF.books1, books2:GF.books2, turn:GF.turn, lastAction:actionMsg, goAgain:false});
+    }
+
+    if(gfCheckOver()) return;
+    gfRenderHands();
+    setTimeout(()=>gfRenderTurnUI(), 800);
+  }
+}
+
+function gfCheckOver(){
+  if(GF.deck.length>0) return false;
+  if(GF.hand1.length>0 && GF.hand2.length>0) return false;
+  GF.over=true; GF.phase='over';
+  const b1=GF.books1.length, b2=GF.books2.length;
+  const n1=gfGetName(1), n2=gfGetName(2);
+  let msg, winner=0;
+  if(b1>b2){ msg='🏆 '+n1+' vyhral! ('+b1+' vs '+b2+' štvorky)'; winner=1; GF.s1++; }
+  else if(b2>b1){ msg='🏆 '+n2+' vyhral! ('+b2+' vs '+b1+' štvorky)'; winner=2; GF.s2++; }
+  else { msg='🤝 Remíza! Obaja '+b1+' štvorky'; }
+  $('gfStatus').textContent=msg;
+  const askSec=$('gfAskSection'); if(askSec) askSec.style.display='none';
+  $('gfLastAction').textContent='';
+  if(winner>0){ addWin(winner,'gofish'); celebrate('gfCelebration'); playSound('win'); }
+  else addWin(0,'gofish');
+  gfRenderHands();
+  activeTurn('gfP1Card','gfP2Card',0);
+  return true;
+}
+
+function gfRenderTurnUI(){
+  if(GF.over) return;
+  const n1=gfGetName(1), n2=gfGetName(2);
+  const turnName = GF.turn===1 ? n1 : n2;
+
+  const askSec=$('gfAskSection'); if(askSec) askSec.style.display='';
+  $('gfAskBtn').disabled=true;
+  $('gfAskHint').textContent='Vyber kartu zo svojej ruky a klikni Pýtam sa';
+  GF.selectedRank=null;
+  activeTurn('gfP1Card','gfP2Card',GF.turn);
+
+  if(MP.isConnected){
+    const myTurn=(GF.turn===1)===MP.isHost;
+    const myHandData = MP.isHost ? GF.hand1 : GF.hand2;
+    $('gfMyLabel').textContent='Tvoje karty ('+myHandData.length+')';
+    if(myTurn){
+      GF.phase='my-turn';
+      $('gfStatus').textContent='🎯 Tvoj ťah! Vyber kartu a pýtaj sa.';
+    } else {
+      GF.phase='waiting';
+      $('gfAskBtn').disabled=true;
+      $('gfStatus').textContent='⏳ '+turnName+' sa pýta...';
+    }
+    gfRenderHands();
+    return;
+  }
+
+  // Local PVP — pass device screen
+  if(welcomeGameMode!=='ai'){
+    $('gfGameArea').style.display='none';
+    $('gfPassScreen').style.display='';
+    $('gfPassTitle').textContent='Odovzdaj zariadenie — '+turnName;
+    $('gfPassSub').textContent=turnName+', klikni keď si pripravený(á)';
+    GF.phase=GF.turn===1?'p1-pass':'p2-pass';
+    return;
+  }
+
+  // AI turn
+  if(GF.turn===2 && welcomeGameMode==='ai'){
+    GF.phase='ai-thinking';
+    $('gfStatus').textContent='🤖 Počítač premýšľa...';
+    $('gfAskBtn').disabled=true;
+    gfRenderHands();
+    GF._aiTimeout=setTimeout(gfAITurn, 1200);
+    return;
+  }
+
+  // Player 1 turn (AI mode)
+  GF.phase='p1-select';
+  $('gfStatus').textContent='🎯 '+n1+', pýtaj sa na kartu!';
+  $('gfMyLabel').textContent='Tvoje karty ('+GF.hand1.length+')';
+  $('gfOppLabel').textContent='Počítač ('+GF.hand2.length+' kariet)';
+  gfRenderHands();
+}
+
+function gfReveal(){
+  $('gfPassScreen').style.display='none';
+  $('gfGameArea').style.display='';
+  const n=gfGetName(GF.turn);
+  GF.phase = GF.turn===1 ? 'p1-select' : 'p2-select';
+  const myHandData=GF.turn===1?GF.hand1:GF.hand2;
+  $('gfMyLabel').textContent='Tvoje karty ('+myHandData.length+')';
+  $('gfOppLabel').textContent='Súper';
+  $('gfStatus').textContent='🎯 '+n+', pýtaj sa na kartu!';
+  gfRenderHands();
+}
+
+function gfAITurn(){
+  if(GF.over) return;
+  const counts=gfRankCounts(GF.hand2);
+  const available=Object.keys(counts);
+  if(!available.length){ GF.turn=1; gfRenderTurnUI(); return; }
+
+  let rank;
+  if(GF.diff==='easy'){
+    rank=available[Math.floor(Math.random()*available.length)];
+  } else if(GF.diff==='medium'){
+    const prefer=available.filter(r=>counts[r]>=2);
+    const pool=prefer.length?prefer:available;
+    rank=pool[Math.floor(Math.random()*pool.length)];
+  } else {
+    const three=available.filter(r=>counts[r]>=3);
+    const two=available.filter(r=>counts[r]>=2);
+    const pool=three.length?three:two.length?two:available;
+    rank=pool[Math.floor(Math.random()*pool.length)];
+  }
+
+  $('gfLastAction').textContent='🤖 Počítač sa pýta na: '+rank;
+  setTimeout(()=>gfProcessAsk(2, rank), 600);
+}
+
+function gfStart(){
+  if(GF.phase!=='idle') return;
+  const askSec=$('gfAskSection'); if(askSec) askSec.style.display='';
+  GF.turn=1;
+  if(MP.isConnected&&MP.isHost){
+    GF.turn=MP.gfRound%2===0?1:2;
+    mpSend({type:'gf-start', hand:GF.hand2, deckCount:GF.deck.length, books1:GF.books1, books2:GF.books2, first:GF.turn});
+  }
+  gfRenderTurnUI();
+}
+
+function resetGoFish(){
+  if(GF._aiTimeout){clearTimeout(GF._aiTimeout);GF._aiTimeout=null;}
+  GF.deck=gfMakeDeck();
+  GF.hand1=GF.deck.splice(0,7);
+  GF.hand2=GF.deck.splice(0,7);
+  GF.books1=[]; GF.books2=[];
+  GF.turn=1; GF.over=false; GF.selectedRank=null; GF.lastAction='';
+  GF.phase='idle';
+  if(!MP.isConnected){ GF.s1=0; GF.s2=0; }
+  // Check initial books
+  gfCheckBooks(1); gfCheckBooks(2);
+
+  const p1sc=$('gfP1Score'); if(p1sc) p1sc.textContent=GF.s1||0;
+  const p2sc=$('gfP2Score'); if(p2sc) p2sc.textContent=GF.s2||0;
+  const st=$('gfStatus'); if(st) st.textContent='Klikni ▶️ Štart!';
+  const cel=$('gfCelebration'); if(cel) cel.textContent='';
+  const la=$('gfLastAction'); if(la) la.textContent='';
+  const askSec=$('gfAskSection'); if(askSec) askSec.style.display='none';
+  const ps=$('gfPassScreen'); if(ps) ps.style.display='none';
+  const ga=$('gfGameArea'); if(ga) ga.style.display='';
+  const p1n=$('gfP1Name'); if(p1n) p1n.textContent=gfGetName(1);
+  const p2n=$('gfP2Name'); if(p2n) p2n.textContent=gfGetName(2);
+  const ml=$('gfMyLabel'); if(ml) ml.textContent='Tvoje karty';
+  const ol=$('gfOppLabel'); if(ol) ol.textContent=welcomeGameMode==='ai'?'Počítač':'Súper';
+  activeTurn('gfP1Card','gfP2Card',1);
+
+  // Apply AI difficulty selector
+  const diffSel=document.querySelector('#gofish .difficulty-selector');
+  if(diffSel) diffSel.style.display=welcomeGameMode==='ai'?'':'none';
+
+  gfRenderHands();
+}
+resetGoFish();
+
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
@@ -22255,6 +22677,7 @@ const MOBILE_GAMES = [
   { id:'mancala',      label:'Mancala',        icon:'🌰', grad:'rgba(139,69,19,0.3),rgba(210,180,140,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun', mp:true },
   { id:'animalQuiz',   label:'Zvierací Kvíz', icon:'🦁', grad:'rgba(255,152,0,0.3),rgba(255,87,34,0.3)', mode:'both', cat:'fun' },
+  { id:'gofish',       label:'Kvarteto',       icon:'🎣', grad:'rgba(0,128,128,0.3),rgba(0,200,180,0.3)', mode:'both', mp:true, cat:'board' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -22355,6 +22778,8 @@ function stopAllGames(){
   if(typeof MMSV!=='undefined'&&MMSV.timer){clearInterval(MMSV.timer);MMSV.timer=null;}
   // Word Chain
   if(typeof WC!=='undefined'&&WC.timer){clearInterval(WC.timer);WC.timer=null;WC.over=true;}
+  // Go Fish
+  if(typeof GF!=='undefined'&&GF._aiTimeout){clearTimeout(GF._aiTimeout);GF._aiTimeout=null;}
   // QR scanner
   if(typeof mpStopScan==='function') mpStopScan();
   // Global UI timers
@@ -24188,6 +24613,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'scramble') { if(data.round !== undefined) MP.scrRound = data.round; resetScramble(); }
     if(gameId === 'breakout') { if(data.round !== undefined) MP.brkRound = data.round; BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
     if(gameId === 'puzzle') { if(data.round !== undefined) MP.puzzleRound = data.round; resetPuzzle(); }
+    if(gameId === 'gofish') { if(data.round !== undefined) MP.gfRound = data.round; resetGoFish(); }
   }
 
   // Snake Duel MP
@@ -24557,6 +24983,54 @@ function _mpHandleMessageInner(data) {
     $('pzStatus').textContent='🏆 '+oppName+' vyhral! ('+(+data.time||0).toFixed(1)+'s)';
     celebrate('pzCelebration'); playSound('win');
   }
+
+  // ---- GO FISH MP ----
+  if(data.type==='gf-start'){
+    // Guest receives initial hand and game parameters from host
+    GF.hand2=data.hand||[];   // guest's own hand (host stored as hand2)
+    GF.hand1=new Array(7);    // host's hand — guest doesn't see it, placeholder for count
+    GF.books1=data.books1||[]; GF.books2=data.books2||[];
+    GF.deck=new Array(data.deckCount||38);
+    GF.turn=data.first||1; GF.over=false; GF.selectedRank=null; GF.phase='idle';
+    GF.s1=0; GF.s2=0;
+    const p1n=$('gfP1Name'); if(p1n) p1n.textContent=gfGetName(1);
+    const p2n=$('gfP2Name'); if(p2n) p2n.textContent=gfGetName(2);
+    const ps=$('gfPassScreen'); if(ps) ps.style.display='none';
+    const ga=$('gfGameArea'); if(ga) ga.style.display='';
+    const askSec=$('gfAskSection'); if(askSec) askSec.style.display='';
+    gfRenderHands();
+    GF.phase='idle';
+    setTimeout(()=>gfRenderTurnUI(), 100);
+  }
+  if(data.type==='gf-ask'){
+    // Host receives ask from guest (guest is player 2)
+    if(!MP.isHost) return;
+    const rank=String(data.rank||'');
+    if(!GF_RANKS.includes(rank)) return;
+    gfProcessAsk(2, rank);
+  }
+  if(data.type==='gf-state'){
+    // Guest receives updated state after host processes any action
+    if(MP.isHost) return;
+    GF.hand2=data.hand||[];      // guest's own updated hand
+    GF.deck=new Array(data.deckCount||0);
+    GF.books1=data.books1||[]; GF.books2=data.books2||[];
+    GF.turn=data.turn||1;
+    const la=$('gfLastAction'); if(la) la.textContent=data.lastAction||'';
+    const deckEl=$('gfDeckCount'); if(deckEl) deckEl.textContent=data.deckCount||0;
+    $('gfP1Score').textContent=GF.books1.length;
+    $('gfP2Score').textContent=GF.books2.length;
+    // Update host hand count (guest doesn't know host's actual cards)
+    if(!Array.isArray(GF.hand1)||GF.hand1.length===0) GF.hand1=new Array(data.hostCount||7);
+    else GF.hand1=new Array(data.hostCount||GF.hand1.length);
+    // Check game over
+    if(data.deckCount===0 && data.hand&&data.hand.length===0 && !data.goAgain){
+      gfCheckOver();
+      return;
+    }
+    gfRenderHands();
+    gfRenderTurnUI();
+  }
 }
 
 function mpStartBSGame() {
@@ -24621,6 +25095,7 @@ function mpRematch(gameId) {
   if(gameId === 'scramble') { MP.scrRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.scrRound }); resetScramble(); }
   if(gameId === 'breakout') { MP.brkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.brkRound }); BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
   if(gameId === 'puzzle') { MP.puzzleRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.puzzleRound }); resetPuzzle(); }
+  if(gameId === 'gofish') { MP.gfRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.gfRound }); resetGoFish(); setTimeout(()=>gfStart(),200); }
 }
 
 function mpGenerateQR(code) {
