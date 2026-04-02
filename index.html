@@ -5250,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.97';
+const APP_VERSION = '19.98';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6280,7 +6280,7 @@ function dailyCheckComplete(gameId,score,won){
     dailySaveHistory(today);
     showToast('🎉 Denná výzva splnená! Streak: '+streak+'🔥',4000,'rgba(67,233,123,0.9)');
     playSound('win');
-    addXP(1, 25); addXP(2, 25);
+    addXP(1, 25); if(welcomeGameMode !== 'ai') addXP(2, 25);
     updateDailyBtn();
     renderDailyCalendar();
     checkAchievements();
@@ -6645,7 +6645,7 @@ function checkAchievements() {
   let newlyUnlocked = [];
   for(const a of ACHIEVEMENTS) {
     if(_unlockedAch.includes(a.id)) continue;
-    if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); addXP(1,8); addXP(2,8); }
+    if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); addXP(1,8); if(welcomeGameMode !== 'ai') addXP(2,8); }
   }
   if(newlyUnlocked.length>0) {
     try{
@@ -24242,6 +24242,7 @@ function _mpHandleMessageInner(data) {
     if(TTT.board[data.index]) return;
 
     stopTurnTimer('ttt');
+    if(!['X','O'].includes(data.player)) return;
     playSound('click');
     TTT.board[data.index] = data.player;
     renderTTT();
