@@ -3489,6 +3489,52 @@ body.light .man-store {
     </div>
   </div>
 
+  <!-- ===== ŠÍPKY 301 ===== -->
+  <div class="game-area" id="darts301">
+    <div class="rules"><h3>🎯 Šípky 301</h3><ul>
+      <li>Začínaš so <strong>301 bodmi</strong> a hádzaš 3 šípky za ťah</li>
+      <li>Klikni <strong>Hoď!</strong> keď je zameriavač na dobrom mieste</li>
+      <li><strong>3× krúžok</strong> (zelený/červený) = trojnásobok hodnoty; <strong>D krúžok</strong> = dvojnásobok</li>
+      <li>🎯 Bull = 50 bodov; Outer bull = 25 bodov</li>
+      <li><strong>Bust:</strong> ak by si presiahol 0 alebo zostal na 1 — skóre sa vráti späť</li>
+      <li>Kto sa dostane presne na <strong>0</strong>, vyhráva!</li>
+    </ul></div>
+
+    <div class="player-info">
+      <div class="player-card" id="dartsP1Card">
+        <span class="player-name" id="dartsP1Name">Hráč 1</span>
+        <span class="player-score" id="dartsScore1" style="font-size:2em">301</span>
+      </div>
+      <div class="player-card" id="dartsP2Card">
+        <span class="player-name" id="dartsP2Name">Hráč 2</span>
+        <span class="player-score" id="dartsScore2" style="font-size:2em">301</span>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:6px 0">
+      <div id="dartsStatus" style="font-weight:700;font-size:1em;min-height:1.5em;opacity:0.85">Klikni Štart!</div>
+      <div id="dartsDarts" style="font-size:1.6em;letter-spacing:3px;margin:4px 0">🎯🎯🎯</div>
+    </div>
+
+    <div style="width:min(260px,86vw);margin:0 auto;aspect-ratio:1/1">
+      <canvas id="dartsCanvas" width="260" height="260" style="width:100%;height:100%;border-radius:50%;display:block"></canvas>
+    </div>
+    <div id="dartsCelebration" class="celebration"></div>
+
+    <div class="buttons-group" style="margin-top:10px">
+      <button class="action-btn primary-btn" id="dartsStartBtn" onclick="dartsStart()">▶️ Štart</button>
+      <button class="action-btn primary-btn" id="dartsThrowBtn" onclick="dartsThrow()" style="display:none;font-size:1.2em;padding:14px 28px">🎯 Hoď!</button>
+    </div>
+    <div class="buttons-group">
+      <button class="action-btn" onclick="resetDarts()">🔄 Nová hra</button>
+    </div>
+    <div class="difficulty-selector" id="drtsDiffSel">
+      <button class="difficulty-btn active" onclick="setDartsDiff('easy',this)">Ľahká</button>
+      <button class="difficulty-btn" onclick="setDartsDiff('medium',this)">Stredná</button>
+      <button class="difficulty-btn" onclick="setDartsDiff('hard',this)">Ťažká</button>
+    </div>
+  </div>
+
   <!-- ===== ŠTATISTIKY ===== -->
   <div class="game-area" id="stats">
     <!-- Sub-tab navigation -->
@@ -5285,7 +5331,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.4';
+const APP_VERSION = '20.5';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5302,7 +5348,7 @@ const gameKeys = {
   spamClick:'spamClickBtn', mathDuel:'mathDuelBtn', emojiGuess:'emojiGuessBtn',
   hangman:'hangmanBtn', higherLower:'higherLowerBtn', mmsv:'mmsvBtn', wordChain:'wordChainBtn',
   chess:'chessBtn', checkers:'checkersBtn', puzzle:'puzzleBtn', maze:'mazeBtn', reversi:'reversiBtn',
-  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', animalGuess:'animalGuessBtn', animalQuiz:'animalQuizBtn', gofish:'gofishBtn', tournament:'tournamentBtn', stats:'statsBtn'
+  tetris:'tetrisBtn', snake:'snakeBtn', missingLetter:'missingLetterBtn', sentence:'sentenceBtn', racing:'racingBtn', doodle:'doodleBtn', ludo:'ludoBtn', dotsBoxes:'dotsBoxesBtn', breakout:'breakoutBtn', pong:'pongBtn', tanks:'tanksBtn', snakeDuel:'snakeDuelBtn', wordle:'wordleBtn', beeCount:'beeCountBtn', soccer:'soccerBtn', minesweeper:'minesweeperBtn', gravityRun:'gravityRunBtn', game2048:'game2048Btn', flappy:'flappyBtn', angryBirds:'angryBirdsBtn', sokoban:'sokobanBtn', simonSays:'simonSaysBtn', mancala:'mancalaBtn', cardWar:'cardWarBtn', unoGame:'unoGameBtn', solitaire:'solitaireBtn', nimGame:'nimGameBtn', nonogram:'nonogramBtn', sudoku:'sudokuBtn', animalGuess:'animalGuessBtn', animalQuiz:'animalQuizBtn', gofish:'gofishBtn', darts301:'darts301Btn', tournament:'tournamentBtn', stats:'statsBtn'
 };
 
 const GAME_NAMES = {
@@ -5313,7 +5359,7 @@ const GAME_NAMES = {
   missingLetter:'Doplň písmeno', sentence:'Prekladaj vety',
   spamClick:'Spam Click', mathDuel:'Matika Duel', emojiGuess:'Emoji Hádanka',
   hangman:'Obesenec', higherLower:'Vyššie Nižšie', mmsv:'Meno Mesto Zviera Vec', wordChain:'Slovný Reťazec',
-  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', animalGuess:'Hádaj Zviera', animalQuiz:'Zvierací Kvíz', gofish:'Kvarteto', tournament:'Turnaj'
+  chess:'Šach', checkers:'Dáma', puzzle:'Puzzle Scramble', maze:'Labyrint', reversi:'Reversi', tetris:'Tetris', snake:'Snake', racing:'Preteky', doodle:'Doodle Jump', ludo:'Človeče', dotsBoxes:'Bodky', breakout:'Breakout', pong:'Pong', tanks:'Tank Battle', snakeDuel:'Snake Duel', wordle:'Wordle', beeCount:'Včely', soccer:'Futbal', minesweeper:'Míny', gravityRun:'Gravity Run', game2048:'2048', flappy:'Flappy Bird', angryBirds:'Angry Birds', sokoban:'Sokoban', simonSays:'Simon Says', mancala:'Mancala', cardWar:'Vojna', unoGame:'Uno', solitaire:'Solitaire', nimGame:'Nim', nonogram:'Nonogram', sudoku:'Sudoku', animalGuess:'Hádaj Zviera', animalQuiz:'Zvierací Kvíz', gofish:'Kvarteto', darts301:'Šípky 301', tournament:'Turnaj'
 };
 
 let currentGameId = 'ticTacToe';
@@ -5754,7 +5800,7 @@ function getActiveP1Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',wordChain:'wc',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq',gofish:'gf'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq',gofish:'gf',darts301:'drt'
   };
   const k = keys[gId];
   if(k) return getP1Name(k);
@@ -5765,7 +5811,7 @@ function getActiveP2Name(gId) {
     ticTacToe:'ttt',psk15Game:'psk15',rockPaper:'rps',guessNum:'gn',memory:'mem',connect4:'c4',
     quiz:'q',battleship:'bs',ghost:'ghost',reaction:'reac',scramble:'scr',langScramble:'ls',
     flashcard:'fc',spamClick:'sc',mathDuel:'md',emojiGuess:'eg',hangman:'hm',higherLower:'hl',mmsv:'mmsv',wordChain:'wc',
-    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq',gofish:'gf'
+    chess:'ch',checkers:'dk',puzzle:'pz',maze:'mz',reversi:'rev',tetris:'tet',racing:'rc',ludo:'lu',dotsBoxes:'db',missingLetter:'ml',sentence:'st',wordle:'wdl',doodle:'dood',breakout:'brk',pong:'png',tanks:'tnk',snakeDuel:'sd',beeCount:'bee',soccer:'soc',minesweeper:'ms',gravityRun:'grav',game2048:'g48',flappy:'flap',angryBirds:'ab',sokoban:'sok',simonSays:'simon',mancala:'man',cardWar:'war',unoGame:'uno',solitaire:'sol',nimGame:'nim',nonogram:'ng',sudoku:'sdk',animalGuess:'aga',animalQuiz:'azq',gofish:'gf',darts301:'drt'
   };
   const k = keys[gId];
   if(k) return getP2Name(k);
@@ -6266,6 +6312,7 @@ const DAILY_GAMES=[
   {id:'cardWar',goal:'Vyhraj Vojnu',target:1,type:'win'},
   {id:'animalQuiz',goal:'Vyhraj Zvierací Kvíz',target:1,type:'win'},
   {id:'gofish',goal:'Vyhraj Kvarteto',target:1,type:'win'},
+  {id:'darts301',goal:'Vyhraj Šípky 301',target:1,type:'win'},
   {id:'guessNum',goal:'Uhádni číslo v Hádaj Číslo',target:1,type:'win'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
@@ -6422,6 +6469,7 @@ function restoreAllDiffs(){
     ['angryBirds','abDiffWrap',setAbDiff],
     ['sokoban','sokDiffWrap',setSokDiff],
     ['gofish','gfAISel',setGFDiff],
+    ['darts301','drtsDiffSel',setDartsDiff],
   ];
   map.forEach(([gId,selId,setFn])=>{
     const d=loadDiff(gId); if(!d) return;
@@ -22834,6 +22882,174 @@ function resetGoFish(){
 }
 resetGoFish();
 
+// =============================================================================
+// SEKCIA 57: ŠÍPKY 301
+// =============================================================================
+const DARTS_SECTORS=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+const DARTS={s1:301,s2:301,turn:1,dartsLeft:3,over:false,diff:'easy',_tStart1:301,_tStart2:301,_turnScore:0,_marks:[],_aimX:130,_aimY:130,raf:null,_epoch:0,ctx:null,running:false,_aiTimeout:null};
+
+function setDartsDiff(d,btn){DARTS.diff=d;saveDiff('darts301',d);btn.parentElement.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function resetDarts(){
+  DARTS._epoch++;
+  if(DARTS.raf){cancelAnimationFrame(DARTS.raf);DARTS.raf=null;}
+  if(DARTS._aiTimeout){clearTimeout(DARTS._aiTimeout);DARTS._aiTimeout=null;}
+  DARTS.ctx=null; DARTS.s1=301; DARTS.s2=301; DARTS.turn=1; DARTS.dartsLeft=3; DARTS.over=false;
+  DARTS._tStart1=301; DARTS._tStart2=301; DARTS._turnScore=0; DARTS._marks=[]; DARTS.running=false;
+  $('dartsScore1').textContent='301'; $('dartsScore2').textContent='301';
+  $('dartsDarts').textContent='🎯🎯🎯'; $('dartsStatus').textContent='Klikni Štart!';
+  $('dartsStartBtn').style.display=''; $('dartsThrowBtn').style.display='none';
+  activeTurn('dartsP1Card','dartsP2Card',1);
+  const p2c=$('dartsP2Card'); if(p2c) p2c.style.display=welcomeGameMode==='ai'?'none':'';
+  const ds=$('drtsDiffSel'); if(ds) ds.style.display=welcomeGameMode==='ai'?'':'none';
+  drawDartsBoard();
+}
+
+function dartsStart(){
+  $('dartsStartBtn').style.display='none'; $('dartsThrowBtn').style.display='';
+  DARTS.running=true; DARTS._tStart1=DARTS.s1; DARTS._tStart2=DARTS.s2;
+  $('dartsStatus').textContent=(DARTS.turn===1?getP1Name('drt'):getP2Name('drt'))+' hádzé!';
+  dartsMoveLoop();
+}
+
+function dartsMoveLoop(){
+  if(!DARTS.running||DARTS.over) return;
+  if(welcomeGameMode==='ai'&&DARTS.turn===2) return;
+  const c=$('dartsCanvas'); if(!c) return;
+  const t=Date.now()/1000, cx=c.width/2, cy=c.height/2, R=Math.min(c.width,c.height)/2-14, amp=R*.48;
+  DARTS._aimX=cx+amp*Math.sin(t*2.3)*Math.cos(t*0.5);
+  DARTS._aimY=cy+amp*Math.cos(t*1.9)*Math.sin(t*0.7);
+  drawDartsBoard();
+  DARTS.raf=requestAnimationFrame(dartsMoveLoop);
+}
+
+function _dartsR(R){return {bi:R*.055,bo:R*.115,ti:R*.60,to:R*.67,di:R*.81,dout:R*.90};}
+
+function drawDartsBoard(){
+  const c=$('dartsCanvas'); if(!c) return;
+  const ctx=DARTS.ctx||(DARTS.ctx=c.getContext('2d'));
+  const W=c.width,H=c.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2-14;
+  const {bi,bo,ti,to,di,dout}=_dartsR(R);
+  ctx.clearRect(0,0,W,H);
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fillStyle='#111';ctx.fill();
+  for(let i=0;i<20;i++){
+    const aS=((i-.5)*18-90)*Math.PI/180,aE=aS+18*Math.PI/180,ev=i%2===0;
+    _dartsArc(ctx,cx,cy,bo,ti,aS,aE,ev?'#f0e0c0':'#1e1e1e');
+    _dartsArc(ctx,cx,cy,ti,to,aS,aE,ev?'#27ae60':'#c0392b');
+    _dartsArc(ctx,cx,cy,to,di,aS,aE,ev?'#f0e0c0':'#1e1e1e');
+    _dartsArc(ctx,cx,cy,di,dout,aS,aE,ev?'#27ae60':'#c0392b');
+    const mA=i*18*Math.PI/180-Math.PI/2,nr=R*.955;
+    ctx.fillStyle='#fff';ctx.font=`bold ${Math.round(R*.09)}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(DARTS_SECTORS[i],cx+nr*Math.cos(mA),cy+nr*Math.sin(mA));
+  }
+  ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=1;
+  for(let i=0;i<20;i++){const a=(i*18-90-9)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx+bo*Math.cos(a),cy+bo*Math.sin(a));ctx.lineTo(cx+dout*Math.cos(a),cy+dout*Math.sin(a));ctx.stroke();}
+  ctx.beginPath();ctx.arc(cx,cy,bo,0,Math.PI*2);ctx.fillStyle='#27ae60';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,bi,0,Math.PI*2);ctx.fillStyle='#c0392b';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,bi*.35,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  DARTS._marks.forEach(m=>{ctx.beginPath();ctx.arc(m.x,m.y,5,0,Math.PI*2);ctx.fillStyle=m.p===1?'#4facfe':'#ffa040';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.stroke();});
+  if(DARTS.running&&!DARTS.over&&!(welcomeGameMode==='ai'&&DARTS.turn===2)){
+    const ax=DARTS._aimX,ay=DARTS._aimY;
+    ctx.strokeStyle='rgba(255,255,0,.9)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(ax,ay,10,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax-16,ay);ctx.lineTo(ax+16,ay);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax,ay-16);ctx.lineTo(ax,ay+16);ctx.stroke();
+  }
+}
+function _dartsArc(ctx,cx,cy,r1,r2,aS,aE,color){ctx.beginPath();ctx.arc(cx,cy,r2,aS,aE);ctx.arc(cx,cy,r1,aE,aS,true);ctx.closePath();ctx.fillStyle=color;ctx.fill();}
+
+function dartsGetScore(px,py){
+  const c=$('dartsCanvas'),cx=c.width/2,cy=c.height/2,R=Math.min(c.width,c.height)/2-14;
+  const {bi,bo,ti,to,di,dout}=_dartsR(R);
+  const dx=px-cx,dy=py-cy,dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<=bi) return {score:50,label:'🎯 BULL!'};
+  if(dist<=bo) return {score:25,label:'Outer bull'};
+  if(dist>dout) return {score:0,label:'Miss!'};
+  const angle=(Math.atan2(dy,dx)*180/Math.PI+90+360)%360;
+  const sNum=DARTS_SECTORS[Math.floor((angle+9)/18)%20];
+  let mult=1,pfx='';
+  if(dist>=ti&&dist<=to){mult=3;pfx='3× ';}
+  else if(dist>=di&&dist<=dout){mult=2;pfx='D';}
+  return {score:sNum*mult,label:pfx+sNum};
+}
+
+function dartsThrow(){
+  if(!DARTS.running||DARTS.over||DARTS.dartsLeft<=0) return;
+  if(welcomeGameMode==='ai'&&DARTS.turn===2) return;
+  if(DARTS.raf){cancelAnimationFrame(DARTS.raf);DARTS.raf=null;}
+  dartsDartLanded(DARTS._aimX+(Math.random()-.5)*6,DARTS._aimY+(Math.random()-.5)*6,DARTS.turn);
+}
+
+function dartsDartLanded(x,y,player){
+  const res=dartsGetScore(x,y);
+  DARTS._marks.push({x,y,p:player}); DARTS._turnScore+=res.score; DARTS.dartsLeft--;
+  $('dartsDarts').textContent='🎯'.repeat(DARTS.dartsLeft)+'⬜'.repeat(3-DARTS.dartsLeft);
+  $('dartsStatus').textContent=res.label+(res.score?' (+'+res.score+')':'');
+  playSound('click'); drawDartsBoard();
+  if(DARTS.dartsLeft===0){setTimeout(dartsEndTurn,700);}
+  else if(!(welcomeGameMode==='ai'&&player===2)){dartsMoveLoop();}
+}
+
+function dartsEndTurn(){
+  if(DARTS.over) return;
+  const p=DARTS.turn,prev=p===1?DARTS._tStart1:DARTS._tStart2,next=prev-DARTS._turnScore;
+  if(next<0||next===1){
+    $('dartsStatus').textContent='💥 Bust! Skóre zostáva '+prev;
+    playSound('wrong');
+    if(p===1)$('dartsScore1').textContent=prev;else $('dartsScore2').textContent=prev;
+  } else if(next===0){
+    if(p===1){DARTS.s1=0;$('dartsScore1').textContent='0';}else{DARTS.s2=0;$('dartsScore2').textContent='0';}
+    DARTS.over=true;DARTS.running=false;
+    $('dartsStatus').textContent='🏆 '+(p===1?getP1Name('drt'):getP2Name('drt'))+' vyhral!';
+    $('dartsThrowBtn').style.display='none';
+    addWin(p,'darts301');celebrate('dartsCelebration');playSound('win');return;
+  } else {
+    if(p===1){DARTS.s1=next;$('dartsScore1').textContent=next;}else{DARTS.s2=next;$('dartsScore2').textContent=next;}
+    $('dartsStatus').textContent='Séria: '+DARTS._turnScore+' bodov';playSound('move');
+  }
+  setTimeout(dartsNextTurn,1100);
+}
+
+function dartsNextTurn(){
+  if(DARTS.over) return;
+  DARTS.turn=DARTS.turn===1?2:1; DARTS.dartsLeft=3; DARTS._turnScore=0; DARTS._marks=[];
+  DARTS._tStart1=DARTS.s1; DARTS._tStart2=DARTS.s2;
+  activeTurn('dartsP1Card','dartsP2Card',DARTS.turn);
+  $('dartsDarts').textContent='🎯🎯🎯';
+  if(welcomeGameMode==='ai'&&DARTS.turn===2){
+    $('dartsStatus').textContent='Počítač hádzé...'; $('dartsThrowBtn').style.display='none';
+    dartsAITurn(++DARTS._epoch);
+  } else {
+    $('dartsThrowBtn').style.display='';
+    $('dartsStatus').textContent=(DARTS.turn===1?getP1Name('drt'):getP2Name('drt'))+' hádzé!';
+    dartsMoveLoop();
+  }
+}
+
+function dartsAITurn(ep){
+  if(ep!==DARTS._epoch||DARTS.over) return;
+  const c=$('dartsCanvas'),cx=c.width/2,cy=c.height/2,R=Math.min(c.width,c.height)/2-14;
+  const {ti,to}=_dartsR(R);
+  function throwOne(){
+    if(ep!==DARTS._epoch||DARTS.over) return;
+    let x,y;
+    if(DARTS.diff==='hard'){
+      const r=(ti+to)/2; x=cx+r*Math.cos(-Math.PI/2)+(Math.random()-.5)*10; y=cy+r*Math.sin(-Math.PI/2)+(Math.random()-.5)*10;
+    } else if(DARTS.diff==='medium'){
+      const r=R*.35+Math.random()*R*.3,a=(Math.random()*100-50)*Math.PI/180-Math.PI/2;
+      x=cx+r*Math.cos(a)+(Math.random()-.5)*18; y=cy+r*Math.sin(a)+(Math.random()-.5)*18;
+    } else {
+      const r=Math.random()*R*.88,a=Math.random()*Math.PI*2; x=cx+r*Math.cos(a); y=cy+r*Math.sin(a);
+    }
+    dartsDartLanded(x,y,2);
+    if(DARTS.dartsLeft>0&&!DARTS.over) DARTS._aiTimeout=setTimeout(throwOne,750);
+  }
+  DARTS._aiTimeout=setTimeout(throwOne,800);
+}
+
+resetDarts();
+
 // ===== MOBILE 3-LEVEL NAVIGATION =====
 const isMobile = () => window.innerWidth <= 640;
 
@@ -22904,6 +23120,7 @@ const MOBILE_GAMES = [
   { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun', mp:true },
   { id:'animalQuiz',   label:'Zvierací Kvíz', icon:'🦁', grad:'rgba(255,152,0,0.3),rgba(255,87,34,0.3)', mode:'both', cat:'fun' },
   { id:'gofish',       label:'Kvarteto',       icon:'🎣', grad:'rgba(0,128,128,0.3),rgba(0,200,180,0.3)', mode:'both', mp:true, cat:'board' },
+  { id:'darts301',     label:'Šípky 301',      icon:'🎯', grad:'rgba(231,76,60,0.3),rgba(192,57,43,0.3)', mode:'both', cat:'arcade' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -23006,6 +23223,9 @@ function stopAllGames(){
   if(typeof WC!=='undefined'&&WC.timer){clearInterval(WC.timer);WC.timer=null;WC.over=true;}
   // Go Fish
   if(typeof GF!=='undefined'&&GF._aiTimeout){clearTimeout(GF._aiTimeout);GF._aiTimeout=null;}
+  // Darts 301
+  if(typeof DARTS!=='undefined'&&DARTS.raf){cancelAnimationFrame(DARTS.raf);DARTS.raf=null;}
+  if(typeof DARTS!=='undefined'&&DARTS._aiTimeout){clearTimeout(DARTS._aiTimeout);DARTS._aiTimeout=null;}
   // QR scanner
   if(typeof mpStopScan==='function') mpStopScan();
   // Global UI timers
