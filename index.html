@@ -3664,7 +3664,7 @@ body.light .man-store {
     <h4>🎖️ Levely (1–9)</h4>
     <p>Lv.1 Nováčik → Lv.2 Začiatočník → Lv.3 Hráč → Lv.4 Skúsený → Lv.5 Pokročilý → Lv.6 Expert → Lv.7 Majster → Lv.8 Šampión → Lv.9 Legenda</p>
     <h4>🏅 Achievementy</h4>
-    <p>72 achievementov — odomykajú sa za špeciálne výkony (séria výhier, počet hier, špeciálne podmienky). Každý unlock: <strong>+8 XP</strong>. Zobrazujú sa aj s progress barom.</p>
+    <p>73 achievementov — odomykajú sa za špeciálne výkony (séria výhier, počet hier, špeciálne podmienky). Každý unlock: <strong>+8 XP</strong>. Zobrazujú sa aj s progress barom.</p>
     <h4>📅 Denné výzvy</h4>
     <p>Každý deň iná hra. Za splnenie dostaneš <strong>+25 XP</strong> a predĺžiš streak 🔥. Ak vynecháš deň, streak sa reštartuje.</p>
     <h4>🥇 Rebríčky</h4>
@@ -5331,7 +5331,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.7';
+const APP_VERSION = '20.8';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5958,6 +5958,7 @@ const TOUR_AVAILABLE_GAMES = [
   {id:'hangman', name:'Obesenec', icon:'💀', mode:'pvp'},
   {id:'mmsv', name:'Meno Mesto Zviera Vec', icon:'🗺️', mode:'pvp', mp:true},
   {id:'wordChain', name:'Slovný Reťazec', icon:'🔗', mode:'pvp'},
+  {id:'darts301', name:'Šípky 301', icon:'🎯', mode:'both'},
 ];
 
 function showTournament() {
@@ -6687,6 +6688,7 @@ const ACHIEVEMENTS = [
   { id:'mmsv5',  icon:'🗺️', name:'Zemepisár',     desc:'Vyhraj 5× Meno Mesto Zviera Vec', check:()=>(gStats.perGame.mmsv?.p1||0)+(gStats.perGame.mmsv?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.mmsv?.p1||0)+(gStats.perGame.mmsv?.p2||0),max:5}) },
   { id:'wc5',    icon:'🔗', name:'Reťaziar',      desc:'Vyhraj 5× Slovný Reťazec',       check:()=>(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.wordChain?.p1||0)+(gStats.perGame.wordChain?.p2||0),max:5}) },
   { id:'gf5',    icon:'🎣', name:'Rybár',          desc:'Vyhraj 5× Kvarteto',             check:()=>(gStats.perGame.gofish?.p1||0)+(gStats.perGame.gofish?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.gofish?.p1||0)+(gStats.perGame.gofish?.p2||0),max:5}) },
+  { id:'drt5',   icon:'🎯', name:'Šípkár',         desc:'Vyhraj 5× Šípky 301',            check:()=>(gStats.perGame.darts301?.p1||0)+(gStats.perGame.darts301?.p2||0)>=5, progress:()=>({cur:(gStats.perGame.darts301?.p1||0)+(gStats.perGame.darts301?.p2||0),max:5}) },
 ];
 
 let _unlockedAch; try { const _ua=JSON.parse(localStorage.getItem('hry_achievements')||'[]'); _unlockedAch=Array.isArray(_ua)?_ua.filter(x=>typeof x==='string'):[]; } catch(e) { _unlockedAch = []; }
@@ -15678,7 +15680,7 @@ const MP = {
   gnRound: 0,
   sdRound: 0,
   tnkRound: 0,
-  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0, gfRound: 0,
+  pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0, simonRound: 0, manRound: 0, sokRound: 0, dbRound: 0, ghostRound: 0, hlRound: 0, quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0, gfRound: 0, drtRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _chatUnread: 0,
@@ -22900,16 +22902,19 @@ function resetDarts(){
   $('dartsDarts').textContent='🎯🎯🎯'; $('dartsStatus').textContent='Klikni Štart!';
   $('dartsStartBtn').style.display=''; $('dartsThrowBtn').style.display='none';
   activeTurn('dartsP1Card','dartsP2Card',1);
-  const p2c=$('dartsP2Card'); if(p2c) p2c.style.display=welcomeGameMode==='ai'?'none':'';
+  const p2c=$('dartsP2Card'); if(p2c) p2c.style.display=(welcomeGameMode==='ai'&&!MP.isConnected)?'none':'';
   const ds=$('drtsDiffSel'); if(ds) ds.style.display=welcomeGameMode==='ai'?'':'none';
   drawDartsBoard();
 }
 
 function dartsStart(){
-  $('dartsStartBtn').style.display='none'; $('dartsThrowBtn').style.display='';
+  $('dartsStartBtn').style.display='none';
   DARTS.running=true; DARTS._tStart1=DARTS.s1; DARTS._tStart2=DARTS.s2;
-  $('dartsStatus').textContent=(DARTS.turn===1?getP1Name('drt'):getP2Name('drt'))+' hádzé!';
-  dartsMoveLoop();
+  if(MP.isConnected&&MP.isHost) MP.connection.send({type:'drt-start'});
+  const myTurn=!MP.isConnected||DARTS.turn===(MP.isHost?1:2);
+  $('dartsThrowBtn').style.display=myTurn?'':'none';
+  $('dartsStatus').textContent=myTurn?(DARTS.turn===1?getP1Name('drt'):getP2Name('drt'))+' hádzé!':'Čaká sa na súpera...';
+  if(myTurn) dartsMoveLoop();
 }
 
 function dartsMoveLoop(){
@@ -22977,6 +22982,7 @@ function dartsGetScore(px,py){
 function dartsThrow(){
   if(!DARTS.running||DARTS.over||DARTS.dartsLeft<=0) return;
   if(welcomeGameMode==='ai'&&DARTS.turn===2) return;
+  if(MP.isConnected&&DARTS.turn!==(MP.isHost?1:2)) return;
   if(DARTS.raf){cancelAnimationFrame(DARTS.raf);DARTS.raf=null;}
   dartsDartLanded(DARTS._aimX+(Math.random()-.5)*6,DARTS._aimY+(Math.random()-.5)*6,DARTS.turn);
 }
@@ -22987,6 +22993,9 @@ function dartsDartLanded(x,y,player){
   $('dartsDarts').textContent='🎯'.repeat(DARTS.dartsLeft)+'⬜'.repeat(3-DARTS.dartsLeft);
   $('dartsStatus').textContent=res.label+(res.score?' (+'+res.score+')':'');
   playSound('click'); drawDartsBoard();
+  if(MP.isConnected&&((player===1&&MP.isHost)||(player===2&&!MP.isHost))){
+    MP.connection.send({type:'drt-throw',score:res.score,x:Math.round(x),y:Math.round(y)});
+  }
   if(DARTS.dartsLeft===0){setTimeout(dartsEndTurn,700);}
   else if(!(welcomeGameMode==='ai'&&player===2)){dartsMoveLoop();}
 }
@@ -23003,11 +23012,13 @@ function dartsEndTurn(){
     DARTS.over=true;DARTS.running=false;
     $('dartsStatus').textContent='🏆 '+(p===1?getP1Name('drt'):getP2Name('drt'))+' vyhral!';
     $('dartsThrowBtn').style.display='none';
+    if(MP.isConnected) MP.connection.send({type:'drt-turn',s1:DARTS.s1,s2:DARTS.s2});
     addWin(p,'darts301');celebrate('dartsCelebration');playSound('win');return;
   } else {
     if(p===1){DARTS.s1=next;$('dartsScore1').textContent=next;}else{DARTS.s2=next;$('dartsScore2').textContent=next;}
     $('dartsStatus').textContent='Séria: '+DARTS._turnScore+' bodov';playSound('move');
   }
+  if(MP.isConnected) MP.connection.send({type:'drt-turn',s1:DARTS.s1,s2:DARTS.s2});
   setTimeout(dartsNextTurn,1100);
 }
 
@@ -23020,6 +23031,8 @@ function dartsNextTurn(){
   if(welcomeGameMode==='ai'&&DARTS.turn===2){
     $('dartsStatus').textContent='Počítač hádzé...'; $('dartsThrowBtn').style.display='none';
     dartsAITurn(++DARTS._epoch);
+  } else if(MP.isConnected&&DARTS.turn!==(MP.isHost?1:2)){
+    $('dartsStatus').textContent='Čaká sa na súpera...'; $('dartsThrowBtn').style.display='none';
   } else {
     $('dartsThrowBtn').style.display='';
     $('dartsStatus').textContent=(DARTS.turn===1?getP1Name('drt'):getP2Name('drt'))+' hádzé!';
@@ -23120,7 +23133,7 @@ const MOBILE_GAMES = [
   { id:'animalGuess',  label:'Hádaj Zviera',  icon:'🐾', grad:'rgba(139,195,74,0.3),rgba(255,235,59,0.3)', mode:'both', cat:'fun', mp:true },
   { id:'animalQuiz',   label:'Zvierací Kvíz', icon:'🦁', grad:'rgba(255,152,0,0.3),rgba(255,87,34,0.3)', mode:'both', cat:'fun' },
   { id:'gofish',       label:'Kvarteto',       icon:'🎣', grad:'rgba(0,128,128,0.3),rgba(0,200,180,0.3)', mode:'both', mp:true, cat:'board' },
-  { id:'darts301',     label:'Šípky 301',      icon:'🎯', grad:'rgba(231,76,60,0.3),rgba(192,57,43,0.3)', mode:'both', cat:'arcade' },
+  { id:'darts301',     label:'Šípky 301',      icon:'🎯', grad:'rgba(231,76,60,0.3),rgba(192,57,43,0.3)', mode:'both', mp:true, cat:'arcade' },
   { id:'tournament',    label:'Turnaj',         icon:'🏆', grad:'rgba(255,215,0,0.4),rgba(255,140,0,0.4)', mode:'always' },
   { id:'stats',         label:'Štatistiky',     icon:'📊', grad:'rgba(44,62,80,0.35),rgba(52,152,219,0.25)', mode:'always' },
 ];
@@ -25073,6 +25086,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'breakout') { if(data.round !== undefined) MP.brkRound = data.round; BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
     if(gameId === 'puzzle') { if(data.round !== undefined) MP.puzzleRound = data.round; resetPuzzle(); }
     if(gameId === 'gofish') { if(data.round !== undefined) MP.gfRound = data.round; resetGoFish(); }
+    if(gameId === 'darts301') { if(data.round !== undefined) MP.drtRound = data.round; resetDarts(); }
   }
 
   // Snake Duel MP
@@ -25518,6 +25532,37 @@ function _mpHandleMessageInner(data) {
     gfRenderHands();
     gfRenderTurnUI();
   }
+
+  // ---- DARTS 301 MP ----
+  if(data.type==='drt-start'){
+    if(!MP.isHost) dartsStart();
+  }
+  if(data.type==='drt-throw'){
+    if(!isFinite(data.score)||data.score<0||data.score>60) return;
+    if(!isFinite(data.x)||data.x<0||data.x>260) return;
+    if(!isFinite(data.y)||data.y<0||data.y>260) return;
+    const oppP=MP.isHost?2:1;
+    DARTS._marks.push({x:data.x,y:data.y,p:oppP});
+    DARTS.dartsLeft=Math.max(0,DARTS.dartsLeft-1);
+    $('dartsDarts').textContent='🎯'.repeat(DARTS.dartsLeft)+'⬜'.repeat(3-DARTS.dartsLeft);
+    $('dartsStatus').textContent=(data.score?'(+'+data.score+')':'❌ Mimo');
+    drawDartsBoard(); playSound('click');
+  }
+  if(data.type==='drt-turn'){
+    if(!isFinite(data.s1)||data.s1<0||data.s1>301) return;
+    if(!isFinite(data.s2)||data.s2<0||data.s2>301) return;
+    DARTS.s1=Math.floor(data.s1); DARTS.s2=Math.floor(data.s2);
+    $('dartsScore1').textContent=DARTS.s1; $('dartsScore2').textContent=DARTS.s2;
+    if(DARTS.s1===0||DARTS.s2===0){
+      const winner=DARTS.s1===0?1:2;
+      DARTS.over=true; DARTS.running=false;
+      $('dartsStatus').textContent='🏆 '+(winner===1?getP1Name('drt'):getP2Name('drt'))+' vyhral!';
+      $('dartsThrowBtn').style.display='none';
+      addWin(winner,'darts301'); celebrate('dartsCelebration'); playSound('win');
+    } else {
+      dartsNextTurn();
+    }
+  }
 }
 
 function mpStartBSGame() {
@@ -25583,6 +25628,7 @@ function mpRematch(gameId) {
   if(gameId === 'breakout') { MP.brkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.brkRound }); BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
   if(gameId === 'puzzle') { MP.puzzleRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.puzzleRound }); resetPuzzle(); }
   if(gameId === 'gofish') { MP.gfRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.gfRound }); resetGoFish(); setTimeout(()=>gfStart(),200); }
+  if(gameId === 'darts301') { MP.drtRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.drtRound }); resetDarts(); setTimeout(()=>dartsStart(),200); }
 }
 
 function mpGenerateQR(code) {
@@ -25894,7 +25940,7 @@ if('serviceWorker' in navigator) {
           <div class="onb-arrow-down">👇</div>
           <button class="onb-mock-btn" tabindex="-1">▶️ Štart</button>
         </div>
-        <div class="onb-desc">Zadaj mená hráčov na úvodnej obrazovke, vyber mód a stlač <strong>Štart</strong>.<br><br>Sleduj pokrok v <strong>Štatistikách</strong> a odomkni <strong>72 achievementov 🏆</strong>.</div>
+        <div class="onb-desc">Zadaj mená hráčov na úvodnej obrazovke, vyber mód a stlač <strong>Štart</strong>.<br><br>Sleduj pokrok v <strong>Štatistikách</strong> a odomkni <strong>73 achievementov 🏆</strong>.</div>
       </div>
     </div>
     <div class="onb-dots" id="onbDots">
