@@ -111,6 +111,9 @@ const MP = {
 **Go Fish (host-authoritative, 1 game):**
 - Go Fish — `gf-start` (host sends deck), `gf-state` (host sends guest their hand only); gofishRound
 
+**Darts 301 (turn-based, host=P1):**
+- `drt-start` (host → guest, begins game), `drt-throw` (thrower → opponent, score+coords visual), `drt-turn` (thrower → opponent, s1/s2 after full turn); drtRound; rematch: host always re-sends drt-start
+
 ## Adding MP to a Game
 1. Add `mp:true` to MOBILE_GAMES entry
 2. In click handler, check turn: `if(MP.isConnected) { if(notMyTurn) return; }`

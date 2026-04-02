@@ -34,6 +34,7 @@ Key state objects — grep `const STATENAME =` in index.html to find them.
 - `NG` — Nonogram (size, pattern, solution[][], player[][], errors, maxErrors:3, started, timer)
 - `SDK` — Sudoku (grid[][], solution[][], given[][], selected, diff, errors, timer)
 - `GF` — Go Fish (deck, hand1, hand2, books1, books2, turn, over, diff, deckCount)
+- `DARTS` — Šípky 301 (s1, s2, turn, dartsLeft, over, diff, _tStart1, _tStart2, _turnScore, _marks[], _aimX, _aimY, raf, _epoch, ctx, running, _aiTimeout)
 - `SIMON` — Simon Says (sequence, playerSeq, level, over, player, s1, s2, diff, _timeout)
 - `MAN` — Mancala (board[14], turn, over, s1, s2, diff, _aiTimeout)
 - `GHOST` — Ghost (word, player, over, lang, s1, s2, _round)

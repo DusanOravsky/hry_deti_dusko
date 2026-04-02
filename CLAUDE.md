@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~25200 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~25800 lines).
 
 ## Key Architecture
 
@@ -74,7 +74,7 @@ resetWordle();  // welcomeGameMode check works
 
 - **DOM helper**: `const $ = id => document.getElementById(id);`
 - **Canvas ctx caching**: `STATE.ctx || canvas.getContext('2d')` — don't call getContext every frame
-- **stopAllGames()** timers: SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf, FLAP.raf, AB.raf, MS.timer, WAR._timer, UNO._timer, SOL.timer, NIM._timer, SIMON._timeout, MAN._aiTimeout, SOK.timer
+- **stopAllGames()** timers: SNK.timer, TET.dropTimer, RACE.interval, DOOD.raf, BRK.raf, PNG.raf, TNK.timer, SD.timer, REAC.timeout, BEE timers, SOC.raf, GRAV.raf, FLAP.raf, AB.raf, MS.timer, WAR._timer, UNO._timer, SOL.timer, NIM._timer, SIMON._timeout, MAN._aiTimeout, SOK.timer, DARTS.raf, DARTS._aiTimeout, GF._aiTimeout
 
 ## Deploy
 
@@ -107,4 +107,4 @@ GitHub Pages auto-deploys from main branch. **Always bump `APP_VERSION` in index
 - `docs/mp.md` — MP architecture, ICE config, TURN server, MP state, per-game message types, scoring patterns, MP issues
 - `docs/game-states.md` — All game state objects (TET, SNK, CH, GF, SIMON, MAN, etc.)
 - `docs/features.md` — Feature list (UI, sounds, achievements, game-specific features)
-- `docs/changelog.md` — Version history (v18.0–v20.4)
+- `docs/changelog.md` — Version history (v18.0–v20.10)
