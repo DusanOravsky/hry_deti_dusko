@@ -5250,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.95';
+const APP_VERSION = '19.96';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6279,7 +6279,7 @@ function dailyCheckComplete(gameId,score,won){
     dailySaveHistory(today);
     showToast('🎉 Denná výzva splnená! Streak: '+streak+'🔥',4000,'rgba(67,233,123,0.9)');
     playSound('win');
-    addXP(1, 25);
+    addXP(1, 25); addXP(2, 25);
     updateDailyBtn();
     renderDailyCalendar();
     checkAchievements();
