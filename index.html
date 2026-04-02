@@ -3503,6 +3503,18 @@ body.light .man-store {
     <!-- TAB 0: Prehľad -->
     <div class="stats-tab-panel active" id="stPanel0">
       <div class="stats-section">
+        <h3>⭐ XP a Levely</h3>
+        <div id="stXPSummary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px"></div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82em">
+            <thead><tr style="opacity:0.55;text-align:left"><th style="padding:4px 8px">Level</th><th style="padding:4px 8px">Titul</th><th style="padding:4px 8px">Min. XP</th><th style="padding:4px 8px">Ako získať XP</th></tr></thead>
+            <tbody id="stXPTable"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:8px;font-size:0.75em;opacity:0.5">Výhra: +10 XP · Remíza: +3 XP · Denná výzva: +25 XP · Achievement: +8 XP · Turnaj: +50 XP</div>
+      </div>
+
+      <div class="stats-section">
         <h3>🏆 Celkové výsledky</h3>
         <div class="stats-grid">
           <div class="stats-tile"><div class="stats-tile-val" id="stTotalGames">0</div><div class="stats-tile-label">Spolu hier</div></div>
@@ -5250,7 +5262,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.0';
+const APP_VERSION = '20.1';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6887,6 +6899,38 @@ function renderStats() {
   $('stTourDraws').textContent  = t.draws;
   $('stTourP1Label').textContent = globalP1 + ' vyhral';
   $('stTourP2Label').textContent = globalP2 + ' vyhral';
+  // XP summary cards
+  const xpSum = $('stXPSummary');
+  if(xpSum) {
+    xpSum.innerHTML = [1,2].map(p=>{
+      const xpVal = _xp['p'+p]||0;
+      const {lv, next, pct} = _xpLevel(xpVal);
+      const name = p===1?globalP1:globalP2;
+      const nextTxt = next ? `${xpVal} / ${next.min} XP` : `${xpVal} XP ✓`;
+      return `<div style="flex:1;min-width:160px;background:rgba(255,200,0,0.08);border:1px solid rgba(255,200,0,0.2);border-radius:10px;padding:10px 12px">
+        <div style="font-size:0.75em;opacity:0.55;margin-bottom:2px">${escHtml(name)}</div>
+        <div style="font-size:1.1em;font-weight:800;color:#ffd700">Lv.${lv.level} — ${lv.title}</div>
+        <div style="margin:6px 0 2px;height:6px;background:rgba(255,255,255,0.1);border-radius:3px"><div style="height:6px;width:${pct}%;background:linear-gradient(90deg,#ffd700,#ffaa00);border-radius:3px;transition:width 0.4s"></div></div>
+        <div style="font-size:0.72em;opacity:0.5">${nextTxt}${next?' → '+next.title:''}</div>
+      </div>`;
+    }).join('');
+  }
+  // XP levels table
+  const xpTbl = $('stXPTable');
+  if(xpTbl && !xpTbl.dataset.built) {
+    xpTbl.dataset.built = '1';
+    xpTbl.innerHTML = XP_LEVELS.map((l,i)=>{
+      const next = XP_LEVELS[i+1];
+      const range = next ? `${l.min} – ${next.min-1}` : `${l.min}+`;
+      const medals = ['','','','⭐','⭐⭐','⭐⭐⭐','🔥','🔥🔥','🏆'];
+      return `<tr style="border-top:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px 8px;font-weight:800;color:#ffd700">Lv.${l.level} ${medals[i]||''}</td>
+        <td style="padding:5px 8px;font-weight:700">${l.title}</td>
+        <td style="padding:5px 8px;opacity:0.6;font-size:0.9em">${range}</td>
+        <td style="padding:5px 8px;opacity:0.45;font-size:0.8em">${i===0?'Štart':'~'+(Math.ceil(l.min/10))+' výhier'}</td>
+      </tr>`;
+    }).join('');
+  }
   renderAchievements();
   renderLeaderboard();
   renderDailyCalendar();
@@ -24870,6 +24914,8 @@ function _mpHandleMessageInner(data) {
     if(data.py!==undefined)PNG.p2y=data.py;
   }
   if(data.type==='png-state'){
+    if(typeof data.bx!=='number'||typeof data.by!=='number'||typeof data.p1y!=='number'||typeof data.p2y!=='number') return;
+    if(typeof data.s1!=='number'||typeof data.s2!=='number'||!isFinite(data.s1)||!isFinite(data.s2)||data.s1<0||data.s2<0) return;
     const prevS1=PNG.s1,prevS2=PNG.s2;
     PNG.bx=data.bx;PNG.by=data.by;PNG.p1y=data.p1y;PNG.p2y=data.p2y;
     PNG.s1=data.s1;PNG.s2=data.s2;
@@ -24877,6 +24923,7 @@ function _mpHandleMessageInner(data) {
     if(data.s1>prevS1||data.s2>prevS2)playSound('wrong');
     pngRender();
     if(data.over){
+      if(data.winner!==1&&data.winner!==2) return;
       PNG.running=false;if(PNG.raf)cancelAnimationFrame(PNG.raf);
       const n1=getP1Name('png'),n2=getP2Name('png');
       if(data.winner===1){
@@ -24961,7 +25008,7 @@ function _mpHandleMessageInner(data) {
   }
 
   // Ghost MP
-  if(data.type==='ghost-letter'){ghostDoLetter(data.ch);}
+  if(data.type==='ghost-letter'){if(typeof data.ch==='string'&&data.ch.length===1&&/^[a-záäčďéíĺľňóôŕšťúýžA-ZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ]$/.test(data.ch))ghostDoLetter(data.ch);}
   if(data.type==='ghost-challenge'){ghostDoChallenge();}
   if(data.type==='ghost-lang'){if($('ghostLangSelect'))$('ghostLangSelect').value=data.lang;buildGhostKeyboard();}
 
@@ -24977,7 +25024,7 @@ function _mpHandleMessageInner(data) {
   if(data.type==='hl-turn-done') {
     if(data.player!==1&&data.player!==2) return;
     if(typeof data.score!=='number'||!isFinite(data.score)) return;
-    const safeHLScore=Math.max(0,Math.floor(data.score));
+    const safeHLScore=Math.max(0,Math.min(Math.floor(data.score),1000));
     if(data.player===1){HL.p1Best=safeHLScore;$('p1ScoreHL').textContent=safeHLScore;popScore('p1ScoreHL');}
     else{HL.p2Best=safeHLScore;$('p2ScoreHL').textContent=safeHLScore;popScore('p2ScoreHL');}
     if(data.isFirst) {
@@ -25000,7 +25047,10 @@ function _mpHandleMessageInner(data) {
 
   // Kvíz MP
   if(data.type==='quiz-start') {
-    QUIZ.questions=data.questions; QUIZ.idx=0; QUIZ.s1=0; QUIZ.s2=0;
+    if(!Array.isArray(data.questions)||data.questions.length===0) return;
+    const validQ=data.questions.filter(q=>q&&typeof q.q==='string'&&Array.isArray(q.a)&&q.a.length>0&&typeof q.c==='number'&&q.c>=0&&q.c<q.a.length);
+    if(validQ.length===0) return;
+    QUIZ.questions=validQ.slice(0,10); QUIZ.idx=0; QUIZ.s1=0; QUIZ.s2=0;
     QUIZ._mpMyAnswer=-1; QUIZ._mpOppAnswer=-1; QUIZ._mpDone=false;
     MP._quizTimerSecs=data.timerSecs||10;
     $('p1ScoreQuiz').textContent='0'; $('p2ScoreQuiz').textContent='0';

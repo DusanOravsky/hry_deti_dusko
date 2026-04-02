@@ -1,5 +1,9 @@
 # Version History
 
+## v20.1
+- **XP levels in Stats**: Tab 0 (Prehľad) now shows per-player XP summary cards (current level, title, progress bar) + full level table (Lv.1 Nováčik → Lv.9 Legenda) with XP ranges and "how to earn XP" explanation
+- **MP handler validation (round 3)**: quiz-start validates questions structure; ghost-letter validates single Slovak/Czech letter; png-state validates ball/paddle coords + scores (non-negative finite) + winner (1|2); hl-turn-done caps score at 1000
+
 ## v20.0
 - **MP handler validation (round 2)**: rev-move validates idx as 0-63; nim-take validates pile (0-3) and count (1-3, ≤remaining); mancala-move validates idx as 0-13; db-line validates lineType ('h'|'v') and i/j against board dimensions (5×5 grid)
 
