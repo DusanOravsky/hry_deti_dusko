@@ -3502,11 +3502,11 @@ body.light .man-store {
 
     <div class="player-info">
       <div class="player-card" id="dartsP1Card">
-        <span class="player-name" id="dartsP1Name">Hráč 1</span>
+        <div class="player-name-display" id="dartsP1Name">Hráč 1</div>
         <span class="player-score" id="dartsScore1" style="font-size:2em">301</span>
       </div>
       <div class="player-card" id="dartsP2Card">
-        <span class="player-name" id="dartsP2Name">Hráč 2</span>
+        <div class="player-name-display" id="dartsP2Name">Hráč 2</div>
         <span class="player-score" id="dartsScore2" style="font-size:2em">301</span>
       </div>
     </div>
@@ -5331,7 +5331,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.6';
+const APP_VERSION = '20.7';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6617,7 +6617,7 @@ const ACHIEVEMENTS = [
   { id:'win100',   icon:'💎', name:'Stovka',          desc:'Vyhraj 100 hier',           check:()=>gStats.p1+gStats.p2>=100, progress:()=>({cur:gStats.p1+gStats.p2,max:100}) },
   { id:'games5',   icon:'🎮', name:'Prieskumnik',     desc:'Skus 5 roznych hier',       check:()=>Object.keys(gStats.perGame).length>=5, progress:()=>({cur:Object.keys(gStats.perGame).length,max:5}) },
   { id:'games15',  icon:'🌟', name:'Znalec',          desc:'Skus 15 roznych hier',      check:()=>Object.keys(gStats.perGame).length>=15, progress:()=>({cur:Object.keys(gStats.perGame).length,max:15}) },
-  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=57, progress:()=>({cur:Object.keys(gStats.perGame).length,max:57}) },
+  { id:'gamesAll', icon:'👑', name:'Vsetky hry',      desc:'Skus kazdu hru',            check:()=>Object.keys(gStats.perGame).length>=MOBILE_GAMES.filter(g=>g.mode!=='always').length, progress:()=>({cur:Object.keys(gStats.perGame).length,max:MOBILE_GAMES.filter(g=>g.mode!=='always').length}) },
   { id:'draw5',    icon:'🤝', name:'Mierotvorec',     desc:'Dosiahni 5 remiz',          check:()=>gStats.draws>=5, progress:()=>({cur:gStats.draws,max:5}) },
   { id:'streak3',  icon:'🔥', name:'Seria 3',         desc:'Vyhraj 3x za sebou',        check:()=>_getWinStreak()>=3, progress:()=>({cur:_getWinStreak(),max:3}) },
   { id:'streak5',  icon:'🔥', name:'Seria 5',         desc:'Vyhraj 5x za sebou',        check:()=>_getWinStreak()>=5, progress:()=>({cur:_getWinStreak(),max:5}) },
@@ -23614,7 +23614,7 @@ function applyGameMode(mode = welcomeGameMode) {
     if(targetBtn) targetBtn.click();
   });
   // Show/hide AI difficulty for games that use global welcomeGameMode
-  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','manDiffWrap'];
+  const aiSels = ['chAISel','dkAISel','bsAISel','ludoAISel','mzAISel','revAISel','brkAISel','pngAISel','tnkAISel','beeDiffWrap','socDiffWrap','unoAISel','nimAISel','abDiffWrap','sokDiffWrap','manDiffWrap','drtsDiffSel'];
   aiSels.forEach(id => {
     const el = $(id);
     if(el) el.style.display = mode==='ai' ? 'flex' : 'none';
@@ -23625,7 +23625,7 @@ function applyGameMode(mode = welcomeGameMode) {
   const simonColorEl = $('simonColorWrap');
   if(simonColorEl) simonColorEl.style.display = mode==='ai' ? 'none' : 'flex'; // Only in PVP
   // Update P2 names for AI/PVP mode
-  const _aiP2Names = ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','simonP2Name','manP2Name','agaP2Name','azqP2Name'];
+  const _aiP2Names = ['chP2Name','dkP2Name','bsP2Name','mzP2Name','revP2Name','brkP2Name','pngP2Name','tnkP2Name','warP2Name','unoP2Name','nimP2Name','sokP2Name','simonP2Name','manP2Name','agaP2Name','azqP2Name','dartsP2Name'];
   if(mode==='ai') {
     _aiP2Names.forEach(id => setP2Card(id, true, '🤖 Počítač'));
     // Ludo: force 2 players in AI mode, hide P3/P4 cards and player selector
