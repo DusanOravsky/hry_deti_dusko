@@ -5250,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.98';
+const APP_VERSION = '19.99';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6430,6 +6430,7 @@ function _xpLevel(xp) {
   return { lv, next, pct: next ? Math.round((xp - lv.min) / (next.min - lv.min) * 100) : 100 };
 }
 function addXP(player, amount) {
+  if(player !== 1 && player !== 2) return;
   if(!amount) return;
   const key = player === 1 ? 'p1' : 'p2';
   const oldLv = _xpLevel(_xp[key]).lv;
@@ -24377,6 +24378,8 @@ function _mpHandleMessageInner(data) {
 
   // Checkers (Dáma) move synchronization
   if(data.type === 'dk-move') {
+    if(typeof data.from !== 'number' || data.from < 0 || data.from > 63 ||
+       typeof data.to   !== 'number' || data.to   < 0 || data.to   > 63) return;
     MP._dkReceiving = true;
     DK.selected = data.from;
     dkDoMove(data.from, data.to, data.isJump);
@@ -24385,6 +24388,8 @@ function _mpHandleMessageInner(data) {
 
   // Chess move synchronization
   if(data.type === 'ch-move') {
+    if(typeof data.from !== 'number' || data.from < 0 || data.from > 63 ||
+       typeof data.to   !== 'number' || data.to   < 0 || data.to   > 63) return;
     MP._chReceiving = true;
     chessMove(data.from, data.to, data.promoteTo);
     renderChessBoard();
@@ -24393,6 +24398,7 @@ function _mpHandleMessageInner(data) {
 
   // Chess promotion synchronization
   if(data.type === 'ch-promote') {
+    if(!['wQ','wR','wB','wN','bQ','bR','bB','bN'].includes(data.piece)) return;
     if(CH.promotionPending) {
       const {square} = CH.promotionPending;
       CH.board[square] = data.piece;
@@ -24491,12 +24497,16 @@ function _mpHandleMessageInner(data) {
     }
   }
   if(data.type === 'ludo-move') {
+    if(typeof data.piece !== 'number' || data.piece < 0 || data.piece > 3) return;
     ludoDoMove(data.piece);
   }
 
   // Hádaj Číslo sync
   if(data.type === 'gn-setup') {
-    GN.secret = data.secret; GN.max = data.max; GN.maxTries = data.maxTries;
+    if(!Number.isFinite(data.secret)||!Number.isFinite(data.max)||!Number.isFinite(data.maxTries)) return;
+    if(data.max < 1 || data.max > 10000 || data.maxTries < 1 || data.maxTries > 100) return;
+    if(data.secret < 1 || data.secret > data.max) return;
+    GN.secret = Math.floor(data.secret); GN.max = Math.floor(data.max); GN.maxTries = Math.floor(data.maxTries);
     GN.attempts = 0;
     gnShowBoxes(false,false,false,true);
     $('gnStatus').textContent=gnStatusText();

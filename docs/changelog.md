@@ -1,5 +1,8 @@
 # Version History
 
+## v19.99
+- **MP handler validation**: ch-move validates from/to as 0-63; ch-promote validates piece against chess piece whitelist; ludo-move validates piece as 0-3; gn-setup validates secret/max/maxTries (finite, in-range); addXP guards player as 1 or 2
+
 ## v19.91–v19.92
 - **Search results count** (v19.91): `filterGames()` shows "X hier nájdených" above results (Slovak plural: 1 hra / 2-4 hry / 5+ hier)
 - **Daily Challenge complete** (v19.91): DAILY_GAMES expanded from 46 → 56 games; added quiz, emojiGuess, langScramble, flashcard, missingLetter, sentence, cardWar, animalQuiz, gofish, guessNum
