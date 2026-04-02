@@ -5250,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.96';
+const APP_VERSION = '19.97';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -5835,6 +5835,7 @@ function updateWelcomeStats() {
 const TOUR = {
   active: false,
   games: [],
+  _origGames: null,
   currentIndex: 0,
   scores: { p1: 0, p2: 0 },
   results: [],
