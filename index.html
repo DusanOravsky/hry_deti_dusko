@@ -2391,6 +2391,14 @@ body.light #wP2Input { background:rgba(79,172,254,0.1); color:#333; }
 .welcome-name-input:focus { filter:brightness(1.2); }
 .avatar-pick { cursor:pointer; font-size:1.3em; transition:transform 0.2s; display:inline-block; }
 .avatar-pick:hover { transform:scale(1.2); }
+/* XP badges */
+.xp-info { display:flex; align-items:center; gap:5px; margin-top:4px; padding:0 2px; font-size:0.68em; }
+.xp-lv { background:rgba(255,200,0,.18); border:1px solid rgba(255,200,0,.45); border-radius:4px; padding:1px 5px; font-weight:800; color:#ffd700; white-space:nowrap; }
+.xp-ti { opacity:0.55; white-space:nowrap; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.xp-bar-w { width:44px; height:4px; background:rgba(255,255,255,.12); border-radius:2px; overflow:hidden; flex-shrink:0; }
+.xp-bar { height:100%; background:linear-gradient(90deg,#ffd700,#ff9500); border-radius:2px; transition:width 0.6s cubic-bezier(.34,1.56,.64,1); }
+.xp-vl { opacity:0.38; white-space:nowrap; }
+body.light .xp-lv { background:rgba(160,100,0,.12); border-color:rgba(160,100,0,.35); color:#a06000; }
 .welcome-start-btn {
   width:100%; padding:16px; border:none; border-radius:16px; cursor:pointer;
   font-size:1.15em; font-weight:800; color:white;
@@ -2547,10 +2555,12 @@ body.light .man-store {
       <div class="welcome-name-group">
         <label><span id="wP1Avatar" class="avatar-pick" onclick="openAvatarPicker(1)" title="Vyber avatar">🔴</span> Hráč 1</label>
         <input class="welcome-name-input" id="wP1Input" value="" maxlength="12" placeholder="Meno hráča 1" oninput="updateWelcomeSub()">
+        <div class="xp-info"><span class="xp-lv" id="wP1XPBadge">Lv.1</span><span class="xp-ti" id="wP1XPTitle">Nováčik</span><div class="xp-bar-w"><div class="xp-bar" id="wP1XPBar" style="width:0%"></div></div><span class="xp-vl" id="wP1XPVal">0 / 50</span></div>
       </div>
       <div class="welcome-name-group" id="wP2Group">
         <label><span id="wP2Avatar" class="avatar-pick" onclick="openAvatarPicker(2)" title="Vyber avatar">🔵</span> Hráč 2</label>
         <input class="welcome-name-input" id="wP2Input" value="" maxlength="12" placeholder="Meno hráča 2" oninput="updateWelcomeSub()">
+        <div class="xp-info"><span class="xp-lv" id="wP2XPBadge">Lv.1</span><span class="xp-ti" id="wP2XPTitle">Nováčik</span><div class="xp-bar-w"><div class="xp-bar" id="wP2XPBar" style="width:0%"></div></div><span class="xp-vl" id="wP2XPVal">0 / 50</span></div>
       </div>
     </div>
     <button class="welcome-start-btn" id="welcomeStartBtn" onclick="startFromWelcome()">▶️ Začať hrať!</button>
@@ -5240,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.93';
+const APP_VERSION = '19.94';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6060,8 +6070,8 @@ function tourShowVictory() {
 
   const p1 = TOUR.scores.p1, p2 = TOUR.scores.p2;
   let winnerText = '';
-  if(p1 > p2) winnerText = `🏆 ${globalP1} vyhral turnaj!`;
-  else if(p2 > p1) winnerText = `🏆 ${globalP2} vyhral turnaj!`;
+  if(p1 > p2) { winnerText = `🏆 ${globalP1} vyhral turnaj!`; addXP(1,50); }
+  else if(p2 > p1) { winnerText = `🏆 ${globalP2} vyhral turnaj!`; addXP(2,50); }
   else winnerText = '🤝 Remíza! Kto vyhrá rozhodujúcu hru?';
   const tbRow = $('tourTiebreakerRow');
   if(tbRow) tbRow.style.display = (p1 === p2) ? 'block' : 'none';
@@ -6266,6 +6276,7 @@ function dailyCheckComplete(gameId,score,won){
     dailySaveHistory(today);
     showToast('🎉 Denná výzva splnená! Streak: '+streak+'🔥',4000,'rgba(67,233,123,0.9)');
     playSound('win');
+    addXP(1, 25);
     updateDailyBtn();
     renderDailyCalendar();
     checkAchievements();
@@ -6384,14 +6395,69 @@ function restoreAllDiffs(){
   if(memD){const sel=$('memAISel');if(sel){const btn=sel.querySelector(`.difficulty-btn[onclick*="'${memD}'"]`);if(btn)setMemAIDiff(memD,btn);}}
 }
 
+// ===== XP / LEVEL SYSTÉM =====
+const XP_LEVELS = [
+  {level:1, title:'Nováčik',     min:0},
+  {level:2, title:'Začiatočník', min:50},
+  {level:3, title:'Hráč',        min:150},
+  {level:4, title:'Skúsený',     min:350},
+  {level:5, title:'Pokročilý',   min:700},
+  {level:6, title:'Expert',      min:1200},
+  {level:7, title:'Majster',     min:2000},
+  {level:8, title:'Šampión',     min:3200},
+  {level:9, title:'Legenda',     min:5000},
+];
+let _xp = {p1:0, p2:0};
+function _loadXP() {
+  try {
+    const d = JSON.parse(localStorage.getItem('hry_xp') || '{}');
+    if(d && typeof d === 'object' && !Array.isArray(d)) {
+      if(typeof d.p1 === 'number') _xp.p1 = d.p1;
+      if(typeof d.p2 === 'number') _xp.p2 = d.p2;
+    }
+  } catch(e) {}
+}
+function _saveXP() { try { localStorage.setItem('hry_xp', JSON.stringify(_xp)); } catch(e) {} }
+function _xpLevel(xp) {
+  let lv = XP_LEVELS[0];
+  for(const l of XP_LEVELS) { if(xp >= l.min) lv = l; }
+  const idx = XP_LEVELS.indexOf(lv);
+  const next = XP_LEVELS[idx+1] || null;
+  return { lv, next, pct: next ? Math.round((xp - lv.min) / (next.min - lv.min) * 100) : 100 };
+}
+function addXP(player, amount) {
+  if(!amount) return;
+  const key = player === 1 ? 'p1' : 'p2';
+  const oldLv = _xpLevel(_xp[key]).lv;
+  _xp[key] = Math.max(0, _xp[key] + amount);
+  const newLv = _xpLevel(_xp[key]).lv;
+  _saveXP();
+  _renderXPBadge(player);
+  if(newLv.level > oldLv.level) {
+    const name = player === 1 ? (globalP1 || 'Hráč 1') : (globalP2 || 'Hráč 2');
+    setTimeout(() => showToast('⭐ ' + name + ' — Level ' + newLv.level + ': ' + newLv.title + '!', 3500, 'rgba(255,175,0,0.97)'), 500);
+  }
+}
+function _renderXPBadge(player) {
+  const xp = _xp[player === 1 ? 'p1' : 'p2'];
+  const { lv, next, pct } = _xpLevel(xp);
+  const p = 'wP' + player;
+  const badge = $(p+'XPBadge'); if(badge) badge.textContent = 'Lv.'+lv.level;
+  const title = $(p+'XPTitle'); if(title) title.textContent = lv.title;
+  const bar   = $(p+'XPBar');   if(bar)   bar.style.width   = pct+'%';
+  const val   = $(p+'XPVal');   if(val)   val.textContent   = next ? xp+' / '+next.min : xp+' XP ✓';
+}
+function renderXPBadges() { _renderXPBadge(1); _renderXPBadge(2); }
+_loadXP(); renderXPBadges();
+
 function addWin(w, gameId) {
   const gId = gameId || currentGameId;
   const n1 = getActiveP1Name(gId), n2 = getActiveP2Name(gId);
   gStats.total++;
   if(!gStats.perGame[gId]) gStats.perGame[gId]={p1:0,p2:0,draws:0};
-  if(w===1)      { gStats.p1++; gStats.perGame[gId].p1++; }
-  else if(w===2) { gStats.p2++; gStats.perGame[gId].p2++; }
-  else           { gStats.draws++; gStats.perGame[gId].draws++; }
+  if(w===1)      { gStats.p1++; gStats.perGame[gId].p1++; addXP(1,10); }
+  else if(w===2) { gStats.p2++; gStats.perGame[gId].p2++; addXP(2,10); }
+  else           { gStats.draws++; gStats.perGame[gId].draws++; addXP(1,3); addXP(2,3); }
   gStats.history.unshift({
     game: GAME_NAMES[gId]||gId, winner:w, name1:n1, name2:n2,
     time: new Date().toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})
@@ -6575,7 +6641,7 @@ function checkAchievements() {
   let newlyUnlocked = [];
   for(const a of ACHIEVEMENTS) {
     if(_unlockedAch.includes(a.id)) continue;
-    if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); }
+    if(a.check()) { _unlockedAch.push(a.id); newlyUnlocked.push(a); addXP(1,8); addXP(2,8); }
   }
   if(newlyUnlocked.length>0) {
     try{
