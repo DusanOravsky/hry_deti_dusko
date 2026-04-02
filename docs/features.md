@@ -24,6 +24,15 @@
 - **Sound & Vibration Persistence**: Settings saved to localStorage ('hry_sound', 'hry_vibration'), restored via `loadSoundSettings()`
 - **Turn-change sounds**: `playSound('move')` at turn transitions in Ghost, Dots & Boxes, Mancala, Simon Says
 
+## XP & Level System
+- **9 levels**: Nováčik (0) → Začiatočník (50) → Hráč (150) → Skúsený (350) → Pokročilý (700) → Expert (1200) → Majster (2000) → Šampión (3200) → Legenda (5000)
+- **XP sources**: Výhra +10, Remíza +3, Denná výzva +25, Achievement +8, Turnaj výhra +50
+- **AI guard**: `if(welcomeGameMode!=='ai')` before awarding P2 XP (computer doesn't earn XP)
+- **Welcome screen**: Per-player XP badge (Lv.X), title, progress bar below name inputs
+- **Stats tab**: `stXPSummary` cards + `stXPTable` level table built on first render (`dataset.built` guard)
+- **Storage**: `localStorage('hry_xp')` → `{p1, p2}`; loaded via `_loadXP()`, `_saveXP()`
+- **Level-up toast**: 500ms delay after win toast so they don't overlap
+
 ## Stats & Achievements
 - **Achievement system**: 72 achievements (16 general + 31 per-game + 4 daily + 6 seasonal + 14 new per-game + hm5/mmsv5/wc5) checked after every `addWin()`, `toggleFavorite()`, `dailyCheckComplete()`, toast notification on unlock
 - **Achievement Progress Bars**: All 72 achievements show visual progress bars for locked achievements (current/max values, percentage)
@@ -62,6 +71,15 @@
 - **War quick play**: Auto-plays entire game at 100ms per round, epoch-protected timeouts
 - **MMSV letter validation**: Answer must start with correct letter; two-step challenge confirm flow; extra category toggles opt-in
 - **Go Fish (Kvarteto)**: Collect 4-of-a-kind books; "Choď rybárčiť" on miss; PVP pass-device screen; host-authoritative MP
+- **Checkers (Dáma) 3D pieces**: `.dk-piece` divs with radial gradient (red/blue), `dk-pop` spring animation on move, `dk-crown` burst on king promotion; `DK._lastPromoted` tracks promoted square for crown CSS class
+- **Stats rules modal**: `#stats` section has hidden `.rules` div — `showRules('stats')` shows XP/levels/achievements/daily/leaderboard explanation
+
+## MP Handler Validation (security)
+All `_mpHandleMessageInner(data)` handlers validate `data.*` before use:
+- Array indices: bounds-checked (0–63 for boards, 0–3 for Nim piles/Ludo pieces, 0–13 for Mancala)
+- String fields: whitelisted ('h'|'v' for db-line, chess piece whitelist for ch-promote, single letter regex for ghost-letter)
+- Numbers: `isFinite()` + range checks; scores capped at reasonable maxima
+- `addXP(player, amount)`: guards `player !== 1 && player !== 2`
 
 ## AI Difficulty Persistence
 - `saveDiff(gameId,d)` / `loadDiff(gameId)` — save to `localStorage('hry_diff_'+gameId)`

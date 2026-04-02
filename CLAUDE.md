@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Single-file PWA game collection for kids. Everything is in `index.html` (~24700 lines).
+Single-file PWA game collection for kids. Everything is in `index.html` (~25200 lines).
 
 ## Key Architecture
 
@@ -48,10 +48,13 @@ resetWordle();  // welcomeGameMode check works
 - `mobileGoTo(level, gameId)` — mobile navigation (1=welcome, 2=picker, 3=game)
 - `renderMobileGrid()` — filters MOBILE_GAMES based on welcomeGameMode
 - `currentGameId` — currently active game, used to prevent keyboard conflicts
+- `_xp` — `{p1, p2}` XP values, persisted in `localStorage('hry_xp')`
+- `XP_LEVELS` — 9-level array (Nováčik→Legenda), `addXP(player,amount)` triggers level-up toast
+- `renderXPBadges()` — updates XP badge/bar on welcome screen for both players
 
 ## Adding a New Game
 
-1. Add game HTML section with `id="gameId"` inside `.container`
+1. Add game HTML section with `id="gameId"` inside `.container` — include `<div class="rules">` with game description
 2. Add entry to `MOBILE_GAMES` array with `{id, icon, mode, cat, mp?}`
 3. Add entry to `GAME_NAMES` object
 4. Add to `gameKeys` object (button ID mapping)
@@ -65,6 +68,7 @@ resetWordle();  // welcomeGameMode check works
 12. For canvas games with keyboard: guard with `if(currentGameId!=='yourGame')return;`
 13. In AI mode: hide P2 mobile controls via `applyGameMode()`, remap arrows to P1
 14. For MP: see `docs/mp.md`
+15. For MP handlers: validate ALL `data.*` fields before use — bounds check array indices, whitelist strings, isFinite numbers
 
 ## Performance Optimization
 
@@ -103,4 +107,4 @@ GitHub Pages auto-deploys from main branch. **Always bump `APP_VERSION` in index
 - `docs/mp.md` — MP architecture, ICE config, TURN server, MP state, per-game message types, scoring patterns, MP issues
 - `docs/game-states.md` — All game state objects (TET, SNK, CH, GF, SIMON, MAN, etc.)
 - `docs/features.md` — Feature list (UI, sounds, achievements, game-specific features)
-- `docs/changelog.md` — Version history (v18.0–v19.92)
+- `docs/changelog.md` — Version history (v18.0–v20.4)

@@ -3,6 +3,12 @@
 ## v20.4
 - **Achievement count corrected**: actual count is 72 (hm5 Kat, mmsv5 Zemepisár, wc5 Reťaziar were undocumented); updated UI text, onboarding, and docs from 69→72
 
+## v20.3
+- **Stats ? button fix**: moved `.rules` div inside `#stats` element (was sibling, `querySelector` couldn't find it)
+
+## v20.2
+- **Stats ? button**: added `.rules` div to `#stats` with XP/levels/achievements/daily/leaderboard explanation (was showing empty modal)
+
 ## v20.1
 - **XP levels in Stats**: Tab 0 (Prehľad) now shows per-player XP summary cards (current level, title, progress bar) + full level table (Lv.1 Nováčik → Lv.9 Legenda) with XP ranges and "how to earn XP" explanation
 - **MP handler validation (round 3)**: quiz-start validates questions structure; ghost-letter validates single Slovak/Czech letter; png-state validates ball/paddle coords + scores (non-negative finite) + winner (1|2); hl-turn-done caps score at 1000
