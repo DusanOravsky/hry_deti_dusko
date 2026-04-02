@@ -9,7 +9,7 @@
 - **Dark/light theme**: Automatic by time of day + manual toggle
 - **Favorites**: Star on game cards, stored in `localStorage('hry_favorites')`, sorted to top
 - **Recently played**: Last 5 games tracked in `localStorage('hry_recent')`, shown in grid with clear button
-- **Search/Filter**: Quick search input in game picker, real-time filtering, clear button (✕)
+- **Search/Filter**: Quick search input in game picker, real-time filtering, clear button (✕), results count ("X hier nájdených")
 - **Game categories**: 6 categories (Všetky, Doskové, Arkádové, Slovné, Logické, Zábavné), `GAME_CATS` array, `cat` property on MOBILE_GAMES
 - **Game preview animations**: Hover effects on game cards (bounce/spin/pulse/wiggle)
 - **Fullscreen mode**: Canvas games (Snake, Doodle Jump, Breakout, Gravity Run, Flappy Bird, Angry Birds) have fullscreen button (⛶), wrapper-based with exit button overlay
@@ -28,7 +28,7 @@
 - **Achievement system**: 69 achievements (16 general + 28 per-game + 4 daily + 6 seasonal + 14 new per-game) checked after every `addWin()`, `toggleFavorite()`, `dailyCheckComplete()`, toast notification on unlock
 - **Achievement Progress Bars**: All 69 achievements show visual progress bars for locked achievements (current/max values, percentage)
 - **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
-- **Daily Challenge**: 43 games rotation, streak badge (🔥X), 30-day calendar in Stats (green=completed), history in localStorage
+- **Daily Challenge**: 56 games rotation (all games), streak badge (🔥X), 30-day calendar in Stats (green=completed), history in localStorage
 - **Seasonal achievements**: 6 achievements (Christmas/Easter/Summer/Halloween), tracks plays per season/year in `localStorage('hry_seasonal_plays')`
 - **Top 5 Leaderboard**: Solo games (Tetris, Snake, Racing, Gravity Run, 2048, Flappy Bird) track top 5 scores
 
@@ -56,6 +56,8 @@
 - **Tank Battle wallSet**: O(1) wall lookups using Set instead of O(n) array
 - **Ludo dice animation**: setInterval cycles ⚀–⚅ 7× at 70ms each (~490ms), then settles
 - **Ghost series score**: `#ghostSeriesScore` shows "Séria: P1 X – Y P2", hidden at 0-0
+- **Play Again overlay**: `showPlayAgain(resetFn, gameId)` — shows `▶️ Hraj znova` (local) or `🌐 Odveta!` (MP) after game ends; used in tetris, wordle, game2048 (solo) + reaction, spamClick, mathDuel, emojiGuess, ghost (PVP); skip with `if(!TOUR.active)` guard
+- **Tournament tiebreaker**: On draw, `⚡ Rozhodujúca hra` button appears → `tourTiebreaker()` picks random game from TOUR.games
 - **Solitaire**: Click-to-select, undo (single-level JSON snapshot), auto-complete when all face-up, timer on first move
 - **War quick play**: Auto-plays entire game at 100ms per round, epoch-protected timeouts
 - **MMSV letter validation**: Answer must start with correct letter; two-step challenge confirm flow; extra category toggles opt-in

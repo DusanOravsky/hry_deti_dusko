@@ -103,4 +103,4 @@ GitHub Pages auto-deploys from main branch. **Always bump `APP_VERSION` in index
 - `docs/mp.md` — MP architecture, ICE config, TURN server, MP state, per-game message types, scoring patterns, MP issues
 - `docs/game-states.md` — All game state objects (TET, SNK, CH, GF, SIMON, MAN, etc.)
 - `docs/features.md` — Feature list (UI, sounds, achievements, game-specific features)
-- `docs/changelog.md` — Version history (v18.0–v19.90)
+- `docs/changelog.md` — Version history (v18.0–v19.92)

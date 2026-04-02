@@ -1,5 +1,11 @@
 # Version History
 
+## v19.91–v19.92
+- **Search results count** (v19.91): `filterGames()` shows "X hier nájdených" above results (Slovak plural: 1 hra / 2-4 hry / 5+ hier)
+- **Daily Challenge complete** (v19.91): DAILY_GAMES expanded from 46 → 56 games; added quiz, emojiGuess, langScramble, flashcard, missingLetter, sentence, cardWar, animalQuiz, gofish, guessNum
+- **showPlayAgain for 5 PVP games** (v19.92): reaction, spamClick, mathDuel, emojiGuess, ghost — skipped during `TOUR.active`
+- **Tournament tiebreaker** (v19.92): on draw shows `⚡ Rozhodujúca hra` button → picks random game from TOUR.games as tiebreaker via `tourTiebreaker()`
+
 ## v19.82–v19.90
 - **Deep review fixes** (v19.82–v19.85): SRI integrity hashes on PeerJS+QRCode CDN; canvas ctx caching (7 games: Snake/Doodle/Breakout/Pong/Tanks/SnakeDuel/AngryBirds — `STATE.ctx||c.getContext('2d')`); `currentGameId` guards on Racing/Doodle/Maze/Breakout keydown; stopAllGames+4 missing timers; stats tab `min-width:80px`
 - **Go Fish / Kvarteto** (v19.86): game #56, AI 3 difficulties (easy=random/medium=prefers 2+/hard=prefers 3+), PVP pass-device screen, MP host-authoritative, `GF` state object
