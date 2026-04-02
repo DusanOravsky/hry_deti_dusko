@@ -1,5 +1,5 @@
 // Keep in sync with APP_VERSION in index.html
-const CACHE_NAME = 'hrajmesi-v20.2';
+const CACHE_NAME = 'hrajmesi-v20.3';
 const ASSETS = [
   './',
   './index.html',
