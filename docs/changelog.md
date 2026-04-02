@@ -1,5 +1,8 @@
 # Version History
 
+## v20.5
+- **Šípky 301 (Darts 301)**: game #57, mode `both` (AI + PVP); canvas dartboard with sectors/rings/bull; oscillating crosshair aim mechanic; 3 darts per turn; bust rule (score <0 or =1 reverts to turn start); win on exactly 0; AI difficulty easy=random / medium=upper board ±18px / hard=triple-20 ±5px
+
 ## v20.4
 - **Achievement count corrected**: actual count is 72 (hm5 Kat, mmsv5 Zemepisár, wc5 Reťaziar were undocumented); updated UI text, onboarding, and docs from 69→72
 

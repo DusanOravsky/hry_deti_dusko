@@ -1,4 +1,4 @@
-# Games Reference (56 total)
+# Games Reference (57 total)
 
 ## Quick Lookup Table
 
@@ -60,6 +60,7 @@
 | `animalGuess` | Hádaj Zviera | both | ✓ | `AGA` | `resetAGA()` |
 | `animalQuiz` | Zvierací Kvíz | both | — | `AZQ` | `resetAZQ()` |
 | `gofish` | Kvarteto | both | ✓ | `GF` | `resetGoFish()` |
+| `darts301` | Šípky 301 | both | — | `DARTS` | `resetDarts()` |
 
 **Special entries (no game logic):**
 | `tournament` | Turnaj | always | — | — | — |
@@ -67,7 +68,7 @@
 
 ## By Mode
 
-**both** (AI + PVP): ticTacToe, rockPaper, memory, connect4, guessNum, chess, checkers, battleship, puzzle, maze, reversi, ludo, breakout, pong, tanks, doodle, wordle, beeCount, soccer, angryBirds, sokoban, unoGame, nimGame, simonSays, mancala, animalGuess, animalQuiz, gofish
+**both** (AI + PVP): ticTacToe, rockPaper, memory, connect4, guessNum, chess, checkers, battleship, puzzle, maze, reversi, ludo, breakout, pong, tanks, doodle, wordle, beeCount, soccer, angryBirds, sokoban, unoGame, nimGame, simonSays, mancala, animalGuess, animalQuiz, gofish, darts301
 
 **pvp** (2-player only): quiz, ghost, reaction, spamClick, mathDuel, emojiGuess, hangman, mmsv, wordChain, higherLower, scramble, langScramble, flashcard, missingLetter, sentence, dotsBoxes, snakeDuel
 
