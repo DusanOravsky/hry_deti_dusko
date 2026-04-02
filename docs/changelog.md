@@ -1,7 +1,22 @@
 # Version History
 
+## v20.9
+- **Darts MP rematch fix**: host always initiates via drt-start (guest-initiated rematch was broken)
+
+## v20.8
+- **Darts 301 MP**: drt-start/drt-throw/drt-turn messages; host=P1/guest=P2; rematch via drtRound
+- **Darts tournament**: added to TOUR_AVAILABLE_GAMES
+- **Achievement drt5** 🎯 Šípkár (win 5× Šípky 301); total 72→73 achievements
+- **Game count dynamic**: gamesAll achievement uses `MOBILE_GAMES.filter(g=>g.mode!=='always').length`
+
+## v20.7
+- **Darts player names**: dartsP1/P2Name changed span→div so onGlobalNameChange auto-updates; dartsP2Name in _aiP2Names for AI mode; drtsDiffSel in aiSels
+
+## v20.6
+- **Game count 56→57**: welcome screen subtitle, onboarding, gamesAll achievement
+
 ## v20.5
-- **Šípky 301 (Darts 301)**: game #57, mode `both` (AI + PVP); canvas dartboard with sectors/rings/bull; oscillating crosshair aim mechanic; 3 darts per turn; bust rule (score <0 or =1 reverts to turn start); win on exactly 0; AI difficulty easy=random / medium=upper board ±18px / hard=triple-20 ±5px
+- **Šípky 301 (Darts 301)**: game #57, mode `both` (AI + PVP + MP); canvas dartboard with sectors/rings/bull; oscillating crosshair aim mechanic; 3 darts per turn; bust rule (score <0 or =1 reverts to turn start); win on exactly 0; AI difficulty easy=random / medium=upper board ±18px / hard=triple-20 ±5px
 
 ## v20.4
 - **Achievement count corrected**: actual count is 72 (hm5 Kat, mmsv5 Zemepisár, wc5 Reťaziar were undocumented); updated UI text, onboarding, and docs from 69→72

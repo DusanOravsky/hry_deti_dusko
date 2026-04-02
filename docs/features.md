@@ -34,7 +34,7 @@
 - **Level-up toast**: 500ms delay after win toast so they don't overlap
 
 ## Stats & Achievements
-- **Achievement system**: 72 achievements (16 general + 31 per-game + 4 daily + 6 seasonal + 14 new per-game + hm5/mmsv5/wc5) checked after every `addWin()`, `toggleFavorite()`, `dailyCheckComplete()`, toast notification on unlock
+- **Achievement system**: 73 achievements (16 general + 31 per-game + 4 daily + 6 seasonal + 14 new per-game + hm5/mmsv5/wc5) checked after every `addWin()`, `toggleFavorite()`, `dailyCheckComplete()`, toast notification on unlock
 - **Achievement Progress Bars**: All 72 achievements show visual progress bars for locked achievements (current/max values, percentage)
 - **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
 - **Daily Challenge**: 56 games rotation (all games), streak badge (🔥X), 30-day calendar in Stats (green=completed), history in localStorage
