@@ -3368,6 +3368,9 @@ body.light .man-store {
       <h2 id="tourWinnerText" style="margin-bottom:15px"></h2>
       <div id="tourFinalScore" style="font-size:1.3em;opacity:0.8;margin-bottom:30px"></div>
       <div id="tourResultsList" style="max-width:400px;margin:0 auto 30px;text-align:left"></div>
+      <div id="tourTiebreakerRow" style="display:none;margin-bottom:20px">
+        <button class="action-btn" onclick="tourTiebreaker()" style="font-size:1.05em;padding:12px 28px;background:linear-gradient(135deg,#f7971e,#ffd200);color:#222">⚡ Rozhodujúca hra</button>
+      </div>
       <button class="action-btn primary-btn" onclick="tourReset()" style="font-size:1.1em;padding:14px 32px">🔄 Nový turnaj</button>
     </div>
   </div>
@@ -5209,7 +5212,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.91';
+const APP_VERSION = '19.92';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6031,7 +6034,9 @@ function tourShowVictory() {
   let winnerText = '';
   if(p1 > p2) winnerText = `🏆 ${globalP1} vyhral turnaj!`;
   else if(p2 > p1) winnerText = `🏆 ${globalP2} vyhral turnaj!`;
-  else winnerText = '🤝 Turnaj skončil remízou!';
+  else winnerText = '🤝 Remíza! Kto vyhrá rozhodujúcu hru?';
+  const tbRow = $('tourTiebreakerRow');
+  if(tbRow) tbRow.style.display = (p1 === p2) ? 'block' : 'none';
 
   $('tourWinnerText').textContent = winnerText;
   $('tourFinalScore').textContent = `${globalP1}: ${p1.toFixed(1)} bodov • ${globalP2}: ${p2.toFixed(1)} bodov`;
@@ -6068,6 +6073,19 @@ function tourShowVictory() {
     setTimeout(() => cel.remove(), 3000);
   }
   playSound('win');
+}
+
+function tourTiebreaker() {
+  if(!TOUR.games.length) return;
+  const gameId = TOUR.games[Math.floor(Math.random()*TOUR.games.length)];
+  TOUR.active = true;
+  TOUR.games = [gameId];
+  TOUR.currentIndex = 0;
+  const tbRow = $('tourTiebreakerRow');
+  if(tbRow) tbRow.style.display = 'none';
+  showToast('⚡ Rozhodujúca hra: '+(GAME_NAMES[gameId]||gameId)+'!', 2500, 'rgba(247,151,30,0.95)');
+  tourShowBanner();
+  tourNextGame();
 }
 
 function tourCancel() {
@@ -10008,6 +10026,7 @@ function ghostRoundLoss(loser,reason){
     const _gs=$('ghostSeriesScore');if(_gs){_gs.style.display='';_gs.textContent='Séria: '+getP1Name('ghost')+' '+GHOST.s1+' – '+GHOST.s2+' '+getP2Name('ghost');}
     addWin(winner);
     updateRecord('ghostWins', gStats.records.ghostWins+1);
+    if(!TOUR.active) showPlayAgain(resetGhost,'ghost');
   } else {
     $('ghostStatus').textContent='❌ '+reason+' Hráč '+(loser===1?getP1Name('ghost'):getP2Name('ghost'))+' dostáva písmeno. Nové kolo!';
     setTimeout(()=>{
@@ -10103,6 +10122,7 @@ function reacFinish(){
     addWin(winner);
   } else { pad.textContent='🤝 Remíza! ('+avg1+'ms = '+avg2+'ms)'; addWin(0); }
   $('reacStatus').textContent='Hra skončila!';
+  if(!TOUR.active) showPlayAgain(resetReaction,'reaction');
 }
 
 
@@ -11512,6 +11532,7 @@ function scRoundEnd() {
     else if(SC.p2Score>SC.p1Score){$('scStatus').textContent='🏆 '+n2+' vyhral! ('+SC.p2Score+' vs '+SC.p1Score+')';addWin(2,'spamClick');celebrate('scCelebration');}
     else{$('scStatus').textContent='🤝 Remíza! ('+SC.p1Score+':'+SC.p2Score+')';addWin(0,'spamClick');}
     playSound('win');
+    if(!TOUR.active) showPlayAgain(resetSC,'spamClick');
   }
 }
 function resetSC() {
@@ -11591,6 +11612,7 @@ function mdFinish() {
   else if(MD.s2>MD.s1){addWin(2,'mathDuel');celebrate('mdCelebration');}
   else{addWin(0,'mathDuel');}
   playSound('win');
+  if(!TOUR.active) showPlayAgain(resetMD,'mathDuel');
 }
 function resetMD() {
   MD.over=false; MD.round=0; MD.s1=0; MD.s2=0; MD.player=1;
@@ -11741,6 +11763,7 @@ function egFinish() {
   else if(EG.s2>EG.s1){addWin(2,'emojiGuess');celebrate('egCelebration');}
   else{addWin(0,'emojiGuess');}
   playSound('win');
+  if(!TOUR.active) showPlayAgain(resetEG,'emojiGuess');
 }
 function resetEG() {
   EG.over=false;EG.round=0;EG.s1=0;EG.s2=0;EG.player=1;
