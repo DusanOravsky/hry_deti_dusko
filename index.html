@@ -3603,6 +3603,29 @@ body.light .man-store {
     </div>
   </div>
 
+  <!-- Hidden rules content for ? button -->
+  <div class="rules" style="display:none">
+    <h3>📊 Štatistiky a profil</h3>
+    <p>Prehľad tvojich herných výsledkov, levelov a úspechov.</p>
+    <h4>⭐ XP a Levely</h4>
+    <p>Za každú hru získavaš XP body, ktoré zvyšujú tvoj level:</p>
+    <ul>
+      <li>🏆 Výhra: <strong>+10 XP</strong></li>
+      <li>🤝 Remíza: <strong>+3 XP</strong></li>
+      <li>📅 Denná výzva: <strong>+25 XP</strong></li>
+      <li>🏅 Achievement: <strong>+8 XP</strong></li>
+      <li>🏆 Výhra turnaja: <strong>+50 XP</strong></li>
+    </ul>
+    <h4>🎖️ Levely (1–9)</h4>
+    <p>Lv.1 Nováčik → Lv.2 Začiatočník → Lv.3 Hráč → Lv.4 Skúsený → Lv.5 Pokročilý → Lv.6 Expert → Lv.7 Majster → Lv.8 Šampión → Lv.9 Legenda</p>
+    <h4>🏅 Achievementy</h4>
+    <p>69 achievementov — odomykajú sa za špeciálne výkony (séria výhier, počet hier, špeciálne podmienky). Každý unlock: <strong>+8 XP</strong>. Zobrazujú sa aj s progress barom.</p>
+    <h4>📅 Denné výzvy</h4>
+    <p>Každý deň iná hra. Za splnenie dostaneš <strong>+25 XP</strong> a predĺžiš streak 🔥. Ak vynecháš deň, streak sa reštartuje.</p>
+    <h4>🥇 Rebríčky</h4>
+    <p>Top 5 skóre pre sólové hry (Tetris, Snake, Doodle Jump, Gravity Run, 2048, Flappy Bird).</p>
+  </div>
+
   <!-- ===== DOPLŇ CHÝBAJÚCE PÍSMENO ===== -->
   <div class="game-area" id="missingLetter">
     <div class="rules"><h3>📋 Doplň chýbajúce písmeno:</h3><ul>
@@ -5262,7 +5285,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.1';
+const APP_VERSION = '20.2';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
