@@ -73,4 +73,4 @@
 
 **solo**: tetris, snake, racing, minesweeper, gravityRun, game2048, flappy, cardWar, solitaire, nonogram, sudoku
 
-**MP games (26):** ticTacToe, rockPaper, memory, connect4, guessNum, chess, checkers, quiz, battleship, ghost, mmsv, wordChain, higherLower, scramble, puzzle, reversi, ludo, dotsBoxes, breakout, pong, tanks, snakeDuel, wordle, sokoban, nimGame, simonSays, mancala, animalGuess, gofish
+**MP games (29):** ticTacToe, rockPaper, memory, connect4, guessNum, chess, checkers, quiz, battleship, ghost, mmsv, wordChain, higherLower, scramble, puzzle, reversi, ludo, dotsBoxes, breakout, pong, tanks, snakeDuel, wordle, sokoban, nimGame, simonSays, mancala, animalGuess, gofish

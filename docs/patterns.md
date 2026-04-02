@@ -150,7 +150,7 @@ if (data.xxxDiff) setXXXDiff(data.xxxDiff);
 $('xxxDiffSelect').disabled = MP.isConnected && !MP.isHost;
 ```
 
-## Host-authoritative Real-time Pattern (Snake Duel, Tanks, Pong, Go Fish)
+## Host-authoritative Real-time Pattern (Snake Duel, Tanks, Pong)
 - Host owns all game state and runs the game loop
 - Guest sends only inputs; host applies them
 - Host sends full state snapshot every tick (or N frames)

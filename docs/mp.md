@@ -69,7 +69,7 @@ const MP = {
 - `MP._savedP1`/`MP._savedP2` stores originals, restored on disconnect
 - `saveNames()` is blocked when `MP._savedP1` exists (prevents overwriting local names)
 
-## Games with MP Support (26 games)
+## Games with MP Support (29 games)
 
 **Turn-based (15 games):**
 - Piskvorky — `ttt-move`, alternating start (tttRound)
