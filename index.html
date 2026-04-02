@@ -5331,7 +5331,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.9';
+const APP_VERSION = '20.10';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -22910,7 +22910,7 @@ function resetDarts(){
 function dartsStart(){
   $('dartsStartBtn').style.display='none';
   DARTS.running=true; DARTS._tStart1=DARTS.s1; DARTS._tStart2=DARTS.s2;
-  if(MP.isConnected&&MP.isHost) MP.connection.send({type:'drt-start'});
+  if(MP.isConnected&&MP.isHost) mpSend({type:'drt-start'});
   const myTurn=!MP.isConnected||DARTS.turn===(MP.isHost?1:2);
   $('dartsThrowBtn').style.display=myTurn?'':'none';
   $('dartsStatus').textContent=myTurn?(DARTS.turn===1?getP1Name('drt'):getP2Name('drt'))+' hádzé!':'Čaká sa na súpera...';
@@ -22994,7 +22994,7 @@ function dartsDartLanded(x,y,player){
   $('dartsStatus').textContent=res.label+(res.score?' (+'+res.score+')':'');
   playSound('click'); drawDartsBoard();
   if(MP.isConnected&&((player===1&&MP.isHost)||(player===2&&!MP.isHost))){
-    MP.connection.send({type:'drt-throw',score:res.score,x:Math.round(x),y:Math.round(y)});
+    mpSend({type:'drt-throw',score:res.score,x:Math.round(x),y:Math.round(y)});
   }
   if(DARTS.dartsLeft===0){setTimeout(dartsEndTurn,700);}
   else if(!(welcomeGameMode==='ai'&&player===2)){dartsMoveLoop();}
@@ -23012,7 +23012,7 @@ function dartsEndTurn(){
     DARTS.over=true;DARTS.running=false;
     $('dartsStatus').textContent='🏆 '+(p===1?getP1Name('drt'):getP2Name('drt'))+' vyhral!';
     $('dartsThrowBtn').style.display='none';
-    if(MP.isConnected) MP.connection.send({type:'drt-turn',s1:DARTS.s1,s2:DARTS.s2});
+    if(MP.isConnected) mpSend({type:'drt-turn',s1:DARTS.s1,s2:DARTS.s2});
     addWin(p,'darts301');celebrate('dartsCelebration');playSound('win');return;
   } else {
     if(p===1){DARTS.s1=next;$('dartsScore1').textContent=next;}else{DARTS.s2=next;$('dartsScore2').textContent=next;}
