@@ -25,8 +25,8 @@
 - **Turn-change sounds**: `playSound('move')` at turn transitions in Ghost, Dots & Boxes, Mancala, Simon Says
 
 ## Stats & Achievements
-- **Achievement system**: 69 achievements (16 general + 28 per-game + 4 daily + 6 seasonal + 14 new per-game) checked after every `addWin()`, `toggleFavorite()`, `dailyCheckComplete()`, toast notification on unlock
-- **Achievement Progress Bars**: All 69 achievements show visual progress bars for locked achievements (current/max values, percentage)
+- **Achievement system**: 72 achievements (16 general + 31 per-game + 4 daily + 6 seasonal + 14 new per-game + hm5/mmsv5/wc5) checked after every `addWin()`, `toggleFavorite()`, `dailyCheckComplete()`, toast notification on unlock
+- **Achievement Progress Bars**: All 72 achievements show visual progress bars for locked achievements (current/max values, percentage)
 - **Split stats reset**: Separate buttons for resetting game stats vs achievements, with reusable confirm dialog
 - **Daily Challenge**: 56 games rotation (all games), streak badge (🔥X), 30-day calendar in Stats (green=completed), history in localStorage
 - **Seasonal achievements**: 6 achievements (Christmas/Easter/Summer/Halloween), tracks plays per season/year in `localStorage('hry_seasonal_plays')`
