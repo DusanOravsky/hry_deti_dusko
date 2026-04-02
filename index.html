@@ -5250,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.94';
+const APP_VERSION = '19.95';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6114,9 +6114,11 @@ function tourShowVictory() {
 }
 
 function tourTiebreaker() {
-  if(!TOUR.games.length) return;
-  const gameId = TOUR.games[Math.floor(Math.random()*TOUR.games.length)];
+  const pool = TOUR._origGames || TOUR.games;
+  if(!pool.length) return;
+  const gameId = pool[Math.floor(Math.random()*pool.length)];
   TOUR.active = true;
+  TOUR._origGames = pool;
   TOUR.games = [gameId];
   TOUR.currentIndex = 0;
   const tbRow = $('tourTiebreakerRow');
@@ -6146,6 +6148,7 @@ function tourCancel() {
 function tourReset() {
   TOUR.active = false;
   TOUR.games = [];
+  TOUR._origGames = null;
   TOUR.currentIndex = 0;
   TOUR.scores = { p1: 0, p2: 0 };
   TOUR.results = [];
@@ -11178,7 +11181,7 @@ function fcFinish() {
   else grade='💪 Nevzdávaj sa — skús znova!';
   $('fcStatus').textContent=`${grade} ${FC.score}/${FC.deck.length} (${pct}%)`;
   $('fcProgress').textContent='Hotovo!';
-  if(pct>=70){celebrate('fcCelebration');playSound('win');}
+  if(pct>=70){celebrate('fcCelebration');playSound('win');addWin(1,'flashcard');}
 }
 
 function resetFC() {
@@ -23177,8 +23180,8 @@ function filterGames() {
     html = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);font-size:1.1em">🔍 Žiadne výsledky pre "'+searchText+'"</div>';
   } else {
     const n = sorted.length;
-    const countLabel = n === 1 ? '1 hra' : n < 5 ? n+' hry' : n+' hier';
-    html = '<div style="text-align:center;padding:6px 0 4px;color:rgba(255,255,255,0.4);font-size:0.78em;letter-spacing:0.03em">🔍 '+countLabel+' nájdených</div>';
+    const countLabel = n === 1 ? '1 hra nájdená' : n < 5 ? n+' hry nájdené' : n+' hier nájdených';
+    html = '<div style="text-align:center;padding:6px 0 4px;color:rgba(255,255,255,0.4);font-size:0.78em;letter-spacing:0.03em">🔍 '+countLabel+'</div>';
     html += sorted.map((g,i)=>_renderGameCard(g,i)).join('');
   }
   grid.innerHTML = html;
