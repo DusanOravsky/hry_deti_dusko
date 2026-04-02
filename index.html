@@ -5331,7 +5331,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.8';
+const APP_VERSION = '20.9';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -25086,7 +25086,7 @@ function _mpHandleMessageInner(data) {
     if(gameId === 'breakout') { if(data.round !== undefined) MP.brkRound = data.round; BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
     if(gameId === 'puzzle') { if(data.round !== undefined) MP.puzzleRound = data.round; resetPuzzle(); }
     if(gameId === 'gofish') { if(data.round !== undefined) MP.gfRound = data.round; resetGoFish(); }
-    if(gameId === 'darts301') { if(data.round !== undefined) MP.drtRound = data.round; resetDarts(); }
+    if(gameId === 'darts301') { if(data.round !== undefined) MP.drtRound = data.round; resetDarts(); if(MP.isHost) setTimeout(()=>dartsStart(),200); }
   }
 
   // Snake Duel MP
@@ -25628,7 +25628,7 @@ function mpRematch(gameId) {
   if(gameId === 'breakout') { MP.brkRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.brkRound }); BRK._mpTurnDone=false; BRK.p1Score=0; BRK.p2Score=0; resetBreakout(); brkMPSetMyTurn(); }
   if(gameId === 'puzzle') { MP.puzzleRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.puzzleRound }); resetPuzzle(); }
   if(gameId === 'gofish') { MP.gfRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.gfRound }); resetGoFish(); setTimeout(()=>gfStart(),200); }
-  if(gameId === 'darts301') { MP.drtRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.drtRound }); resetDarts(); setTimeout(()=>dartsStart(),200); }
+  if(gameId === 'darts301') { MP.drtRound++; mpSend({ type: 'mp-rematch', game: gameId, round: MP.drtRound }); resetDarts(); if(MP.isHost) setTimeout(()=>dartsStart(),200); }
 }
 
 function mpGenerateQR(code) {
