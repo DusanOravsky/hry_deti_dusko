@@ -5250,7 +5250,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.99';
+const APP_VERSION = '20.0';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -24892,12 +24892,15 @@ function _mpHandleMessageInner(data) {
 
   // Reversi MP
   if(data.type==='rev-move'){
+    if(typeof data.idx!=='number'||data.idx<0||data.idx>=64) return;
     const flips=revFlips(REV.board,data.idx,REV.turn);
     if(flips.length>0)revPlace(data.idx,REV.turn,flips);
   }
 
   // Nim MP
   if(data.type==='nim-take'){
+    if(typeof data.pile!=='number'||data.pile<0||data.pile>=NIM.piles.length) return;
+    if(typeof data.count!=='number'||data.count<1||data.count>3||data.count>NIM.piles[data.pile]) return;
     nimTake(data.pile,data.count);
   }
 
@@ -24935,6 +24938,7 @@ function _mpHandleMessageInner(data) {
 
   // Mancala MP
   if(data.type==='mancala-move'){
+    if(typeof data.idx!=='number'||data.idx<0||data.idx>=14) return;
     manMakeMove(data.idx);
   }
 
@@ -24962,7 +24966,12 @@ function _mpHandleMessageInner(data) {
   if(data.type==='ghost-lang'){if($('ghostLangSelect'))$('ghostLangSelect').value=data.lang;buildGhostKeyboard();}
 
   // Dots & Boxes MP
-  if(data.type==='db-line'){dbPlaceLine(data.lineType,data.i,data.j,data.player!==undefined?data.player:DB.turn);}
+  if(data.type==='db-line'){
+    if(!['h','v'].includes(data.lineType)||typeof data.i!=='number'||typeof data.j!=='number') return;
+    if(data.lineType==='h'&&(data.i<0||data.i>DB.rows||data.j<0||data.j>=DB.cols)) return;
+    if(data.lineType==='v'&&(data.i<0||data.i>=DB.rows||data.j<0||data.j>DB.cols)) return;
+    dbPlaceLine(data.lineType,data.i,data.j,data.player!==undefined?data.player:DB.turn);
+  }
 
   // Vyššie Nižšie MP
   if(data.type==='hl-turn-done') {

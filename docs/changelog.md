@@ -1,5 +1,8 @@
 # Version History
 
+## v20.0
+- **MP handler validation (round 2)**: rev-move validates idx as 0-63; nim-take validates pile (0-3) and count (1-3, ≤remaining); mancala-move validates idx as 0-13; db-line validates lineType ('h'|'v') and i/j against board dimensions (5×5 grid)
+
 ## v19.99
 - **MP handler validation**: ch-move validates from/to as 0-63; ch-promote validates piece against chess piece whitelist; ludo-move validates piece as 0-3; gn-setup validates secret/max/maxTries (finite, in-range); addXP guards player as 1 or 2
 
