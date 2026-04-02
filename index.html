@@ -2186,6 +2186,34 @@ body.light .chess-sq.dark-sq { background:#b58863; }
   .chess-sq { font-size:1.6em; }
 }
 
+/* DÁMA - figúrky */
+.dk-piece {
+  width:74%; aspect-ratio:1; border-radius:50%;
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  box-shadow:0 4px 8px rgba(0,0,0,.6), inset 0 -3px 5px rgba(0,0,0,.35), inset 0 3px 7px rgba(255,255,255,.25);
+  pointer-events:none;
+}
+.dk-r { background:radial-gradient(circle at 35% 30%, #ff9090, #dd1111 50%, #880000); }
+.dk-b { background:radial-gradient(circle at 35% 30%, #888888, #222222 50%, #000000); }
+.dk-king::after {
+  content:'♛'; position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%); font-size:.85em;
+  color:#ffd700; filter:drop-shadow(0 1px 3px rgba(0,0,0,.9));
+}
+.dk-pop { animation:dkPop .28s cubic-bezier(.34,1.56,.64,1); }
+@keyframes dkPop {
+  from{transform:translate(-50%,-50%) scale(.1);opacity:0}
+  to{transform:translate(-50%,-50%) scale(1);opacity:1}
+}
+.dk-crown { animation:dkCrown .55s ease-out; }
+@keyframes dkCrown {
+  0%  {transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+  35% {transform:translate(-50%,-50%) scale(1.5) rotate(-20deg)}
+  65% {transform:translate(-50%,-50%) scale(.9) rotate(10deg)}
+  100%{transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+}
+
 /* TETRIS */
 .tetris-container { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin:20px 0; }
 .tetris-player { text-align:center; }
@@ -5212,7 +5240,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.92';
+const APP_VERSION = '19.93';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -13218,7 +13246,7 @@ function chPromote(pieceType) {
 // =============================================================================
 // SEKCIA 29: DÁMA (CHECKERS)
 // =============================================================================
-const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null, diff:'easy', aiPremove:null, aiThinkTimer:null };
+const DK = { board:[], selected:null, turn:'r', s1:0, s2:0, over:false, mustJump:null, diff:'easy', aiPremove:null, aiThinkTimer:null, _lastPromoted:null };
 function setDKDiff(d,btn) { DK.diff=d; saveDiff('checkers',d); document.querySelectorAll('#dkAISel .difficulty-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
 function resetCheckers() {
@@ -13231,7 +13259,7 @@ function resetCheckers() {
     const ri=6+Math.floor(i/4), c=(i%4)*2+(ri%2===0?1:0);
     DK.board[ri*8+c]='r'; // red bottom (rows 6-7)
   }
-  DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null; DK._lastTo=null;
+  DK.selected=null; DK.turn='r'; DK.over=false; DK.mustJump=null; DK._lastTo=null; DK._lastPromoted=null;
   if(DK.aiThinkTimer) clearTimeout(DK.aiThinkTimer);
   DK.aiPremove = null;
   DK.aiThinkTimer = null;
@@ -13250,10 +13278,13 @@ function renderCheckersBoard() {
     sq.className='chess-sq '+((r+c)%2===0?'light-sq':'dark-sq');
     if(DK.selected===i) sq.classList.add('selected');
     const p=DK.board[i];
-    if(p==='r') sq.textContent='🔴';
-    else if(p==='b') sq.textContent='⚫';
-    else if(p==='R') sq.textContent='👑';
-    else if(p==='B') sq.textContent='♛';
+    if(p) {
+      const piece=document.createElement('div');
+      const isRed=p==='r'||p==='R', isKing=p==='R'||p==='B';
+      piece.className='dk-piece '+(isRed?'dk-r':'dk-b')+(isKing?' dk-king':'');
+      if(DK._lastTo===i) piece.classList.add(DK._lastPromoted===i?'dk-crown':'dk-pop');
+      sq.appendChild(piece);
+    }
     if(p&&DK._lastTo===i) sq.classList.add('piece-move');
     if(DK.selected!==null && !DK.over) {
       const mvs=DK.mustJump!==null?jumps:getDKMoves(DK.selected);
@@ -13311,8 +13342,9 @@ function dkDoMove(from,to,isJump) {
   }
   // Promotion
   const tr=Math.floor(to/8);
-  if(DK.board[to]==='r'&&tr===0) DK.board[to]='R';
-  if(DK.board[to]==='b'&&tr===7) DK.board[to]='B';
+  DK._lastPromoted=null;
+  if(DK.board[to]==='r'&&tr===0) { DK.board[to]='R'; DK._lastPromoted=to; playSound('flip'); }
+  if(DK.board[to]==='b'&&tr===7) { DK.board[to]='B'; DK._lastPromoted=to; playSound('flip'); }
   playSound('move'); vibrate(20);
   DK._lastTo=to;
   // Multi-jump?
