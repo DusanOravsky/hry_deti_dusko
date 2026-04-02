@@ -5209,7 +5209,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '19.90';
+const APP_VERSION = '19.91';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
@@ -6160,6 +6160,18 @@ const DAILY_GAMES=[
   {id:'hangman',goal:'Vyhraj Obesenec (prvý na 3 body)',target:1,type:'win'},
   {id:'mmsv',goal:'Vyhraj Meno Mesto Zviera Vec',target:1,type:'win'},
   {id:'wordChain',goal:'Vyhraj Slovný Reťazec',target:1,type:'win'},
+
+  // Chýbajúce hry (pridané do rotácie)
+  {id:'quiz',goal:'Vyhraj Kvíz',target:1,type:'win'},
+  {id:'emojiGuess',goal:'Vyhraj Emoji Hádanku',target:1,type:'win'},
+  {id:'langScramble',goal:'Vyhraj Jazykový Scramble',target:1,type:'win'},
+  {id:'flashcard',goal:'Vyhraj Flashcards',target:1,type:'win'},
+  {id:'missingLetter',goal:'Vyhraj Doplň Písmeno',target:1,type:'win'},
+  {id:'sentence',goal:'Vyhraj Prekladaj Vety',target:1,type:'win'},
+  {id:'cardWar',goal:'Vyhraj Vojnu',target:1,type:'win'},
+  {id:'animalQuiz',goal:'Vyhraj Zvierací Kvíz',target:1,type:'win'},
+  {id:'gofish',goal:'Vyhraj Kvarteto',target:1,type:'win'},
+  {id:'guessNum',goal:'Uhádni číslo v Hádaj Číslo',target:1,type:'win'},
 ];
 function dailySeed(){const d=new Date();return Math.floor(d.getTime()/86400000);}
 function dailySeedDisplay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
@@ -23043,7 +23055,10 @@ function filterGames() {
   if(sorted.length === 0) {
     html = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);font-size:1.1em">🔍 Žiadne výsledky pre "'+searchText+'"</div>';
   } else {
-    html = sorted.map((g,i)=>_renderGameCard(g,i)).join('');
+    const n = sorted.length;
+    const countLabel = n === 1 ? '1 hra' : n < 5 ? n+' hry' : n+' hier';
+    html = '<div style="text-align:center;padding:6px 0 4px;color:rgba(255,255,255,0.4);font-size:0.78em;letter-spacing:0.03em">🔍 '+countLabel+' nájdených</div>';
+    html += sorted.map((g,i)=>_renderGameCard(g,i)).join('');
   }
   grid.innerHTML = html;
 }
