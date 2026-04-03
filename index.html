@@ -2197,9 +2197,9 @@ body.light .chess-sq.dark-sq { background:#b58863; }
 .dk-r { background:radial-gradient(circle at 35% 30%, #ff9090, #dd1111 50%, #880000); }
 .dk-b { background:radial-gradient(circle at 35% 30%, #888888, #222222 50%, #000000); }
 .dk-king::after {
-  content:'♛'; position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-50%); font-size:.85em;
-  color:#ffd700; filter:drop-shadow(0 1px 3px rgba(0,0,0,.9));
+  content:'👑'; position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%); font-size:.7em;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.9));
 }
 .dk-pop { animation:dkPop .28s cubic-bezier(.34,1.56,.64,1); }
 @keyframes dkPop {
@@ -5331,7 +5331,7 @@ body.light .man-store {
 // HRAJME SI
 // Refaktorovaný JS: herný stav v namespace objektoch, funkcie sekciované
 // =============================================================================
-const APP_VERSION = '20.10';
+const APP_VERSION = '20.11';
 
 // Helper: Short DOM access
 const $ = id => document.getElementById(id);
