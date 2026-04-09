@@ -72,7 +72,7 @@
 - **MMSV letter validation**: Answer must start with correct letter; two-step challenge confirm flow; extra category toggles opt-in
 - **Šípky 301 (Darts 301)**: Canvas dartboard with 20 sectors, triple/double rings, bull (50/25); oscillating Lissajous crosshair aim mechanic; 3 darts per turn; bust rule (score <0 or =1 reverts to turn start); win on exactly 0; AI difficulty easy=random / medium=upper board ±18px / hard=triple-20 ±5px; epoch-guarded RAF + AI timeout
 - **Go Fish (Kvarteto)**: Collect 4-of-a-kind books; "Choď rybárčiť" on miss; PVP pass-device screen; host-authoritative MP
-- **Checkers (Dáma) 3D pieces**: `.dk-piece` divs with radial gradient (red/blue), `dk-pop` spring animation on move, `dk-crown` burst on king promotion; `DK._lastPromoted` tracks promoted square for crown CSS class
+- **Checkers (Dáma) 3D pieces**: `.dk-piece` divs with radial gradient (red/blue), `dk-pop` spring animation on move, `dk-crown` burst on king promotion; `DK._lastPromoted` tracks promoted square for crown CSS class; king marker: 👑 emoji (`.dk-king::after`, font-size:.7em)
 - **Stats rules modal**: `#stats` section has hidden `.rules` div — `showRules('stats')` shows XP/levels/achievements/daily/leaderboard explanation
 
 ## MP Handler Validation (security)

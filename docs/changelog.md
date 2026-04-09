@@ -1,5 +1,18 @@
 # Version History
 
+## v20.13
+- **stopAllGames DARTS.running fix**: `stopAllGames()` now sets `DARTS.running=false` — previously only cleared `DARTS.raf` and `DARTS._aiTimeout`, leaving the flag stale after navigation (inconsistent with all other games)
+
+## v20.12
+- **dartsEndTurn mpSend fix**: non-winner branch used `MP.connection.send()` directly instead of `mpSend()` — missed in v20.10
+- **dartsShowWin(p) helper**: extracted shared win-display logic (`DARTS.over=true`, status text, `addWin`, `celebrate`) used by both `dartsEndTurn` and the `drt-turn` MP receiver
+
+## v20.11
+- **Dáma king emoji**: changed from ♛ symbol to 👑 emoji for better mobile rendering; `font-size:.7em` (was `.85em`), removed `color:#ffd700` (emoji carries its own color)
+
+## v20.10
+- **Darts MP mpSend fix**: `dartsStart`/`dartsDartLanded`/`dartsEndTurn` winner branch all used `MP.connection.send()` directly — replaced with `mpSend()` everywhere
+
 ## v20.9
 - **Darts MP rematch fix**: host always initiates via drt-start (guest-initiated rematch was broken)
 

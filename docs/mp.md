@@ -47,7 +47,7 @@ const MP = {
   sdRound: 0, tnkRound: 0, pngRound: 0, wdlRound: 0, agaRound: 0, revRound: 0, nimRound: 0,
   simonRound: 0, manRound: 0, sokRound: 0, ghostRound: 0, dbRound: 0, hlRound: 0,
   quizRound: 0, mmsvRound: 0, wcRound: 0, scrRound: 0, brkRound: 0, puzzleRound: 0,
-  gofishRound: 0,
+  gfRound: 0, drtRound: 0,
   _intentionalDisconnect: false,
   _pingInterval: null,
   _reconnectAttempts: 0,
@@ -109,7 +109,7 @@ const MP = {
 - Pong — `png-start`, `png-input`, `png-state` (host runs RAF, sends state every 3 frames)
 
 **Go Fish (host-authoritative, 1 game):**
-- Go Fish — `gf-start` (host sends deck), `gf-state` (host sends guest their hand only); gofishRound
+- Go Fish — `gf-start` (host sends deck), `gf-state` (host sends guest their hand only); gfRound
 
 **Darts 301 (turn-based, host=P1):**
 - `drt-start` (host → guest, begins game), `drt-throw` (thrower → opponent, score+coords visual), `drt-turn` (thrower → opponent, s1/s2 after full turn); drtRound; rematch: host always re-sends drt-start
