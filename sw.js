@@ -1,5 +1,5 @@
 // Keep in sync with APP_VERSION in index.html
-const CACHE_NAME = 'hrajmesi-v20.13';
+const CACHE_NAME = 'hrajmesi-v20.13-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,18 @@ const ASSETS = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(async cache => {
+      // Promise.allSettled instead of cache.addAll — cache.addAll is atomic
+      // and silently discards everything if even one fetch fails (e.g. the
+      // 1.2 MB index.html on a slow connection), breaking offline entirely.
+      await Promise.allSettled(
+        ASSETS.map(url =>
+          fetch(url, { redirect: 'follow' })
+            .then(r => { if (r.ok) return cache.put(url, r); })
+            .catch(() => {})
+        )
+      );
+    })
   );
   self.skipWaiting(); // Install and activate immediately
 });
